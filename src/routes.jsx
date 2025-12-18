@@ -1,13 +1,18 @@
 import {
   HomeIcon,
-  UserCircleIcon,
-  TableCellsIcon,
-  InformationCircleIcon,
-  ServerStackIcon,
-  RectangleStackIcon,
+  // UserCircleIcon,
+  // TableCellsIcon,
+  // InformationCircleIcon,
+  // ServerStackIcon,
+  // RectangleStackIcon,
+  FolderIcon,
+  TagIcon,
+  ClipboardDocumentCheckIcon,
+  BoltIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
-import { SignIn, SignUp } from "@/pages/auth";
+import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries } from "@/pages/dashboard";
+// import { SignIn, SignUp } from "@/pages/auth";
+
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -24,43 +29,69 @@ export const routes = [
         element: <Home />,
       },
       {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
-        element: <Profile />,
+        icon: <FolderIcon {...icon} />,
+        name: "projects",
+        path: "/projects",
+        element: <Projects />,
       },
       {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <Tables />,
+        icon: <TagIcon {...icon} />,
+        name: "topics",
+        path: "/topics",
+        element: <GlobalTopics />,
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
-        name: "notifications",
-        path: "/notifications",
-        element: <Notifications />,
+        icon: <ClipboardDocumentCheckIcon {...icon} />,
+        name: "rules",
+        path: "/rules",
+        element: <GlobalRules />,
       },
+      {
+        icon: <BoltIcon {...icon} />,
+        name: "batteries",
+        path: "/batteries",
+        element: <GlobalBatteries />,
+      },
+      // Commented out for later use
+      // {
+      //   icon: <UserCircleIcon {...icon} />,
+      //   name: "profile",
+      //   path: "/profile",
+      //   element: <Profile />,
+      // },
+      // {
+      //   icon: <TableCellsIcon {...icon} />,
+      //   name: "tables",
+      //   path: "/tables",
+      //   element: <Tables />,
+      // },
+      // {
+      //   icon: <InformationCircleIcon {...icon} />,
+      //   name: "notifications",
+      //   path: "/notifications",
+      //   element: <Notifications />,
+      // },
     ],
   },
-  {
-    title: "auth pages",
-    layout: "auth",
-    pages: [
-      {
-        icon: <ServerStackIcon {...icon} />,
-        name: "sign in",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "sign up",
-        path: "/sign-up",
-        element: <SignUp />,
-      },
-    ],
-  },
+  // Commented out auth pages for later use
+  // {
+  //   title: "auth pages",
+  //   layout: "auth",
+  //   pages: [
+  //     {
+  //       icon: <ServerStackIcon {...icon} />,
+  //       name: "sign in",
+  //       path: "/sign-in",
+  //       element: <SignIn />,
+  //     },
+  //     {
+  //       icon: <RectangleStackIcon {...icon} />,
+  //       name: "sign up",
+  //       path: "/sign-up",
+  //       element: <SignUp />,
+  //     },
+  //   ],
+  // },
 ];
 
 export default routes;

@@ -8,6 +8,7 @@ import {
   Footer,
 } from "@/widgets/layout";
 import routes from "@/routes";
+import { ProjectDetail, ProjectTopics } from "@/pages/dashboard";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 
 export function Dashboard() {
@@ -39,9 +40,12 @@ export function Dashboard() {
             ({ layout, pages }) =>
               layout === "dashboard" &&
               pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} />
+                <Route exact path={path} element={element} key={path} />
               ))
           )}
+          {/* Dynamic routes for project detail and topics */}
+          <Route path="/project/:projectId" element={<ProjectDetail />} />
+          <Route path="/project/:projectId/topics" element={<ProjectTopics />} />
         </Routes>
         <div className="text-blue-gray-600">
           <Footer />
