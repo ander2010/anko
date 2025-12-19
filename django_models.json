@@ -1,0 +1,320 @@
+{
+    "project_name": "ANKO_v1",
+    "generated_at": "2025-12-18",
+    "description": "Django models based on React frontend context structure",
+    "models": [
+        {
+            "name": "User",
+            "description": "Extends AbstractUser",
+            "fields": [
+                {
+                    "name": "avatar",
+                    "type": "ImageField",
+                    "nullable": true,
+                    "upload_to": "avatars/"
+                }
+            ]
+        },
+        {
+            "name": "Project",
+            "fields": [
+                {
+                    "name": "title",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "description",
+                    "type": "TextField",
+                    "blank": true
+                },
+                {
+                    "name": "owner",
+                    "type": "ForeignKey",
+                    "to": "User",
+                    "on_delete": "CASCADE"
+                },
+                {
+                    "name": "created_at",
+                    "type": "DateTimeField",
+                    "auto_now_add": true
+                },
+                {
+                    "name": "updated_at",
+                    "type": "DateTimeField",
+                    "auto_now": true
+                },
+                {
+                    "name": "archived",
+                    "type": "BooleanField",
+                    "default": false
+                },
+                {
+                    "name": "logo",
+                    "type": "ImageField",
+                    "nullable": true,
+                    "upload_to": "project_logos/"
+                },
+                {
+                    "name": "members",
+                    "type": "ManyToManyField",
+                    "to": "User",
+                    "related_name": "joined_projects"
+                }
+            ]
+        },
+        {
+            "name": "Document",
+            "fields": [
+                {
+                    "name": "project",
+                    "type": "ForeignKey",
+                    "to": "Project",
+                    "on_delete": "CASCADE",
+                    "related_name": "documents"
+                },
+                {
+                    "name": "filename",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "file",
+                    "type": "FileField",
+                    "upload_to": "documents/"
+                },
+                {
+                    "name": "type",
+                    "type": "CharField",
+                    "max_length": 10,
+                    "choices": [
+                        "PDF",
+                        "DOCX",
+                        "TXT"
+                    ]
+                },
+                {
+                    "name": "size",
+                    "type": "PositiveIntegerField",
+                    "help_text": "Size in bytes"
+                },
+                {
+                    "name": "uploaded_at",
+                    "type": "DateTimeField",
+                    "auto_now_add": true
+                },
+                {
+                    "name": "status",
+                    "type": "CharField",
+                    "max_length": 20,
+                    "choices": [
+                        "pending",
+                        "processing",
+                        "ready",
+                        "failed"
+                    ],
+                    "default": "pending"
+                },
+                {
+                    "name": "processing_error",
+                    "type": "TextField",
+                    "nullable": true,
+                    "blank": true
+                },
+                {
+                    "name": "extracted_text",
+                    "type": "TextField",
+                    "nullable": true,
+                    "blank": true
+                },
+                {
+                    "name": "hash",
+                    "type": "CharField",
+                    "max_length": 64,
+                    "unique": true,
+                    "help_text": "File hash for deduplication"
+                }
+            ]
+        },
+        {
+            "name": "Section",
+            "description": "Extracted sections from a document",
+            "fields": [
+                {
+                    "name": "document",
+                    "type": "ForeignKey",
+                    "to": "Document",
+                    "on_delete": "CASCADE",
+                    "related_name": "sections"
+                },
+                {
+                    "name": "title",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "content",
+                    "type": "TextField"
+                },
+                {
+                    "name": "order",
+                    "type": "PositiveIntegerField"
+                }
+            ]
+        },
+        {
+            "name": "Topic",
+            "fields": [
+                {
+                    "name": "project",
+                    "type": "ForeignKey",
+                    "to": "Project",
+                    "on_delete": "CASCADE",
+                    "related_name": "topics"
+                },
+                {
+                    "name": "name",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "description",
+                    "type": "TextField",
+                    "blank": true
+                },
+                {
+                    "name": "status",
+                    "type": "CharField",
+                    "max_length": 20,
+                    "choices": [
+                        "active",
+                        "archived"
+                    ],
+                    "default": "active"
+                },
+                {
+                    "name": "related_documents",
+                    "type": "ManyToManyField",
+                    "to": "Document",
+                    "related_name": "topics"
+                },
+                {
+                    "name": "question_count_target",
+                    "type": "PositiveIntegerField",
+                    "default": 20
+                }
+            ]
+        },
+        {
+            "name": "Rule",
+            "description": "Configuration for generating batteries",
+            "fields": [
+                {
+                    "name": "project",
+                    "type": "ForeignKey",
+                    "to": "Project",
+                    "on_delete": "CASCADE",
+                    "related_name": "rules"
+                },
+                {
+                    "name": "name",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "topic_scope",
+                    "type": "ForeignKey",
+                    "to": "Topic",
+                    "nullable": true,
+                    "on_delete": "SET_NULL",
+                    "help_text": "If null, applies globally to project"
+                },
+                {
+                    "name": "global_count",
+                    "type": "PositiveIntegerField",
+                    "default": 10
+                },
+                {
+                    "name": "time_limit",
+                    "type": "PositiveIntegerField",
+                    "help_text": "Time in minutes"
+                },
+                {
+                    "name": "distribution_strategy",
+                    "type": "CharField",
+                    "max_length": 20,
+                    "choices": [
+                        "random",
+                        "balanced",
+                        "topic_weighted"
+                    ]
+                },
+                {
+                    "name": "difficulty",
+                    "type": "CharField",
+                    "max_length": 10,
+                    "choices": [
+                        "Easy",
+                        "Medium",
+                        "Hard"
+                    ],
+                    "default": "Medium"
+                }
+            ]
+        },
+        {
+            "name": "Battery",
+            "fields": [
+                {
+                    "name": "project",
+                    "type": "ForeignKey",
+                    "to": "Project",
+                    "on_delete": "CASCADE",
+                    "related_name": "batteries"
+                },
+                {
+                    "name": "rule",
+                    "type": "ForeignKey",
+                    "to": "Rule",
+                    "nullable": true,
+                    "on_delete": "SET_NULL"
+                },
+                {
+                    "name": "name",
+                    "type": "CharField",
+                    "max_length": 255
+                },
+                {
+                    "name": "status",
+                    "type": "CharField",
+                    "max_length": 20,
+                    "choices": [
+                        "Draft",
+                        "Ready"
+                    ],
+                    "default": "Draft"
+                },
+                {
+                    "name": "created_at",
+                    "type": "DateTimeField",
+                    "auto_now_add": true
+                },
+                {
+                    "name": "difficulty",
+                    "type": "CharField",
+                    "max_length": 10,
+                    "choices": [
+                        "Easy",
+                        "Medium",
+                        "Hard"
+                    ]
+                },
+                {
+                    "name": "questions",
+                    "type": "JSONField",
+                    "help_text": "Stored generated questions snapshot"
+                }
+            ]
+        }
+    ]
+}
