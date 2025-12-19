@@ -9,8 +9,10 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/context/auth-context";
 
 export function Navbar({ brandName, routes, action }) {
+  const { user, logout } = useAuth();
   const [openNav, setOpenNav] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,6 +44,18 @@ export function Navbar({ brandName, routes, action }) {
     </ul>
   );
 
+  const authButton = user ? (
+    <Button variant="gradient" size="sm" onClick={logout}>
+      Sign Out
+    </Button>
+  ) : (
+    <Link to="/auth/sign-in">
+      <Button variant="gradient" size="sm">
+        Sign In
+      </Button>
+    </Link>
+  );
+
   return (
     <MTNavbar className="p-3">
       <div className="container mx-auto flex items-center justify-between text-blue-gray-900">
@@ -54,9 +68,7 @@ export function Navbar({ brandName, routes, action }) {
           </Typography>
         </Link>
         <div className="hidden lg:block">{navList}</div>
-        {React.cloneElement(action, {
-          className: "hidden lg:inline-block",
-        })}
+        {authButton}
         <IconButton
           variant="text"
           size="sm"
@@ -73,9 +85,7 @@ export function Navbar({ brandName, routes, action }) {
       <Collapse open={openNav}>
         <div className="container mx-auto">
           {navList}
-          {React.cloneElement(action, {
-            className: "w-full block lg:hidden",
-          })}
+          {authButton}
         </div>
       </Collapse>
     </MTNavbar>

@@ -5,10 +5,30 @@ import {
   Button,
   Typography,
 } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import authService from "../../services/authService";
 
 
 export function SignUp() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      await authService.register({ username, email, password });
+      // After register, go to dashboard
+      navigate("/dashboard/home");
+    } catch (err) {
+      setError(err?.error || JSON.stringify(err));
+    }
+  };
+
   return (
     <section className="m-8 flex">
             <div className="w-2/5 h-full hidden lg:block">
@@ -20,10 +40,23 @@ export function SignUp() {
       <div className="w-full lg:w-3/5 flex flex-col items-center justify-center">
         <div className="text-center">
           <Typography variant="h2" className="font-bold mb-4">Join Us Today</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to register.</Typography>
+          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email, username and password to register.</Typography>
         </div>
-        <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
+        <form onSubmit={handleSubmit} className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2">
           <div className="mb-1 flex flex-col gap-6">
+            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
+              Username
+            </Typography>
+            <Input
+              size="lg"
+              placeholder="username"
+              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+            />
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
             </Typography>
@@ -31,32 +64,36 @@ export function SignUp() {
               size="lg"
               placeholder="name@mail.com"
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+            />
+            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
+              Password
+            </Typography>
+            <Input
+              type="password"
+              size="lg"
+              placeholder="********"
+              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
             />
           </div>
-          <Checkbox
-            label={
-              <Typography
-                variant="small"
-                color="gray"
-                className="flex items-center justify-start font-medium"
-              >
-                I agree the&nbsp;
-                <a
-                  href="#"
-                  className="font-normal text-black transition-colors hover:text-gray-900 underline"
-                >
-                  Terms and Conditions
-                </a>
-              </Typography>
-            }
-            containerProps={{ className: "-ml-2.5" }}
-          />
-          <Button className="mt-6" fullWidth>
+          <Button className="mt-6" fullWidth type="submit">
             Register Now
           </Button>
+
+          {error && (
+            <Typography variant="small" color="red" className="mt-4 text-center">
+              {typeof error === 'string' ? error : JSON.stringify(error)}
+            </Typography>
+          )}
 
           <div className="space-y-4 mt-8">
             <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth>

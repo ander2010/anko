@@ -3,15 +3,15 @@ import {
   // UserCircleIcon,
   // TableCellsIcon,
   // InformationCircleIcon,
-  // ServerStackIcon,
-  // RectangleStackIcon,
+  ServerStackIcon,
+  RectangleStackIcon,
   FolderIcon,
   TagIcon,
   ClipboardDocumentCheckIcon,
   BoltIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries } from "@/pages/dashboard";
-// import { SignIn, SignUp } from "@/pages/auth";
+import { SignIn, SignUp } from "@/pages/auth";
 
 
 const icon = {
@@ -73,25 +73,19 @@ export const routes = [
       // },
     ],
   },
-  // Commented out auth pages for later use
-  // {
-  //   title: "auth pages",
-  //   layout: "auth",
-  //   pages: [
-  //     {
-  //       icon: <ServerStackIcon {...icon} />,
-  //       name: "sign in",
-  //       path: "/sign-in",
-  //       element: <SignIn />,
-  //     },
-  //     {
-  //       icon: <RectangleStackIcon {...icon} />,
-  //       name: "sign up",
-  //       path: "/sign-up",
-  //       element: <SignUp />,
-  //     },
-  //   ],
-  // },
+  {
+    layout: "auth",
+    pages: [
+      {
+        path: "/sign-in",
+        element: <SignIn />,
+      },
+      {
+        path: "/sign-up",
+        element: <SignUp />,
+      },
+    ],
+  },
 ];
 
 export default routes;
