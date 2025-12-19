@@ -39,7 +39,7 @@ export function GlobalBatteries() {
                     <table className="w-full min-w-[640px] table-auto">
                         <thead>
                             <tr>
-                                {["Battery Name", "Status", "Project", "Rule", "Topic Scope", "Questions"].map((el) => (
+                                {["Battery Name", "Status", "Difficulty", "Project", "Rule", "Topic Scope", "Questions"].map((el) => (
                                     <th
                                         key={el}
                                         className="border-b border-blue-gray-50 py-3 px-5 text-left"
@@ -57,7 +57,7 @@ export function GlobalBatteries() {
                         <tbody>
                             {batteries.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-4 text-center">
+                                    <td colSpan={7} className="p-4 text-center">
                                         <Typography variant="small" color="blue-gray">
                                             No batteries found.
                                         </Typography>
@@ -87,6 +87,14 @@ export function GlobalBatteries() {
                                                     variant="ghost"
                                                     color={battery.status === "ready" ? "green" : "blue-gray"}
                                                     value={battery.status}
+                                                    className="py-0.5 px-2 text-[11px] font-medium w-fit"
+                                                />
+                                            </td>
+                                            <td className={className}>
+                                                <Chip
+                                                    variant="ghost"
+                                                    color={battery.difficulty === "Easy" ? "green" : battery.difficulty === "Hard" ? "red" : "amber"}
+                                                    value={battery.difficulty || "Medium"}
                                                     className="py-0.5 px-2 text-[11px] font-medium w-fit"
                                                 />
                                             </td>

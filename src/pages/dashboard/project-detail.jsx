@@ -96,6 +96,7 @@ export function ProjectDetail() {
     const [selectedRuleId, setSelectedRuleId] = useState("");
 
     const [selectedTopicId, setSelectedTopicId] = useState("");
+    const [batteryDifficulty, setBatteryDifficulty] = useState("Medium");
     const [simulationBattery, setSimulationBattery] = useState(null);
 
     const project = getProject(projectId);
@@ -740,31 +741,52 @@ export function ProjectDetail() {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                                                Battery Type
-                                            </label>
-                                            <div className="flex gap-4 mt-2">
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="batteryType"
-                                                        value="global"
-                                                        checked={batteryType === "global"}
-                                                        onChange={(e) => setBatteryType(e.target.value)}
-                                                    />
-                                                    Global
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                                                    Battery Type
                                                 </label>
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="batteryType"
-                                                        value="topic"
-                                                        checked={batteryType === "topic"}
-                                                        onChange={(e) => setBatteryType(e.target.value)}
-                                                    />
-                                                    Topic Specific
+                                                <div className="flex gap-4 mt-2">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="batteryType"
+                                                            value="global"
+                                                            checked={batteryType === "global"}
+                                                            onChange={(e) => setBatteryType(e.target.value)}
+                                                        />
+                                                        Global
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="batteryType"
+                                                            value="topic"
+                                                            checked={batteryType === "topic"}
+                                                            onChange={(e) => setBatteryType(e.target.value)}
+                                                        />
+                                                        Topic Specific
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                                                    Difficulty
                                                 </label>
+                                                <div className="flex gap-4 mt-2">
+                                                    {["Easy", "Medium", "Hard"].map((diff) => (
+                                                        <label key={diff} className="flex items-center gap-2 cursor-pointer">
+                                                            <input
+                                                                type="radio"
+                                                                name="batteryDifficulty"
+                                                                value={diff}
+                                                                checked={batteryDifficulty === diff}
+                                                                onChange={(e) => setBatteryDifficulty(e.target.value)}
+                                                            />
+                                                            {diff}
+                                                        </label>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -852,9 +874,12 @@ export function ProjectDetail() {
                                             <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
                                                 {battery.name}
                                             </Typography>
-                                            <Typography variant="small" className="text-blue-gray-500 mb-4">
-                                                {battery.questions.length} questions • {formatDate(battery.createdAt)}
-                                            </Typography>
+                                            <div className="flex gap-2 mb-4">
+                                                <Chip value={battery.difficulty || "Medium"} size="sm" variant="outlined" className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500" />
+                                                <Typography variant="small" className="text-blue-gray-500 text-xs flex items-center">
+                                                    {battery.questions.length} questions • {formatDate(battery.createdAt)}
+                                                </Typography>
+                                            </div>
 
                                             {battery.variants.length > 0 && (
                                                 <div className="flex items-center gap-2 text-xs text-blue-500 bg-blue-50 p-2 rounded">

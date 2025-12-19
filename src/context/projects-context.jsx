@@ -899,7 +899,7 @@ export function ProjectsProvider({ children }) {
 
 
 
-  const generateBattery = (ruleId, type, topicId = null) => {
+  const generateBattery = (ruleId, type, topicId = null, difficulty = "Medium") => {
     const rule = getRule(ruleId);
     if (!rule) {
       return { success: false, error: "Rule not found" };
@@ -921,6 +921,7 @@ export function ProjectsProvider({ children }) {
         : `Batería Global - ${rule.name}`,
       type,
       topicId: type === "topic" ? topicId : null,
+      difficulty, // Stored metadata
       status: "draft",
       config: {
         questionTypes: rule.questionTypes,
