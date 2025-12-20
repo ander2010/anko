@@ -517,56 +517,56 @@
 //                 </>
 //             )}
 
-//             {activeTab === "topics" && (
-//                 <>
-//                     {/* Create Topic Button */}
-//                     <div className="mb-6 flex justify-end">
-//                         <Button
-//                             className="flex items-center gap-2"
-//                             color="blue"
-//                             onClick={() => setCreateTopicDialogOpen(true)}
-//                         >
-//                             <PlusIcon className="h-5 w-5" />
-//                             Create Topic
-//                         </Button>
-//                     </div>
+            // {activeTab === "topics" && (
+            //     <>
+            //         {/* Create Topic Button */}
+            //         <div className="mb-6 flex justify-end">
+            //             <Button
+            //                 className="flex items-center gap-2"
+            //                 color="blue"
+            //                 onClick={() => setCreateTopicDialogOpen(true)}
+            //             >
+            //                 <PlusIcon className="h-5 w-5" />
+            //                 Create Topic
+            //             </Button>
+            //         </div>
 
-//                     {/* Topics Grid */}
-//                     {topics.length > 0 ? (
-//                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-//                             {topics.map((topic) => (
-//                                 <TopicCard
-//                                     key={topic.id}
-//                                     topic={topic}
-//                                     documentCount={topic.assignedDocuments.length}
-//                                     onEdit={handleEditTopic}
-//                                     onArchive={handleArchiveTopic}
-//                                 />
-//                             ))}
-//                         </div>
-//                     ) : (
-//                         <Card className="border border-blue-gray-100 shadow-sm">
-//                             <CardBody className="flex flex-col items-center justify-center py-12">
-//                                 <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
-//                                 <Typography variant="h5" color="blue-gray" className="mb-2">
-//                                     No topics yet
-//                                 </Typography>
-//                                 <Typography className="text-blue-gray-600 mb-4 text-center">
-//                                     Create your first topic to start organizing questions
-//                                 </Typography>
-//                                 <Button
-//                                     className="flex items-center gap-2"
-//                                     color="blue"
-//                                     onClick={() => setCreateTopicDialogOpen(true)}
-//                                 >
-//                                     <PlusIcon className="h-5 w-5" />
-//                                     Create Topic
-//                                 </Button>
-//                             </CardBody>
-//                         </Card>
-//                     )}
-//                 </>
-//             )}
+            //         {/* Topics Grid */}
+            //         {topics.length > 0 ? (
+            //             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            //                 {topics.map((topic) => (
+            //                     <TopicCard
+            //                         key={topic.id}
+            //                         topic={topic}
+            //                         documentCount={topic.assignedDocuments.length}
+            //                         onEdit={handleEditTopic}
+            //                         onArchive={handleArchiveTopic}
+            //                     />
+            //                 ))}
+            //             </div>
+            //         ) : (
+            //             <Card className="border border-blue-gray-100 shadow-sm">
+            //                 <CardBody className="flex flex-col items-center justify-center py-12">
+            //                     <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
+            //                     <Typography variant="h5" color="blue-gray" className="mb-2">
+            //                         No topics yet
+            //                     </Typography>
+            //                     <Typography className="text-blue-gray-600 mb-4 text-center">
+            //                         Create your first topic to start organizing questions
+            //                     </Typography>
+            //                     <Button
+            //                         className="flex items-center gap-2"
+            //                         color="blue"
+            //                         onClick={() => setCreateTopicDialogOpen(true)}
+            //                     >
+            //                         <PlusIcon className="h-5 w-5" />
+            //                         Create Topic
+            //                     </Button>
+            //                 </CardBody>
+            //             </Card>
+            //         )}
+            //     </>
+            // )}
 
 //             {/* Rules Tab Content */}
 //             {activeTab === "rules" && (
@@ -1024,20 +1024,34 @@ export function ProjectDetail() {
 
   const [activeTab, setActiveTab] = useState("documents");
 
+const [showGenerateBattery, setShowGenerateBattery] = useState(false);
+const [batteryType, setBatteryType] = useState("global");
+const [selectedRuleId, setSelectedRuleId] = useState("");
+const [selectedTopicId, setSelectedTopicId] = useState("");
+const [batteryDifficulty, setBatteryDifficulty] = useState("Medium");
+
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [error, setError] = useState(null);
+const [loadingRules, setLoadingRules] = useState(false);
 
   const [project, setProject] = useState(null);
   const [documents, setDocuments] = useState([]);
+const [loadingBatteries, setLoadingBatteries] = useState(false);
 
   // dialogs
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+// Topics dialogs
+const [createTopicDialogOpen, setCreateTopicDialogOpen] = useState(false);
+const [editTopicDialogOpen, setEditTopicDialogOpen] = useState(false);
+const [confirmTopicDialogOpen, setConfirmTopicDialogOpen] = useState(false);
+const [selectedTopic, setSelectedTopic] = useState(null);
 
-  // topics/rules/batteries placeholders (si aún no tienes endpoints)
+  // topics/rulconst [loadingProject, setLoadingProject] = useState(true);
+
   const [topics, setTopics] = useState([]);
   const [rules, setRules] = useState([]);
   const [batteries, setBatteries] = useState([]);
@@ -1048,6 +1062,82 @@ export function ProjectDetail() {
     return project?.owner?.id === user?.id;
   }, [project, user]);
 
+
+
+  const [showCreateRule, setShowCreateRule] = useState(false);
+const [ruleForm, setRuleForm] = useState({
+  name: "",
+  global_count: 10,
+  time_limit: 30,
+  distribution_strategy: "random",
+  difficulty: "Medium",
+  topic_scope: null, // o id
+});
+const handleGenerateBattery = async () => {
+  try {
+    setError(null);
+
+    if (!selectedRuleId) return;
+    if (batteryType === "topic" && !selectedTopicId) return;
+
+    const payload = {
+      rule: Number(selectedRuleId),
+      difficulty: batteryDifficulty,
+      name: `Battery - ${batteryDifficulty} - ${new Date().toLocaleString()}`,
+      status: "Draft",
+      questions: [], // por ahora vacío, luego lo llenas cuando generes preguntas
+    };
+
+    await projectService.createBattery(Number(projectId), payload);
+    setShowGenerateBattery(false);
+
+    setSelectedRuleId("");
+    setSelectedTopicId("");
+    setBatteryType("global");
+    setBatteryDifficulty("Medium");
+
+    await fetchBatteries(Number(projectId));
+  } catch (err) {
+    setError(err?.error || err?.detail || "Failed to create battery");
+  }
+};
+
+const handleCreateRule = async () => {
+  try {
+    setError(null);
+
+    if (!ruleForm.name) {
+      setError("Rule name is required");
+      return;
+    }
+
+    await projectService.createRule(Number(projectId), {
+      name: ruleForm.name,
+      global_count: Number(ruleForm.global_count) || 0,
+      time_limit: Number(ruleForm.time_limit) || 0,
+      distribution_strategy: ruleForm.distribution_strategy,
+      difficulty: ruleForm.difficulty,
+      topic_scope: ruleForm.topic_scope || null,
+    });
+
+    setShowCreateRule(false);
+    setRuleForm({
+      name: "",
+      global_count: 10,
+      time_limit: 30,
+      distribution_strategy: "random",
+      difficulty: "Medium",
+      topic_scope: null,
+    });
+
+    await fetchRules(Number(projectId));
+  } catch (err) {
+    setError(err?.response?.data || err?.error || err?.detail || "Failed to create rule");
+  }
+};
+
+
+
   useEffect(() => {
     const id = Number(projectId);
     if (!id) return;
@@ -1055,9 +1145,80 @@ export function ProjectDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+
+  const fetchTopics = async (id) => {
+  const data = await projectService.getProjectTopics(id);
+  setTopics(Array.isArray(data) ? data : data?.results || []);
+};
+
+
+const readyDocuments = useMemo(
+  () => documents.filter((d) => d.status === "ready"),
+  [documents]
+);
+
+const handleCreateTopic = async (topicData) => {
+  try {
+    setError(null);
+    await projectService.createTopic(Number(projectId), topicData);
+    setCreateTopicDialogOpen(false);
+    await fetchTopics(Number(projectId));
+  } catch (err) {
+    setError(err?.error || err?.detail || "Failed to create topic");
+  }
+};
+
+const handleEditTopic = (topic) => {
+  setSelectedTopic(topic);
+  setEditTopicDialogOpen(true);
+};
+const fetchRules = async (id) => {
+  try {
+    setLoadingRules(true);
+    const data = await projectService.getProjectRules(id);
+    setRules(Array.isArray(data) ? data : data?.results || []);
+  } catch (err) {
+    setRules([]);
+    setError(err?.error || err?.detail || "Failed to load rules");
+  } finally {
+    setLoadingRules(false);
+  }
+};
+const handleSaveEditTopic = async (updates) => {
+  if (!selectedTopic) return;
+  try {
+    setError(null);
+    await projectService.updateTopic(selectedTopic.id, updates);
+    setEditTopicDialogOpen(false);
+    setSelectedTopic(null);
+    await fetchTopics(Number(projectId));
+  } catch (err) {
+    setError(err?.error || err?.detail || "Failed to update topic");
+  }
+};
+
+const handleArchiveTopic = (topic) => {
+  setSelectedTopic(topic);
+  setConfirmTopicDialogOpen(true);
+};
+
+const handleConfirmArchiveTopic = async () => {
+  if (!selectedTopic) return;
+  try {
+    setError(null);
+    await projectService.archiveTopic(selectedTopic.id);
+    setConfirmTopicDialogOpen(false);
+    setSelectedTopic(null);
+    await fetchTopics(Number(projectId));
+  } catch (err) {
+    setError(err?.error || err?.detail || "Failed to archive topic");
+  }
+};
+
+
   const fetchAll = async (id) => {
     setError(null);
-    await Promise.all([fetchProject(id), fetchDocuments(id)]);
+    await Promise.all([fetchProject(id), fetchDocuments(id), fetchTopics(id),fetchRules(id), fetchBatteries(id)]);
   };
 
   const fetchProject = async (id) => {
@@ -1072,6 +1233,18 @@ export function ProjectDetail() {
       setLoadingProject(false);
     }
   };
+const fetchBatteries = async (id) => {
+  try {
+    setLoadingBatteries(true);
+    const data = await projectService.getProjectBatteries(id);
+    setBatteries(Array.isArray(data) ? data : data?.results || []);
+  } catch (err) {
+    setBatteries([]);
+    setError(err?.error || err?.detail || "Failed to load batteries");
+  } finally {
+    setLoadingBatteries(false);
+  }
+};
 
   const fetchDocuments = async (id) => {
     try {
@@ -1439,6 +1612,471 @@ export function ProjectDetail() {
           </Card>
         </>
       )}
+      {activeTab === "topics" && (
+  <>
+    <div className="mb-6 flex justify-end">
+      <Button
+        className="flex items-center gap-2"
+        color="blue"
+        onClick={() => setCreateTopicDialogOpen(true)}
+      >
+        <PlusIcon className="h-5 w-5" />
+        Create Topic
+      </Button>
+    </div>
+
+    {topics.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {topics.map((topic) => (
+          <TopicCard
+            key={topic.id}
+            topic={{
+              ...topic,
+              // tu backend usa related_documents, el UI viejo espera assignedDocuments
+              assignedDocuments: topic.related_documents || [],
+            }}
+            documentCount={(topic.related_documents || []).length}
+            onEdit={handleEditTopic}
+            onArchive={handleArchiveTopic}
+          />
+        ))}
+      </div>
+    ) : (
+      <Card className="border border-blue-gray-100 shadow-sm">
+        <CardBody className="flex flex-col items-center justify-center py-12">
+          <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
+          <Typography variant="h5" color="blue-gray" className="mb-2">
+            No topics yet
+          </Typography>
+          <Typography className="text-blue-gray-600 mb-4 text-center">
+            Create your first topic to start organizing questions
+          </Typography>
+          <Button
+            className="flex items-center gap-2"
+            color="blue"
+            onClick={() => setCreateTopicDialogOpen(true)}
+          >
+            <PlusIcon className="h-5 w-5" />
+            Create Topic
+          </Button>
+        </CardBody>
+      </Card>
+    )}
+
+    {/* Dialogs - Topics */}
+    <CreateTopicDialog
+      open={createTopicDialogOpen}
+      onClose={() => setCreateTopicDialogOpen(false)}
+      onCreate={handleCreateTopic}
+      availableDocuments={readyDocuments}
+    />
+
+    <EditTopicDialog
+      open={editTopicDialogOpen}
+      onClose={() => setEditTopicDialogOpen(false)}
+      onSave={handleSaveEditTopic}
+      topic={selectedTopic}
+      availableDocuments={readyDocuments}
+    />
+
+    <ConfirmDialog
+      open={confirmTopicDialogOpen}
+      onClose={() => setConfirmTopicDialogOpen(false)}
+      onConfirm={handleConfirmArchiveTopic}
+      title="Archive Topic"
+      message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+      confirmText="Archive"
+      variant="info"
+    />
+  </>
+)}{activeTab === "rules" && (
+  <>
+    <div className="mb-6 flex justify-end">
+      <Button className="flex items-center gap-2" color="blue" onClick={() => setShowCreateRule(true)}>
+        <PlusIcon className="h-5 w-5" />
+        Create Rule
+      </Button>
+    </div>
+
+    {showCreateRule && (
+      <Card className="mb-6 border border-blue-gray-100 shadow-sm">
+        <CardBody>
+          <Typography variant="h6" color="blue-gray" className="mb-4">
+            New Rule
+          </Typography>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Name</Typography>
+              <input
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.name}
+                onChange={(e) => setRuleForm((p) => ({ ...p, name: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Global Count</Typography>
+              <input
+                type="number"
+                min="0"
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.global_count}
+                onChange={(e) => setRuleForm((p) => ({ ...p, global_count: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Time Limit (minutes)</Typography>
+              <input
+                type="number"
+                min="1"
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.time_limit}
+                onChange={(e) => setRuleForm((p) => ({ ...p, time_limit: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Strategy</Typography>
+              <select
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.distribution_strategy}
+                onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
+              >
+                <option value="random">random</option>
+                <option value="balanced">balanced</option>
+                <option value="topic_weighted">topic_weighted</option>
+              </select>
+            </div>
+
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Difficulty</Typography>
+              <select
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.difficulty}
+                onChange={(e) => setRuleForm((p) => ({ ...p, difficulty: e.target.value }))}
+              >
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            <div>
+              <Typography variant="small" className="mb-1 text-blue-gray-600">Topic Scope (optional)</Typography>
+              <select
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={ruleForm.topic_scope || ""}
+                onChange={(e) =>
+                  setRuleForm((p) => ({ ...p, topic_scope: e.target.value ? Number(e.target.value) : null }))
+                }
+              >
+                <option value="">(Global)</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="text" onClick={() => setShowCreateRule(false)}>Cancel</Button>
+            <Button color="blue" onClick={handleCreateRule} disabled={!ruleForm.name}>
+              Save Rule
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+    )}
+
+    {loadingRules ? (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Spinner className="h-10 w-10 mb-4" />
+        <Typography className="text-blue-gray-600">Loading rules...</Typography>
+      </div>
+    ) : rules.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {rules.map((rule) => (
+          <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
+            <CardBody>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
+                  <Typography variant="small" className="text-blue-gray-500">
+                    Strategy: {rule.distribution_strategy} • Difficulty: {rule.difficulty}
+                  </Typography>
+                </div>
+
+                {isOwner && (
+                  <IconButton
+                    size="sm"
+                    variant="text"
+                    color="red"
+                    onClick={async () => {
+                      try {
+                        setError(null);
+                        await projectService.deleteRule(rule.id);
+                        await fetchRules(Number(projectId));
+                      } catch (err) {
+                        setError(err?.error || err?.detail || "Failed to delete rule");
+                      }
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </IconButton>
+                )}
+              </div>
+
+              <div className="space-y-1 text-sm text-blue-gray-600">
+                <div className="flex justify-between">
+                  <span>Global Count</span>
+                  <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Time Limit</span>
+                  <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Scope</span>
+                  <span className="font-medium text-blue-gray-900">
+                    {rule.topic_scope ? `Topic #${rule.topic_scope}` : "Global"}
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    ) : (
+      <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
+        <ClipboardDocumentListIcon className="h-16 w-16 mb-4" />
+        <Typography variant="h6" className="mb-2">No rules yet</Typography>
+        <Typography>Create a rule to define how batteries are generated.</Typography>
+      </div>
+    )}
+  </>
+)}{activeTab === "batteries" && (
+  <>
+    <div className="mb-6 flex justify-end">
+      <Button
+        className="flex items-center gap-2"
+        color="blue"
+        onClick={() => setShowGenerateBattery(true)}
+        disabled={rules.length === 0}
+      >
+        <BoltIcon className="h-5 w-5" />
+        Generate Battery
+      </Button>
+    </div>
+
+    {showGenerateBattery && (
+      <Card className="mb-6 border border-blue-gray-100 shadow-sm">
+        <CardBody>
+          <Typography variant="h6" color="blue-gray" className="mb-4">
+            Generate New Battery
+          </Typography>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                Select Rule
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={selectedRuleId}
+                onChange={(e) => setSelectedRuleId(e.target.value)}
+              >
+                <option value="">Select a rule...</option>
+                {rules.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                  Battery Type
+                </label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="batteryType"
+                      value="global"
+                      checked={batteryType === "global"}
+                      onChange={(e) => setBatteryType(e.target.value)}
+                    />
+                    Global
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="batteryType"
+                      value="topic"
+                      checked={batteryType === "topic"}
+                      onChange={(e) => setBatteryType(e.target.value)}
+                    />
+                    Topic Specific
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                  Difficulty
+                </label>
+                <div className="flex gap-4 mt-2">
+                  {["Easy", "Medium", "Hard"].map((diff) => (
+                    <label key={diff} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batteryDifficulty"
+                        value={diff}
+                        checked={batteryDifficulty === diff}
+                        onChange={(e) => setBatteryDifficulty(e.target.value)}
+                      />
+                      {diff}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {batteryType === "topic" && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                Select Topic
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                value={selectedTopicId}
+                onChange={(e) => setSelectedTopicId(e.target.value)}
+              >
+                <option value="">Select a topic...</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="blue"
+              onClick={handleGenerateBattery}
+              disabled={!selectedRuleId || (batteryType === "topic" && !selectedTopicId)}
+            >
+              Generate
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+    )}
+
+    {batteries.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {batteries.map((battery) => (
+          <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
+            <CardBody>
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-1">
+                  <Chip
+                    value={battery.status}
+                    color={battery.status === "Ready" ? "green" : "blue-gray"}
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-full"
+                  />
+                  <Tooltip content="Simulate Exam">
+                    <IconButton
+                      size="sm"
+                      variant="text"
+                      color="green"
+                      onClick={() => setSimulationBattery(battery)}
+                    >
+                      <PlayIcon className="h-4 w-4" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+
+                {isOwner && (
+                  <Menu placement="bottom-end">
+                    <MenuHandler>
+                      <IconButton size="sm" variant="text" color="blue-gray">
+                        <EllipsisVerticalIcon className="h-5 w-5" />
+                      </IconButton>
+                    </MenuHandler>
+                    <MenuList>
+                      <MenuItem
+                        onClick={async () => {
+                          await projectService.markBatteryReady(battery.id);
+                          await fetchBatteries(Number(projectId));
+                        }}
+                      >
+                        Mark as Ready
+                      </MenuItem>
+                      <MenuItem
+                        onClick={async () => {
+                          await projectService.deleteBattery(battery.id);
+                          await fetchBatteries(Number(projectId));
+                        }}
+                        className="text-red-500"
+                      >
+                        Delete
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                )}
+              </div>
+
+              <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+                {battery.name}
+              </Typography>
+
+              <div className="flex gap-2 mb-4">
+                <Chip
+                  value={battery.difficulty || "Medium"}
+                  size="sm"
+                  variant="outlined"
+                  className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
+                />
+                <Typography variant="small" className="text-blue-gray-500 text-xs">
+                  {(battery.questions?.length || 0)} questions •{" "}
+                  {formatDate(battery.created_at || battery.createdAt)}
+                </Typography>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    ) : (
+      <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
+        <BoltIcon className="h-16 w-16 mb-4" />
+        <Typography variant="h6" className="mb-2">
+          No batteries yet
+        </Typography>
+        <Typography>Generate batteries from your configured rules.</Typography>
+      </div>
+    )}
+  </>
+)}
+
+
+
+
+
+
+
 
       {/* (Los otros tabs los puedes mantener como UI-only por ahora) */}
 

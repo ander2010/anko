@@ -68,34 +68,45 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
         });
     };
 
-    const calculateScore = () => {
-        let totalScore = 0;
-        let maxScore = 0;
+const calculateScore = () => {
+  let totalScore = 0;
+  let maxScore = 0;
 
-        battery.questions.forEach((q) => {
-            maxScore += (q.points || 0);
-            const userAnswer = userAnswers[q.id];
+  (battery?.questions || []).forEach((q) => {
+    const qPoints = Number(q?.points ?? 0); // <- fuerza número SIEMPRE
+    maxScore += qPoints;
 
-            if (!userAnswer) return;
+    const userAnswer = userAnswers[q.id];
+    if (userAnswer == null) return;
 
-            if (q.type === "multiSelect") {
-                // Strict: All correct options must be selected, no extras
-                const correctOptionIds = q.options.filter(o => o.correct).map(o => o.id).sort();
-                const userSelectedIds = (userAnswer || []).sort();
+    if (q.type === "multiSelect") {
+      const correctOptionIds = (q.options || [])
+        .filter((o) => o.correct)
+        .map((o) => o.id)
+        .sort();
 
-                const isCorrect = JSON.stringify(correctOptionIds) === JSON.stringify(userSelectedIds);
-                if (isCorrect) totalScore += (q.points || 0);
-            } else {
-                // Single or TF
-                const selectedOption = q.options.find(o => o.id === userAnswer);
-                if (selectedOption?.correct) {
-                    totalScore += (q.points || 0);
-                }
-            }
-        });
+      const userSelectedIds = (Array.isArray(userAnswer) ? userAnswer : [])
+        .slice()
+        .sort();
 
-        return { totalScore, maxScore };
-    };
+      const isCorrect =
+        correctOptionIds.length === userSelectedIds.length &&
+        correctOptionIds.every((id, idx) => id === userSelectedIds[idx]);
+
+      if (isCorrect) totalScore += qPoints;
+    } else {
+      const selectedOption = (q.options || []).find((o) => o.id === userAnswer);
+      if (selectedOption?.correct) totalScore += qPoints;
+    }
+  });
+
+  // seguridad extra por si algo raro llega:
+  totalScore = Number.isFinite(totalScore) ? totalScore : 0;
+  maxScore = Number.isFinite(maxScore) ? maxScore : 0;
+
+  return { totalScore, maxScore };
+};
+
 
     const resetExam = () => {
         setActiveStep(0);
@@ -124,14 +135,16 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
                         {percent}%
                     </Typography>
                     <Typography variant="h5" color="blue-gray" className="mb-2">
-                        You scored {totalScore.toFixed(2)} out of {maxScore.toFixed(2)} points
+                   You scored {Number(totalScore || 0).toFixed(2)} out of {Number(maxScore || 0).toFixed(2)} points
+
                     </Typography>
                     <Progress value={percent} color={percent >= 60 ? "green" : "red"} className="h-4 w-full rounded-full bg-blue-gray-50 mb-6" />
 
                     <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
                         <div>
                             <Typography variant="small" className="font-bold">Battery Name:</Typography>
-                            <Typography class="text-sm">{battery.name}</Typography>
+                            <Typography className="text-sm">{battery.name}</Typography>
+
                         </div>
                         <div>
                             <Typography variant="small" className="font-bold">Total Questions:</Typography>

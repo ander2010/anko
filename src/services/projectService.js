@@ -128,6 +128,131 @@ async deleteDocument(documentId) {
       throw err?.response?.data || { error: "Failed to delete project" };
     }
   },
+
+   // -------- TOPICS --------
+  async getProjectTopics(projectId) {
+    const res = await api.get("/topics/", {
+      params: { project: projectId },
+    });
+    return res.data;
+  },
+
+  async createTopic(projectId, payload) {
+    const res = await api.post("/topics/", {
+      project: projectId,
+      status: "active",
+      ...payload,
+    });
+    return res.data;
+  },
+
+  async updateTopic(topicId, payload) {
+    const res = await api.patch(`/topics/${topicId}/`, payload);
+    return res.data;
+  },
+
+  async archiveTopic(topicId) {
+    const res = await api.patch(`/topics/${topicId}/`, {
+      status: "archived",
+    });
+    return res.data;
+  },
+
+  async getProjectRules(projectId) {
+    const res = await api.get(`/rules/?project=${projectId}`);
+    return res.data;
+  },
+
+  async createRule(projectId, payload) {
+    // payload debe incluir fields requeridos
+    const res = await api.post(`/rules/`, {
+      ...payload,
+      project: projectId,
+    });
+    return res.data;
+  },
+
+  async updateRule(ruleId, payload) {
+    const res = await api.patch(`/rules/${ruleId}/`, payload);
+    return res.data;
+  },
+
+  async deleteRule(ruleId) {
+    const res = await api.delete(`/rules/${ruleId}/`);
+    return res.data;
+  },
+
+  
+// -------- BATTERIES --------
+  async getProjectBatteries(projectId) {
+    try {
+      const res = await api.get("/batteries/", {
+        params: { project: projectId },
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch batteries" };
+    }
+  },
+
+  async createBattery(projectId, payload) {
+    try {
+      const res = await api.post("/batteries/", {
+        project: projectId,
+        status: "Draft",              // default
+        questions: [],                // MVP
+        ...payload,
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to create battery" };
+    }
+  },
+
+  async updateBattery(batteryId, payload) {
+    try {
+      const res = await api.patch(`/batteries/${batteryId}/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to update battery" };
+    }
+  },
+
+  async deleteBattery(batteryId) {
+    try {
+      const res = await api.delete(`/batteries/${batteryId}/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to delete battery" };
+    }
+  },
+
+  async markBatteryReady(batteryId) {
+    try {
+      // ✅ opción A: si hiciste el action mark_ready en backend
+      const res = await api.post(`/batteries/${batteryId}/mark_ready/`);
+      return res.data;
+
+      // ✅ opción B (si NO hiciste action): usa updateBattery:
+      // return await this.updateBattery(batteryId, { status: "Ready" });
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to mark battery as ready" };
+    }
+  },
+
+  async markBatteryDraft(batteryId) {
+    try {
+      // ✅ opción A: si hiciste el action mark_draft en backend
+      const res = await api.post(`/batteries/${batteryId}/mark_draft/`);
+      return res.data;
+
+      // ✅ opción B (si NO hiciste action): usa updateBattery:
+      // return await this.updateBattery(batteryId, { status: "Draft" });
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to mark battery as draft" };
+    }
+  },
+
 };
 
 export default projectService;
