@@ -6,7 +6,10 @@ const authService = {
   async login({ username, password }) {
     try {
       const res = await api.post(`${BASE}login/`, { username, password });
+      console.log("LOGIN RAW DATA:", res.data);
+
       const { token, user } = res.data;
+      console.log("TOKEN:", token);
       if (token) setAuthToken(token);
       return { token, user };
     } catch (err) {

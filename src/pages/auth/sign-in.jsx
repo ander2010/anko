@@ -20,9 +20,17 @@ export function SignIn() {
     e.preventDefault();
     setError(null);
     try {
-      await authService.login({ username, password });
+      // await authService.login({ username, password });
+      const { token } = await authService.login({ username, password });
+      console.log("TOKEN:", token);
+console.log("SAVED TOKEN:", localStorage.getItem("token"));
+navigate("/dashboard/home", { replace: true });
+
+      
       // Redirect to dashboard (adjust path if needed)
-      navigate("/dashboard/home");
+     console.log("LOGIN OK, token:", localStorage.getItem("token"));
+navigate("/dashboard/home", { replace: true });
+console.log("navigated");
     } catch (err) {
       setError(err?.error || JSON.stringify(err));
     }
