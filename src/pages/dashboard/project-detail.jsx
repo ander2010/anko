@@ -1038,6 +1038,8 @@ const [loadingRules, setLoadingRules] = useState(false);
   const [project, setProject] = useState(null);
   const [documents, setDocuments] = useState([]);
 const [loadingBatteries, setLoadingBatteries] = useState(false);
+const [attempt, setAttempt] = useState(null);
+const [saving, setSaving] = useState(false);
 
   // dialogs
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -1197,6 +1199,9 @@ const handleSaveEditTopic = async (updates) => {
   }
 };
 
+
+
+
 const handleArchiveTopic = (topic) => {
   setSelectedTopic(topic);
   setConfirmTopicDialogOpen(true);
@@ -1215,6 +1220,10 @@ const handleConfirmArchiveTopic = async () => {
   }
 };
 
+const handleCloseSimulator = async () => {
+  setSimulationBattery(null);
+  await fetchBatteries(Number(projectId)); // <-- refresca para ver intentos/last_attempt
+};
 
   const fetchAll = async (id) => {
     setError(null);
@@ -2055,6 +2064,23 @@ const fetchBatteries = async (id) => {
                   {formatDate(battery.created_at || battery.createdAt)}
                 </Typography>
               </div>
+              {/* Attempts summary */}
+<div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+  {battery.attempts_count > 0 ? (
+    <div className="flex items-center justify-between">
+      <span className="text-blue-gray-700 font-semibold">
+        Attempts: {battery.attempts_count}
+      </span>
+
+      <span className="text-blue-gray-600">
+        Last: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
+      </span>
+    </div>
+  ) : (
+    <span className="text-blue-gray-400">No attempts yet</span>
+  )}
+</div>
+
             </CardBody>
           </Card>
         ))}
@@ -2105,7 +2131,7 @@ const fetchBatteries = async (id) => {
 
       <ExamSimulatorDialog
         open={!!simulationBattery}
-        handler={() => setSimulationBattery(null)}
+        handler={handleCloseSimulator}
         battery={simulationBattery}
       />
     </div>

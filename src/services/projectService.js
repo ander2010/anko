@@ -253,6 +253,36 @@ async deleteDocument(documentId) {
     }
   },
 
+  // -------- BATTERY ATTEMPTS --------
+async startBatteryAttempt(batteryId) {
+  try {
+    const res = await api.post(`/batteries/${batteryId}/start_attempt/`);
+    return res.data;
+  } catch (err) {
+    throw err?.response?.data || { error: "Failed to start attempt" };
+  }
+},
+
+async submitBatteryAnswers(batteryId, payload) {
+  try {
+    const res = await api.post(`/batteries/${batteryId}/submit_answers/`, payload);
+    return res.data;
+  } catch (err) {
+    throw err?.response?.data || { error: "Failed to submit answers" };
+  }
+},
+
+async finishBatteryAttempt(batteryId, payload) {
+  try {
+    const res = await api.post(`/batteries/${batteryId}/finish_attempt/`, payload);
+    return res.data;
+  } catch (err) {
+    throw err?.response?.data || { error: "Failed to finish attempt" };
+  }
+},
+
+
+
 };
 
 export default projectService;
