@@ -7,43 +7,65 @@ import {
     DialogFooter,
     Button,
     Input,
+    Textarea,
     Typography,
 } from "@material-tailwind/react";
+import projectService from "../../services/projectService";
 
 export function EditProjectDialog({ open, onClose, onSave, project }) {
-    const [name, setName] = useState("");
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (project) {
-            setName(project.name);
+            setTitle(project.title || project.name || "");
+            setDescription(project.description || "");
         }
     }, [project]);
 
-    const handleChange = (e) => {
-        setName(e.target.value);
+    const handleTitleChange = (e) => {
+        setTitle(e.target.value);
+        if (error) setError("");
+    };
+
+    const handleDescriptionChange = (e) => {
+        setDescription(e.target.value);
         if (error) setError("");
     };
 
     const validate = () => {
-        if (!name.trim()) {
+        if (!title.trim()) {
             setError("Project name is required");
             return false;
         }
         return true;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
-            onSave({ name: name.trim() });
-            setError("");
-            onClose();
+            setLoading(true);
+            try {
+                await projectService.updateProject(project.id, {
+                    title: title.trim(),
+                    description: description.trim(),
+                });
+                onSave({ title: title.trim(), description: description.trim() });
+                setError("");
+                onClose();
+            } catch (err) {
+                setError(err?.error || "Failed to update project");
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
     const handleClose = () => {
-        setName(project?.name || "");
+        setTitle(project?.title || project?.name || "");
+        setDescription(project?.description || "");
         setError("");
         onClose();
     };
@@ -52,29 +74,39 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
         <Dialog open={open} handler={handleClose} size="sm">
             <form onSubmit={handleSubmit}>
                 <DialogHeader>
-                    <Typography variant="h5">Edit Project Name</Typography>
+                    <Typography variant="h5">Edit Project</Typography>
                 </DialogHeader>
-                <DialogBody divider>
+                <DialogBody divider className="space-y-4">
                     <div>
                         <Input
                             label="Project Name *"
-                            value={name}
-                            onChange={handleChange}
+                            value={title}
+                            onChange={handleTitleChange}
                             error={!!error}
                             autoFocus
+                            disabled={loading}
                         />
-                        {error && (
-                            <Typography variant="small" color="red" className="mt-1">
-                                {error}
-                            </Typography>
-                        )}
                     </div>
+                    <div>
+                        <Textarea
+                            label="Description"
+                            value={description}
+                            onChange={handleDescriptionChange}
+                            rows={4}
+                            disabled={loading}
+                        />
+                    </div>
+                    {error && (
+                        <Typography variant="small" color="red" className="mt-1">
+                            {error}
+                        </Typography>
+                    )}
                 </DialogBody>
                 <DialogFooter className="gap-2">
-                    <Button variant="text" color="blue-gray" onClick={handleClose}>
+                    <Button variant="text" color="blue-gray" onClick={handleClose} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button type="submit" variant="gradient" color="blue">
+                    <Button type="submit" variant="gradient" color="blue" loading={loading}>
                         Save Changes
                     </Button>
                 </DialogFooter>
@@ -88,8 +120,10 @@ EditProjectDialog.propTypes = {
     onClose: PropTypes.func.isRequired,
     onSave: PropTypes.func.isRequired,
     project: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+        title: PropTypes.string,
+        name: PropTypes.string,
+        description: PropTypes.string,
     }),
 };
 

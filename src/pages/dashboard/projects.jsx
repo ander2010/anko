@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Card,
@@ -10,6 +10,7 @@ import {
     Tabs,
     TabsHeader,
     Tab,
+    Spinner,
 } from "@material-tailwind/react";
 import {
     PlusIcon,
@@ -17,29 +18,20 @@ import {
     FolderIcon,
     UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { useProjects } from "@/context/projects-context";
 import { ProjectCard } from "@/widgets/cards/project-card";
 import { CreateProjectDialog } from "@/widgets/dialogs/create-project-dialog";
 import { EditProjectDialog } from "@/widgets/dialogs/edit-project-dialog";
 import { ConfirmDialog } from "@/widgets/dialogs/confirm-dialog";
+import projectService from "@/services/projectService";
+import { useAuth } from "@/context/auth-context";
+import UploadDocumentsDialog from "@/widgets/dialogs/upload-documents-dialog";
 
 export function Projects() {
     const navigate = useNavigate();
-    const {
-        currentUser,
-        createProject,
-        updateProject,
-        duplicateProject,
-        archiveProject,
-        deleteProject,
-        isOwner,
-        getActiveProjects,
-        getOwnedProjects,
-        getMemberProjects,
-        getProjectDocuments,
-        getProjectProgress,
-    } = useProjects();
-
+    const { user } = useAuth();
+    const [projects, setProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("all");
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -48,40 +40,128 @@ export function Projects() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
 
+    // Fetch projects from API
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const fetchProjects = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await projectService.getProjects();
+            setProjects(Array.isArray(data) ? data : data.results || []);
+        } catch (err) {
+            setError(err?.error || "Failed to load projects");
+            // Load default projects on error
+            setProjects(defaultProjects);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Default projects to show
+    const defaultProjects = [
+        {
+            id: 1,
+            title: "Design System",
+            name: "Design System",
+            description: "Build a comprehensive design system for web applications",
+            owner: { id: user?.id || 1, name: user?.username || "You" },
+            created_at: new Date().toISOString(),
+            logo: null,
+        },
+        {
+            id: 2,
+            title: "Mobile App",
+            name: "Mobile App",
+            description: "React Native mobile application for iOS and Android",
+            owner: { id: user?.id || 1, name: user?.username || "You" },
+            created_at: new Date().toISOString(),
+            logo: null,
+        },
+    ];
+const handleUploadDocs = (project) => {
+  setUploadProject(project);
+  setUploadDialogOpen(true);
+};
+
+const handleDoUploadDocs = async (projectId, files) => {
+  try {
+    await projectService.uploadDocuments(projectId, files);
+    await fetchProjects(); // refresca lista
+  } catch (err) {
+    setError(err?.error || "Failed to upload documents");
+  }
+};
+
     // Get projects based on active tab
     const getFilteredProjects = () => {
-        let projects = [];
-        switch (activeTab) {
-            case "owned":
-                projects = getOwnedProjects();
-                break;
-            case "member":
-                projects = getMemberProjects();
-                break;
-            default:
-                projects = getActiveProjects();
-        }
+        let filtered = projects;
 
         // Apply search filter
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
-            projects = projects.filter(
+            filtered = filtered.filter(
                 (p) =>
-                    p.name.toLowerCase().includes(query) ||
-                    p.description?.toLowerCase().includes(query) ||
-                    p.owner.name.toLowerCase().includes(query)
+                    (p.title || p.name).toLowerCase().includes(query) ||
+                    (p.description || "").toLowerCase().includes(query) ||
+                    (p.owner?.name || "").toLowerCase().includes(query)
             );
         }
 
-        return projects;
+        // Filter by tab
+        if (activeTab === "owned") {
+            filtered = filtered.filter((p) => p.owner?.id === user?.id);
+        }
+        // TODO: Implement member filter when API supports it
+
+        return filtered;
     };
 
     const filteredProjects = getFilteredProjects();
+const isOwner = (project) => project?.owner?.id === user?.id;
+
+
+const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+const [uploadProject, setUploadProject] = useState(null);
+
+
+
+// Por ahora no hay progreso en el API, dejamos 0
+const getProjectProgress = (_projectId) => 0;
+
+// No tienes esas features todavía, las dejamos deshabilitadas
+const handleDuplicateProject = () => {
+  setError("Duplicate Project not implemented yet");
+};
+
+const handleArchiveProject = () => {
+  setError("Archive Project not implemented yet");
+};
 
     // Handlers
-    const handleCreateProject = (projectData, files) => {
-        createProject(projectData, files);
-    };
+    // const handleCreateProject = async (projectData, files) => {
+    //     try {
+    //         await fetchProjects(); // Refresh list after create
+    //         setCreateDialogOpen(false);
+    //     } catch (err) {
+    //         setError(err?.error || "Failed to create project");
+    //     }
+    // };
+const handleCreateProject = async (createdProject) => {
+  try {
+    // opción A: refrescar del API
+    await fetchProjects();
+    setCreateDialogOpen(false);
+  } catch (err) {
+    setError(err?.error || "Failed to refresh projects");
+  }
+};
+const getProjectDocuments = (projectId) => {
+  const project = projects.find((p) => p.id === projectId);
+  return project?.documents || [];
+};
 
     const handleEnterProject = (project) => {
         navigate(`/dashboard/project/${project.id}`);
@@ -92,20 +172,15 @@ export function Projects() {
         setEditDialogOpen(true);
     };
 
-    const handleSaveEdit = (updates) => {
+    const handleSaveEdit = async (updates) => {
         if (selectedProject) {
-            updateProject(selectedProject.id, updates);
+            try {
+                await fetchProjects(); // Refresh list after edit
+                setEditDialogOpen(false);
+            } catch (err) {
+                setError(err?.error || "Failed to update project");
+            }
         }
-    };
-
-    const handleDuplicateProject = (project) => {
-        duplicateProject(project.id);
-    };
-
-    const handleArchiveProject = (project) => {
-        setSelectedProject(project);
-        setConfirmAction("archive");
-        setConfirmDialogOpen(true);
     };
 
     const handleDeleteProject = (project) => {
@@ -114,37 +189,50 @@ export function Projects() {
         setConfirmDialogOpen(true);
     };
 
-    const handleConfirmAction = () => {
+    const handleConfirmAction = async () => {
         if (!selectedProject) return;
 
-        if (confirmAction === "archive") {
-            archiveProject(selectedProject.id);
-        } else if (confirmAction === "delete") {
-            deleteProject(selectedProject.id);
+        try {
+            if (confirmAction === "delete") {
+                await projectService.deleteProject(selectedProject.id);
+                await fetchProjects(); // Refresh list after delete
+            }
+            setSelectedProject(null);
+            setConfirmAction(null);
+            setConfirmDialogOpen(false);
+        } catch (err) {
+            setError(err?.error || "Failed to perform action");
         }
-
-        setSelectedProject(null);
-        setConfirmAction(null);
     };
-
-    const getConfirmDialogProps = () => {
-        if (confirmAction === "archive") {
-            return {
-                title: "Archive Project",
-                message: `Are you sure you want to archive "${selectedProject?.name}"? You can restore it later.`,
-                confirmText: "Archive",
-                variant: "info",
-            };
-        } else if (confirmAction === "delete") {
-            return {
-                title: "Delete Project",
-                message: `Are you sure you want to permanently delete "${selectedProject?.name}"? This action cannot be undone.`,
-                confirmText: "Delete",
-                variant: "danger",
-            };
-        }
-        return {};
+const getConfirmDialogProps = () => {
+  if (confirmAction === "delete") {
+    return {
+      title: "Delete Project",
+      message: `Are you sure you want to permanently delete "${selectedProject?.title || selectedProject?.name}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      variant: "danger",
     };
+  }
+
+  return {
+    title: "Confirm",
+    message: "Are you sure?",
+    confirmText: "Confirm",
+    variant: "default",
+  };
+};
+
+    // const getConfirmDialogProps = () => {
+    //     if (confirmAction === "delete") {
+    //         return {
+    //             title: "Delete Project",
+    //             message: `Are you sure you want to permanently delete "${selectedProject?.title || selectedProject?.name}"? This action cannot be undone.`,
+    //             confirmText: "Delete",
+    //             variant: "danger",
+    //         };
+    //     }
+    //     return {};
+    // };
 
     return (
         <div className="mt-12">
@@ -234,18 +322,31 @@ export function Projects() {
             {filteredProjects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredProjects.map((project) => (
-                        <ProjectCard
-                            key={project.id}
-                            project={project}
-                            documentCount={getProjectDocuments(project.id).length}
-                            progress={getProjectProgress(project.id)}
-                            isOwner={isOwner(project)}
-                            onEnter={handleEnterProject}
-                            onEdit={handleEditProject}
-                            onDuplicate={handleDuplicateProject}
-                            onArchive={handleArchiveProject}
-                            onDelete={handleDeleteProject}
-                        />
+                        // <ProjectCard
+                        //     key={project.id}
+                        //     project={project}
+                        //     documentCount={getProjectDocuments(project.id).length}
+                        //     progress={getProjectProgress(project.id)}
+                        //     isOwner={isOwner(project)}
+                        //     onEnter={handleEnterProject}
+                        //     onEdit={handleEditProject}
+                        //     onDuplicate={handleDuplicateProject}
+                        //     onArchive={handleArchiveProject}
+                        //     onDelete={handleDeleteProject}
+                        // />
+      <ProjectCard
+  key={project.id}
+  project={project}
+  documentCount={project.documents_count ?? 0}
+  progress={0}
+  isOwner={project?.owner?.id === user?.id}
+  onEnter={handleEnterProject}
+  onEdit={handleEditProject}
+  onDelete={handleDeleteProject}
+  onUploadDocs={handleUploadDocs}
+/>
+
+
                     ))}
                 </div>
             ) : (
@@ -287,13 +388,34 @@ export function Projects() {
                 onSave={handleSaveEdit}
                 project={selectedProject}
             />
+<ConfirmDialog
+  open={confirmDialogOpen}
+  onClose={() => setConfirmDialogOpen(false)}
+  onConfirm={handleConfirmAction}
+  title={getConfirmDialogProps().title || "Confirm"}
+  message={getConfirmDialogProps().message || "Are you sure?"}
+  confirmText={getConfirmDialogProps().confirmText || "Confirm"}
+  variant={getConfirmDialogProps().variant || "default"}
+/>
 
-            <ConfirmDialog
+<UploadDocumentsDialog
+  open={uploadDialogOpen}
+  onClose={() => {
+    setUploadDialogOpen(false);
+    setUploadProject(null);
+  }}
+  project={uploadProject}
+  onUpload={handleDoUploadDocs}
+/>
+
+
+
+            {/* <ConfirmDialog
                 open={confirmDialogOpen}
                 onClose={() => setConfirmDialogOpen(false)}
                 onConfirm={handleConfirmAction}
                 {...getConfirmDialogProps()}
-            />
+            /> */}
         </div>
     );
 }
