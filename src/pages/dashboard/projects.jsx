@@ -26,12 +26,15 @@ import projectService from "@/services/projectService";
 import { useAuth } from "@/context/auth-context";
 import UploadDocumentsDialog from "@/widgets/dialogs/upload-documents-dialog";
 
+import { useProjects } from "@/context/projects-context";
+
 export function Projects() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [projects, setProjects] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    // Use global state
+    const { projects, createProject, deleteProject, refreshAll, loading: contextLoading } = useProjects();
+
+    // Local UI state
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("all");
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -39,26 +42,12 @@ export function Projects() {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
+    const [error, setError] = useState(null);
 
-    // Fetch projects from API
-    useEffect(() => {
-        fetchProjects();
-    }, []);
+    // No local fetch needed, context handles it.
 
-    const fetchProjects = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await projectService.getProjects();
-            setProjects(Array.isArray(data) ? data : data.results || []);
-        } catch (err) {
-            setError(err?.error || "Failed to load projects");
-            // Load default projects on error
-            setProjects(defaultProjects);
-        } finally {
-            setLoading(false);
-        }
-    };
+
+
 
     // Default projects to show
     const defaultProjects = [
@@ -81,19 +70,19 @@ export function Projects() {
             logo: null,
         },
     ];
-const handleUploadDocs = (project) => {
-  setUploadProject(project);
-  setUploadDialogOpen(true);
-};
+    const handleUploadDocs = (project) => {
+        setUploadProject(project);
+        setUploadDialogOpen(true);
+    };
 
-const handleDoUploadDocs = async (projectId, files) => {
-  try {
-    await projectService.uploadDocuments(projectId, files);
-    await fetchProjects(); // refresca lista
-  } catch (err) {
-    setError(err?.error || "Failed to upload documents");
-  }
-};
+    const handleDoUploadDocs = async (projectId, files) => {
+        try {
+            await projectService.uploadDocuments(projectId, files);
+            await refreshAll();
+        } catch (err) {
+            setError(err?.error || "Failed to upload documents");
+        }
+    };
 
     // Get projects based on active tab
     const getFilteredProjects = () => {
@@ -120,25 +109,25 @@ const handleDoUploadDocs = async (projectId, files) => {
     };
 
     const filteredProjects = getFilteredProjects();
-const isOwner = (project) => project?.owner?.id === user?.id;
+    const isOwner = (project) => project?.owner?.id === user?.id;
 
 
-const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-const [uploadProject, setUploadProject] = useState(null);
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [uploadProject, setUploadProject] = useState(null);
 
 
 
-// Por ahora no hay progreso en el API, dejamos 0
-const getProjectProgress = (_projectId) => 0;
+    // Por ahora no hay progreso en el API, dejamos 0
+    const getProjectProgress = (_projectId) => 0;
 
-// No tienes esas features todavía, las dejamos deshabilitadas
-const handleDuplicateProject = () => {
-  setError("Duplicate Project not implemented yet");
-};
+    // No tienes esas features todavía, las dejamos deshabilitadas
+    const handleDuplicateProject = () => {
+        setError("Duplicate Project not implemented yet");
+    };
 
-const handleArchiveProject = () => {
-  setError("Archive Project not implemented yet");
-};
+    const handleArchiveProject = () => {
+        setError("Archive Project not implemented yet");
+    };
 
     // Handlers
     // const handleCreateProject = async (projectData, files) => {
@@ -149,19 +138,33 @@ const handleArchiveProject = () => {
     //         setError(err?.error || "Failed to create project");
     //     }
     // };
-const handleCreateProject = async (createdProject) => {
-  try {
-    // opción A: refrescar del API
-    await fetchProjects();
-    setCreateDialogOpen(false);
-  } catch (err) {
-    setError(err?.error || "Failed to refresh projects");
-  }
-};
-const getProjectDocuments = (projectId) => {
-  const project = projects.find((p) => p.id === projectId);
-  return project?.documents || [];
-};
+    const handleCreateProject = async (createdProject) => {
+        // Context createProject already refreshes, but the dialog returns the created object
+        // If the dialog CALLS the service itself, we just need refreshAll.
+        // Assuming the dialog returns data to BE created:
+        // But wait, CreateProjectDialog usually calls onCreate.
+        // Let's assume standard pattern: Dialog calls service? or Parent calls service?
+        // Checking typical pattern: Dialog passes data, Parent calls service.
+        // However, earlier code had `await projectService.getProjects()` in `fetchProjects`.
+
+        // Actually, checking CreateProjectDialog usage below... `onCreate={handleCreateProject}`.
+        // If CreateProjectDialog calls API, `createdProject` is the result.
+        // If CreateProjectDialog just passes data, `createdProject` is the form data.
+        // Based on "await fetchProjects()" in original code, likely the dialog does NOT call API?
+        // Or it does, and just wants refresh.
+
+        // Safest: call refreshAll().
+        try {
+            await refreshAll();
+            setCreateDialogOpen(false);
+        } catch (err) {
+            setError("Failed to refresh");
+        }
+    };
+    const getProjectDocuments = (projectId) => {
+        const project = projects.find((p) => p.id === projectId);
+        return project?.documents || [];
+    };
 
     const handleEnterProject = (project) => {
         navigate(`/dashboard/project/${project.id}`);
@@ -175,7 +178,7 @@ const getProjectDocuments = (projectId) => {
     const handleSaveEdit = async (updates) => {
         if (selectedProject) {
             try {
-                await fetchProjects(); // Refresh list after edit
+                await refreshAll();
                 setEditDialogOpen(false);
             } catch (err) {
                 setError(err?.error || "Failed to update project");
@@ -194,8 +197,7 @@ const getProjectDocuments = (projectId) => {
 
         try {
             if (confirmAction === "delete") {
-                await projectService.deleteProject(selectedProject.id);
-                await fetchProjects(); // Refresh list after delete
+                await deleteProject(selectedProject.id); // Uses context
             }
             setSelectedProject(null);
             setConfirmAction(null);
@@ -204,23 +206,23 @@ const getProjectDocuments = (projectId) => {
             setError(err?.error || "Failed to perform action");
         }
     };
-const getConfirmDialogProps = () => {
-  if (confirmAction === "delete") {
-    return {
-      title: "Delete Project",
-      message: `Are you sure you want to permanently delete "${selectedProject?.title || selectedProject?.name}"? This action cannot be undone.`,
-      confirmText: "Delete",
-      variant: "danger",
-    };
-  }
+    const getConfirmDialogProps = () => {
+        if (confirmAction === "delete") {
+            return {
+                title: "Delete Project",
+                message: `Are you sure you want to permanently delete "${selectedProject?.title || selectedProject?.name}"? This action cannot be undone.`,
+                confirmText: "Delete",
+                variant: "danger",
+            };
+        }
 
-  return {
-    title: "Confirm",
-    message: "Are you sure?",
-    confirmText: "Confirm",
-    variant: "default",
-  };
-};
+        return {
+            title: "Confirm",
+            message: "Are you sure?",
+            confirmText: "Confirm",
+            variant: "default",
+        };
+    };
 
     // const getConfirmDialogProps = () => {
     //     if (confirmAction === "delete") {
@@ -334,17 +336,17 @@ const getConfirmDialogProps = () => {
                         //     onArchive={handleArchiveProject}
                         //     onDelete={handleDeleteProject}
                         // />
-      <ProjectCard
-  key={project.id}
-  project={project}
-  documentCount={project.documents_count ?? 0}
-  progress={0}
-  isOwner={project?.owner?.id === user?.id}
-  onEnter={handleEnterProject}
-  onEdit={handleEditProject}
-  onDelete={handleDeleteProject}
-  onUploadDocs={handleUploadDocs}
-/>
+                        <ProjectCard
+                            key={project.id}
+                            project={project}
+                            documentCount={project.documents_count ?? 0}
+                            progress={0}
+                            isOwner={project?.owner?.id === user?.id}
+                            onEnter={handleEnterProject}
+                            onEdit={handleEditProject}
+                            onDelete={handleDeleteProject}
+                            onUploadDocs={handleUploadDocs}
+                        />
 
 
                     ))}
@@ -388,25 +390,25 @@ const getConfirmDialogProps = () => {
                 onSave={handleSaveEdit}
                 project={selectedProject}
             />
-<ConfirmDialog
-  open={confirmDialogOpen}
-  onClose={() => setConfirmDialogOpen(false)}
-  onConfirm={handleConfirmAction}
-  title={getConfirmDialogProps().title || "Confirm"}
-  message={getConfirmDialogProps().message || "Are you sure?"}
-  confirmText={getConfirmDialogProps().confirmText || "Confirm"}
-  variant={getConfirmDialogProps().variant || "default"}
-/>
+            <ConfirmDialog
+                open={confirmDialogOpen}
+                onClose={() => setConfirmDialogOpen(false)}
+                onConfirm={handleConfirmAction}
+                title={getConfirmDialogProps().title || "Confirm"}
+                message={getConfirmDialogProps().message || "Are you sure?"}
+                confirmText={getConfirmDialogProps().confirmText || "Confirm"}
+                variant={getConfirmDialogProps().variant || "default"}
+            />
 
-<UploadDocumentsDialog
-  open={uploadDialogOpen}
-  onClose={() => {
-    setUploadDialogOpen(false);
-    setUploadProject(null);
-  }}
-  project={uploadProject}
-  onUpload={handleDoUploadDocs}
-/>
+            <UploadDocumentsDialog
+                open={uploadDialogOpen}
+                onClose={() => {
+                    setUploadDialogOpen(false);
+                    setUploadProject(null);
+                }}
+                project={uploadProject}
+                onUpload={handleDoUploadDocs}
+            />
 
 
 

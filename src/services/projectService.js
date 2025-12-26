@@ -151,6 +151,20 @@ async deleteDocument(documentId) {
     return res.data;
   },
 
+
+  async getAllRules() {
+  const res = await api.get("/rules/");
+  return res.data;
+}
+
+,
+
+async getAllBatteries() {
+  const res = await api.get("/batteries/");
+  return res.data;
+}
+,
+
   async archiveTopic(topicId) {
     const res = await api.patch(`/topics/${topicId}/`, {
       status: "archived",
@@ -253,6 +267,13 @@ async deleteDocument(documentId) {
     }
   },
 
+
+
+  async getTopics() {
+    const res = await api.get("/topics/");
+    return res.data;
+  },
+  
   // -------- BATTERY ATTEMPTS --------
 async startBatteryAttempt(batteryId) {
   try {

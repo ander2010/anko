@@ -40,9 +40,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (credentials) => {
-    const { user: u } = await authService.login(credentials);
+    const { token, user: u } = await authService.login(credentials);
+    window.localStorage.setItem("token", token); // Store token directly
+    setAuthToken(token); // Ensure API has it
     setUser(u);
-    localStorage.setItem("token", authService.getToken()); // Ensure token is stored
     return u;
   };
 

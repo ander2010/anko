@@ -8,6 +8,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import authService from "../../services/authService";
+import { useAuth } from "@/context/auth-context";
 
 
 export function SignIn() {
@@ -15,24 +16,17 @@ export function SignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useAuth(); // hook
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     try {
-      // await authService.login({ username, password });
-      const { token } = await authService.login({ username, password });
-      console.log("TOKEN:", token);
-console.log("SAVED TOKEN:", localStorage.getItem("token"));
-navigate("/dashboard/home", { replace: true });
-
-      
-      // Redirect to dashboard (adjust path if needed)
-     console.log("LOGIN OK, token:", localStorage.getItem("token"));
-navigate("/dashboard/home", { replace: true });
-console.log("navigated");
+      await login({ username, password });
+      navigate("/dashboard/home", { replace: true });
     } catch (err) {
-      setError(err?.error || JSON.stringify(err));
+      console.error(err);
+      setError(err?.error || "Login failed");
     }
   };
 
