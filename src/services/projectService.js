@@ -160,6 +160,11 @@ const projectService = {
     return res.data;
   },
 
+  async deleteTopic(topicId) {
+    const res = await api.delete(`/topics/${topicId}/`);
+    return res.data;
+  },
+
 
   async getAllRules() {
     const res = await api.get("/rules/");

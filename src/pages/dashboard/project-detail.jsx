@@ -74,6 +74,7 @@ export function ProjectDetail() {
   const [loadingBatteries, setLoadingBatteries] = useState(false);
   const [attempt, setAttempt] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [documentsWithSections, setDocumentsWithSections] = useState([]); // Store full data
   const [sectionsCounts, setSectionsCounts] = useState({});
 
   // dialogs
@@ -85,6 +86,8 @@ export function ProjectDetail() {
   const [createTopicDialogOpen, setCreateTopicDialogOpen] = useState(false);
   const [editTopicDialogOpen, setEditTopicDialogOpen] = useState(false);
   const [confirmTopicDialogOpen, setConfirmTopicDialogOpen] = useState(false);
+
+  const [confirmDeleteTopicDialogOpen, setConfirmDeleteTopicDialogOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
 
   // topics/rules/batteries state
@@ -186,6 +189,10 @@ export function ProjectDetail() {
     const fetchSectionsCounts = async () => {
       try {
         const data = await projectService.getDocumentsWithSections(projectId);
+
+        // Store full list involved in sections
+        setDocumentsWithSections(data.documents || []);
+
         const counts = {};
         data.documents?.forEach(doc => {
           counts[doc.id] = doc.sections ? doc.sections.length : 0;
@@ -270,6 +277,24 @@ export function ProjectDetail() {
       await fetchTopics(Number(projectId));
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to archive topic");
+    }
+  };
+
+  const handleDeleteTopic = (topic) => {
+    setSelectedTopic(topic);
+    setConfirmDeleteTopicDialogOpen(true);
+  };
+
+  const handleConfirmDeleteTopic = async () => {
+    if (!selectedTopic) return;
+    try {
+      setError(null);
+      await projectService.deleteTopic(selectedTopic.id);
+      setConfirmDeleteTopicDialogOpen(false);
+      setSelectedTopic(null);
+      await fetchTopics(Number(projectId));
+    } catch (err) {
+      setError(err?.error || err?.detail || "Failed to delete topic");
     }
   };
 
@@ -712,14 +737,11 @@ export function ProjectDetail() {
               {topics.map((topic) => (
                 <TopicCard
                   key={topic.id}
-                  topic={{
-                    ...topic,
-                    // tu backend usa related_documents, el UI viejo espera assignedDocuments
-                    assignedDocuments: topic.related_documents || [],
-                  }}
-                  documentCount={(topic.related_documents || []).length}
+                  topic={topic}
+                  allDocumentsWithSections={documentsWithSections}
                   onEdit={handleEditTopic}
                   onArchive={handleArchiveTopic}
+                  onDelete={handleDeleteTopic}
                 />
               ))}
             </div>
@@ -750,7 +772,7 @@ export function ProjectDetail() {
             open={createTopicDialogOpen}
             onClose={() => setCreateTopicDialogOpen(false)}
             onCreate={handleCreateTopic}
-            availableDocuments={readyDocuments}
+            projectId={projectId}
           />
 
           <EditTopicDialog
@@ -770,8 +792,29 @@ export function ProjectDetail() {
             confirmText="Archive"
             variant="info"
           />
+          <ConfirmDialog
+            open={confirmTopicDialogOpen}
+            onClose={() => setConfirmTopicDialogOpen(false)}
+            onConfirm={handleConfirmArchiveTopic}
+            title="Archive Topic"
+            message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+            confirmText="Archive"
+            variant="info"
+          />
+
+          <ConfirmDialog
+            open={confirmDeleteTopicDialogOpen}
+            onClose={() => setConfirmDeleteTopicDialogOpen(false)}
+            onConfirm={handleConfirmDeleteTopic}
+            title="Delete Topic"
+            message={`Are you sure you want to delete "${selectedTopic?.name}"? This action cannot be undone.`}
+            confirmText="Delete"
+            variant="danger"
+          />
         </>
-      )}{activeTab === "rules" && (
+      )}
+
+      {activeTab === "rules" && (
         <>
           <div className="mb-6 flex justify-end">
             <Button className="flex items-center gap-2" color="blue" onClick={() => setShowCreateRule(true)}>

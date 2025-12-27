@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -17,9 +17,27 @@ import {
     ArchiveBoxIcon,
     DocumentTextIcon,
     QuestionMarkCircleIcon,
+    Squares2X2Icon,
+    TrashIcon,
 } from "@heroicons/react/24/outline";
 
-export function TopicCard({ topic, documentCount, onEdit, onArchive }) {
+export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, onDelete }) {
+
+    const stats = useMemo(() => {
+        const relatedSectionIds = topic.related_sections || [];
+
+        // 1. Find which documents are involved
+        // A document is involved if any of its sections are in relatedSectionIds
+        const involvedDocs = allDocumentsWithSections.filter(doc =>
+            doc.sections && doc.sections.some(s => relatedSectionIds.includes(s.id))
+        );
+
+        return {
+            sectionsCount: relatedSectionIds.length,
+            documentsCount: involvedDocs.length
+        };
+    }, [topic, allDocumentsWithSections]);
+
     return (
         <Card className="border border-blue-gray-100 shadow-sm hover:shadow-md transition-shadow">
             <CardBody className="p-4">
@@ -51,27 +69,37 @@ export function TopicCard({ topic, documentCount, onEdit, onArchive }) {
                                 <PencilIcon className="h-4 w-4" />
                                 Edit Topic
                             </MenuItem>
-                            <hr className="my-1" />
                             <MenuItem onClick={() => onArchive(topic)} className="flex items-center gap-2">
                                 <ArchiveBoxIcon className="h-4 w-4" />
                                 Archive
+                            </MenuItem>
+                            <hr className="my-1" />
+                            <MenuItem onClick={() => onDelete(topic)} className="flex items-center gap-2 text-red-500 hover:bg-red-50">
+                                <TrashIcon className="h-4 w-4" />
+                                Delete
                             </MenuItem>
                         </MenuList>
                     </Menu>
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 mb-3">
+                <div className="flex flex-wrap items-center gap-4 mb-3">
                     <div className="flex items-center gap-2">
-                        <DocumentTextIcon className="h-5 w-5 text-blue-gray-400" />
-                        <Typography variant="small" className="text-blue-gray-600">
-                            {documentCount} {documentCount === 1 ? "document" : "documents"}
+                        <DocumentTextIcon className="h-4 w-4 text-blue-gray-400" />
+                        <Typography variant="small" className="text-blue-gray-600 text-xs">
+                            {stats.documentsCount} docs
                         </Typography>
                     </div>
                     <div className="flex items-center gap-2">
-                        <QuestionMarkCircleIcon className="h-5 w-5 text-blue-gray-400" />
-                        <Typography variant="small" className="text-blue-gray-600">
-                            {topic.questionsCount} questions
+                        <Squares2X2Icon className="h-4 w-4 text-blue-gray-400" />
+                        <Typography variant="small" className="text-blue-gray-600 text-xs">
+                            {stats.sectionsCount} sections
+                        </Typography>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <QuestionMarkCircleIcon className="h-4 w-4 text-blue-gray-400" />
+                        <Typography variant="small" className="text-blue-gray-600 text-xs">
+                            {topic.question_count_target ?? topic.questionsCount ?? 0} questions
                         </Typography>
                     </div>
                 </div>
@@ -98,20 +126,18 @@ export function TopicCard({ topic, documentCount, onEdit, onArchive }) {
 
 TopicCard.propTypes = {
     topic: PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         name: PropTypes.string.isRequired,
         description: PropTypes.string,
-        questionsCount: PropTypes.number.isRequired,
-        assignedDocuments: PropTypes.arrayOf(PropTypes.string),
-        batteries: PropTypes.arrayOf(
-            PropTypes.shape({
-                name: PropTypes.string,
-            })
-        ),
+        question_count_target: PropTypes.number,
+        questionsCount: PropTypes.number, // legacy fallback
+        related_sections: PropTypes.arrayOf(PropTypes.number), // IDs of sections
+        batteries: PropTypes.array,
     }).isRequired,
-    documentCount: PropTypes.number.isRequired,
+    allDocumentsWithSections: PropTypes.array, // [{ id, sections: [{id}...] }]
     onEdit: PropTypes.func.isRequired,
     onArchive: PropTypes.func.isRequired,
+    onDelete: PropTypes.func.isRequired,
 };
 
 export default TopicCard;
