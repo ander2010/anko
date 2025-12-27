@@ -316,6 +316,18 @@ const projectService = {
     }
   },
 
+  // -------- SECTIONS (GLOBAL) --------
+  async getAllSections() {
+    // Ajusta el endpoint según tu backend. Por defecto asumimos /sections/
+    const res = await api.get("/sections/");
+    return res.data;
+  },
+
+  async deleteSection(sectionId) {
+    const res = await api.delete(`/sections/${sectionId}/`);
+    return res.data;
+  },
+
 
 
 };

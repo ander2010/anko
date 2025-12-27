@@ -8,4 +8,5 @@ export * from "@/pages/dashboard/project-topics";
 export * from "@/pages/dashboard/global-topics";
 export * from "@/pages/dashboard/global-rules";
 export * from "@/pages/dashboard/global-batteries";
+export * from "@/pages/dashboard/global-sections";
 

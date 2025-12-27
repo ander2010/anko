@@ -1,7 +1,7 @@
 import {
   HomeIcon,
   // UserCircleIcon,
-  // TableCellsIcon,
+  TableCellsIcon,
   // InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
@@ -10,7 +10,7 @@ import {
   ClipboardDocumentCheckIcon,
   BoltIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries } from "@/pages/dashboard";
+import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 
@@ -51,6 +51,12 @@ export const routes = [
         name: "batteries",
         path: "/batteries",
         element: <GlobalBatteries />,
+      },
+      {
+        icon: <TableCellsIcon {...icon} />,
+        name: "sections",
+        path: "/sections",
+        element: <GlobalSections />,
       },
       // Commented out for later use
       // {

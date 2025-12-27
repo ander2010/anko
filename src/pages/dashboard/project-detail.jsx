@@ -109,7 +109,7 @@ export function ProjectDetail() {
     name: "",
     global_count: 10,
     time_limit: 30,
-    distribution_strategy: "random",
+    distribution_strategy: "mixed",
     difficulty: "Medium",
     topic_scope: null, // o id
   });
@@ -165,7 +165,7 @@ export function ProjectDetail() {
         name: "",
         global_count: 10,
         time_limit: 30,
-        distribution_strategy: "random",
+        distribution_strategy: "mixed",
         difficulty: "Medium",
         topic_scope: null,
       });
@@ -869,9 +869,10 @@ export function ProjectDetail() {
                       value={ruleForm.distribution_strategy}
                       onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
                     >
-                      <option value="random">random</option>
-                      <option value="balanced">balanced</option>
-                      <option value="topic_weighted">topic_weighted</option>
+                      <option value="singleChoice">singleChoice</option>
+                      <option value="multiSelect">multiSelect</option>
+                      <option value="trueFalse">trueFalse</option>
+                      <option value="mixed">mixed</option>
                     </select>
                   </div>
 
