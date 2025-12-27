@@ -45,6 +45,9 @@ export function Projects() {
     const [error, setError] = useState(null);
 
     // No local fetch needed, context handles it.
+    useEffect(() => {
+        refreshAll();
+    }, [refreshAll]);
 
 
 

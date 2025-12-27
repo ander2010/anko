@@ -7,9 +7,9 @@ const projectService = {
     try {
       // 1) Crear proyecto (multipart porque puede incluir logo)
       const formData = new FormData();
-      
+
       const title = (projectData.title ?? projectData.name ?? "").trim();
-    formData.append("title", title);
+      formData.append("title", title);
       formData.append("description", projectData.description?.trim() || "");
       if (logoFile) formData.append("logo", logoFile);
 
@@ -31,36 +31,36 @@ const projectService = {
     }
   },
 
-async uploadDocuments(projectId, files) {
-  try {
-    const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
+  async uploadDocuments(projectId, files) {
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f));
 
-    const res = await api.post(`/projects/${projectId}/documents/`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const res = await api.post(`/projects/${projectId}/documents/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to upload documents" };
-  }
-},
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to upload documents" };
+    }
+  },
 
 
-async uploadDocuments(projectId, files) {
-  try {
-    const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
+  async uploadDocuments(projectId, files) {
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f));
 
-    const res = await api.post(`/projects/${projectId}/documents/`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const res = await api.post(`/projects/${projectId}/documents/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to upload documents" };
-  }
-},
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to upload documents" };
+    }
+  },
 
 
   async getProjects() {
@@ -80,37 +80,46 @@ async uploadDocuments(projectId, files) {
       throw err?.response?.data || { error: "Failed to fetch project" };
     }
   },
-async getProjectDocuments(projectId) {
-  try {
-    const res = await api.get(`/projects/${projectId}/documents/`);
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to fetch documents" };
-  }
-},
+  async getProjectDocuments(projectId) {
+    try {
+      const res = await api.get(`/projects/${projectId}/documents/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch documents" };
+    }
+  },
 
-async uploadProjectDocuments(projectId, files) {
-  try {
-    const formData = new FormData();
-    files.forEach((f) => formData.append("files", f));
+  async uploadProjectDocuments(projectId, files) {
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("files", f));
 
-    const res = await api.post(`/projects/${projectId}/documents/`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      const res = await api.post(`/projects/${projectId}/documents/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to upload documents" };
-  }
-},
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to upload documents" };
+    }
+  },
 
-async deleteDocument(documentId) {
-  try {
-    await api.delete(`/documents/${documentId}/`);
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to delete document" };
-  }
-},
+  async getDocumentsWithSections(projectId) {
+    try {
+      const res = await api.get(`/projects/${projectId}/documents-with-sections/`);
+      return res.data; // Expected: { projectId: ..., documents: [...] }
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch document sections" };
+    }
+  },
+
+  async deleteDocument(documentId) {
+    try {
+      await api.delete(`/documents/${documentId}/`);
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to delete document" };
+    }
+  },
 
   async updateProject(id, projectData) {
     try {
@@ -129,7 +138,7 @@ async deleteDocument(documentId) {
     }
   },
 
-   // -------- TOPICS --------
+  // -------- TOPICS --------
   async getProjectTopics(projectId) {
     const res = await api.get("/topics/", {
       params: { project: projectId },
@@ -153,17 +162,17 @@ async deleteDocument(documentId) {
 
 
   async getAllRules() {
-  const res = await api.get("/rules/");
-  return res.data;
-}
+    const res = await api.get("/rules/");
+    return res.data;
+  }
 
-,
+  ,
 
-async getAllBatteries() {
-  const res = await api.get("/batteries/");
-  return res.data;
-}
-,
+  async getAllBatteries() {
+    const res = await api.get("/batteries/");
+    return res.data;
+  }
+  ,
 
   async archiveTopic(topicId) {
     const res = await api.patch(`/topics/${topicId}/`, {
@@ -196,8 +205,8 @@ async getAllBatteries() {
     return res.data;
   },
 
-  
-// -------- BATTERIES --------
+
+  // -------- BATTERIES --------
   async getProjectBatteries(projectId) {
     try {
       const res = await api.get("/batteries/", {
@@ -273,34 +282,34 @@ async getAllBatteries() {
     const res = await api.get("/topics/");
     return res.data;
   },
-  
+
   // -------- BATTERY ATTEMPTS --------
-async startBatteryAttempt(batteryId) {
-  try {
-    const res = await api.post(`/batteries/${batteryId}/start_attempt/`);
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to start attempt" };
-  }
-},
+  async startBatteryAttempt(batteryId) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/start_attempt/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to start attempt" };
+    }
+  },
 
-async submitBatteryAnswers(batteryId, payload) {
-  try {
-    const res = await api.post(`/batteries/${batteryId}/submit_answers/`, payload);
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to submit answers" };
-  }
-},
+  async submitBatteryAnswers(batteryId, payload) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/submit_answers/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to submit answers" };
+    }
+  },
 
-async finishBatteryAttempt(batteryId, payload) {
-  try {
-    const res = await api.post(`/batteries/${batteryId}/finish_attempt/`, payload);
-    return res.data;
-  } catch (err) {
-    throw err?.response?.data || { error: "Failed to finish attempt" };
-  }
-},
+  async finishBatteryAttempt(batteryId, payload) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/finish_attempt/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to finish attempt" };
+    }
+  },
 
 
 
