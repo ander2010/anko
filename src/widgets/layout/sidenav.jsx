@@ -19,9 +19,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   // Colores válidos para Material Tailwind Button
   const allowedColors = new Set([
-    "white","blue-gray","gray","brown","deep-orange","orange","amber","yellow",
-    "lime","light-green","green","teal","cyan","light-blue","blue","indigo",
-    "deep-purple","purple","pink","red",
+    "white", "blue-gray", "gray", "brown", "deep-orange", "orange", "amber", "yellow",
+    "lime", "light-green", "green", "teal", "cyan", "light-blue", "blue", "indigo",
+    "deep-purple", "purple", "pink", "red",
   ]);
 
   const activeColor = allowedColors.has(sidenavColor)
@@ -36,19 +36,17 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   return (
     <aside
-      className={`${sidenavTypes[sidenavType]} ${
-        openSidenav ? "translate-x-0" : "-translate-x-80"
-      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
+      className={`${sidenavTypes[sidenavType]} ${openSidenav ? "translate-x-0" : "-translate-x-80"
+        } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-blue-gray-100`}
     >
       {/* Header */}
       <div className="relative">
-        <Link to="/" className="py-6 px-8 text-center block">
-          <Typography
-            variant="h6"
-            color={sidenavType === "dark" ? "white" : "blue-gray"}
-          >
-            {brandName}
-          </Typography>
+        <Link to="/" className="py-2 px-8 text-center block">
+          <img
+            src="/img/logoanko.png"
+            alt="ANKO Studio"
+            className="h-32 w-auto mx-auto object-contain"
+          />
         </Link>
 
         <IconButton
@@ -64,7 +62,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
       </div>
 
       {/* Routes */}
-      <div className="m-4">
+      <div className="mx-4 mb-4 mt-2">
         {visibleRoutes.map(({ layout, title, pages }) => {
           const groupKey = `${layout || "layout"}-${title || "group"}`;
 
@@ -96,8 +94,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
                             isActive
                               ? activeColor
                               : sidenavType === "dark"
-                              ? "white"
-                              : "blue-gray"
+                                ? "white"
+                                : "blue-gray"
                           }
                           className="flex items-center gap-4 px-4 capitalize"
                           fullWidth
