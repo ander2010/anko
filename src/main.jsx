@@ -17,6 +17,7 @@ import { ThemeProvider } from "@material-tailwind/react";
 import { MaterialTailwindControllerProvider } from "@/context";
 import { ProjectsProvider } from "@/context/projects-context";
 import AuthProvider from "@/context/auth-context";
+import { LanguageProvider } from "@/context/language-context";
 import "./styles/tailwind.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -25,9 +26,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <ThemeProvider>
         <MaterialTailwindControllerProvider>
           <AuthProvider>
-            <ProjectsProvider>
-              <App />
-            </ProjectsProvider>
+            <LanguageProvider>
+              <ProjectsProvider>
+                <App />
+              </ProjectsProvider>
+            </LanguageProvider>
           </AuthProvider>
         </MaterialTailwindControllerProvider>
       </ThemeProvider>

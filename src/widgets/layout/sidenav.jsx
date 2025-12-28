@@ -3,9 +3,11 @@ import { Link, NavLink } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Button, IconButton, Typography } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useLanguage } from "@/context/language-context";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
+  const { t } = useLanguage();
   const { sidenavColor, sidenavType, openSidenav } = controller;
 
   // 👉 auth state (simple y efectivo)
@@ -44,7 +46,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         <Link to="/" className="py-1 px-8 text-center block">
           <img
             src="/img/logoanko.png"
-            alt="ANKO Studio"
+            alt={t("sidenav.brand")}
             className="h-32 w-auto mx-auto object-contain"
           />
         </Link>
@@ -105,7 +107,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                             color="inherit"
                             className="font-medium capitalize"
                           >
-                            {label}
+                            {t(`sidenav.${label}`)}
                           </Typography>
                         </Button>
                       )}

@@ -25,26 +25,29 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/solid";
 
+import { useLanguage } from "@/context/language-context";
+
 export function Home() {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   // ✅ Cómo funciona (3 pasos, con foco en preguntas/flashcards)
   const howItWorks = [
     {
-      title: "1. Crea un proyecto y sube tus documentos",
-      desc: "Organiza tu contenido por proyectos y temas. Empieza con tus PDFs o apuntes y construye tu base de estudio.",
+      title: t("home.how_it_works.step1.title"),
+      desc: t("home.how_it_works.step1.desc"),
       img: "https://cdn.pixabay.com/photo/2015/01/09/11/11/office-594132_1280.jpg",
       icon: DocumentArrowUpIcon,
     },
     {
-      title: "2. Define reglas de preguntas",
-      desc: "Elige tipos de preguntas (selección múltiple, V/F), cantidad por tema y lógica de puntuación para practicar con intención.",
+      title: t("home.how_it_works.step2.title"),
+      desc: t("home.how_it_works.step2.desc"),
       img: "https://cdn.pixabay.com/photo/2017/07/20/03/53/homework-2521144_1280.jpg",
       icon: ClipboardDocumentCheckIcon,
     },
     {
-      title: "3. Practica con flashcards y mejora",
-      desc: "Genera sets de preguntas tipo flashcard, simula exámenes y revisa resultados para enfocarte donde realmente fallas.",
+      title: t("home.how_it_works.step3.title"),
+      desc: t("home.how_it_works.step3.desc"),
       img: "https://cdn.pixabay.com/photo/2015/07/17/22/43/student-849825_1280.jpg",
       icon: SparklesIcon,
     },
@@ -53,79 +56,60 @@ export function Home() {
   // ✅ Beneficios
   const benefits = [
     {
-      title: "Aprendizaje activo (preguntas)",
-      desc: "Leer no garantiza entender. Con preguntas descubres lo que de verdad dominas.",
+      title: t("home.benefits.b1.title"),
+      desc: t("home.benefits.b1.desc"),
       icon: QuestionMarkCircleIcon,
     },
     {
-      title: "Flashcards que aceleran tu memoria",
-      desc: "Convierte contenido en práctica rápida y repetible para retener mejor.",
+      title: t("home.benefits.b2.title"),
+      desc: t("home.benefits.b2.desc"),
       icon: AcademicCapIcon,
     },
     {
-      title: "Enfoque por temas y progreso real",
-      desc: "Mide avances por tema y estudia donde más lo necesitas, sin perder tiempo.",
+      title: t("home.benefits.b3.title"),
+      desc: t("home.benefits.b3.desc"),
       icon: TagIcon,
     },
     {
-      title: "Simulación para exámenes",
-      desc: "Practica como en el examen real: ritmo, puntuación y resultados claros.",
+      title: t("home.benefits.b4.title"),
+      desc: t("home.benefits.b4.desc"),
       icon: BoltIcon,
     },
   ];
 
   // ✅ Para quién es
   const forWho = [
-    { title: "Estudiantes", desc: "Parciales, finales, boards y materias difíciles." },
-    { title: "Autodidactas", desc: "Aprende por proyectos y convierte teoría en práctica." },
-    { title: "Certificaciones", desc: "Practica por tópicos y mide progreso de verdad." },
-    { title: "Educadores", desc: "Crea material de práctica y bancos de preguntas (opcional)." },
+    { title: t("home.for_who.w1.title"), desc: t("home.for_who.w1.desc") },
+    { title: t("home.for_who.w2.title"), desc: t("home.for_who.w2.desc") },
+    { title: t("home.for_who.w3.title"), desc: t("home.for_who.w3.desc") },
+    { title: t("home.for_who.w4.title"), desc: t("home.for_who.w4.desc") },
   ];
 
   // ✅ Pricing
   const plans = [
     {
-      name: "Gratis",
-      price: "$0",
+      name: t("home.pricing.plans.free.name"),
+      price: t("home.pricing.plans.free.price"),
       color: "blue-gray",
-      features: [
-        "1–2 proyectos de estudio",
-        "Preguntas básicas (Selección múltiple, V/F)",
-        "Límite diario de práctica",
-        "Resultados simples (% correcto)",
-        "Progreso básico",
-      ],
-      button: "Empezar gratis",
+      features: t("home.pricing.plans.free.features"),
+      button: t("home.pricing.plans.free.button"),
       onClick: () => navigate("/dashboard/projects"),
     },
     {
-      name: "Premium",
-      price: "$15 / mes",
+      name: t("home.pricing.plans.premium.name"),
+      price: t("home.pricing.plans.premium.price"),
       color: "amber",
       recommended: true,
-      features: [
-        "Todo lo de Gratis +",
-        "Proyectos ilimitados",
-        "Práctica sin límites",
-        "Repetición inteligente (refuerza lo que fallas)",
-        "Favoritos + temporizador",
-        "Sin anuncios",
-      ],
-      button: "Pasar a Premium",
+      features: t("home.pricing.plans.premium.features"),
+      button: t("home.pricing.plans.premium.button"),
       onClick: () => navigate("/dashboard/billing"),
     },
     {
-      name: "Pro Team",
-      price: "$25 / mes",
+      name: t("home.pricing.plans.team.name"),
+      price: t("home.pricing.plans.team.price"),
       color: "blue",
-      features: [
-        "Todo lo de Premium +",
-        "Compartir sets y proyectos (público/privado)",
-        "Importación avanzada (PDF, Word)",
-        "Analítica avanzada",
-        "Exportar resultados (PDF/Excel)",
-      ],
-      button: "Elegir Pro",
+      features: t("home.pricing.plans.team.features"),
+      button: t("home.pricing.plans.team.button"),
       onClick: () => navigate("/dashboard/billing"),
     },
   ];
@@ -133,24 +117,24 @@ export function Home() {
   // ✅ FAQ
   const faqs = [
     {
-      q: "¿Qué es Anko Studio?",
-      a: "Es una plataforma de estudio que convierte contenido en preguntas y flashcards para practicar y medir tu progreso.",
+      q: t("home.faq.q1.q"),
+      a: t("home.faq.q1.a"),
     },
     {
-      q: "¿Anko Studio sirve para certificaciones?",
-      a: "Sí. Puedes estudiar por temas, practicar con sets de preguntas y ver tu avance para enfocarte donde te falta.",
+      q: t("home.faq.q2.q"),
+      a: t("home.faq.q2.a"),
     },
     {
-      q: "¿Qué tipos de preguntas soporta?",
-      a: "Puedes empezar con selección múltiple y verdadero/falso. Luego puedes añadir más tipos según tu roadmap.",
+      q: t("home.faq.q3.q"),
+      a: t("home.faq.q3.a"),
     },
     {
-      q: "¿Puedo usarlo gratis?",
-      a: "Sí. El plan Gratis tiene límites de proyectos y práctica diaria. Premium desbloquea práctica ilimitada.",
+      q: t("home.faq.q4.q"),
+      a: t("home.faq.q4.a"),
     },
     {
-      q: "¿Esto es solo para estudiantes?",
-      a: "No. También funciona para autodidactas y profesionales que estudian para exámenes o certificaciones.",
+      q: t("home.faq.q5.q"),
+      a: t("home.faq.q5.a"),
     },
   ];
 
@@ -169,26 +153,25 @@ export function Home() {
             {/* Left: copy */}
             <div>
               <div className="mb-4 flex flex-wrap gap-2">
-                <Chip value="Flashcards" variant="outlined" color="blue-gray" />
-                <Chip value="Preguntas" variant="outlined" color="blue-gray" />
-                <Chip value="Progreso real" variant="outlined" color="blue-gray" />
+                <Chip value={t("home.hero.tags.flashcards")} variant="outlined" color="blue-gray" />
+                <Chip value={t("home.hero.tags.questions")} variant="outlined" color="blue-gray" />
+                <Chip value={t("home.hero.tags.progress")} variant="outlined" color="blue-gray" />
               </div>
 
               <Typography variant="h2" color="blue-gray" className="leading-tight">
-                Aprende con preguntas.
+                {t("home.hero.title_1")}
                 <br />
-                Domina con práctica.
+                {t("home.hero.title_2")}
               </Typography>
 
               <Typography variant="lead" className="mt-3 text-blue-gray-500 max-w-xl">
-                <span className="font-semibold text-blue-gray-700">Anko Studio</span> convierte tus documentos en{" "}
-                <span className="font-semibold text-blue-gray-700">flashcards</span> y{" "}
-                <span className="font-semibold text-blue-gray-700">cuestionarios</span> para que practiques de verdad,
-                midas tu progreso y mejores cada día.
+                <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_prefix")}</span> {t("home.hero.subtitle_mid1")}{" "}
+                <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_flashcards")}</span> {t("home.hero.subtitle_mid2")}{" "}
+                <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_questions")}</span> {t("home.hero.subtitle_suffix")}
               </Typography>
 
               <Typography className="mt-2 text-sm text-blue-gray-400">
-                Ideal para estudiantes, autodidactas y certificaciones.
+                {t("home.hero.ideal_for")}
               </Typography>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -197,7 +180,7 @@ export function Home() {
                   className="shadow-sm"
                   onClick={() => navigate("/dashboard/projects")}
                 >
-                  Crear mi primer proyecto
+                  {t("home.hero.btn_create")}
                 </Button>
                 <Button
                   variant="outlined"
@@ -207,7 +190,7 @@ export function Home() {
                     el?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 >
-                  Ver cómo funciona
+                  {t("home.hero.btn_how_it_works")}
                 </Button>
               </div>
 
@@ -215,7 +198,7 @@ export function Home() {
               <div className="mt-6 inline-flex items-center gap-2 rounded-xl border border-blue-gray-100 bg-blue-gray-50 px-4 py-3">
                 <BoltIcon className="h-5 w-5 text-blue-gray-700" />
                 <Typography className="text-sm text-blue-gray-700">
-                  Proyecto → Reglas → Preguntas → Progreso
+                  {t("home.hero.ribbon")}
                 </Typography>
               </div>
             </div>
@@ -240,10 +223,10 @@ export function Home() {
                   </div>
                   <div>
                     <Typography className="text-sm font-semibold text-blue-gray-800">
-                      Aprende respondiendo
+                      {t("home.hero.floating_learn.title")}
                     </Typography>
                     <Typography className="text-xs text-blue-gray-500">
-                      Preguntas + flashcards = retención real.
+                      {t("home.hero.floating_learn.desc")}
                     </Typography>
                   </div>
                 </div>
@@ -256,10 +239,10 @@ export function Home() {
                   </div>
                   <div>
                     <Typography className="text-sm font-semibold text-blue-gray-800">
-                      Progreso por tema
+                      {t("home.hero.floating_progress.title")}
                     </Typography>
                     <Typography className="text-xs text-blue-gray-500">
-                      Enfócate donde más fallas.
+                      {t("home.hero.floating_progress.desc")}
                     </Typography>
                   </div>
                 </div>
@@ -277,10 +260,10 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-8">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Cómo funciona
+              {t("home.how_it_works.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Crea tu sistema de estudio en minutos: contenido → reglas → práctica → resultados.
+              {t("home.how_it_works.subtitle")}
             </Typography>
           </div>
 
@@ -319,15 +302,15 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-8">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Menos lectura pasiva. Más aprendizaje real.
+              {t("home.benefits.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Diseñado para que aprendas respondiendo, practicando y mejorando.
+              {t("home.benefits.subtitle")}
             </Typography>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {benefits.map((b) => (
+            {Array.isArray(benefits) && benefits.map((b) => (
               <Card
                 key={b.title}
                 className="border border-blue-gray-100 shadow-sm rounded-2xl"
@@ -356,15 +339,15 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-8">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Hecho para aprender en serio
+              {t("home.for_who.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Para estudiar mejor, practicar con preguntas y avanzar con claridad.
+              {t("home.for_who.subtitle")}
             </Typography>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-            {forWho.map((item) => (
+            {Array.isArray(forWho) && forWho.map((item) => (
               <Card key={item.title} className="border border-blue-gray-100 shadow-sm rounded-2xl">
                 <CardBody className="p-6">
                   <Typography variant="h5" color="blue-gray" className="mb-1">
@@ -383,15 +366,15 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-10">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Planes simples, aprendizaje sin fricción
+              {t("home.pricing.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Empieza gratis y sube de nivel cuando tu estudio lo pida.
+              {t("home.pricing.subtitle")}
             </Typography>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 items-stretch">
-            {plans.map((plan) => (
+            {Array.isArray(plans) && plans.map((plan) => (
               <Card
                 key={plan.name}
                 className={[
@@ -403,7 +386,7 @@ export function Home() {
               >
                 {plan.recommended && (
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <Chip value="Más popular" color="amber" className="rounded-full" />
+                    <Chip value={t("home.pricing.popular")} color="amber" className="rounded-full" />
                   </div>
                 )}
 
@@ -422,7 +405,7 @@ export function Home() {
 
                 <CardBody className="p-6">
                   <ul className="flex flex-col gap-3">
-                    {plan.features.map((feature) => (
+                    {Array.isArray(plan.features) && plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
                         <span className="mt-0.5 rounded-full border border-blue-gray-200 bg-blue-gray-50 p-1">
                           <CheckCircleIcon className="h-4 w-4 text-blue-gray-700" />
@@ -447,9 +430,9 @@ export function Home() {
                     {plan.button}
                   </Button>
 
-                  {plan.name === "Premium" && (
+                  {plan.name === (language === "es" ? "Premium" : "Premium") && (
                     <Typography className="mt-3 text-xs text-blue-gray-400 text-center">
-                      Recomendado para estudiar en serio y practicar sin límites.
+                      {t("home.pricing.plans.premium.footer")}
                     </Typography>
                   )}
                 </CardFooter>
@@ -464,35 +447,32 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-10">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Lo que dicen quienes estudian con Anko Studio
+              {t("home.testimonials.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Opiniones centradas en lo importante: práctica, enfoque y resultados.
+              {t("home.testimonials.subtitle")}
             </Typography>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {[
               {
-                name: "María S.",
-                role: "Estudiante de Medicina",
+                name: t("home.testimonials.t1.name"),
+                role: t("home.testimonials.t1.role"),
                 img: "/img/avatar1.png",
-                quote:
-                  "Antes leía y creía que entendía. Con las preguntas tipo flashcard vi en qué fallaba y mejoré más rápido.",
+                quote: t("home.testimonials.t1.quote"),
               },
               {
-                name: "Carlos D.",
-                role: "Preparación de certificaciones",
+                name: t("home.testimonials.t2.name"),
+                role: t("home.testimonials.t2.role"),
                 img: "/img/avatar2.png",
-                quote:
-                  "Me gusta que puedo estudiar por temas y medir el progreso. Es como tener un sistema de práctica siempre listo.",
+                quote: t("home.testimonials.t2.quote"),
               },
               {
-                name: "Elena R.",
-                role: "Docente",
+                name: t("home.testimonials.t3.name"),
+                role: t("home.testimonials.t3.role"),
                 img: "/img/avatar3.png",
-                quote:
-                  "Crear sets de preguntas para mis alumnos ahora es mucho más ordenado. La práctica guiada es lo que más ayuda.",
+                quote: t("home.testimonials.t3.quote"),
               },
             ].map((t, idx) => (
               <Card key={idx} className="rounded-2xl border border-blue-gray-100 shadow-sm">
@@ -523,15 +503,15 @@ export function Home() {
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-10">
             <Typography variant="h3" color="blue-gray" className="mb-2">
-              Preguntas frecuentes
+              {t("home.faq.title")}
             </Typography>
             <Typography className="text-blue-gray-500">
-              Respuestas claras para empezar sin dudas.
+              {t("home.faq.subtitle")}
             </Typography>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {faqs.map((f) => (
+            {Array.isArray(faqs) && faqs.map((f) => (
               <Card key={f.q} className="rounded-2xl border border-blue-gray-100 shadow-sm">
                 <CardBody className="p-6">
                   <Typography variant="h5" color="blue-gray" className="mb-2">
@@ -565,23 +545,23 @@ export function Home() {
                 <div className="p-8 lg:p-12 bg-white">
                   <div className="mb-6">
                     <Typography variant="h4" color="blue-gray" className="mb-2">
-                      ¿Necesitas ayuda?
+                      {t("home.contact.title")}
                     </Typography>
                     <Typography className="text-blue-gray-500">
-                      Déjanos tus datos y cuéntanos tu problema. Te contactaremos lo antes posible.
+                      {t("home.contact.subtitle")}
                     </Typography>
                   </div>
 
                   <form className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <Input label="Nombre (Opcional)" color="blue-gray" />
-                      <Input label="Teléfono (Opcional)" type="tel" color="blue-gray" />
+                      <Input label={t("home.contact.form.name")} color="blue-gray" />
+                      <Input label={t("home.contact.form.phone")} type="tel" color="blue-gray" />
                     </div>
-                    <Input label="Correo electrónico" type="email" required color="blue-gray" />
-                    <Textarea label="Descripción del problema" required color="blue-gray" rows={4} />
+                    <Input label={t("home.contact.form.email")} type="email" required color="blue-gray" />
+                    <Textarea label={t("home.contact.form.desc")} required color="blue-gray" rows={4} />
 
                     <Button color="blue-gray" fullWidth className="mt-2">
-                      Enviar mensaje
+                      {t("home.contact.form.button")}
                     </Button>
                   </form>
                 </div>
@@ -599,18 +579,18 @@ export function Home() {
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <Typography variant="h3" color="blue-gray" className="mb-2">
-                    Empieza hoy. Estudia con preguntas y mejora más rápido.
+                    {t("home.cta.title")}
                   </Typography>
                   <Typography className="text-blue-gray-500 max-w-2xl">
-                    Crea tu primer proyecto, define reglas de práctica y comienza a dominar tus temas con flashcards y simulación.
+                    {t("home.cta.subtitle")}
                   </Typography>
                 </div>
                 <div className="flex gap-3">
                   <Button color="blue-gray" onClick={() => navigate("/dashboard/projects")}>
-                    Crear mi primer proyecto
+                    {t("home.cta.btn_create")}
                   </Button>
                   <Button variant="outlined" color="blue-gray" onClick={() => navigate("/dashboard/billing")}>
-                    Ver planes
+                    {t("home.cta.btn_plans")}
                   </Button>
                 </div>
               </div>
