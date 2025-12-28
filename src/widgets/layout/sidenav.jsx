@@ -41,7 +41,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
     >
       {/* Header */}
       <div className="relative">
-        <Link to="/" className="py-2 px-8 text-center block">
+        <Link to="/" className="py-1 px-8 text-center block">
           <img
             src="/img/logoanko.png"
             alt="ANKO Studio"
@@ -62,7 +62,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
       </div>
 
       {/* Routes */}
-      <div className="mx-4 mb-4 mt-2">
+      <div className="mx-4 mb-4 mt-0">
         {visibleRoutes.map(({ layout, title, pages }) => {
           const groupKey = `${layout || "layout"}-${title || "group"}`;
 
