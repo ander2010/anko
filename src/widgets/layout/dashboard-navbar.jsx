@@ -28,8 +28,8 @@ export function DashboardNavbar() {
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
       className={`rounded-xl transition-all ${fixedNavbar
-          ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
-          : "px-0 py-1"
+        ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
+        : "px-0 py-1"
         }`}
       fullWidth
       blurred={fixedNavbar}
@@ -62,9 +62,7 @@ export function DashboardNavbar() {
           </Typography>
         </div>
         <div className="flex items-center">
-          <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Search" />
-          </div>
+
           <Button
             variant="text"
             color="blue-gray"
