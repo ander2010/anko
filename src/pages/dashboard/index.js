@@ -10,4 +10,7 @@ export * from "@/pages/dashboard/global-rules";
 export * from "@/pages/dashboard/global-batteries";
 export * from "@/pages/dashboard/global-sections";
 export * from "@/pages/dashboard/billing";
+export * from "@/pages/dashboard/faqs";
+export * from "@/pages/dashboard/about-us";
+export * from "@/pages/dashboard/contact-page";
 

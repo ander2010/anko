@@ -16,6 +16,9 @@ export const en = {
         batteries: "Batteries",
         sections: "Sections",
         billing: "Billing & Plans",
+        faqs: "FAQs",
+        "about-us": "About Us",
+        "contact-us": "Contact Us",
     },
     home: {
         hero: {
@@ -408,6 +411,67 @@ export const en = {
                     "SLA & Premium support"
                 ]
             }
+        }
+    },
+    faqs_page: {
+        title: "Frequently Asked Questions",
+        subtitle: "Everything you need to know about ANKO Studio.",
+        categories: {
+            general: "General",
+            practice: "Practice & Questions",
+            billing: "Billing & Plans"
+        },
+        questions: {
+            q1: {
+                q: "What is ANKO Studio?",
+                a: "ANKO Studio is an intelligent study platform that helps you convert your documents into interactive flashcards and question sets using AI-driven analysis."
+            },
+            q2: {
+                q: "Is ANKO Studio free?",
+                a: "Yes, we offer a generous Free plan that allows you to create up to 2 projects and practice daily with basic question types."
+            },
+            q3: {
+                q: "How do I create my first project?",
+                a: "Simply click on 'Create Project' from your dashboard, give it a name, and upload your study materials (PDFs, Word docs, etc.)."
+            },
+            q4: {
+                q: "Can I share my study sets?",
+                a: "With our Pro Team plan, you can easily share your projects and question sets with classmates or students."
+            },
+            q5: {
+                q: "What file formats are supported?",
+                a: "We currently support PDF and Text files, with support for Word and other formats coming soon for Pro users."
+            }
+        }
+    },
+    about_us: {
+        title: "About ANKO Studio",
+        subtitle: "Redefining how the world studies.",
+        mission_title: "Our Mission",
+        mission_text: "Our mission is to empower students and lifelong learners by transforming passive reading into active, effective practice. We believe that learning is most powerful when it's engaging, measurable, and personalized.",
+        story_title: "Our Story",
+        story_text: "ANKO Studio was born in a dorm room from a simple frustration: reading hundreds of pages doesn't mean you've learned the material. We built a tool to help us test ourselves, focus on our weaknesses, and track real progress. Today, we're helping thousands of users study smarter.",
+        values: {
+            v1: "Active Practice over Passive Reading",
+            v2: "Data-driven Learning Progress",
+            v3: "Accessibility for all Students"
+        }
+    },
+    contact_page: {
+        title: "Get in Touch",
+        subtitle: "We're here to help you succeed.",
+        info_title: "Contact Information",
+        email: "support@ankostudio.com",
+        location: "Tech Hub, Silicon Valley, CA",
+        form_title: "Send us a Message",
+        success_msg: "Thank you! We'll get back to you shortly."
+    },
+    footer: {
+        made_with: "made with",
+        by: "by",
+        for_better_web: "for a better web",
+        links: {
+            about: "About Us"
         }
     }
 };

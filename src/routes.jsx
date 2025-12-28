@@ -10,8 +10,11 @@ import {
   ClipboardDocumentCheckIcon,
   BoltIcon,
   CreditCardIcon,
+  QuestionMarkCircleIcon,
+  InformationCircleIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing } from "@/pages/dashboard";
+import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing, Faqs, AboutUs, ContactPage } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 
@@ -64,6 +67,27 @@ export const routes = [
         name: "billing",
         path: "/billing",
         element: <Billing />,
+      },
+      {
+        icon: <QuestionMarkCircleIcon {...icon} />,
+        name: "faqs",
+        path: "/faqs",
+        element: <Faqs />,
+        hidden: true,
+      },
+      {
+        icon: <InformationCircleIcon {...icon} />,
+        name: "about-us",
+        path: "/about-us",
+        element: <AboutUs />,
+        hidden: true,
+      },
+      {
+        icon: <EnvelopeIcon {...icon} />,
+        name: "contact-us",
+        path: "/contact-us",
+        element: <ContactPage />,
+        hidden: true,
       },
       // Commented out for later use
       // {

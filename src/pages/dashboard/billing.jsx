@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
     Card,
     CardBody,
@@ -135,12 +136,16 @@ export function Billing() {
                         </Typography>
                     </div>
                     <div className="flex gap-4">
-                        <Button variant="text" color="blue-gray">
-                            {language === "es" ? "Preguntas Frecuentes" : "FAQs"}
-                        </Button>
-                        <Button variant="gradient" color="blue">
-                            {language === "es" ? "Contáctanos" : "Contact Us"}
-                        </Button>
+                        <Link to="/dashboard/faqs">
+                            <Button variant="text" color="blue-gray">
+                                {language === "es" ? "Preguntas Frecuentes" : "FAQs"}
+                            </Button>
+                        </Link>
+                        <Link to="/dashboard/contact-us">
+                            <Button variant="gradient" color="blue">
+                                {language === "es" ? "Contáctanos" : "Contact Us"}
+                            </Button>
+                        </Link>
                     </div>
                 </CardBody>
             </Card>

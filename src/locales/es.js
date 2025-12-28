@@ -16,6 +16,9 @@ export const es = {
         batteries: "Baterías",
         sections: "Secciones",
         billing: "Planes y Pagos",
+        faqs: "Preguntas Frecuentes",
+        "about-us": "Sobre Nosotros",
+        "contact-us": "Contacto",
     },
     home: {
         hero: {
@@ -408,6 +411,67 @@ export const es = {
                     "SLA y Soporte Premium"
                 ]
             }
+        }
+    },
+    faqs_page: {
+        title: "Preguntas Frecuentes",
+        subtitle: "Todo lo que necesitas saber sobre ANKO Studio.",
+        categories: {
+            general: "General",
+            practice: "Práctica y Preguntas",
+            billing: "Planes y Facturación"
+        },
+        questions: {
+            q1: {
+                q: "¿Qué es ANKO Studio?",
+                a: "ANKO Studio es una plataforma de estudio inteligente que te ayuda a convertir tus documentos en tarjetas de aprendizaje (flashcards) y cuestionarios interactivos usando análisis de IA."
+            },
+            q2: {
+                q: "¿Es ANKO Studio gratuito?",
+                a: "Sí, ofrecemos un plan Gratuito generoso que te permite crear hasta 2 proyectos y practicar diariamente con tipos de preguntas básicos."
+            },
+            q3: {
+                q: "¿Cómo creo mi primer proyecto?",
+                a: "Simplemente haz clic en 'Crear Proyecto' desde tu panel, asígnale un nombre y sube tus materiales de estudio (PDFs, documentos de texto, etc.)."
+            },
+            q4: {
+                q: "¿Puedo compartir mis sets de estudio?",
+                a: "Con nuestro plan Pro Team, puedes compartir fácilmente tus proyectos y sets de preguntas con compañeros de clase o estudiantes."
+            },
+            q5: {
+                q: "¿Qué formatos de archivo son compatibles?",
+                a: "Actualmente admitimos archivos PDF y de texto, y próximamente ampliaremos la compatibilidad a Word y otros formatos para usuarios Pro."
+            }
+        }
+    },
+    about_us: {
+        title: "Sobre ANKO Studio",
+        subtitle: "Redefiniendo cómo estudia el mundo.",
+        mission_title: "Nuestra Misión",
+        mission_text: "Nuestra misión es empoderar a estudiantes y aprendices constantes transformando la lectura pasiva en una práctica activa y efectiva. Creemos que el aprendizaje es más poderoso cuando es interactivo, mensurable y personalizado.",
+        story_title: "Nuestra Historia",
+        story_text: "ANKO Studio nació en una habitación de estudiantes a partir de una frustración simple: leer cientos de páginas no significa que hayas aprendido el material. Creamos una herramienta para ayudarnos a evaluarnos, enfocarnos en nuestras debilidades y rastrear el progreso real.",
+        values: {
+            v1: "Práctica Activa sobre Lectura Pasiva",
+            v2: "Progreso Basado en Datos",
+            v3: "Accesibilidad para todos los Estudiantes"
+        }
+    },
+    contact_page: {
+        title: "Ponte en Contacto",
+        subtitle: "Estamos aquí para ayudarte a tener éxito.",
+        info_title: "Información de Contacto",
+        email: "support@ankostudio.com",
+        location: "Tech Hub, Silicon Valley, CA",
+        form_title: "Envíanos un Mensaje",
+        success_msg: "¡Gracias! Te responderemos a la brevedad."
+    },
+    footer: {
+        made_with: "hecho con",
+        by: "por",
+        for_better_web: "para una mejor web",
+        links: {
+            about: "Sobre Nosotros"
         }
     }
 };

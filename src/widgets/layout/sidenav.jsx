@@ -30,11 +30,18 @@ export function Sidenav({ brandImg, brandName, routes }) {
     ? sidenavColor
     : "blue-gray";
 
-  // 👉 filtra rutas: oculta auth cuando hay sesión
-  const visibleRoutes = (routes || []).filter((route) => {
-    if (isAuthenticated && route.layout === "auth") return false;
-    return true;
-  });
+  // 👉 filtra rutas: oculta auth cuando hay sesión, y oculta las marcadas como hidden
+  const visibleRoutes = (routes || [])
+    .filter((route) => {
+      if (isAuthenticated && route.layout === "auth") return false;
+      if (route.hidden) return false;
+      return true;
+    })
+    .map((route) => ({
+      ...route,
+      pages: (route.pages || []).filter((page) => !page.hidden),
+    }))
+    .filter((route) => route.pages.length > 0 || route.layout === "auth");
 
   return (
     <aside
@@ -43,7 +50,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
     >
       {/* Header */}
       <div className="relative">
-        <Link to="/" className="py-1 px-8 text-center block">
+        <Link to="/dashboard/home" className="py-1 px-8 text-center block">
           <img
             src="/img/logoanko.png"
             alt={t("sidenav.brand")}

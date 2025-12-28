@@ -522,6 +522,17 @@ export function Home() {
               </Card>
             ))}
           </div>
+          <div className="mt-8 text-center">
+            <Button
+              variant="text"
+              color="blue-gray"
+              className="flex items-center gap-2 mx-auto"
+              onClick={() => navigate("/dashboard/faqs")}
+            >
+              {language === "es" ? "Ver todas las preguntas frecuentes" : "View all FAQs"}
+              <RocketLaunchIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -547,9 +558,17 @@ export function Home() {
                     <Typography variant="h4" color="blue-gray" className="mb-2">
                       {t("home.contact.title")}
                     </Typography>
-                    <Typography className="text-blue-gray-500">
+                    <Typography className="text-blue-gray-500 mb-4">
                       {t("home.contact.subtitle")}
                     </Typography>
+                    <Button
+                      variant="outlined"
+                      color="blue"
+                      onClick={() => navigate("/dashboard/contact-us")}
+                      className="mb-4"
+                    >
+                      {language === "es" ? "Ir a la página de contacto" : "Go to Contact Page"}
+                    </Button>
                   </div>
 
                   <form className="flex flex-col gap-4">
