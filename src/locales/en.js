@@ -15,6 +15,7 @@ export const en = {
         rules: "Rules",
         batteries: "Batteries",
         sections: "Sections",
+        billing: "Billing & Plans",
     },
     home: {
         hero: {
@@ -358,6 +359,54 @@ export const en = {
                 document: "Document",
                 project: "Project",
                 action: "Action"
+            }
+        }
+    },
+    billing: {
+        title: "Plans & Billing",
+        subtitle: "Choose the plan that's right for you and your study goals.",
+        current_plan: "Current Plan",
+        monthly: "Monthly",
+        yearly: "Yearly (Save 20%)",
+        plans: {
+            free: {
+                name: "Free",
+                price: "$0",
+                desc: "Perfect for students just starting out or exploring the platform.",
+                cta: "Current Plan",
+                features: [
+                    "Up to 2 study projects",
+                    "Basic question types (MCQ, T/F)",
+                    "Basic progress tracking",
+                    "Community support"
+                ]
+            },
+            pro: {
+                name: "Pro",
+                price: "$15",
+                desc: "For serious learners who need unlimited access and advanced tools.",
+                cta: "Upgrade to Pro",
+                features: [
+                    "Unlimited study projects",
+                    "Unlimited question generation",
+                    "Advanced analytics & insights",
+                    "Priority support",
+                    "Smart repetition algorithm",
+                    "No advertisements"
+                ]
+            },
+            enterprise: {
+                name: "Enterprise",
+                price: "Custom",
+                desc: "Custom solutions for educators, schools, or large study groups.",
+                cta: "Contact Sales",
+                features: [
+                    "All Pro features",
+                    "Team collaboration tools",
+                    "Custom intake/API access",
+                    "Dedicated account manager",
+                    "SLA & Premium support"
+                ]
             }
         }
     }

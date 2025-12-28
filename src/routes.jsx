@@ -9,8 +9,9 @@ import {
   TagIcon,
   ClipboardDocumentCheckIcon,
   BoltIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections } from "@/pages/dashboard";
+import { Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 
@@ -57,6 +58,12 @@ export const routes = [
         name: "sections",
         path: "/sections",
         element: <GlobalSections />,
+      },
+      {
+        icon: <CreditCardIcon {...icon} />,
+        name: "billing",
+        path: "/billing",
+        element: <Billing />,
       },
       // Commented out for later use
       // {

@@ -15,6 +15,7 @@ export const es = {
         rules: "Reglas",
         batteries: "Baterías",
         sections: "Secciones",
+        billing: "Planes y Pagos",
     },
     home: {
         hero: {
@@ -358,6 +359,54 @@ export const es = {
                 document: "Documento",
                 project: "Proyecto",
                 action: "Acción"
+            }
+        }
+    },
+    billing: {
+        title: "Planes y Facturación",
+        subtitle: "Elige el plan adecuado para tus objetivos de estudio.",
+        current_plan: "Plan Actual",
+        monthly: "Mensual",
+        yearly: "Anual (Ahorra 20%)",
+        plans: {
+            free: {
+                name: "Gratis",
+                price: "$0",
+                desc: "Perfecto para estudiantes que están comenzando o explorando la plataforma.",
+                cta: "Plan Actual",
+                features: [
+                    "Hasta 2 proyectos de estudio",
+                    "Tipos de preguntas básicos (S/M, V/F)",
+                    "Seguimiento de progreso básico",
+                    "Soporte de la comunidad"
+                ]
+            },
+            pro: {
+                name: "Pro",
+                price: "$15",
+                desc: "Para estudiantes serios que necesitan acceso ilimitado y herramientas avanzadas.",
+                cta: "Mejorar a Pro",
+                features: [
+                    "Proyectos de estudio ilimitados",
+                    "Generación de preguntas ilimitada",
+                    "Analítica y métricas avanzadas",
+                    "Soporte prioritario",
+                    "Algoritmo de repetición inteligente",
+                    "Sin anuncios"
+                ]
+            },
+            enterprise: {
+                name: "Enterprise",
+                price: "Personalizado",
+                desc: "Soluciones a medida para educadores, escuelas o grupos de estudio grandes.",
+                cta: "Contactar Ventas",
+                features: [
+                    "Todas las funciones Pro",
+                    "Herramientas de colaboración en equipo",
+                    "Acceso a API personalizado",
+                    "Gerente de cuenta dedicado",
+                    "SLA y Soporte Premium"
+                ]
             }
         }
     }
