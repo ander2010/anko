@@ -17,10 +17,11 @@ import {
   Tooltip,
 } from "@material-tailwind/react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalRules() {
+  const { t, language } = useLanguage();
   const [rules, setRules] = useState([]);
   const [projects, setProjects] = useState([]);
 
@@ -280,7 +281,7 @@ export function GlobalRules() {
       <Card>
         <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
           <Typography variant="h6" color="white">
-            Global Rules List
+            {t("global.rules.title")}
           </Typography>
         </CardHeader>
 
@@ -296,26 +297,33 @@ export function GlobalRules() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner className="h-10 w-10 mb-4" />
-              <Typography className="text-blue-gray-600">Loading rules...</Typography>
+              <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
             </div>
           ) : (
             <table className="w-full min-w-[900px] table-auto">
               <thead>
                 <tr>
-                  {["Rule Name", "Project", "Topic Scope", "Total Questions", "Strategy", "Difficulty", "Actions"].map(
-                    (el) => (
-                      <th
-                        key={el}
-                        className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                  {[
+                    t("global.rules.table.name"),
+                    t("global.rules.table.project"),
+                    t("global.rules.table.topic"),
+                    t("global.rules.table.questions"),
+                    t("global.rules.table.strategy"),
+                    t("global.rules.table.difficulty"),
+                    t("global.rules.table.actions")
+                  ].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                    >
+                      <Typography
+                        variant="small"
+                        className="text-[11px] font-bold uppercase text-blue-gray-400"
                       >
-                        <Typography
-                          variant="small"
-                          className="text-[11px] font-bold uppercase text-blue-gray-400"
-                        >
-                          {el}
-                        </Typography>
-                      </th>
-                    )
+                        {el}
+                      </Typography>
+                    </th>
+                  )
                   )}
                 </tr>
               </thead>
@@ -325,15 +333,14 @@ export function GlobalRules() {
                   <tr>
                     <td colSpan={7} className="p-4 text-center">
                       <Typography variant="small" color="blue-gray">
-                        No rules found.
+                        {t("global.rules.no_rules")}
                       </Typography>
                     </td>
                   </tr>
                 ) : (
                   rules.map((r, key) => {
-                    const className = `py-3 px-5 ${
-                      key === rules.length - 1 ? "" : "border-b border-blue-gray-50"
-                    }`;
+                    const className = `py-3 px-5 ${key === rules.length - 1 ? "" : "border-b border-blue-gray-50"
+                      }`;
 
                     const projectId = getRuleProjectId(r);
                     const totalQs = getRuleTotalQuestions(r);
@@ -359,7 +366,7 @@ export function GlobalRules() {
 
                         <td className={className}>
                           <Typography className="text-xs text-blue-gray-600">
-                            {topicScopeId ? (topicNameById.get(topicScopeId) || `Topic #${topicScopeId}`) : "Global"}
+                            {topicScopeId ? (topicNameById.get(topicScopeId) || `${t("project_detail.tabs.topics")} #${topicScopeId}`) : (language === "es" ? "Global" : "Global")}
                           </Typography>
                         </td>
 
@@ -383,7 +390,7 @@ export function GlobalRules() {
 
                         <td className={className}>
                           <div className="flex items-center gap-2">
-                            <Tooltip content="Edit rule">
+                            <Tooltip content={language === "es" ? "Editar regla" : "Edit rule"}>
                               <IconButton
                                 variant="text"
                                 color="blue-gray"
@@ -394,7 +401,7 @@ export function GlobalRules() {
                               </IconButton>
                             </Tooltip>
 
-                            <Tooltip content="Delete rule">
+                            <Tooltip content={language === "es" ? "Eliminar regla" : "Delete rule"}>
                               <IconButton
                                 variant="text"
                                 color="red"
@@ -420,23 +427,23 @@ export function GlobalRules() {
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">
-        <DialogHeader>Edit Rule</DialogHeader>
+        <DialogHeader>{language === "es" ? "Editar Regla" : "Edit Rule"}</DialogHeader>
         <DialogBody className="space-y-4">
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Name
+              {language === "es" ? "Nombre" : "Name"}
             </Typography>
             <Input
               value={editForm.name}
               onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Rule name"
+              placeholder={language === "es" ? "Nombre de la regla" : "Rule name"}
               crossOrigin=""
             />
           </div>
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Topic Scope
+              {t("global.rules.table.topic")}
             </Typography>
             <Select
               value={editForm.topic_scope ? String(editForm.topic_scope) : "null"}
@@ -444,9 +451,9 @@ export function GlobalRules() {
                 setEditForm((p) => ({ ...p, topic_scope: val === "null" ? null : Number(val) }))
               }
             >
-              <Option value="null">Global (no topic scope)</Option>
+              <Option value="null">{language === "es" ? "Global (sin alcance de tema)" : "Global (no topic scope)"}</Option>
               {loadingTopics ? (
-                <Option value="null">Loading topics...</Option>
+                <Option value="null">{t("global.topics.loading")}</Option>
               ) : (
                 (topics || []).map((t) => (
                   <Option key={t.id} value={String(t.id)}>
@@ -460,7 +467,7 @@ export function GlobalRules() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-                Total Questions (global_count)
+                {language === "es" ? "Total Preguntas" : "Total Questions"}
               </Typography>
               <Input
                 type="number"
@@ -474,7 +481,7 @@ export function GlobalRules() {
 
             <div>
               <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-                Time Limit (minutes)
+                {language === "es" ? "Límite de Tiempo (minutos)" : "Time Limit (minutes)"}
               </Typography>
               <Input
                 type="number"
@@ -489,7 +496,7 @@ export function GlobalRules() {
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Distribution Strategy
+              {t("global.rules.table.strategy")}
             </Typography>
             <Select
               value={editForm.distribution_strategy}
@@ -503,15 +510,15 @@ export function GlobalRules() {
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Difficulty
+              {t("global.rules.table.difficulty")}
             </Typography>
             <Select
               value={editForm.difficulty}
               onChange={(val) => setEditForm((p) => ({ ...p, difficulty: val }))}
             >
-              <Option value="Easy">Easy</Option>
-              <Option value="Medium">Medium</Option>
-              <Option value="Hard">Hard</Option>
+              <Option value="Easy">{language === "es" ? "Fácil" : "Easy"}</Option>
+              <Option value="Medium">{language === "es" ? "Medio" : "Medium"}</Option>
+              <Option value="Hard">{language === "es" ? "Difícil" : "Hard"}</Option>
             </Select>
           </div>
 
@@ -524,33 +531,33 @@ export function GlobalRules() {
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeEdit} disabled={savingEdit}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="blue" onClick={saveEdit} disabled={savingEdit}>
-            {savingEdit ? "Saving..." : "Save"}
+            {savingEdit ? (language === "es" ? "Guardando..." : "Saving...") : (language === "es" ? "Guardar" : "Save")}
           </Button>
         </DialogFooter>
       </Dialog>
 
       {/* ---------------- DELETE DIALOG ---------------- */}
       <Dialog open={deleteOpen} handler={closeDelete} size="sm">
-        <DialogHeader>Delete Rule</DialogHeader>
+        <DialogHeader>{language === "es" ? "Eliminar Regla" : "Delete Rule"}</DialogHeader>
         <DialogBody>
           <Typography color="blue-gray">
-            Are you sure you want to delete{" "}
+            {language === "es" ? "¿Estás seguro de que quieres eliminar " : "Are you sure you want to delete "}
             <span className="font-semibold">{deleteRule?.name}</span>?
           </Typography>
           <Typography variant="small" className="text-blue-gray-400 mt-2">
-            This action cannot be undone.
+            {language === "es" ? "Esta acción no se puede deshacer." : "This action cannot be undone."}
           </Typography>
         </DialogBody>
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeDelete} disabled={deleting}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="red" onClick={confirmDelete} disabled={deleting}>
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? (language === "es" ? "Eliminando..." : "Deleting...") : (language === "es" ? "Eliminar" : "Delete")}
           </Button>
         </DialogFooter>
       </Dialog>

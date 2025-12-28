@@ -205,5 +205,160 @@ export const en = {
             btn_create: "Create my first project",
             btn_plans: "View plans"
         }
+    },
+    projects: {
+        title: "My Projects",
+        subtitle: "Manage and organize your projects",
+        btn_create: "Create Project",
+        tabs: {
+            all: "All Projects",
+            owned: "My Projects",
+            shared: "Shared with Me"
+        },
+        search_placeholder: "Search projects...",
+        no_projects: "No projects found",
+        no_projects_desc: "Try adjusting your search query",
+        no_projects_cta: "Get started by creating your first project",
+        dialogs: {
+            delete_title: "Delete Project",
+            delete_message: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
+            archive_topic_title: "Archive Topic",
+            archive_topic_confirm: "Archive",
+            delete_topic_title: "Delete Topic",
+            delete_topic_confirm: "Delete",
+            edit_topic_title: "Edit Topic",
+            create_topic_title: "Create New Topic",
+            upload_docs_title: "Upload Documents",
+            upload_docs_to: "To",
+            upload_docs_click: "Click to upload",
+            upload_docs_drag: "or drag and drop",
+            upload_docs_selected: "Selected Files",
+            upload_docs_btn: "Upload",
+            save_changes: "Save Changes",
+            cancel: "Cancel",
+            save: "Save",
+            create: "Create",
+            delete_confirm: "Delete",
+            confirm_title: "Confirm",
+            confirm_message: "Are you sure?",
+            confirm_btn: "Confirm"
+        }
+    },
+    project_detail: {
+        back: "Back to Projects",
+        loading: "Loading project...",
+        not_found: "Project not found",
+        processing: "Processing {count} {item}...",
+        document: "document",
+        documents: "documents",
+        tabs: {
+            documents: "Documents",
+            topics: "Topics",
+            rules: "Rules",
+            batteries: "Batteries"
+        },
+        docs: {
+            btn_upload: "Upload Documents",
+            table: {
+                name: "Name",
+                type: "Type",
+                size: "Size",
+                sections: "Sections",
+                uploaded: "Uploaded",
+                status: "Status",
+                actions: "Actions"
+            },
+            status: {
+                pending: "Pending",
+                processing: "Processing",
+                ready: "Ready",
+                failed: "Failed"
+            },
+            actions: {
+                download: "Download",
+                metadata: "View Metadata",
+                delete: "Delete",
+                view: "View"
+            },
+            empty: {
+                title: "No documents yet",
+                desc: "Upload documents to get started with analysis"
+            }
+        },
+        topics: {
+            btn_create: "Create Topic",
+            empty: {
+                title: "No topics yet",
+                desc: "Create your first topic to start organizing questions"
+            },
+            dialogs: {
+                archive_title: "Archive Topic",
+                archive_message: "Are you sure you want to archive \"{name}\"? You can restore it later.",
+                archive_confirm: "Archive"
+            }
+        },
+        rules: {
+            btn_create: "Create Rule"
+        },
+        batteries: {
+            btn_create: "Generate Battery"
+        }
+    },
+    global: {
+        topics: {
+            title: "Global Topics List",
+            loading: "Loading topics...",
+            no_topics: "No topics found.",
+            table: {
+                name: "Topic Name",
+                project: "Project",
+                docs: "Documents",
+                actions: "Actions"
+            }
+        },
+        rules: {
+            title: "Global Rules List",
+            loading: "Loading rules...",
+            no_rules: "No rules found.",
+            table: {
+                name: "Rule Name",
+                project: "Project",
+                topic: "Topic Scope",
+                questions: "Total Questions",
+                strategy: "Strategy",
+                difficulty: "Difficulty",
+                actions: "Actions"
+            }
+        },
+        batteries: {
+            title: "Global Batteries List",
+            loading: "Loading batteries...",
+            no_batteries: "No batteries found.",
+            table: {
+                name: "Battery Name",
+                status: "Status",
+                difficulty: "Difficulty",
+                project: "Project",
+                rule: "Rule",
+                topic: "Topic Scope",
+                questions: "Questions",
+                actions: "Actions"
+            }
+        },
+        sections: {
+            title: "Global Sections List",
+            subtitle: "All sections across {count} found",
+            loading: "Loading sections...",
+            no_sections: "No sections found",
+            refresh: "Refresh",
+            table: {
+                id: "ID",
+                title: "Title",
+                content: "Content Preview",
+                document: "Document",
+                project: "Project",
+                action: "Action"
+            }
+        }
     }
 };

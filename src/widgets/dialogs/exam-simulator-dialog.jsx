@@ -23,8 +23,10 @@ import {
 } from "@heroicons/react/24/solid";
 
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function ExamSimulatorDialog({ open, handler, battery }) {
+  const { t, language } = useLanguage();
   if (!battery) return null;
 
   // -------------------- Attempt state --------------------
@@ -253,13 +255,13 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
   if (!currentQuestion) {
     return (
       <Dialog open={open} handler={handler} size="lg">
-        <DialogHeader className="justify-center">Exam Simulator</DialogHeader>
+        <DialogHeader className="justify-center">{language === "es" ? "Simulador de Examen" : "Exam Simulator"}</DialogHeader>
         <DialogBody className="text-center">
-          <Typography color="blue-gray">This battery has no questions yet.</Typography>
+          <Typography color="blue-gray">{language === "es" ? "Esta batería aún no tiene preguntas." : "This battery has no questions yet."}</Typography>
         </DialogBody>
         <DialogFooter className="justify-center">
           <Button color="blue" onClick={handler}>
-            Close
+            {language === "es" ? "Cerrar" : "Close"}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -273,7 +275,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
 
     return (
       <Dialog open={open} handler={handler} size="lg">
-        <DialogHeader className="justify-center">Exam Results</DialogHeader>
+        <DialogHeader className="justify-center">{language === "es" ? "Resultados del Examen" : "Exam Results"}</DialogHeader>
 
         <DialogBody className="text-center">
           <Typography variant="h1" color={percent >= 60 ? "green" : "red"} className="mb-4">
@@ -281,8 +283,9 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
           </Typography>
 
           <Typography variant="h5" color="blue-gray" className="mb-2">
-            You scored {Number(totalScore || 0).toFixed(2)} out of{" "}
-            {Number(maxScore || 0).toFixed(2)} points
+            {language === "es" ? "Puntuaste" : "You scored"} {Number(totalScore || 0).toFixed(2)}{" "}
+            {language === "es" ? "de" : "out of"} {Number(maxScore || 0).toFixed(2)}{" "}
+            {language === "es" ? "puntos" : "points"}
           </Typography>
 
           <Progress
@@ -294,29 +297,30 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
           <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
             <div>
               <Typography variant="small" className="font-bold">
-                Battery Name:
+                {language === "es" ? "Nombre de la Batería" : "Battery Name"}:
               </Typography>
               <Typography className="text-sm">{battery.name}</Typography>
             </div>
             <div>
               <Typography variant="small" className="font-bold">
-                Total Questions:
+                {language === "es" ? "Preguntas Totales" : "Total Questions"}:
               </Typography>
               <Typography className="text-sm">{totalQuestions}</Typography>
             </div>
           </div>
 
           <div className="mt-4 text-xs text-blue-gray-500">
-            Attempt ID: {attempt?.id || "—"} {savingAttempt ? "• Saving attempt..." : ""}
+            {language === "es" ? "ID del Intento" : "Attempt ID"}: {attempt?.id || "—"}{" "}
+            {savingAttempt ? `• ${language === "es" ? "Guardando intento..." : "Saving attempt..."}` : ""}
           </div>
         </DialogBody>
 
         <DialogFooter className="justify-center gap-4">
           <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt}>
-            Retry Exam
+            {language === "es" ? "Reintentar Examen" : "Retry Exam"}
           </Button>
           <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt}>
-            Close
+            {language === "es" ? "Cerrar" : "Close"}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -328,8 +332,10 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
     <Dialog open={open} handler={handler} size="xl" className="overflow-hidden">
       <DialogHeader className="flex justify-between items-center border-b border-gray-100 p-4">
         <Typography variant="h5" color="blue-gray">
-          Question {activeStep + 1}{" "}
-          <span className="text-sm text-gray-500 font-normal">of {totalQuestions}</span>
+          {language === "es" ? "Pregunta" : "Question"} {activeStep + 1}{" "}
+          <span className="text-sm text-gray-500 font-normal">
+            {language === "es" ? "de" : "of"} {totalQuestions}
+          </span>
         </Typography>
 
         <div className="flex gap-2 items-center">
@@ -360,13 +366,13 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
             <div className="flex gap-2">
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full uppercase font-bold">
                 {currentQuestion.type === "trueFalse"
-                  ? "True / False"
+                  ? (language === "es" ? "Verdadero / Falso" : "True / False")
                   : currentQuestion.type === "multiSelect"
-                  ? "Multiple Selection"
-                  : "Single Choice"}
+                    ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
+                    : (language === "es" ? "Opción Única" : "Single Choice")}
               </span>
               <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-                topic: {currentQuestion.topicName || "General"}
+                {language === "es" ? "tema" : "topic"}: {currentQuestion.topicName || (language === "es" ? "General" : "General")}
               </span>
             </div>
           </CardBody>
@@ -426,10 +432,10 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
             className="mt-6 bg-blue-50 border border-blue-100 text-blue-900"
           >
             <Typography variant="h6" className="mb-1">
-              Explanation
+              {language === "es" ? "Explicación" : "Explanation"}
             </Typography>
             <Typography variant="small" className="opacity-90">
-              {currentQuestion.explanation || "No explanation provided for this question."}
+              {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación para esta pregunta." : "No explanation provided for this question.")}
             </Typography>
           </Alert>
         )}
@@ -442,7 +448,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
           disabled={activeStep === 0}
           className="flex items-center gap-2"
         >
-          <ChevronLeftIcon className="h-4 w-4" /> Previous
+          <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Previous"}
         </Button>
 
         <div className="flex gap-2">
@@ -453,7 +459,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
               onClick={() => setShowAnswer(true)}
               className="flex items-center gap-2"
             >
-              <LightBulbIcon className="h-4 w-4" /> Show Answer
+              <LightBulbIcon className="h-4 w-4" /> {language === "es" ? "Mostrar Respuesta" : "Show Answer"}
             </Button>
           )}
 
@@ -464,7 +470,9 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
             className="flex items-center gap-2"
             disabled={savingAttempt}
           >
-            {activeStep === totalQuestions - 1 ? "Finish Exam" : "Next Question"}
+            {activeStep === totalQuestions - 1
+              ? (language === "es" ? "Finalizar Examen" : "Finish Exam")
+              : (language === "es" ? "Siguiente Pregunta" : "Next Question")}
             {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
           </Button>
         </div>

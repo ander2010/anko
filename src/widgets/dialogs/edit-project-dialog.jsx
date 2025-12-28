@@ -11,8 +11,10 @@ import {
     Typography,
 } from "@material-tailwind/react";
 import projectService from "../../services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function EditProjectDialog({ open, onClose, onSave, project }) {
+    const { t, language } = useLanguage();
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [error, setError] = useState("");
@@ -37,7 +39,7 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
 
     const validate = () => {
         if (!title.trim()) {
-            setError("Project name is required");
+            setError(language === "es" ? "El nombre del proyecto es obligatorio" : "Project name is required");
             return false;
         }
         return true;
@@ -56,7 +58,7 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
                 setError("");
                 onClose();
             } catch (err) {
-                setError(err?.error || "Failed to update project");
+                setError(err?.error || (language === "es" ? "Error al actualizar el proyecto" : "Failed to update project"));
             } finally {
                 setLoading(false);
             }
@@ -74,12 +76,12 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
         <Dialog open={open} handler={handleClose} size="sm">
             <form onSubmit={handleSubmit}>
                 <DialogHeader>
-                    <Typography variant="h5">Edit Project</Typography>
+                    <Typography variant="h5">{language === "es" ? "Editar Proyecto" : "Edit Project"}</Typography>
                 </DialogHeader>
                 <DialogBody divider className="space-y-4">
                     <div>
                         <Input
-                            label="Project Name *"
+                            label={`${language === "es" ? "Nombre del Proyecto" : "Project Name"} *`}
                             value={title}
                             onChange={handleTitleChange}
                             error={!!error}
@@ -89,7 +91,7 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
                     </div>
                     <div>
                         <Textarea
-                            label="Description"
+                            label={`${language === "es" ? "Descripción" : "Description"}`}
                             value={description}
                             onChange={handleDescriptionChange}
                             rows={4}
@@ -104,10 +106,10 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
                 </DialogBody>
                 <DialogFooter className="gap-2">
                     <Button variant="text" color="blue-gray" onClick={handleClose} disabled={loading}>
-                        Cancel
+                        {t("projects.dialogs.cancel")}
                     </Button>
                     <Button type="submit" variant="gradient" color="blue" loading={loading}>
-                        Save Changes
+                        {t("projects.dialogs.save_changes")}
                     </Button>
                 </DialogFooter>
             </form>

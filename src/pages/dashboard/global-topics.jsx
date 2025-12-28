@@ -18,10 +18,11 @@ import {
   Tooltip,
 } from "@material-tailwind/react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalTopics() {
+  const { t, language } = useLanguage();
   const [topics, setTopics] = useState([]);
   const [projects, setProjects] = useState([]);
 
@@ -205,7 +206,7 @@ export function GlobalTopics() {
       <Card>
         <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
           <Typography variant="h6" color="white">
-            Global Topics List
+            {t("global.topics.title")}
           </Typography>
         </CardHeader>
 
@@ -222,14 +223,19 @@ export function GlobalTopics() {
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner className="h-10 w-10 mb-4" />
               <Typography className="text-blue-gray-600">
-                Loading topics...
+                {t("global.topics.loading")}
               </Typography>
             </div>
           ) : (
             <table className="w-full min-w-[760px] table-auto">
               <thead>
                 <tr>
-                  {["Topic Name", "Project", "Documents", "Actions"].map((el) => (
+                  {[
+                    t("global.topics.table.name"),
+                    t("global.topics.table.project"),
+                    t("global.topics.table.docs"),
+                    t("global.topics.table.actions")
+                  ].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 py-3 px-5 text-left"
@@ -250,15 +256,14 @@ export function GlobalTopics() {
                   <tr>
                     <td colSpan={4} className="p-4 text-center">
                       <Typography variant="small" color="blue-gray">
-                        No topics found.
+                        {t("global.topics.no_topics")}
                       </Typography>
                     </td>
                   </tr>
                 ) : (
                   topics.map((t, key) => {
-                    const className = `py-3 px-5 ${
-                      key === topics.length - 1 ? "" : "border-b border-blue-gray-50"
-                    }`;
+                    const className = `py-3 px-5 ${key === topics.length - 1 ? "" : "border-b border-blue-gray-50"
+                      }`;
 
                     const projectId = getTopicProjectId(t);
                     const docsCount = getDocsCount(t);
@@ -294,7 +299,7 @@ export function GlobalTopics() {
 
                         <td className={className}>
                           <div className="flex items-center gap-2">
-                            <Tooltip content="Edit topic">
+                            <Tooltip content={language === "es" ? "Editar tema" : "Edit topic"}>
                               <IconButton
                                 variant="text"
                                 color="blue-gray"
@@ -305,7 +310,7 @@ export function GlobalTopics() {
                               </IconButton>
                             </Tooltip>
 
-                            <Tooltip content="Delete topic">
+                            <Tooltip content={language === "es" ? "Eliminar tema" : "Delete topic"}>
                               <IconButton
                                 variant="text"
                                 color="red"
@@ -331,41 +336,41 @@ export function GlobalTopics() {
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">
-        <DialogHeader>Edit Topic</DialogHeader>
+        <DialogHeader>{language === "es" ? "Editar Tema" : "Edit Topic"}</DialogHeader>
         <DialogBody className="space-y-4">
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Name
+              {language === "es" ? "Nombre" : "Name"}
             </Typography>
             <Input
               value={editForm.name}
               onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Topic name"
+              placeholder={language === "es" ? "Nombre del tema" : "Topic name"}
               crossOrigin=""
             />
           </div>
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Description
+              {language === "es" ? "Descripción" : "Description"}
             </Typography>
             <Textarea
               value={editForm.description}
               onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Optional description"
+              placeholder={language === "es" ? "Descripción opcional" : "Optional description"}
             />
           </div>
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Status
+              {language === "es" ? "Estado" : "Status"}
             </Typography>
             <Select
               value={editForm.status}
               onChange={(val) => setEditForm((p) => ({ ...p, status: val }))}
             >
-              <Option value="active">active</Option>
-              <Option value="archived">archived</Option>
+              <Option value="active">{language === "es" ? "activo" : "active"}</Option>
+              <Option value="archived">{language === "es" ? "archivado" : "archived"}</Option>
             </Select>
           </div>
 
@@ -378,33 +383,33 @@ export function GlobalTopics() {
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeEdit} disabled={savingEdit}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="blue" onClick={saveEdit} disabled={savingEdit}>
-            {savingEdit ? "Saving..." : "Save"}
+            {savingEdit ? (language === "es" ? "Guardando..." : "Saving...") : (language === "es" ? "Guardar" : "Save")}
           </Button>
         </DialogFooter>
       </Dialog>
 
       {/* ---------------- DELETE DIALOG ---------------- */}
       <Dialog open={deleteOpen} handler={closeDelete} size="sm">
-        <DialogHeader>Delete Topic</DialogHeader>
+        <DialogHeader>{language === "es" ? "Eliminar Tema" : "Delete Topic"}</DialogHeader>
         <DialogBody>
           <Typography color="blue-gray">
-            Are you sure you want to delete{" "}
+            {language === "es" ? "¿Estás seguro de que quieres eliminar " : "Are you sure you want to delete "}
             <span className="font-semibold">{deleteTopic?.name}</span>?
           </Typography>
           <Typography variant="small" className="text-blue-gray-400 mt-2">
-            This action cannot be undone.
+            {language === "es" ? "Esta acción no se puede deshacer." : "This action cannot be undone."}
           </Typography>
         </DialogBody>
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeDelete} disabled={deleting}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="red" onClick={confirmDelete} disabled={deleting}>
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? (language === "es" ? "Eliminando..." : "Deleting...") : (language === "es" ? "Eliminar" : "Delete")}
           </Button>
         </DialogFooter>
       </Dialog>

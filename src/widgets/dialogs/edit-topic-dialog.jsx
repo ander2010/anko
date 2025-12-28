@@ -11,8 +11,10 @@ import {
     Typography,
     Checkbox,
 } from "@material-tailwind/react";
+import { useLanguage } from "@/context/language-context";
 
 export function EditTopicDialog({ open, onClose, onSave, topic, availableDocuments }) {
+    const { t, language } = useLanguage();
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -52,10 +54,10 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
     const validate = () => {
         const newErrors = {};
         if (!formData.name.trim()) {
-            newErrors.name = "Topic name is required";
+            newErrors.name = language === "es" ? "El nombre del tema es obligatorio" : "Topic name is required";
         }
         if (formData.questionsCount < 1 || formData.questionsCount > 100) {
-            newErrors.questionsCount = "Questions count must be between 1 and 100";
+            newErrors.questionsCount = language === "es" ? "La cantidad de preguntas debe estar entre 1 y 100" : "Questions count must be between 1 and 100";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -81,12 +83,12 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
         <Dialog open={open} handler={handleClose} size="md">
             <form onSubmit={handleSubmit}>
                 <DialogHeader>
-                    <Typography variant="h5">Edit Topic</Typography>
+                    <Typography variant="h5">{t("projects.dialogs.edit_topic_title")}</Typography>
                 </DialogHeader>
                 <DialogBody divider className="space-y-4 max-h-[60vh] overflow-y-auto">
                     <div>
                         <Input
-                            label="Topic Name *"
+                            label={`${language === "es" ? "Nombre del Tema" : "Topic Name"} *`}
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
@@ -102,7 +104,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
 
                     <div>
                         <Textarea
-                            label="Description (optional)"
+                            label={`${language === "es" ? "Descripción (opcional)" : "Description (optional)"}`}
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
@@ -113,7 +115,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
                     <div>
                         <Input
                             type="number"
-                            label="Questions Count *"
+                            label={`${language === "es" ? "Cantidad de Preguntas" : "Questions Count"} *`}
                             name="questionsCount"
                             value={formData.questionsCount}
                             onChange={handleChange}
@@ -127,7 +129,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
                             </Typography>
                         )}
                         <Typography variant="small" className="text-blue-gray-500 mt-1">
-                            Number of questions to generate for this topic (1-100)
+                            {language === "es" ? "Número de preguntas a generar para este tema (1-100)" : "Number of questions to generate for this topic (1-100)"}
                         </Typography>
                     </div>
 
@@ -135,7 +137,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
                     {availableDocuments && availableDocuments.length > 0 && (
                         <div>
                             <Typography variant="small" className="text-blue-gray-700 font-medium mb-2">
-                                Assign Documents
+                                {language === "es" ? "Asignar Documentos" : "Assign Documents"}
                             </Typography>
                             <div className="space-y-2 max-h-40 overflow-y-auto border border-blue-gray-200 rounded-lg p-3">
                                 {availableDocuments.map((doc) => (
@@ -152,17 +154,17 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
                                 ))}
                             </div>
                             <Typography variant="small" className="text-blue-gray-500 mt-1">
-                                {formData.assignedDocuments.length} document(s) selected
+                                {formData.assignedDocuments.length} {language === "es" ? "documento(s) seleccionado(s)" : "document(s) selected"}
                             </Typography>
                         </div>
                     )}
                 </DialogBody>
                 <DialogFooter className="gap-2">
                     <Button variant="text" color="blue-gray" onClick={handleClose}>
-                        Cancel
+                        {t("projects.dialogs.cancel")}
                     </Button>
                     <Button type="submit" variant="gradient" color="blue">
-                        Save Changes
+                        {t("projects.dialogs.save_changes")}
                     </Button>
                 </DialogFooter>
             </form>

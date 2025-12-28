@@ -12,8 +12,10 @@ import {
 import { TrashIcon, TableCellsIcon } from "@heroicons/react/24/outline";
 import projectService from "@/services/projectService";
 import { ConfirmDialog } from "@/widgets/dialogs/confirm-dialog";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalSections() {
+    const { t, language } = useLanguage();
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -61,7 +63,7 @@ export function GlobalSections() {
             setSections(allSections);
 
         } catch (err) {
-            setError("Failed to load global sections");
+            setError(t("global.sections.loading_error"));
             console.error(err);
         } finally {
             setLoading(false);
@@ -93,7 +95,7 @@ export function GlobalSections() {
         return (
             <div className="mt-12 flex flex-col items-center justify-center">
                 <Spinner className="h-10 w-10 text-blue-500" />
-                <Typography className="mt-4 text-blue-gray-500">Loading sections...</Typography>
+                <Typography className="mt-4 text-blue-gray-500">{t("global.sections.loading")}</Typography>
             </div>
         );
     }
@@ -104,14 +106,14 @@ export function GlobalSections() {
                 <CardHeader variant="gradient" color="blue" className="mb-8 p-6 flex items-center justify-between">
                     <div>
                         <Typography variant="h6" color="white">
-                            Global Sections List
+                            {t("global.sections.title")}
                         </Typography>
                         <Typography variant="small" color="white" className="font-normal opacity-80">
-                            All sections across {sections.length} found
+                            {language === "es" ? `Se encontraron ${sections.length} secciones en total` : `All sections across ${sections.length} found`}
                         </Typography>
                     </div>
                     <Button size="sm" color="white" variant="text" onClick={fetchAllData}>
-                        Refresh
+                        {t("global.sections.btn_refresh")}
                     </Button>
                 </CardHeader>
 
@@ -125,14 +127,21 @@ export function GlobalSections() {
                     {sections.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-10">
                             <TableCellsIcon className="h-12 w-12 text-gray-400 mb-2" />
-                            <Typography color="gray">No sections found</Typography>
+                            <Typography color="gray">{t("global.sections.no_sections")}</Typography>
                         </div>
                     ) : (
                         <div className="overflow-x-auto max-h-[70vh]">
                             <table className="w-full min-w-[640px] table-auto text-left">
                                 <thead className="sticky top-0 bg-white z-10">
                                     <tr>
-                                        {["ID", "Title", "Content Preview", "Document", "Project", "Action"].map(
+                                        {[
+                                            "ID",
+                                            t("global.sections.table.title"),
+                                            t("global.sections.table.preview"),
+                                            t("global.sections.table.document"),
+                                            t("global.sections.table.project"),
+                                            language === "es" ? "Acción" : "Action"
+                                        ].map(
                                             (el) => (
                                                 <th
                                                     key={el}
@@ -153,8 +162,8 @@ export function GlobalSections() {
                                     {sections.map(
                                         (section, key) => {
                                             const className = `py-3 px-5 ${key === sections.length - 1
-                                                    ? ""
-                                                    : "border-b border-blue-gray-50"
+                                                ? ""
+                                                : "border-b border-blue-gray-50"
                                                 }`;
 
                                             return (
@@ -166,7 +175,7 @@ export function GlobalSections() {
                                                     </td>
                                                     <td className={className}>
                                                         <Typography className="text-xs font-semibold text-blue-gray-600 max-w-[150px] truncate" title={section.title}>
-                                                            {section.title || "(No Title)"}
+                                                            {section.title || (language === "es" ? "(Sin Título)" : "(No Title)")}
                                                         </Typography>
                                                     </td>
                                                     <td className={className}>
@@ -218,9 +227,11 @@ export function GlobalSections() {
                 open={confirmDialogOpen}
                 onClose={() => setConfirmDialogOpen(false)}
                 onConfirm={handleConfirmDelete}
-                title="Delete Section"
-                message={`Are you sure you want to delete section "${selectedSection?.title || selectedSection?.id}" from document "${selectedSection?.documentName}"?`}
-                confirmText="Delete"
+                title={language === "es" ? "Eliminar Sección" : "Delete Section"}
+                message={language === "es"
+                    ? `¿Estás seguro de que quieres eliminar la sección "${selectedSection?.title || selectedSection?.id}" del documento "${selectedSection?.documentName}"?`
+                    : `Are you sure you want to delete section "${selectedSection?.title || selectedSection?.id}" from document "${selectedSection?.documentName}"?`}
+                confirmText={language === "es" ? "Eliminar" : "Delete"}
                 variant="danger"
             />
         </div>

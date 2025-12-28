@@ -44,6 +44,7 @@ import { UploadDocumentsDialog } from "@/widgets/dialogs/upload-documents-dialog
 import { DocumentMetadataDialog } from "@/widgets/dialogs/document-metadata-dialog";
 import { ConfirmDialog } from "@/widgets/dialogs/confirm-dialog";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "@/context/language-context";
 
 // Si todavía no tienes Topics/Rules/Batteries en API, puedes dejar esto así (arrays vacíos)
 import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
@@ -55,6 +56,7 @@ export function ProjectDetail() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, language } = useLanguage();
 
   const [activeTab, setActiveTab] = useState("documents");
 
@@ -393,14 +395,22 @@ export function ProjectDetail() {
     setMetadataDialogOpen(true);
   };
 
+  const statusMap = {
+    pending: t("project_detail.docs.status.pending"),
+    processing: t("project_detail.docs.status.processing"),
+    ready: t("project_detail.docs.status.ready"),
+    failed: t("project_detail.docs.status.failed")
+  };
+
   const getStatusBadge = (status) => {
+    const val = statusMap[status] || status || "—";
     switch (status) {
       case "pending":
-        return <Chip value="Pending" size="sm" color="gray" className="rounded-full" />;
+        return <Chip value={val} size="sm" color="gray" className="rounded-full" />;
       case "processing":
         return (
           <Chip
-            value="Processing"
+            value={val}
             icon={<Spinner className="h-3 w-3" />}
             size="sm"
             color="blue"
@@ -410,7 +420,7 @@ export function ProjectDetail() {
       case "ready":
         return (
           <Chip
-            value="Ready"
+            value={val}
             icon={<CheckCircleIcon className="h-4 w-4" />}
             size="sm"
             color="green"
@@ -420,7 +430,7 @@ export function ProjectDetail() {
       case "failed":
         return (
           <Chip
-            value="Failed"
+            value={val}
             icon={<ExclamationCircleIcon className="h-4 w-4" />}
             size="sm"
             color="red"
@@ -428,7 +438,7 @@ export function ProjectDetail() {
           />
         );
       default:
-        return <Chip value={status || "—"} size="sm" color="blue-gray" className="rounded-full" />;
+        return <Chip value={val} size="sm" color="blue-gray" className="rounded-full" />;
     }
   };
 
@@ -460,7 +470,7 @@ export function ProjectDetail() {
     return (
       <div className="mt-12 flex flex-col items-center justify-center py-12">
         <Spinner className="h-10 w-10" />
-        <Typography className="mt-3 text-blue-gray-600">Loading project...</Typography>
+        <Typography className="mt-3 text-blue-gray-600">{t("project_detail.loading")}</Typography>
       </div>
     );
   }
@@ -469,10 +479,10 @@ export function ProjectDetail() {
     return (
       <div className="mt-12 flex flex-col items-center justify-center py-12">
         <Typography variant="h5" color="blue-gray" className="mb-2">
-          Project not found
+          {t("project_detail.not_found")}
         </Typography>
         {error && <Typography color="red" className="mb-4">{error}</Typography>}
-        <Button onClick={() => navigate("/dashboard/projects")}>Back to Projects</Button>
+        <Button onClick={() => navigate("/dashboard/projects")}>{t("project_detail.back")}</Button>
       </div>
     );
   }
@@ -498,7 +508,7 @@ export function ProjectDetail() {
               onClick={() => navigate("/dashboard/projects")}
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Back to Projects
+              {t("project_detail.back")}
             </Button>
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -507,11 +517,14 @@ export function ProjectDetail() {
                   {project.title || project.name || "Untitled"}
                 </Typography>
                 <Typography className="font-normal text-blue-gray-600">
-                  {project.description || "No description"}
+                  {project.description || (language === "es" ? "Sin descripción" : "No description")}
                 </Typography>
                 {processingCount > 0 && (
                   <Typography variant="small" className="text-blue-500 mt-2">
-                    Processing {processingCount} {processingCount === 1 ? "document" : "documents"}...
+                    {t("project_detail.processing", {
+                      count: processingCount,
+                      item: processingCount === 1 ? t("project_detail.document") : t("project_detail.documents")
+                    })}
                   </Typography>
                 )}
               </div>
@@ -537,25 +550,25 @@ export function ProjectDetail() {
               <Tab value="documents" onClick={() => setActiveTab("documents")}>
                 <div className="flex items-center gap-2">
                   <DocumentTextIcon className="h-5 w-5" />
-                  Documentos ({documents.length})
+                  {t("project_detail.tabs.documents")} ({documents.length})
                 </div>
               </Tab>
               <Tab value="topics" onClick={() => setActiveTab("topics")}>
                 <div className="flex items-center gap-2">
                   <FolderIcon className="h-5 w-5" />
-                  Temas ({topics.length})
+                  {t("project_detail.tabs.topics")} ({topics.length})
                 </div>
               </Tab>
               <Tab value="rules" onClick={() => setActiveTab("rules")}>
                 <div className="flex items-center gap-2">
                   <ClipboardDocumentListIcon className="h-5 w-5" />
-                  Reglas ({rules.length})
+                  {t("project_detail.tabs.rules")} ({rules.length})
                 </div>
               </Tab>
               <Tab value="batteries" onClick={() => setActiveTab("batteries")}>
                 <div className="flex items-center gap-2">
                   <BoltIcon className="h-5 w-5" />
-                  Baterías ({batteries.length})
+                  {t("project_detail.tabs.batteries")} ({batteries.length})
                 </div>
               </Tab>
             </TabsHeader>
@@ -573,7 +586,7 @@ export function ProjectDetail() {
               onClick={() => setUploadDialogOpen(true)}
             >
               <DocumentArrowUpIcon className="h-5 w-5" />
-              Upload Documents
+              {t("project_detail.docs.btn_upload")}
             </Button>
           </div>
 
@@ -582,13 +595,21 @@ export function ProjectDetail() {
               {loadingDocs ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Spinner className="h-10 w-10 mb-4" />
-                  <Typography className="text-blue-gray-600">Loading documents...</Typography>
+                  <Typography className="text-blue-gray-600">{t("project_detail.docs.loading")}</Typography>
                 </div>
               ) : documents.length > 0 ? (
                 <table className="w-full min-w-[760px] table-auto">
                   <thead>
                     <tr>
-                      {["Name", "Type", "Size", "Sections", "Uploaded", "Status", "Actions"].map((el) => (
+                      {[
+                        t("project_detail.docs.table.name"),
+                        t("project_detail.docs.table.type"),
+                        t("project_detail.docs.table.size"),
+                        t("project_detail.docs.table.sections"),
+                        t("project_detail.docs.table.uploaded"),
+                        t("project_detail.docs.table.status"),
+                        t("project_detail.docs.table.actions")
+                      ].map((el) => (
                         <th key={el} className="border-b border-blue-gray-50 py-3 px-6 text-left">
                           <Typography
                             variant="small"
@@ -639,7 +660,7 @@ export function ProjectDetail() {
                                 onClick={() => handleViewMetadata(doc)}
                               >
                                 <ViewColumnsIcon className="h-4 w-4" />
-                                View
+                                {t("project_detail.docs.actions.view")}
                               </Button>
                             </div>
                           </td>
@@ -665,7 +686,7 @@ export function ProjectDetail() {
                                   className="flex items-center gap-2"
                                 >
                                   <ArrowDownTrayIcon className="h-4 w-4" />
-                                  Download
+                                  {t("project_detail.docs.actions.download")}
                                 </MenuItem>
 
                                 <MenuItem
@@ -673,7 +694,7 @@ export function ProjectDetail() {
                                   className="flex items-center gap-2"
                                 >
                                   <InformationCircleIcon className="h-4 w-4" />
-                                  View Metadata
+                                  {t("project_detail.docs.actions.metadata")}
                                 </MenuItem>
 
                                 {isOwner && (
@@ -684,7 +705,7 @@ export function ProjectDetail() {
                                       className="flex items-center gap-2 text-red-500 hover:bg-red-50"
                                     >
                                       <TrashIcon className="h-4 w-4" />
-                                      Delete
+                                      {t("project_detail.docs.actions.delete")}
                                     </MenuItem>
                                   </>
                                 )}
@@ -700,10 +721,10 @@ export function ProjectDetail() {
                 <div className="flex flex-col items-center justify-center py-12">
                   <DocumentTextIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
                   <Typography variant="h6" color="blue-gray" className="mb-2">
-                    No documents yet
+                    {t("project_detail.docs.empty.title")}
                   </Typography>
                   <Typography className="text-blue-gray-600 mb-4 text-center">
-                    Upload documents to get started with analysis
+                    {t("project_detail.docs.empty.desc")}
                   </Typography>
                   <Button
                     className="flex items-center gap-2"
@@ -711,7 +732,7 @@ export function ProjectDetail() {
                     onClick={() => setUploadDialogOpen(true)}
                   >
                     <DocumentArrowUpIcon className="h-5 w-5" />
-                    Upload Documents
+                    {t("project_detail.docs.btn_upload")}
                   </Button>
                 </div>
               )}
@@ -728,7 +749,7 @@ export function ProjectDetail() {
               onClick={() => setCreateTopicDialogOpen(true)}
             >
               <PlusIcon className="h-5 w-5" />
-              Create Topic
+              {t("project_detail.topics.btn_create")}
             </Button>
           </div>
 
@@ -750,10 +771,10 @@ export function ProjectDetail() {
               <CardBody className="flex flex-col items-center justify-center py-12">
                 <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
                 <Typography variant="h5" color="blue-gray" className="mb-2">
-                  No topics yet
+                  {t("project_detail.topics.empty.title")}
                 </Typography>
                 <Typography className="text-blue-gray-600 mb-4 text-center">
-                  Create your first topic to start organizing questions
+                  {t("project_detail.topics.empty.desc")}
                 </Typography>
                 <Button
                   className="flex items-center gap-2"
@@ -761,7 +782,7 @@ export function ProjectDetail() {
                   onClick={() => setCreateTopicDialogOpen(true)}
                 >
                   <PlusIcon className="h-5 w-5" />
-                  Create Topic
+                  {t("project_detail.topics.btn_create")}
                 </Button>
               </CardBody>
             </Card>
@@ -819,7 +840,7 @@ export function ProjectDetail() {
           <div className="mb-6 flex justify-end">
             <Button className="flex items-center gap-2" color="blue" onClick={() => setShowCreateRule(true)}>
               <PlusIcon className="h-5 w-5" />
-              Create Rule
+              {t("project_detail.rules.btn_create")}
             </Button>
           </div>
 
@@ -827,12 +848,14 @@ export function ProjectDetail() {
             <Card className="mb-6 border border-blue-gray-100 shadow-sm">
               <CardBody>
                 <Typography variant="h6" color="blue-gray" className="mb-4">
-                  New Rule
+                  {t("project_detail.rules.btn_create")}
                 </Typography>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Name</Typography>
+                    <Typography variant="small" className="mb-1 text-blue-gray-600">
+                      {language === "es" ? "Nombre" : "Name"}
+                    </Typography>
                     <input
                       className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
                       value={ruleForm.name}
@@ -907,9 +930,11 @@ export function ProjectDetail() {
                 </div>
 
                 <div className="flex justify-end gap-2 mt-6">
-                  <Button variant="text" onClick={() => setShowCreateRule(false)}>Cancel</Button>
+                  <Button variant="text" onClick={() => setShowCreateRule(false)}>
+                    {language === "es" ? "Cancelar" : "Cancel"}
+                  </Button>
                   <Button color="blue" onClick={handleCreateRule} disabled={!ruleForm.name}>
-                    Save Rule
+                    {language === "es" ? "Guardar Regla" : "Save Rule"}
                   </Button>
                 </div>
               </CardBody>
@@ -919,7 +944,7 @@ export function ProjectDetail() {
           {loadingRules ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner className="h-10 w-10 mb-4" />
-              <Typography className="text-blue-gray-600">Loading rules...</Typography>
+              <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
             </div>
           ) : rules.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -930,7 +955,7 @@ export function ProjectDetail() {
                       <div>
                         <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
                         <Typography variant="small" className="text-blue-gray-500">
-                          Strategy: {rule.distribution_strategy} • Difficulty: {rule.difficulty}
+                          {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
                         </Typography>
                       </div>
 
@@ -956,17 +981,17 @@ export function ProjectDetail() {
 
                     <div className="space-y-1 text-sm text-blue-gray-600">
                       <div className="flex justify-between">
-                        <span>Global Count</span>
+                        <span>{t("global.rules.table.questions")}</span>
                         <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Time Limit</span>
+                        <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
                         <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Scope</span>
+                        <span>{t("global.rules.table.topic")}</span>
                         <span className="font-medium text-blue-gray-900">
-                          {rule.topic_scope ? `Topic #${rule.topic_scope}` : "Global"}
+                          {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
                         </span>
                       </div>
                     </div>
@@ -977,8 +1002,12 @@ export function ProjectDetail() {
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
               <ClipboardDocumentListIcon className="h-16 w-16 mb-4" />
-              <Typography variant="h6" className="mb-2">No rules yet</Typography>
-              <Typography>Create a rule to define how batteries are generated.</Typography>
+              <Typography variant="h6" className="mb-2">{t("global.rules.no_rules")}</Typography>
+              <Typography>
+                {language === "es"
+                  ? "Crea una regla para definir cómo se generan las baterías."
+                  : "Create a rule to define how batteries are generated."}
+              </Typography>
             </div>
           )}
         </>
@@ -992,7 +1021,7 @@ export function ProjectDetail() {
               disabled={rules.length === 0}
             >
               <BoltIcon className="h-5 w-5" />
-              Generate Battery
+              {t("project_detail.batteries.btn_create")}
             </Button>
           </div>
 
@@ -1000,7 +1029,7 @@ export function ProjectDetail() {
             <Card className="mb-6 border border-blue-gray-100 shadow-sm">
               <CardBody>
                 <Typography variant="h6" color="blue-gray" className="mb-4">
-                  Generate New Battery
+                  {t("project_detail.batteries.btn_create")}
                 </Typography>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -1095,14 +1124,14 @@ export function ProjectDetail() {
 
                 <div className="flex justify-end gap-2">
                   <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
-                    Cancel
+                    {language === "es" ? "Cancelar" : "Cancel"}
                   </Button>
                   <Button
                     color="blue"
                     onClick={handleGenerateBattery}
                     disabled={!selectedRuleId || (batteryType === "topic" && !selectedTopicId)}
                   >
-                    Generate
+                    {language === "es" ? "Generar" : "Generate"}
                   </Button>
                 </div>
               </CardBody>
@@ -1177,7 +1206,7 @@ export function ProjectDetail() {
                         className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
                       />
                       <Typography variant="small" className="text-blue-gray-500 text-xs">
-                        {(battery.questions?.length || 0)} questions •{" "}
+                        {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
                         {formatDate(battery.created_at || battery.createdAt)}
                       </Typography>
                     </div>
@@ -1186,15 +1215,15 @@ export function ProjectDetail() {
                       {battery.attempts_count > 0 ? (
                         <div className="flex items-center justify-between">
                           <span className="text-blue-gray-700 font-semibold">
-                            Attempts: {battery.attempts_count}
+                            {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
                           </span>
 
                           <span className="text-blue-gray-600">
-                            Last: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
+                            {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
                           </span>
                         </div>
                       ) : (
-                        <span className="text-blue-gray-400">No attempts yet</span>
+                        <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
                       )}
                     </div>
 
@@ -1206,9 +1235,13 @@ export function ProjectDetail() {
             <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
               <BoltIcon className="h-16 w-16 mb-4" />
               <Typography variant="h6" className="mb-2">
-                No batteries yet
+                {t("global.batteries.no_batteries")}
               </Typography>
-              <Typography>Generate batteries from your configured rules.</Typography>
+              <Typography>
+                {language === "es"
+                  ? "Genera baterías a partir de tus reglas configuradas."
+                  : "Generate batteries from your configured rules."}
+              </Typography>
             </div>
           )}
         </>
@@ -1240,9 +1273,9 @@ export function ProjectDetail() {
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="Delete Document"
-        message={`Are you sure you want to delete "${selectedDocument?.filename || "this document"}"? This action cannot be undone.`}
-        confirmText="Delete"
+        title={t("project_detail.docs.actions.delete")}
+        message={t("project_detail.dialogs.delete_message", { name: selectedDocument?.filename || "this document" })}
+        confirmText={t("project_detail.docs.actions.delete")}
         variant="danger"
       />
 

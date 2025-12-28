@@ -18,10 +18,11 @@ import {
   Option,
 } from "@material-tailwind/react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalBatteries() {
+  const { t, language } = useLanguage();
   const [batteries, setBatteries] = useState([]);
   const [projects, setProjects] = useState([]);
   const [rules, setRules] = useState([]);
@@ -312,7 +313,7 @@ export function GlobalBatteries() {
       <Card>
         <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
           <Typography variant="h6" color="white">
-            Global Batteries List
+            {t("global.batteries.title")}
           </Typography>
         </CardHeader>
 
@@ -328,26 +329,34 @@ export function GlobalBatteries() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner className="h-10 w-10 mb-4" />
-              <Typography className="text-blue-gray-600">Loading batteries...</Typography>
+              <Typography className="text-blue-gray-600">{t("global.batteries.loading")}</Typography>
             </div>
           ) : (
             <table className="w-full min-w-[1100px] table-auto">
               <thead>
                 <tr>
-                  {["Battery Name", "Status", "Difficulty", "Project", "Rule", "Topic Scope", "Questions", "Actions"].map(
-                    (el) => (
-                      <th
-                        key={el}
-                        className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                  {[
+                    t("global.batteries.table.name"),
+                    t("project_detail.docs.table.status"),
+                    t("global.batteries.table.difficulty"),
+                    t("global.batteries.table.project"),
+                    t("global.batteries.table.rule"),
+                    t("global.batteries.table.topic"),
+                    t("global.batteries.table.questions"),
+                    t("global.batteries.table.actions")
+                  ].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                    >
+                      <Typography
+                        variant="small"
+                        className="text-[11px] font-bold uppercase text-blue-gray-400"
                       >
-                        <Typography
-                          variant="small"
-                          className="text-[11px] font-bold uppercase text-blue-gray-400"
-                        >
-                          {el}
-                        </Typography>
-                      </th>
-                    )
+                        {el}
+                      </Typography>
+                    </th>
+                  )
                   )}
                 </tr>
               </thead>
@@ -357,15 +366,14 @@ export function GlobalBatteries() {
                   <tr>
                     <td colSpan={8} className="p-4 text-center">
                       <Typography variant="small" color="blue-gray">
-                        No batteries found.
+                        {t("global.batteries.no_batteries")}
                       </Typography>
                     </td>
                   </tr>
                 ) : (
                   batteries.map((b, key) => {
-                    const className = `py-3 px-5 ${
-                      key === batteries.length - 1 ? "" : "border-b border-blue-gray-50"
-                    }`;
+                    const className = `py-3 px-5 ${key === batteries.length - 1 ? "" : "border-b border-blue-gray-50"
+                      }`;
 
                     const projectId = getBatteryProjectId(b);
                     const ruleId = getBatteryRuleId(b);
@@ -429,7 +437,7 @@ export function GlobalBatteries() {
 
                         <td className={className}>
                           <div className="flex items-center gap-2">
-                            <Tooltip content="Edit battery">
+                            <Tooltip content={language === "es" ? "Editar batería" : "Edit battery"}>
                               <IconButton
                                 variant="text"
                                 color="blue-gray"
@@ -440,7 +448,7 @@ export function GlobalBatteries() {
                               </IconButton>
                             </Tooltip>
 
-                            <Tooltip content="Delete battery">
+                            <Tooltip content={language === "es" ? "Eliminar batería" : "Delete battery"}>
                               <IconButton
                                 variant="text"
                                 color="red"
@@ -466,30 +474,30 @@ export function GlobalBatteries() {
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">
-        <DialogHeader>Edit Battery</DialogHeader>
+        <DialogHeader>{language === "es" ? "Editar Batería" : "Edit Battery"}</DialogHeader>
         <DialogBody className="space-y-4">
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Name
+              {language === "es" ? "Nombre" : "Name"}
             </Typography>
             <Input
               value={editForm.name}
               onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Battery name"
+              placeholder={language === "es" ? "Nombre de la batería" : "Battery name"}
               crossOrigin=""
             />
           </div>
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Status
+              {t("project_detail.docs.table.status")}
             </Typography>
             <Select
               value={editForm.status}
               onChange={(val) => setEditForm((p) => ({ ...p, status: val }))}
             >
-              <Option value="Draft">Draft</Option>
-              <Option value="Ready">Ready</Option>
+              <Option value="Draft">{language === "es" ? "Borrador" : "Draft"}</Option>
+              <Option value="Ready">{language === "es" ? "Listo" : "Ready"}</Option>
             </Select>
 
             {/* Si quieres usar tus endpoints mark_ready / mark_draft en vez de patch:
@@ -498,27 +506,27 @@ export function GlobalBatteries() {
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Difficulty
+              {t("global.batteries.table.difficulty")}
             </Typography>
             <Select
               value={editForm.difficulty}
               onChange={(val) => setEditForm((p) => ({ ...p, difficulty: val }))}
             >
-              <Option value="Easy">Easy</Option>
-              <Option value="Medium">Medium</Option>
-              <Option value="Hard">Hard</Option>
+              <Option value="Easy">{language === "es" ? "Fácil" : "Easy"}</Option>
+              <Option value="Medium">{language === "es" ? "Medio" : "Medium"}</Option>
+              <Option value="Hard">{language === "es" ? "Difícil" : "Hard"}</Option>
             </Select>
           </div>
 
           <div>
             <Typography variant="small" className="mb-1 text-blue-gray-600 font-semibold">
-              Rule
+              {t("global.batteries.table.rule")}
             </Typography>
             <Select
               value={editForm.rule ? String(editForm.rule) : "null"}
               onChange={(val) => setEditForm((p) => ({ ...p, rule: val === "null" ? null : Number(val) }))}
             >
-              <Option value="null">No rule</Option>
+              <Option value="null">{language === "es" ? "Sin regla" : "No rule"}</Option>
               {(rules || []).map((r) => (
                 <Option key={r.id} value={String(r.id)}>
                   {r.name}
@@ -536,33 +544,33 @@ export function GlobalBatteries() {
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeEdit} disabled={savingEdit}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="blue" onClick={saveEdit} disabled={savingEdit}>
-            {savingEdit ? "Saving..." : "Save"}
+            {savingEdit ? (language === "es" ? "Guardando..." : "Saving...") : (language === "es" ? "Guardar" : "Save")}
           </Button>
         </DialogFooter>
       </Dialog>
 
       {/* ---------------- DELETE DIALOG ---------------- */}
       <Dialog open={deleteOpen} handler={closeDelete} size="sm">
-        <DialogHeader>Delete Battery</DialogHeader>
+        <DialogHeader>{language === "es" ? "Eliminar Batería" : "Delete Battery"}</DialogHeader>
         <DialogBody>
           <Typography color="blue-gray">
-            Are you sure you want to delete{" "}
+            {language === "es" ? "¿Estás seguro de que quieres eliminar " : "Are you sure you want to delete "}
             <span className="font-semibold">{deleteBattery?.name}</span>?
           </Typography>
           <Typography variant="small" className="text-blue-gray-400 mt-2">
-            This action cannot be undone.
+            {language === "es" ? "Esta acción no se puede deshacer." : "This action cannot be undone."}
           </Typography>
         </DialogBody>
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={closeDelete} disabled={deleting}>
-            Cancel
+            {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
           <Button color="red" onClick={confirmDelete} disabled={deleting}>
-            {deleting ? "Deleting..." : "Delete"}
+            {deleting ? (language === "es" ? "Eliminando..." : "Deleting...") : (language === "es" ? "Eliminar" : "Delete")}
           </Button>
         </DialogFooter>
       </Dialog>

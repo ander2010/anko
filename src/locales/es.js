@@ -205,5 +205,160 @@ export const es = {
             btn_create: "Crear mi primer proyecto",
             btn_plans: "Ver planes"
         }
+    },
+    projects: {
+        title: "Mis Proyectos",
+        subtitle: "Gestiona y organiza tus proyectos",
+        btn_create: "Crear Proyecto",
+        tabs: {
+            all: "Todos los Proyectos",
+            owned: "Mis Proyectos",
+            shared: "Compartidos conmigo"
+        },
+        search_placeholder: "Buscar proyectos...",
+        no_projects: "No se encontraron proyectos",
+        no_projects_desc: "Intenta ajustar tu búsqueda",
+        no_projects_cta: "Comienza creando tu primer proyecto",
+        dialogs: {
+            delete_title: "Eliminar Proyecto",
+            delete_message: '¿Estás seguro de que quieres eliminar "{name}"? Esta acción no se puede deshacer.',
+            archive_topic_title: "Archivar Tema",
+            archive_topic_confirm: "Archivar",
+            delete_topic_title: "Eliminar Tema",
+            delete_topic_confirm: "Eliminar",
+            edit_topic_title: "Editar Tema",
+            create_topic_title: "Crear Nuevo Tema",
+            upload_docs_title: "Subir Documentos",
+            upload_docs_to: "Para",
+            upload_docs_click: "Clic para subir",
+            upload_docs_drag: "o arrastra y suelta",
+            upload_docs_selected: "Archivos Seleccionados",
+            upload_docs_btn: "Subir",
+            save_changes: "Guardar Cambios",
+            cancel: "Cancelar",
+            save: "Guardar",
+            create: "Crear",
+            delete_confirm: "Eliminar",
+            confirm_title: "Confirmar",
+            confirm_message: "¿Estás seguro?",
+            confirm_btn: "Confirmar"
+        }
+    },
+    project_detail: {
+        back: "Volver a Proyectos",
+        loading: "Cargando proyecto...",
+        not_found: "Proyecto no encontrado",
+        processing: "Procesando {count} {item}...",
+        document: "documento",
+        documents: "documentos",
+        tabs: {
+            documents: "Documentos",
+            topics: "Temas",
+            rules: "Reglas",
+            batteries: "Baterías"
+        },
+        docs: {
+            btn_upload: "Subir Documentos",
+            table: {
+                name: "Nombre",
+                type: "Tipo",
+                size: "Tamaño",
+                sections: "Secciones",
+                uploaded: "Subido",
+                status: "Estado",
+                actions: "Acciones"
+            },
+            status: {
+                pending: "Pendiente",
+                processing: "Procesando",
+                ready: "Listo",
+                failed: "Fallido"
+            },
+            actions: {
+                download: "Descargar",
+                metadata: "Ver Metadatos",
+                delete: "Eliminar",
+                view: "Ver"
+            },
+            empty: {
+                title: "Aún no hay documentos",
+                desc: "Sube documentos para comenzar con el análisis"
+            }
+        },
+        topics: {
+            btn_create: "Crear Tema",
+            empty: {
+                title: "Aún no hay temas",
+                desc: "Crea tu primer tema para comenzar a organizar preguntas"
+            },
+            dialogs: {
+                archive_title: "Archivar Tema",
+                archive_message: "¿Estás seguro de que deseas archivar \"{name}\"? Puedes restaurarlo más tarde.",
+                archive_confirm: "Archivar"
+            }
+        },
+        rules: {
+            btn_create: "Crear Regla"
+        },
+        batteries: {
+            btn_create: "Generar Batería"
+        }
+    },
+    global: {
+        topics: {
+            title: "Lista Global de Temas",
+            loading: "Cargando temas...",
+            no_topics: "No se encontraron temas.",
+            table: {
+                name: "Nombre del Tema",
+                project: "Proyecto",
+                docs: "Documentos",
+                actions: "Acciones"
+            }
+        },
+        rules: {
+            title: "Lista Global de Reglas",
+            loading: "Cargando reglas...",
+            no_rules: "No se encontraron reglas.",
+            table: {
+                name: "Nombre de la Regla",
+                project: "Proyecto",
+                topic: "Alcance del Tema",
+                questions: "Total Preguntas",
+                strategy: "Estrategia",
+                difficulty: "Dificultad",
+                actions: "Acciones"
+            }
+        },
+        batteries: {
+            title: "Lista Global de Baterías",
+            loading: "Cargando baterías...",
+            no_batteries: "No se encontraron baterías.",
+            table: {
+                name: "Nombre de la Batería",
+                status: "Estado",
+                difficulty: "Dificultad",
+                project: "Proyecto",
+                rule: "Regla",
+                topic: "Alcance del Tema",
+                questions: "Preguntas",
+                actions: "Acciones"
+            }
+        },
+        sections: {
+            title: "Lista Global de Secciones",
+            subtitle: "Se encontraron {count} secciones en total",
+            loading: "Cargando secciones...",
+            no_sections: "No se encontraron secciones",
+            refresh: "Actualizar",
+            table: {
+                id: "ID",
+                title: "Título",
+                content: "Vista Previa de Contenido",
+                document: "Documento",
+                project: "Proyecto",
+                action: "Acción"
+            }
+        }
     }
 };

@@ -9,8 +9,10 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { DocumentArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useLanguage } from "@/context/language-context";
 
 export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
+  const { t, language } = useLanguage();
   const [files, setFiles] = useState([]);
 
   const handleFileChange = (e) => {
@@ -47,9 +49,9 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
     <Dialog open={open} handler={handleClose} size="md">
       <DialogHeader>
         <div className="flex flex-col">
-          <Typography variant="h5">Upload Documents</Typography>
+          <Typography variant="h5">{t("projects.dialogs.upload_docs_title")}</Typography>
           <Typography variant="small" className="text-blue-gray-500 font-normal">
-            To:{" "}
+            {t("projects.dialogs.upload_docs_to")}:{" "}
             <span className="font-medium">
               {project?.title || project?.name || "Project"}
             </span>
@@ -66,8 +68,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
             <DocumentArrowUpIcon className="w-10 h-10 mb-3 text-blue-gray-400" />
             <Typography variant="small" className="text-blue-gray-600">
-              <span className="font-semibold">Click to upload</span> or drag and
-              drop
+              <span className="font-semibold">{t("projects.dialogs.upload_docs_click")}</span> {t("projects.dialogs.upload_docs_drag")}
             </Typography>
             <Typography variant="small" className="text-blue-gray-500">
               PDF, DOCX, TXT, etc.
@@ -88,7 +89,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
         {files.length > 0 && (
           <div className="space-y-2">
             <Typography variant="small" color="blue-gray" className="font-medium">
-              Selected Files ({files.length})
+              {t("projects.dialogs.upload_docs_selected")} ({files.length})
             </Typography>
 
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -131,7 +132,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
 
       <DialogFooter className="gap-2">
         <Button variant="text" color="blue-gray" onClick={handleClose}>
-          Cancel
+          {t("projects.dialogs.cancel")}
         </Button>
 
         <Button
@@ -140,7 +141,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
           onClick={handleSubmit}
           disabled={files.length === 0 || !project?.id}
         >
-          Upload {files.length > 0 && `(${files.length})`}
+          {t("projects.dialogs.upload_docs_btn")} {files.length > 0 && `(${files.length})`}
         </Button>
       </DialogFooter>
     </Dialog>

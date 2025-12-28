@@ -12,8 +12,10 @@ import {
 } from "@material-tailwind/react";
 import { DocumentArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import projectService from "../../services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function CreateProjectDialog({ open, onClose, onCreate }) {
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -49,7 +51,9 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Project name is required";
+    if (!formData.name.trim()) {
+      newErrors.name = language === "es" ? "El nombre del proyecto es obligatorio" : "Project name is required";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,7 +82,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
       setErrors({});
       onClose();
     } catch (err) {
-      const msg = err?.detail || err?.error || "Failed to create project";
+      const msg = err?.detail || err?.error || (language === "es" ? "Error al crear el proyecto" : "Failed to create project");
       setErrors((prev) => ({ ...prev, submit: msg }));
     } finally {
       setLoading(false);
@@ -96,13 +100,13 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
     <Dialog open={open} handler={handleClose} size="md">
       <form onSubmit={handleSubmit}>
         <DialogHeader>
-          <Typography variant="h5">Create New Project</Typography>
+          <Typography variant="h5">{t("projects.dialogs.create_project_title")}</Typography>
         </DialogHeader>
 
         <DialogBody divider className="space-y-4 max-h-[60vh] overflow-y-auto">
           <div>
             <Input
-              label="Project Name *"
+              label={`${language === "es" ? "Nombre del Proyecto" : "Project Name"} *`}
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -118,7 +122,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
 
           <div>
             <Textarea
-              label="Description (optional)"
+              label={`${language === "es" ? "Descripción (opcional)" : "Description (optional)"}`}
               name="description"
               value={formData.description}
               onChange={handleChange}
@@ -129,7 +133,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
           {/* Docs */}
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 font-medium">
-              Documents (optional)
+              {language === "es" ? "Documentos (opcional)" : "Documents (optional)"}
             </Typography>
             <label
               htmlFor="file-upload"
@@ -138,7 +142,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <DocumentArrowUpIcon className="w-10 h-10 mb-3 text-blue-gray-400" />
                 <Typography variant="small" className="text-blue-gray-600">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
+                  <span className="font-semibold">{t("projects.dialogs.upload_docs_click")}</span> {t("projects.dialogs.upload_docs_drag")}
                 </Typography>
                 <Typography variant="small" className="text-blue-gray-500">
                   PDF, DOCX, TXT, etc.
@@ -158,7 +162,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
           {files.length > 0 && (
             <div className="space-y-2">
               <Typography variant="small" color="blue-gray" className="font-medium">
-                Selected Files ({files.length})
+                {t("projects.dialogs.upload_docs_selected")} ({files.length})
               </Typography>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {files.map((file, index) => (
@@ -196,10 +200,12 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
 
         <DialogFooter className="gap-2">
           <Button variant="text" color="blue-gray" onClick={handleClose} disabled={loading}>
-            Cancel
+            {t("projects.dialogs.cancel")}
           </Button>
           <Button type="submit" variant="gradient" color="blue" disabled={loading}>
-            {loading ? "Creating..." : "Create Project"}
+            {loading
+              ? (language === "es" ? "Creando..." : "Creating...")
+              : (language === "es" ? "Crear Proyecto" : "Create Project")}
           </Button>
         </DialogFooter>
 

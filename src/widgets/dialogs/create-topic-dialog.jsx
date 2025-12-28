@@ -17,6 +17,7 @@ import {
 } from "@material-tailwind/react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 function Icon({ id, open }) {
     return (
@@ -27,6 +28,7 @@ function Icon({ id, open }) {
 }
 
 export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
+    const { t, language } = useLanguage();
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -110,13 +112,13 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
     const validate = () => {
         const newErrors = {};
         if (!formData.name.trim()) {
-            newErrors.name = "Topic name is required";
+            newErrors.name = language === "es" ? "El nombre del tema es obligatorio" : "Topic name is required";
         }
         if (formData.question_count_target < 1 || formData.question_count_target > 100) {
-            newErrors.question_count_target = "Questions count must be between 1 and 100";
+            newErrors.question_count_target = language === "es" ? "La cantidad de preguntas debe estar entre 1 y 100" : "Questions count must be between 1 and 100";
         }
         if (formData.related_sections.length === 0) {
-            newErrors.sections = "At least one section must be selected";
+            newErrors.sections = language === "es" ? "Debes seleccionar al menos una sección" : "At least one section must be selected";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -151,13 +153,13 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
         <Dialog open={open} handler={handleClose} size="lg">
             <form onSubmit={handleSubmit} className="flex flex-col h-[90vh] md:h-auto">
                 <DialogHeader>
-                    <Typography variant="h5">Create New Topic</Typography>
+                    <Typography variant="h5">{t("projects.dialogs.create_topic_title")}</Typography>
                 </DialogHeader>
                 <DialogBody divider className="flex-1 overflow-y-auto pr-2">
                     <div className="space-y-4">
                         <div>
                             <Input
-                                label="Topic Name *"
+                                label={`${language === "es" ? "Nombre del Tema" : "Topic Name"} *`}
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
@@ -173,7 +175,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
 
                         <div>
                             <Textarea
-                                label="Description (optional)"
+                                label={`${language === "es" ? "Descripción (opcional)" : "Description (optional)"}`}
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -184,7 +186,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                         <div>
                             <Input
                                 type="number"
-                                label="Target Questions Count *"
+                                label={`${language === "es" ? "Cantidad Objetivo de Preguntas" : "Target Questions Count"} *`}
                                 name="question_count_target"
                                 value={formData.question_count_target}
                                 onChange={handleChange}
@@ -201,7 +203,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
 
                         <div>
                             <Typography variant="h6" color="blue-gray" className="mb-2">
-                                Select Content Sections *
+                                {language === "es" ? "Seleccionar Secciones de Contenido *" : "Select Content Sections *"}
                             </Typography>
                             {errors.sections && (
                                 <Typography variant="small" color="red" className="mb-2">
@@ -215,7 +217,9 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                                 </div>
                             ) : scannedDocuments.length === 0 ? (
                                 <Typography variant="small" color="gray" className="italic">
-                                    No documents with sections found. Please process some documents first.
+                                    {language === "es"
+                                        ? "No se encontraron documentos con secciones. Por favor, procesa algunos documentos primero."
+                                        : "No documents with sections found. Please process some documents first."}
                                 </Typography>
                             ) : (
                                 <div className="border border-blue-gray-100 rounded-lg max-h-[400px] overflow-y-auto">
@@ -251,7 +255,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                                                             {doc.filename}
                                                         </Typography>
                                                         <Typography variant="small" color="gray" className="font-normal">
-                                                            {doc.sections.length} sections
+                                                            {doc.sections.length} {language === "es" ? "secciones" : "sections"}
                                                         </Typography>
                                                     </div>
                                                 </AccordionHeader>
@@ -266,7 +270,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                                                                 />
                                                                 <div>
                                                                     <Typography variant="small" color="blue-gray" className="font-medium">
-                                                                        {section.title || "Untitled Section"}
+                                                                        {section.title || (language === "es" ? "Sección sin título" : "Untitled Section")}
                                                                     </Typography>
                                                                     <Typography variant="small" color="gray" className="line-clamp-2 text-xs">
                                                                         {section.content}
@@ -283,7 +287,7 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                             )}
                             <div className="flex justify-between items-center mt-2">
                                 <Typography variant="small" color="gray">
-                                    {formData.related_sections.length} sections selected
+                                    {formData.related_sections.length} {language === "es" ? "secciones seleccionadas" : "sections selected"}
                                 </Typography>
                             </div>
                         </div>
@@ -291,10 +295,10 @@ export function CreateTopicDialog({ open, onClose, onCreate, projectId }) {
                 </DialogBody>
                 <DialogFooter className="gap-2 border-t border-blue-gray-50">
                     <Button variant="text" color="blue-gray" onClick={handleClose}>
-                        Cancel
+                        {t("projects.dialogs.cancel")}
                     </Button>
                     <Button type="submit" variant="gradient" color="blue" disabled={loadingSections}>
-                        Create Topic
+                        {t("projects.dialogs.create")}
                     </Button>
                 </DialogFooter>
             </form>

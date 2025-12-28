@@ -28,7 +28,10 @@ import UploadDocumentsDialog from "@/widgets/dialogs/upload-documents-dialog";
 
 import { useProjects } from "@/context/projects-context";
 
+import { useLanguage } from "@/context/language-context";
+
 export function Projects() {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const { user } = useAuth();
     // Use global state
@@ -212,17 +215,17 @@ export function Projects() {
     const getConfirmDialogProps = () => {
         if (confirmAction === "delete") {
             return {
-                title: "Delete Project",
-                message: `Are you sure you want to permanently delete "${selectedProject?.title || selectedProject?.name}"? This action cannot be undone.`,
-                confirmText: "Delete",
+                title: t("projects.dialogs.delete_title"),
+                message: t("projects.dialogs.delete_message", { name: selectedProject?.title || selectedProject?.name }),
+                confirmText: t("projects.dialogs.delete_confirm"),
                 variant: "danger",
             };
         }
 
         return {
-            title: "Confirm",
-            message: "Are you sure?",
-            confirmText: "Confirm",
+            title: t("projects.dialogs.confirm_title"),
+            message: t("projects.dialogs.confirm_message"),
+            confirmText: t("projects.dialogs.confirm_btn"),
             variant: "default",
         };
     };
@@ -252,10 +255,10 @@ export function Projects() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <Typography variant="h4" color="blue-gray" className="mb-1">
-                                My Projects
+                                {t("projects.title")}
                             </Typography>
                             <Typography className="font-normal text-blue-gray-600">
-                                Manage and organize your projects
+                                {t("projects.subtitle")}
                             </Typography>
                         </div>
                         <Button
@@ -264,7 +267,7 @@ export function Projects() {
                             onClick={() => setCreateDialogOpen(true)}
                         >
                             <PlusIcon className="h-5 w-5" />
-                            Create Project
+                            {t("projects.btn_create")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -284,7 +287,7 @@ export function Projects() {
                                 >
                                     <div className="flex items-center gap-2">
                                         <FolderIcon className="h-4 w-4" />
-                                        All Projects
+                                        {t("projects.tabs.all")}
                                     </div>
                                 </Tab>
                                 <Tab
@@ -294,7 +297,7 @@ export function Projects() {
                                 >
                                     <div className="flex items-center gap-2">
                                         <UserGroupIcon className="h-4 w-4" />
-                                        My Projects
+                                        {t("projects.tabs.owned")}
                                     </div>
                                 </Tab>
                                 <Tab
@@ -304,7 +307,7 @@ export function Projects() {
                                 >
                                     <div className="flex items-center gap-2">
                                         <UserGroupIcon className="h-4 w-4" />
-                                        Shared with Me
+                                        {t("projects.tabs.shared")}
                                     </div>
                                 </Tab>
                             </TabsHeader>
@@ -313,7 +316,7 @@ export function Projects() {
                         {/* Search */}
                         <div className="w-full md:w-72">
                             <Input
-                                label="Search projects..."
+                                label={t("projects.search_placeholder")}
                                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -359,12 +362,12 @@ export function Projects() {
                     <CardBody className="flex flex-col items-center justify-center py-12">
                         <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
                         <Typography variant="h5" color="blue-gray" className="mb-2">
-                            No projects found
+                            {t("projects.no_projects")}
                         </Typography>
                         <Typography className="text-blue-gray-600 mb-4 text-center">
                             {searchQuery
-                                ? "Try adjusting your search query"
-                                : "Get started by creating your first project"}
+                                ? t("projects.no_projects_desc")
+                                : t("projects.no_projects_cta")}
                         </Typography>
                         {!searchQuery && (
                             <Button
@@ -373,7 +376,7 @@ export function Projects() {
                                 onClick={() => setCreateDialogOpen(true)}
                             >
                                 <PlusIcon className="h-5 w-5" />
-                                Create Project
+                                {t("projects.btn_create")}
                             </Button>
                         )}
                     </CardBody>
