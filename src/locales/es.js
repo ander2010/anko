@@ -473,5 +473,26 @@ export const es = {
         links: {
             about: "Sobre Nosotros"
         }
+    },
+    landing: {
+        hero: {
+            cta_primary: "Comienza Ahora - Es Gratis",
+            social_proof: "+1,000 estudiantes ya confían en nosotros"
+        },
+        benefits: {
+            cta: "Explorar Beneficios"
+        },
+        pricing: {
+            cta_free: "Empezar Gratis",
+            cta_pro: "Obtener Pro",
+            cta_team: "Contactar"
+        },
+        faq: {
+            cta: "Ver Más Preguntas"
+        },
+        auth: {
+            sign_in: "Iniciar Sesión",
+            register: "Registrarse"
+        }
     }
 };
