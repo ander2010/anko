@@ -7,6 +7,8 @@ import {
   CardFooter,
   Button,
   Chip,
+  Input,
+  Textarea,
 } from "@material-tailwind/react";
 
 import { useNavigate } from "react-router-dom";
@@ -540,6 +542,52 @@ export function Home() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ================= CONTACTO ================= */}
+      <section className="mt-14">
+        <div className="mx-auto max-w-6xl px-1">
+          <Card className="overflow-hidden border border-blue-gray-100 shadow-sm rounded-2xl">
+            <CardBody className="p-0">
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                {/* Image Side */}
+                <div className="relative h-64 md:h-auto bg-blue-gray-50">
+                  <img
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
+                    alt="Contact support"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-blue-gray-900/10 mix-blend-multiply" />
+                </div>
+
+                {/* Form Side */}
+                <div className="p-8 lg:p-12 bg-white">
+                  <div className="mb-6">
+                    <Typography variant="h4" color="blue-gray" className="mb-2">
+                      ¿Necesitas ayuda?
+                    </Typography>
+                    <Typography className="text-blue-gray-500">
+                      Déjanos tus datos y cuéntanos tu problema. Te contactaremos lo antes posible.
+                    </Typography>
+                  </div>
+
+                  <form className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Input label="Nombre (Opcional)" color="blue-gray" />
+                      <Input label="Teléfono (Opcional)" type="tel" color="blue-gray" />
+                    </div>
+                    <Input label="Correo electrónico" type="email" required color="blue-gray" />
+                    <Textarea label="Descripción del problema" required color="blue-gray" rows={4} />
+
+                    <Button color="blue-gray" fullWidth className="mt-2">
+                      Enviar mensaje
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
         </div>
       </section>
 
