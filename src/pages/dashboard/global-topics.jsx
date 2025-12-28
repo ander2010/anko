@@ -204,7 +204,7 @@ export function GlobalTopics() {
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
-        <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
+        <CardHeader variant="gradient" color="blue-gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
             {t("global.topics.title")}
           </Typography>
@@ -385,7 +385,7 @@ export function GlobalTopics() {
           <Button variant="text" color="blue-gray" onClick={closeEdit} disabled={savingEdit}>
             {language === "es" ? "Cancelar" : "Cancel"}
           </Button>
-          <Button color="blue" onClick={saveEdit} disabled={savingEdit}>
+          <Button color="blue-gray" onClick={saveEdit} disabled={savingEdit}>
             {savingEdit ? (language === "es" ? "Guardando..." : "Saving...") : (language === "es" ? "Guardar" : "Save")}
           </Button>
         </DialogFooter>

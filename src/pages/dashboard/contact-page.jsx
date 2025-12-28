@@ -78,7 +78,7 @@ export function ContactPage() {
                                 </div>
                                 <Input label={language === "es" ? "Asunto" : "Subject"} size="lg" />
                                 <Textarea label={language === "es" ? "Tu Mensaje" : "Your Message"} rows={6} />
-                                <Button variant="gradient" color="blue" fullWidth size="lg">
+                                <Button variant="gradient" color="blue-gray" fullWidth size="lg">
                                     {language === "es" ? "Enviar Mensaje" : "Send Message"}
                                 </Button>
                             </form>

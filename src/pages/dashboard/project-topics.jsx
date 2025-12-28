@@ -111,7 +111,7 @@ export function ProjectTopics() {
                             </div>
                             <Button
                                 className="flex items-center gap-2"
-                                color="blue"
+                                color="blue-gray"
                                 onClick={() => setCreateDialogOpen(true)}
                             >
                                 <PlusIcon className="h-5 w-5" />
@@ -147,7 +147,7 @@ export function ProjectTopics() {
                         </Typography>
                         <Button
                             className="flex items-center gap-2"
-                            color="blue"
+                            color="blue-gray"
                             onClick={() => setCreateDialogOpen(true)}
                         >
                             <PlusIcon className="h-5 w-5" />

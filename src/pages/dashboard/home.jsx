@@ -563,7 +563,7 @@ export function Home() {
                     </Typography>
                     <Button
                       variant="outlined"
-                      color="blue"
+                      color="blue-gray"
                       onClick={() => navigate("/dashboard/contact-us")}
                       className="mb-4"
                     >

@@ -69,7 +69,7 @@ export function Billing() {
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                                 <Chip
                                     value={language === "es" ? "MÁS POPULAR" : "MOST POPULAR"}
-                                    color="blue"
+                                    color="blue-gray"
                                     className="rounded-full"
                                 />
                             </div>
@@ -142,7 +142,7 @@ export function Billing() {
                             </Button>
                         </Link>
                         <Link to="/dashboard/contact-us">
-                            <Button variant="gradient" color="blue">
+                            <Button variant="gradient" color="blue-gray">
                                 {language === "es" ? "Contáctanos" : "Contact Us"}
                             </Button>
                         </Link>

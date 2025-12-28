@@ -413,7 +413,7 @@ export function ProjectDetail() {
             value={val}
             icon={<Spinner className="h-3 w-3" />}
             size="sm"
-            color="blue"
+            color="blue-gray"
             className="rounded-full"
           />
         );
@@ -582,7 +582,7 @@ export function ProjectDetail() {
           <div className="mb-6 flex justify-end">
             <Button
               className="flex items-center gap-2"
-              color="blue"
+              color="blue-gray"
               onClick={() => setUploadDialogOpen(true)}
             >
               <DocumentArrowUpIcon className="h-5 w-5" />
@@ -639,7 +639,7 @@ export function ProjectDetail() {
                           </td>
 
                           <td className={rowClass}>
-                            <Chip value={doc.type} size="sm" variant="ghost" color="blue" />
+                            <Chip value={doc.type} size="sm" variant="ghost" color="blue-gray" />
                           </td>
 
                           <td className={rowClass}>
@@ -728,7 +728,7 @@ export function ProjectDetail() {
                   </Typography>
                   <Button
                     className="flex items-center gap-2"
-                    color="blue"
+                    color="blue-gray"
                     onClick={() => setUploadDialogOpen(true)}
                   >
                     <DocumentArrowUpIcon className="h-5 w-5" />
@@ -745,7 +745,7 @@ export function ProjectDetail() {
           <div className="mb-6 flex justify-end">
             <Button
               className="flex items-center gap-2"
-              color="blue"
+              color="blue-gray"
               onClick={() => setCreateTopicDialogOpen(true)}
             >
               <PlusIcon className="h-5 w-5" />
@@ -778,7 +778,7 @@ export function ProjectDetail() {
                 </Typography>
                 <Button
                   className="flex items-center gap-2"
-                  color="blue"
+                  color="blue-gray"
                   onClick={() => setCreateTopicDialogOpen(true)}
                 >
                   <PlusIcon className="h-5 w-5" />
@@ -838,7 +838,7 @@ export function ProjectDetail() {
       {activeTab === "rules" && (
         <>
           <div className="mb-6 flex justify-end">
-            <Button className="flex items-center gap-2" color="blue" onClick={() => setShowCreateRule(true)}>
+            <Button className="flex items-center gap-2" color="blue-gray" onClick={() => setShowCreateRule(true)}>
               <PlusIcon className="h-5 w-5" />
               {t("project_detail.rules.btn_create")}
             </Button>
@@ -933,7 +933,7 @@ export function ProjectDetail() {
                   <Button variant="text" onClick={() => setShowCreateRule(false)}>
                     {language === "es" ? "Cancelar" : "Cancel"}
                   </Button>
-                  <Button color="blue" onClick={handleCreateRule} disabled={!ruleForm.name}>
+                  <Button color="blue-gray" onClick={handleCreateRule} disabled={!ruleForm.name}>
                     {language === "es" ? "Guardar Regla" : "Save Rule"}
                   </Button>
                 </div>
@@ -1016,7 +1016,7 @@ export function ProjectDetail() {
           <div className="mb-6 flex justify-end">
             <Button
               className="flex items-center gap-2"
-              color="blue"
+              color="blue-gray"
               onClick={() => setShowGenerateBattery(true)}
               disabled={rules.length === 0}
             >
@@ -1127,7 +1127,7 @@ export function ProjectDetail() {
                     {language === "es" ? "Cancelar" : "Cancel"}
                   </Button>
                   <Button
-                    color="blue"
+                    color="blue-gray"
                     onClick={handleGenerateBattery}
                     disabled={!selectedRuleId || (batteryType === "topic" && !selectedTopicId)}
                   >

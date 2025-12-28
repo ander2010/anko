@@ -263,7 +263,7 @@ export function Projects() {
                         </div>
                         <Button
                             className="flex items-center gap-2"
-                            color="blue"
+                            color="blue-gray"
                             onClick={() => setCreateDialogOpen(true)}
                         >
                             <PlusIcon className="h-5 w-5" />
@@ -372,7 +372,7 @@ export function Projects() {
                         {!searchQuery && (
                             <Button
                                 className="flex items-center gap-2"
-                                color="blue"
+                                color="blue-gray"
                                 onClick={() => setCreateDialogOpen(true)}
                             >
                                 <PlusIcon className="h-5 w-5" />

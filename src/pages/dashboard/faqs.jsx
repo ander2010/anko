@@ -56,7 +56,7 @@ export function Faqs() {
                     {t("contact_page.info_title")}: <span className="font-bold text-blue-gray-700">{t("contact_page.email")}</span>
                 </Typography>
                 <Link to="/dashboard/contact-us">
-                    <Button variant="outlined" color="blue" size="sm">
+                    <Button variant="outlined" color="blue-gray" size="sm">
                         {language === "es" ? "¿Todavía tienes dudas? Contáctanos" : "Still have questions? Contact Us"}
                     </Button>
                 </Link>
