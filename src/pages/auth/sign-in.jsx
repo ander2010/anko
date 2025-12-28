@@ -9,9 +9,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import authService from "../../services/authService";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "@/context/language-context";
 
 
 export function SignIn() {
+  const { language } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -103,6 +105,14 @@ export function SignIn() {
             Not registered?
             <Link to="/auth/sign-up" className="text-gray-900 ml-1">Create account</Link>
           </Typography>
+          <div className="mt-8 text-center">
+            <Link to="/" className="text-blue-gray-500 hover:text-blue-gray-900 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              {language === "es" ? "Volver al inicio" : "Back to Home"}
+            </Link>
+          </div>
         </form>
 
       </div>

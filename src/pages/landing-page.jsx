@@ -94,7 +94,7 @@ export function LandingPage() {
         {
             name: t("home.pricing.plans.team.name"),
             price: t("home.pricing.plans.team.price"),
-            color: "blue",
+            color: "blue-gray",
             features: t("home.pricing.plans.team.features"),
             button: t("landing.pricing.cta_team"),
             onClick: () => navigate("/dashboard/contact-us"),
@@ -133,7 +133,7 @@ export function LandingPage() {
                                 <Typography variant="h2" color="blue-gray" className="leading-tight text-3xl lg:text-5xl font-black">
                                     {t("home.hero.title_1")}
                                     <br />
-                                    <span className="text-blue-600">{t("home.hero.title_2")}</span>
+                                    <span className="text-blue-gray-700">{t("home.hero.title_2")}</span>
                                 </Typography>
 
                                 <Typography variant="lead" className="mt-3 text-blue-gray-500 max-w-xl">
@@ -150,7 +150,7 @@ export function LandingPage() {
                                     <Link to="/auth/sign-up">
                                         <Button
                                             size="lg"
-                                            color="blue"
+                                            color="blue-gray"
                                             className="shadow-md hover:shadow-lg transition-all rounded-xl w-full sm:w-auto"
                                         >
                                             {t("landing.hero.cta_primary")}
@@ -205,8 +205,8 @@ export function LandingPage() {
                                 {/* Mini cards flotantes */}
                                 <div className="absolute -top-10 -left-8 hidden w-64 rounded-2xl border border-blue-gray-100 bg-white p-4 shadow-xl lg:block transform -translate-x-1/4 hover:-translate-y-1 transition-transform z-10">
                                     <div className="flex items-start gap-3">
-                                        <div className="rounded-lg bg-blue-50 p-2">
-                                            <QuestionMarkCircleIcon className="h-5 w-5 text-blue-600" />
+                                        <div className="rounded-lg bg-blue-gray-50 p-2">
+                                            <QuestionMarkCircleIcon className="h-5 w-5 text-blue-gray-700" />
                                         </div>
                                         <div>
                                             <Typography className="text-sm font-bold text-blue-gray-900">
@@ -221,8 +221,8 @@ export function LandingPage() {
 
                                 <div className="absolute -bottom-10 -right-8 hidden w-64 rounded-2xl border border-blue-gray-100 bg-white p-4 shadow-xl lg:block transform translate-x-1/4 hover:-translate-y-1 transition-transform z-10">
                                     <div className="flex items-start gap-3">
-                                        <div className="rounded-lg bg-blue-50 p-2">
-                                            <TagIcon className="h-5 w-5 text-blue-600" />
+                                        <div className="rounded-lg bg-blue-gray-50 p-2">
+                                            <TagIcon className="h-5 w-5 text-blue-gray-700" />
                                         </div>
                                         <div>
                                             <Typography className="text-sm font-bold text-blue-gray-900">
@@ -257,8 +257,8 @@ export function LandingPage() {
                                 </CardHeader>
                                 <CardBody className="p-6">
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="p-2 bg-blue-50 rounded-lg">
-                                            {React.createElement(step.icon, { className: "h-6 w-6 text-blue-600" })}
+                                        <div className="p-2 bg-blue-gray-50 rounded-lg">
+                                            {React.createElement(step.icon, { className: "h-6 w-6 text-blue-gray-700" })}
                                         </div>
                                         <Typography variant="h5" color="blue-gray">
                                             {step.title}
@@ -275,7 +275,7 @@ export function LandingPage() {
 
                 {/* BENEFITS */}
                 <section className="bg-blue-gray-900 rounded-3xl p-10 lg:p-16 mb-20 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-blue-600 blur-[100px] opacity-20"></div>
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-blue-gray-700 blur-[100px] opacity-20"></div>
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div>
                             <Typography variant="h2" color="white" className="mb-6">
@@ -293,8 +293,8 @@ export function LandingPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {benefits.map((b, idx) => (
                                 <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
-                                    <div className="p-2 bg-blue-600/20 rounded-lg w-fit mb-4">
-                                        {React.createElement(b.icon, { className: "h-6 w-6 text-blue-400" })}
+                                    <div className="p-2 bg-blue-gray-100 rounded-lg w-fit mb-4">
+                                        {React.createElement(b.icon, { className: "h-6 w-6 text-blue-gray-700" })}
                                     </div>
                                     <Typography variant="h6" color="white" className="mb-2">
                                         {b.title}
@@ -367,7 +367,7 @@ export function LandingPage() {
                         ))}
                     </div>
                     <Link to="/dashboard/faqs">
-                        <Button variant="text" color="blue" className="mt-10 px-8 flex items-center gap-2 mx-auto">
+                        <Button variant="text" color="blue-gray" className="mt-10 px-8 flex items-center gap-2 mx-auto">
                             {t("landing.faq.cta")} <RocketLaunchIcon className="h-4 w-4" />
                         </Button>
                     </Link>

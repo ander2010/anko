@@ -44,7 +44,7 @@ export function LandingNavbar() {
                         </Button>
                     </Link>
                     <Link to="/auth/sign-up">
-                        <Button variant="gradient" size="sm" color="blue">
+                        <Button variant="filled" size="sm" color="blue-gray">
                             {t("landing.auth.register")}
                         </Button>
                     </Link>
