@@ -8,7 +8,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard/home" replace /> : <LandingPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/dashboard/*" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/auth/*" element={<Auth />} />
       <Route path="*" element={<Navigate to="/" replace />} />

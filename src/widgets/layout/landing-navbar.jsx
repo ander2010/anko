@@ -6,9 +6,11 @@ import {
     Button,
 } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
+import { useAuth } from "@/context/auth-context";
 
 export function LandingNavbar() {
     const { t, language, changeLanguage } = useLanguage();
+    const { isAuthenticated } = useAuth();
 
     return (
         <MTNavbar className="mx-auto max-w-screen-2xl px-4 py-2 mt-4 lg:px-8 lg:py-4 bg-white/80 backdrop-blur-md border border-blue-gray-100 shadow-sm sticky top-4 z-50">
@@ -38,16 +40,26 @@ export function LandingNavbar() {
                         <span className="hidden sm:inline-block uppercase font-bold text-xs">{language}</span>
                     </Button>
 
-                    <Link to="/auth/sign-in">
-                        <Button variant="text" size="sm" color="blue-gray">
-                            {t("landing.auth.sign_in")}
-                        </Button>
-                    </Link>
-                    <Link to="/auth/sign-up">
-                        <Button variant="filled" size="sm" color="blue-gray">
-                            {t("landing.auth.register")}
-                        </Button>
-                    </Link>
+                    {isAuthenticated ? (
+                        <Link to="/dashboard/home">
+                            <Button variant="filled" size="sm" color="blue-gray">
+                                {language === "es" ? "Panel" : "Dashboard"}
+                            </Button>
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/auth/sign-in">
+                                <Button variant="text" size="sm" color="blue-gray">
+                                    {t("landing.auth.sign_in")}
+                                </Button>
+                            </Link>
+                            <Link to="/auth/sign-up">
+                                <Button variant="filled" size="sm" color="blue-gray">
+                                    {t("landing.auth.register")}
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </MTNavbar>
