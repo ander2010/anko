@@ -9,6 +9,7 @@ import {
   Chip,
   Input,
   Textarea,
+  Carousel,
 } from "@material-tailwind/react";
 
 import { useNavigate } from "react-router-dom";
@@ -16,7 +17,6 @@ import {
   TagIcon,
   ClipboardDocumentCheckIcon,
   BoltIcon,
-  CheckCircleIcon,
   StarIcon,
   RocketLaunchIcon,
   AcademicCapIcon,
@@ -79,40 +79,29 @@ export function Home() {
 
   // ✅ Para quién es
   const forWho = [
-    { title: t("home.for_who.w1.title"), desc: t("home.for_who.w1.desc") },
-    { title: t("home.for_who.w2.title"), desc: t("home.for_who.w2.desc") },
-    { title: t("home.for_who.w3.title"), desc: t("home.for_who.w3.desc") },
-    { title: t("home.for_who.w4.title"), desc: t("home.for_who.w4.desc") },
+    {
+      title: t("home.for_who.w1.title"),
+      desc: t("home.for_who.w1.desc"),
+      img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
+    },
+    {
+      title: t("home.for_who.w2.title"),
+      desc: t("home.for_who.w2.desc"),
+      img: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
+    },
+    {
+      title: t("home.for_who.w3.title"),
+      desc: t("home.for_who.w3.desc"),
+      img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
+    },
+    {
+      title: t("home.for_who.w4.title"),
+      desc: t("home.for_who.w4.desc"),
+      img: "https://images.unsplash.com/photo-1544531585-9847b68c8c86?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
+    },
   ];
 
   // ✅ Pricing
-  const plans = [
-    {
-      name: t("home.pricing.plans.free.name"),
-      price: t("home.pricing.plans.free.price"),
-      color: "blue-gray",
-      features: t("home.pricing.plans.free.features"),
-      button: t("home.pricing.plans.free.button"),
-      onClick: () => navigate("/dashboard/projects"),
-    },
-    {
-      name: t("home.pricing.plans.premium.name"),
-      price: t("home.pricing.plans.premium.price"),
-      color: "amber",
-      recommended: true,
-      features: t("home.pricing.plans.premium.features"),
-      button: t("home.pricing.plans.premium.button"),
-      onClick: () => navigate("/dashboard/billing"),
-    },
-    {
-      name: t("home.pricing.plans.team.name"),
-      price: t("home.pricing.plans.team.price"),
-      color: "blue",
-      features: t("home.pricing.plans.team.features"),
-      button: t("home.pricing.plans.team.button"),
-      onClick: () => navigate("/dashboard/billing"),
-    },
-  ];
 
   // ✅ FAQ
   const faqs = [
@@ -346,101 +335,55 @@ export function Home() {
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-            {Array.isArray(forWho) && forWho.map((item) => (
-              <Card key={item.title} className="border border-blue-gray-100 shadow-sm rounded-2xl">
-                <CardBody className="p-6">
-                  <Typography variant="h5" color="blue-gray" className="mb-1">
-                    {item.title}
-                  </Typography>
-                  <Typography className="text-blue-gray-600 text-sm">{item.desc}</Typography>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================= PRICING ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <div className="text-center mb-10">
-            <Typography variant="h3" color="blue-gray" className="mb-2">
-              {t("home.pricing.title")}
-            </Typography>
-            <Typography className="text-blue-gray-500">
-              {t("home.pricing.subtitle")}
-            </Typography>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 items-stretch">
-            {Array.isArray(plans) && plans.map((plan) => (
-              <Card
-                key={plan.name}
-                className={[
-                  "relative rounded-2xl border shadow-sm",
-                  plan.recommended
-                    ? "border-amber-500 shadow-xl md:-translate-y-2"
-                    : "border-blue-gray-100",
-                ].join(" ")}
-              >
-                {plan.recommended && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <Chip value={t("home.pricing.popular")} color="amber" className="rounded-full" />
-                  </div>
-                )}
-
-                <CardHeader
-                  floated={false}
-                  shadow={false}
-                  className="m-0 rounded-t-2xl border-b border-blue-gray-100 bg-blue-gray-50 p-6 text-center"
-                >
-                  <Typography variant="small" className="uppercase tracking-wider text-blue-gray-500">
-                    {plan.name}
-                  </Typography>
-                  <Typography variant="h3" color="blue-gray" className="mt-2">
-                    {plan.price}
-                  </Typography>
-                </CardHeader>
-
-                <CardBody className="p-6">
-                  <ul className="flex flex-col gap-3">
-                    {Array.isArray(plan.features) && plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <span className="mt-0.5 rounded-full border border-blue-gray-200 bg-blue-gray-50 p-1">
-                          <CheckCircleIcon className="h-4 w-4 text-blue-gray-700" />
-                        </span>
-                        <Typography className="text-sm text-blue-gray-700">
-                          {feature}
-                        </Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </CardBody>
-
-                <CardFooter className="p-6 pt-0">
-                  <Button
-                    size="lg"
-                    fullWidth
-                    color={plan.color}
-                    variant={plan.name === "Gratis" ? "outlined" : "gradient"}
-                    onClick={plan.onClick}
-                    className={plan.recommended ? "shadow-md" : ""}
-                  >
-                    {plan.button}
-                  </Button>
-
-                  {plan.name === (language === "es" ? "Premium" : "Premium") && (
-                    <Typography className="mt-3 text-xs text-blue-gray-400 text-center">
-                      {t("home.pricing.plans.premium.footer")}
+          <Carousel
+            className="rounded-2xl overflow-hidden h-[400px] shadow-lg"
+            navigation={({ setActiveIndex, activeIndex, length }) => (
+              <div className="absolute bottom-4 left-2/4 z-50 flex -translate-x-2/4 gap-2">
+                {new Array(length).fill("").map((_, i) => (
+                  <span
+                    key={i}
+                    className={`block h-1 cursor-pointer rounded-2xl transition-all content-[''] ${activeIndex === i ? "w-8 bg-white" : "w-4 bg-white/50"
+                      }`}
+                    onClick={() => setActiveIndex(i)}
+                  />
+                ))}
+              </div>
+            )}
+            transition={{ duration: 0.5, type: "tween" }}
+            autoplay={true}
+            loop={true}
+          >
+            {Array.isArray(forWho) && forWho.map((item, idx) => (
+              <div key={idx} className="relative h-full w-full">
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 grid h-full w-full place-items-center bg-black/40">
+                  <div className="w-3/4 text-center md:w-2/4">
+                    <Typography
+                      variant="h2"
+                      color="white"
+                      className="mb-4 text-3xl md:text-4xl lg:text-5xl"
+                    >
+                      {item.title}
                     </Typography>
-                  )}
-                </CardFooter>
-              </Card>
+                    <Typography
+                      variant="lead"
+                      color="white"
+                      className="mb-12 opacity-80"
+                    >
+                      {item.desc}
+                    </Typography>
+                  </div>
+                </div>
+              </div>
             ))}
-          </div>
+          </Carousel>
         </div>
       </section>
+
 
       {/* ================= TESTIMONIOS ================= */}
       <section className="mt-14">
@@ -607,9 +550,6 @@ export function Home() {
                 <div className="flex gap-3">
                   <Button color="blue-gray" onClick={() => navigate("/dashboard/projects")}>
                     {t("home.cta.btn_create")}
-                  </Button>
-                  <Button variant="outlined" color="blue-gray" onClick={() => navigate("/dashboard/billing")}>
-                    {t("home.cta.btn_plans")}
                   </Button>
                 </div>
               </div>
