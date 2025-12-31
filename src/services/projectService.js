@@ -283,6 +283,15 @@ const projectService = {
     }
   },
 
+  async saveQuestionsFromQa(batteryId) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/save-questions-from-qa/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to save questions from QA" };
+    }
+  },
+
 
 
   async getTopics() {
