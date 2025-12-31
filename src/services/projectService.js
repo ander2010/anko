@@ -274,6 +274,15 @@ const projectService = {
     }
   },
 
+  async startGenerateBattery(payload) {
+    try {
+      const res = await api.post("/batteries/start-generate/", payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to start battery generation" };
+    }
+  },
+
 
 
   async getTopics() {
