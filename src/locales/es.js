@@ -19,6 +19,19 @@ export const es = {
         faqs: "Preguntas Frecuentes",
         "about-us": "Sobre Nosotros",
         "contact-us": "Contacto",
+        resources: "Recursos Globales",
+        permissions: "Permisos",
+        roles: "Roles",
+        plans: "Planes",
+        "plan-limits": "Límites de Plan",
+        subscriptions: "Suscripciones",
+        "battery-shares": "Baterías Compartidas",
+        "saved-batteries": "Baterías Guardadas",
+        invites: "Invitaciones",
+        decks: "Decks (Mazos)",
+        flashcards: "Flashcards",
+        "deck-shares": "Decks Compartidos",
+        "saved-decks": "Decks Guardados"
     },
     home: {
         hero: {

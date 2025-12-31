@@ -19,6 +19,19 @@ export const en = {
         faqs: "FAQs",
         "about-us": "About Us",
         "contact-us": "Contact Us",
+        resources: "Global Resources",
+        permissions: "Permissions",
+        roles: "Roles",
+        plans: "Plans",
+        "plan-limits": "Plan Limits",
+        subscriptions: "Subscriptions",
+        "battery-shares": "Battery Shares",
+        "saved-batteries": "Saved Batteries",
+        invites: "Invites",
+        decks: "Decks",
+        flashcards: "Flashcards",
+        "deck-shares": "Deck Shares",
+        "saved-decks": "Saved Decks"
     },
     home: {
         hero: {

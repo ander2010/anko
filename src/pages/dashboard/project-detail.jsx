@@ -72,6 +72,7 @@ export function ProjectDetail() {
   });
   const [sectionSearch, setSectionSearch] = useState("");
   const [availableSections, setAvailableSections] = useState([]);
+  const [batteryProgress, setBatteryProgress] = useState({});
 
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -143,7 +144,9 @@ export function ProjectDetail() {
         payload.rule = Number(batteryForm.rule);
       }
 
-      await projectService.startGenerateBattery(payload);
+      const res = await projectService.startGenerateBattery(payload);
+      console.log("startGenerateBattery response:", res); // Debug log
+
       setShowGenerateBattery(false);
 
       // Reset form
@@ -158,6 +161,58 @@ export function ProjectDetail() {
       setSectionSearch("");
 
       await fetchBatteries(Number(projectId));
+
+      // Init SSE for progress
+      const batteryId = res?.battery?.id;
+      if (batteryId) {
+        const sseUrl = `${import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api"}/batteries/${batteryId}/progress-stream-bat/`;
+        console.log("Initializing SSE at:", sseUrl); // Debug log
+
+        // If 'token' is truly not needed (e.g. cookie auth or public), removes it.
+        const es = new EventSource(sseUrl);
+
+        es.onopen = () => {
+          console.log("SSE Connection Opened");
+        };
+
+        es.addEventListener("progress", (e) => {
+          console.log("SSE Progress Event:", e.data); // Debug log
+          const data = JSON.parse(e.data);
+          setBatteryProgress(prev => ({
+            ...prev,
+            [batteryId]: data
+          }));
+        });
+
+        es.addEventListener("end", async (e) => {
+          console.log("ended:", e.data);
+          es.close();
+
+          try {
+            await projectService.saveQuestionsFromQa(batteryId);
+          } catch (err) {
+            console.error("Error saving questions:", err);
+          }
+
+          // Update status to completed or remove from progress map
+          // Refresh batteries to get final data
+          fetchBatteries(Number(projectId));
+          setBatteryProgress(prev => {
+            const newState = { ...prev };
+            // remove or keep as '100%'?
+            // Let's keep it as 100% until refresh or manually cleared?
+            // Actually fetching batteries updates the list with 'Ready'.
+            // So progress overlay can be removed.
+            delete newState[batteryId];
+            return newState;
+          });
+        });
+
+        es.addEventListener("error", (e) => {
+          console.error("SSE error", e);
+          es.close();
+        });
+      }
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to generate battery");
     }
@@ -1338,6 +1393,22 @@ export function ProjectDetail() {
                         {formatDate(battery.created_at || battery.createdAt)}
                       </Typography>
                     </div>
+
+                    {/* Generation Progress */}
+                    {batteryProgress[battery.id] && (
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between gap-4 mb-1">
+                          <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                            {batteryProgress[battery.id].status}
+                          </Typography>
+                          <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                            {Math.round(batteryProgress[battery.id].percent || 0)}%
+                          </Typography>
+                        </div>
+                        <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
+                      </div>
+                    )}
+
                     {/* Attempts summary */}
                     <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
                       {battery.attempts_count > 0 ? (

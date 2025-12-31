@@ -283,6 +283,15 @@ const projectService = {
     }
   },
 
+  async saveQuestionsFromQa(batteryId) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/save-questions-from-qa/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to save questions from QA" };
+    }
+  },
+
 
 
   async getTopics() {
@@ -331,6 +340,28 @@ const projectService = {
   },
 
 
+
+
+  // -------- GENERIC CRUD (GLOBAL) --------
+  async getList(resource) {
+    const res = await api.get(`/${resource}/`);
+    return res.data;
+  },
+
+  async createItem(resource, payload) {
+    const res = await api.post(`/${resource}/`, payload);
+    return res.data;
+  },
+
+  async updateItem(resource, id, payload) {
+    const res = await api.patch(`/${resource}/${id}/`, payload);
+    return res.data;
+  },
+
+  async deleteItem(resource, id) {
+    const res = await api.delete(`/${resource}/${id}/`);
+    return res.data;
+  },
 
 };
 
