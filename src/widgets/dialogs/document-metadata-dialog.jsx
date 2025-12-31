@@ -22,6 +22,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
 import { useLanguage } from "@/context/language-context";
+import projectService from "@/services/projectService";
 
 export function DocumentMetadataDialog({ open, onClose, document }) {
     const { t, language } = useLanguage();

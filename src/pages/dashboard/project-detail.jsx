@@ -51,6 +51,7 @@ import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
 import { CreateTopicDialog } from "@/widgets/dialogs/create-topic-dialog";
 import { EditTopicDialog } from "@/widgets/dialogs/edit-topic-dialog";
 import { TopicCard } from "@/widgets/cards/topic-card";
+import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -98,6 +99,7 @@ export function ProjectDetail() {
   const [rules, setRules] = useState([]);
   const [batteries, setBatteries] = useState([]);
   const [simulationBattery, setSimulationBattery] = useState(null);
+  const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
 
   const isOwner = useMemo(() => {
     if (!project || !user) return false;
@@ -349,13 +351,41 @@ export function ProjectDetail() {
     }
   };
 
-  const handleUploadDocuments = async (files) => {
+  const handleUploadDocuments = async (pId, files) => {
     try {
       setError(null);
-      await projectService.uploadProjectDocuments(Number(projectId), files);
+      const response = await projectService.uploadProjectDocuments(Number(pId), files);
+
+      if (response.processing) {
+        const newJobs = {};
+        response.processing.forEach(p => {
+          if (p.document?.id && p.external?.job_id) {
+            newJobs[p.document.id] = p.external.job_id;
+          }
+        });
+        setActiveJobs(prev => ({ ...prev, ...newJobs }));
+      }
+
       await fetchDocuments(Number(projectId));
     } catch (err) {
-      setError(err?.error || "Failed to upload documents");
+      setError(err?.error || err?.detail || "Failed to upload documents");
+    }
+  };
+
+  const handleJobComplete = async (docId, jobId) => {
+    try {
+      if (docId) {
+        // Fetch tags as requested by the user
+        await projectService.getDocumentTags(docId);
+      }
+      setActiveJobs((prev) => {
+        const newState = { ...prev };
+        delete newState[docId];
+        return newState;
+      });
+      refreshProject();
+    } catch (err) {
+      console.error("Error handling job completion:", err);
     }
   };
 
@@ -671,7 +701,18 @@ export function ProjectDetail() {
                             </Typography>
                           </td>
 
-                          <td className={rowClass}>{getStatusBadge(doc.status)}</td>
+                          <td className={rowClass}>
+                            {activeJobs[doc.id] ? (
+                              <div className="w-32">
+                                <ProjectProcessingProgress
+                                  jobId={activeJobs[doc.id]}
+                                  onComplete={() => handleJobComplete(doc.id, activeJobs[doc.id])}
+                                />
+                              </div>
+                            ) : (
+                              getStatusBadge(doc.status)
+                            )}
+                          </td>
 
                           <td className={rowClass}>
                             <Menu placement="left-start">

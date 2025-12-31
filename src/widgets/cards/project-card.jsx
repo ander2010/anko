@@ -22,15 +22,19 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 
+import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
+
 export function ProjectCard({
   project,
   documentCount = 0,
   progress = 0,
+  processingJobs = [], // Array of { id, jobId }
   isOwner,
   onEnter,
   onEdit,
   onDelete,
   onUploadDocs,
+  onJobComplete,
 }) {
   const formatDate = (dateString) => {
     if (!dateString) return "—";
@@ -140,8 +144,21 @@ export function ProjectCard({
           </Typography>
         </div>
 
-        {/* Progress */}
-        {documentCount > 0 && (
+        {/* Real-time Progress for Jobs */}
+        {processingJobs.length > 0 && (
+          <div className="mb-3 space-y-2">
+            {processingJobs.map((job) => (
+              <ProjectProcessingProgress
+                key={job.jobId}
+                jobId={job.jobId}
+                onComplete={(jobId, dId) => onJobComplete && onJobComplete(project.id, jobId, dId)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Static Progress (legacy/backup) */}
+        {documentCount > 0 && processingJobs.length === 0 && progress > 0 && (
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
               <Typography variant="small" className="text-blue-gray-600 font-medium">
@@ -164,7 +181,7 @@ export function ProjectCard({
         <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50">
           <ClockIcon className="h-4 w-4 text-blue-gray-400" />
           <Typography variant="small" className="text-blue-gray-500">
-            Updated {formatDate(project.updated_at || project.updatedAt)}
+            Updatedddd {formatDate(project.updated_at || project.updatedAt)}
           </Typography>
         </div>
       </CardBody>
@@ -173,9 +190,9 @@ export function ProjectCard({
 }
 
 ProjectCard.defaultProps = {
-  onEdit: () => {},
-  onDelete: () => {},
-  onUploadDocs: () => {},
+  onEdit: () => { },
+  onDelete: () => { },
+  onUploadDocs: () => { },
 };
 
 ProjectCard.propTypes = {
@@ -197,12 +214,18 @@ ProjectCard.propTypes = {
 
   documentCount: PropTypes.number,
   progress: PropTypes.number,
+  processingJobs: PropTypes.arrayOf(
+    PropTypes.shape({
+      jobId: PropTypes.string.isRequired,
+    })
+  ),
   isOwner: PropTypes.bool.isRequired,
 
   onEnter: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onUploadDocs: PropTypes.func,
+  onJobComplete: PropTypes.func,
 };
 
 export default ProjectCard;

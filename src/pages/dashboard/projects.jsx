@@ -46,6 +46,7 @@ export function Projects() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
     const [error, setError] = useState(null);
+    const [activeJobs, setActiveJobs] = useState({}); // { projectId: [{ jobId }] }
 
     // No local fetch needed, context handles it.
     useEffect(() => {
@@ -83,10 +84,43 @@ export function Projects() {
 
     const handleDoUploadDocs = async (projectId, files) => {
         try {
-            await projectService.uploadDocuments(projectId, files);
+            const response = await projectService.uploadDocuments(projectId, files);
+            if (response.processing) {
+                const newJobs = response.processing.map(p => ({ jobId: p.external?.job_id }));
+                setActiveJobs(prev => ({
+                    ...prev,
+                    [projectId]: [...(prev[projectId] || []), ...newJobs]
+                }));
+            }
             await refreshAll();
         } catch (err) {
             setError(err?.error || "Failed to upload documents");
+        }
+    };
+    const handleJobComplete = async (projectId, jobId, docId) => {
+        try {
+            if (docId) {
+                // Fetch tags as requested by user
+                await projectService.getDocumentTags(docId);
+            }
+            setActiveJobs((prev) => {
+                const projectJobs = prev[projectId] || [];
+                const filtered = projectJobs.filter((j) => j.jobId !== jobId);
+
+                if (filtered.length === 0) {
+                    const next = { ...prev };
+                    delete next[projectId];
+                    return next;
+                }
+
+                return {
+                    ...prev,
+                    [projectId]: filtered,
+                };
+            });
+            refreshAll();
+        } catch (err) {
+            console.error("Error handling job completion:", err);
         }
     };
 
@@ -347,11 +381,13 @@ export function Projects() {
                             project={project}
                             documentCount={project.documents_count ?? 0}
                             progress={0}
+                            processingJobs={activeJobs[project.id] || []}
                             isOwner={project?.owner?.id === user?.id}
                             onEnter={handleEnterProject}
                             onEdit={handleEditProject}
                             onDelete={handleDeleteProject}
                             onUploadDocs={handleUploadDocs}
+                            onJobComplete={handleJobComplete}
                         />
 
 

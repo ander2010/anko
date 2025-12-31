@@ -47,22 +47,6 @@ const projectService = {
   },
 
 
-  async uploadDocuments(projectId, files) {
-    try {
-      const formData = new FormData();
-      files.forEach((f) => formData.append("files", f));
-
-      const res = await api.post(`/projects/${projectId}/documents/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      return res.data;
-    } catch (err) {
-      throw err?.response?.data || { error: "Failed to upload documents" };
-    }
-  },
-
-
   async getProjects() {
     try {
       const res = await api.get(`${BASE}`);
@@ -118,6 +102,15 @@ const projectService = {
       await api.delete(`/documents/${documentId}/`);
     } catch (err) {
       throw err?.response?.data || { error: "Failed to delete document" };
+    }
+  },
+
+  async getDocumentTags(documentId) {
+    try {
+      const res = await api.get(`/documents/${documentId}/tags/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch document tags" };
     }
   },
 
