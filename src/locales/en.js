@@ -1,6 +1,7 @@
 export const en = {
     sidenav: {
         brand: "ANKO Studio",
+        admin: "Global Admin",
         dashboard: "Dashboard",
         profile: "Profile",
         tables: "Tables",

@@ -66,84 +66,90 @@ export const routes = [
         path: "/sections",
         element: <GlobalSections />,
       },
-      // Admin / Global CRUD
+      // Admin / Global CRUD (Nested)
       {
         icon: <ServerStackIcon {...icon} />,
-        name: "resources",
-        path: "/resources",
-        element: <GlobalResources />,
-      },
-      {
-        icon: <TagIcon {...icon} />,
-        name: "permissions",
-        path: "/permissions",
-        element: <GlobalPermissions />,
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "roles",
-        path: "/roles",
-        element: <GlobalRoles />,
-      },
-      {
-        icon: <CreditCardIcon {...icon} />,
-        name: "plans",
-        path: "/plans",
-        element: <GlobalPlans />,
-      },
-      {
-        icon: <ClipboardDocumentCheckIcon {...icon} />,
-        name: "plan-limits",
-        path: "/plan-limits",
-        element: <GlobalPlanLimits />,
-      },
-      {
-        icon: <CreditCardIcon {...icon} />,
-        name: "subscriptions",
-        path: "/subscriptions",
-        element: <GlobalSubscriptions />,
-      },
-      {
-        icon: <BoltIcon {...icon} />,
-        name: "battery-shares",
-        path: "/battery-shares",
-        element: <GlobalBatteryShares />,
-      },
-      {
-        icon: <BoltIcon {...icon} />,
-        name: "saved-batteries",
-        path: "/saved-batteries",
-        element: <GlobalSavedBatteries />,
-      },
-      {
-        icon: <EnvelopeIcon {...icon} />,
-        name: "invites",
-        path: "/invites",
-        element: <GlobalInvites />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "decks",
-        path: "/decks",
-        element: <GlobalDecks />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "flashcards",
-        path: "/flashcards",
-        element: <GlobalFlashcards />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "deck-shares",
-        path: "/deck-shares",
-        element: <GlobalDeckShares />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "saved-decks",
-        path: "/saved-decks",
-        element: <GlobalSavedDecks />,
+        name: "admin", // Key for translations: sidenav.admin
+        children: [
+          {
+            icon: <ServerStackIcon {...icon} />,
+            name: "resources",
+            path: "/resources",
+            element: <GlobalResources />,
+          },
+          {
+            icon: <TagIcon {...icon} />,
+            name: "permissions",
+            path: "/permissions",
+            element: <GlobalPermissions />,
+          },
+          {
+            icon: <UserCircleIcon {...icon} />,
+            name: "roles",
+            path: "/roles",
+            element: <GlobalRoles />,
+          },
+          {
+            icon: <CreditCardIcon {...icon} />,
+            name: "plans",
+            path: "/plans",
+            element: <GlobalPlans />,
+          },
+          {
+            icon: <ClipboardDocumentCheckIcon {...icon} />,
+            name: "plan-limits",
+            path: "/plan-limits",
+            element: <GlobalPlanLimits />,
+          },
+          {
+            icon: <CreditCardIcon {...icon} />,
+            name: "subscriptions",
+            path: "/subscriptions",
+            element: <GlobalSubscriptions />,
+          },
+          {
+            icon: <BoltIcon {...icon} />,
+            name: "battery-shares",
+            path: "/battery-shares",
+            element: <GlobalBatteryShares />,
+          },
+          {
+            icon: <BoltIcon {...icon} />,
+            name: "saved-batteries",
+            path: "/saved-batteries",
+            element: <GlobalSavedBatteries />,
+          },
+          {
+            icon: <EnvelopeIcon {...icon} />,
+            name: "invites",
+            path: "/invites",
+            element: <GlobalInvites />,
+          },
+          {
+            icon: <RectangleStackIcon {...icon} />,
+            name: "decks",
+            path: "/decks",
+            element: <GlobalDecks />,
+          },
+          {
+            icon: <RectangleStackIcon {...icon} />,
+            name: "flashcards",
+            path: "/flashcards",
+            element: <GlobalFlashcards />,
+          },
+          {
+            icon: <RectangleStackIcon {...icon} />,
+            name: "deck-shares",
+            path: "/deck-shares",
+            element: <GlobalDeckShares />,
+          },
+          {
+            icon: <RectangleStackIcon {...icon} />,
+            name: "saved-decks",
+            path: "/saved-decks",
+            element: <GlobalSavedDecks />,
+          },
+        ]
       },
       {
         icon: <CreditCardIcon {...icon} />,

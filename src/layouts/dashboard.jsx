@@ -36,12 +36,16 @@ export function Dashboard() {
           <Cog6ToothIcon className="h-5 w-5" />
         </IconButton>
         <Routes>
-          {routes.map(
-            ({ layout, pages }) =>
-              layout === "dashboard" &&
-              pages.map(({ path, element }) => (
-                <Route exact path={path} element={element} key={path} />
-              ))
+          {routes.map(({ layout, pages }) =>
+            layout === "dashboard" &&
+            pages.map((page) => {
+              if (page.children) {
+                return page.children.map(({ path, element }) => (
+                  <Route exact path={path} element={element} key={path} />
+                ));
+              }
+              return <Route exact path={page.path} element={page.element} key={page.path} />;
+            })
           )}
           {/* Dynamic routes for project detail and topics */}
           <Route path="/project/:projectId" element={<ProjectDetail />} />

@@ -12,8 +12,22 @@ export function GlobalSavedBatteries() {
                 { header: "Saved At", accessor: "saved_at" },
             ]}
             fields={[
-                { name: "user", label: "User ID", type: "number" },
-                { name: "battery", label: "Battery ID", type: "number" },
+                {
+                    name: "user",
+                    label: "User",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
+                {
+                    name: "battery",
+                    label: "Battery",
+                    type: "select-resource",
+                    resource: "batteries",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
             ]}
         />
     );

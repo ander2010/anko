@@ -12,8 +12,22 @@ export function GlobalDeckShares() {
                 { header: "Permission", accessor: "permission" },
             ]}
             fields={[
-                { name: "deck", label: "Deck ID", type: "number" },
-                { name: "shared_with", label: "User ID", type: "number" },
+                {
+                    name: "deck",
+                    label: "Deck",
+                    type: "select-resource",
+                    resource: "decks",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
+                {
+                    name: "shared_with",
+                    label: "Shared With",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
                 { name: "permission", label: "Permission", type: "text" },
             ]}
         />

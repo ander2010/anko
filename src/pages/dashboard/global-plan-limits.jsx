@@ -14,7 +14,14 @@ export function GlobalPlanLimits() {
                 { header: "Bool Value", accessor: "bool_value" },
             ]}
             fields={[
-                { name: "plan", label: "Plan ID", type: "number" },
+                {
+                    name: "plan",
+                    label: "Plan",
+                    type: "select-resource",
+                    resource: "plans",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
                 { name: "key", label: "Key", type: "text" },
                 { name: "value_type", label: "Type (int, bool, str)", type: "text", defaultValue: "int" },
                 { name: "int_value", label: "Integer Value", type: "number" },

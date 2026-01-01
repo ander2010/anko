@@ -12,8 +12,22 @@ export function GlobalBatteryShares() {
                 { header: "Permission", accessor: "permission" },
             ]}
             fields={[
-                { name: "battery", label: "Battery ID", type: "number" },
-                { name: "shared_with", label: "User ID (Shared With)", type: "number" },
+                {
+                    name: "battery",
+                    label: "Battery",
+                    type: "select-resource",
+                    resource: "batteries",
+                    labelAccessor: "name", // Assuming battery has name
+                    valueAccessor: "id"
+                },
+                {
+                    name: "shared_with",
+                    label: "Shared With (User)",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
                 { name: "permission", label: "Permission (view, edit)", type: "text" },
             ]}
         />

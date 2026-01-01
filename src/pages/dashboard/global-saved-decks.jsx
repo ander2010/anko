@@ -12,8 +12,22 @@ export function GlobalSavedDecks() {
                 { header: "Saved At", accessor: "saved_at" },
             ]}
             fields={[
-                { name: "user", label: "User ID", type: "number" },
-                { name: "deck", label: "Deck ID", type: "number" },
+                {
+                    name: "user",
+                    label: "User",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
+                {
+                    name: "deck",
+                    label: "Deck",
+                    type: "select-resource",
+                    resource: "decks",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
             ]}
         />
     );

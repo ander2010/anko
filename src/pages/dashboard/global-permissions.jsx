@@ -12,7 +12,14 @@ export function GlobalPermissions() {
                 { header: "Code", accessor: "code" },
             ]}
             fields={[
-                { name: "resource", label: "Resource ID", type: "number" },
+                {
+                    name: "resource",
+                    label: "Resource",
+                    type: "select-resource",
+                    resource: "resources",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
                 { name: "action", label: "Action (view, create, update, delete, manage, custom)", type: "text" },
                 { name: "code", label: "Code (Optional)", type: "text" },
             ]}

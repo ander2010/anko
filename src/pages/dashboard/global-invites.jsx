@@ -14,8 +14,22 @@ export function GlobalInvites() {
             ]}
             fields={[
                 { name: "email", label: "Email", type: "email" },
-                { name: "role", label: "Role ID", type: "number" },
-                { name: "invited_by", label: "Invited By (User ID)", type: "number" },
+                {
+                    name: "role",
+                    label: "Role",
+                    type: "select-resource",
+                    resource: "roles",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
+                {
+                    name: "invited_by",
+                    label: "Invited By",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
             ]}
         />
     );

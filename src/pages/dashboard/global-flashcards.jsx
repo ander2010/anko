@@ -12,7 +12,14 @@ export function GlobalFlashcards() {
                 { header: "Back", accessor: "back" },
             ]}
             fields={[
-                { name: "deck", label: "Deck ID", type: "number" },
+                {
+                    name: "deck",
+                    label: "Deck",
+                    type: "select-resource",
+                    resource: "decks",
+                    labelAccessor: "name",
+                    valueAccessor: "id"
+                },
                 { name: "front", label: "Front Content", type: "textarea" },
                 { name: "back", label: "Back Content", type: "textarea" },
             ]}

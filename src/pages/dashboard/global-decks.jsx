@@ -14,7 +14,14 @@ export function GlobalDecks() {
             fields={[
                 { name: "name", label: "Name", type: "text" },
                 { name: "description", label: "Description", type: "textarea" },
-                { name: "owner", label: "Owner ID", type: "number" },
+                {
+                    name: "owner",
+                    label: "Owner",
+                    type: "select-resource",
+                    resource: "users",
+                    labelAccessor: "email",
+                    valueAccessor: "id"
+                },
                 { name: "is_public", label: "Is Public", type: "boolean" },
             ]}
         />
