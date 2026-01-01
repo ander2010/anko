@@ -14,6 +14,9 @@ import { DocumentArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import projectService from "../../services/projectService";
 import { useLanguage } from "@/context/language-context";
 
+
+
+
 export function CreateProjectDialog({ open, onClose, onCreate }) {
   const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
