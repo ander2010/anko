@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
@@ -10,10 +10,12 @@ import {
 import routes from "@/routes";
 import { ProjectDetail, ProjectTopics } from "@/pages/dashboard";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useAuth } from "@/context/auth-context";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+  const { allowedRoutes, isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">
@@ -39,17 +41,29 @@ export function Dashboard() {
           {routes.map(({ layout, pages }) =>
             layout === "dashboard" &&
             pages.map((page) => {
+              // RBAC Check for page
+              if (page.key && !isAdmin && !allowedRoutes.includes(page.key)) {
+                return null;
+              }
+
               if (page.children) {
-                return page.children.map(({ path, element }) => (
-                  <Route exact path={path} element={element} key={path} />
-                ));
+                return page.children.map(({ path, element, key }) => {
+                  // RBAC Check for child
+                  if (key && !isAdmin && !allowedRoutes.includes(key)) {
+                    return null;
+                  }
+                  return <Route exact path={path} element={element} key={path} />;
+                });
               }
               return <Route exact path={page.path} element={page.element} key={page.path} />;
             })
           )}
-          {/* Dynamic routes for project detail and topics */}
+          {/* Dynamic routes for project detail and topics - usually open to everyone who can see dashboard */}
           <Route path="/project/:projectId" element={<ProjectDetail />} />
           <Route path="/project/:projectId/topics" element={<ProjectTopics />} />
+
+          {/* Fallback for unauthorized/not found dashboard routes */}
+          <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
         </Routes>
         <div className="text-blue-gray-600">
           <Footer />

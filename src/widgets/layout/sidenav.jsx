@@ -5,11 +5,13 @@ import { XMarkIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/2
 import { Button, IconButton, Typography } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useLanguage } from "@/context/language-context";
+import { useAuth } from "@/context/auth-context";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { t } = useLanguage();
   const { sidenavColor, sidenavType, openSidenav } = controller;
+  const { allowedRoutes, isAdmin } = useAuth();
 
   // State for expanded groups
   const [expanded, setExpanded] = useState({});
@@ -33,7 +35,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   const activeColor = allowedColors.has(sidenavColor) ? sidenavColor : "blue-gray";
 
-  // Filter routes
+  // Filter routes based on RBAC
   const visibleRoutes = (routes || [])
     .filter((route) => {
       if (isAuthenticated && route.layout === "auth") return false;
@@ -42,7 +44,34 @@ export function Sidenav({ brandImg, brandName, routes }) {
     })
     .map((route) => ({
       ...route,
-      pages: (route.pages || []).filter((page) => !page.hidden),
+      pages: (route.pages || []).filter((page) => {
+        if (page.hidden) return false;
+        // If it has a key, check allowedRoutes
+        if (page.key) {
+          if (isAdmin) return true;
+          return allowedRoutes.includes(page.key);
+        }
+        return true;
+      }).map(page => {
+        // Also filter children if any
+        if (page.children) {
+          return {
+            ...page,
+            children: page.children.filter(child => {
+              if (child.key) {
+                if (isAdmin) return true;
+                return allowedRoutes.includes(child.key);
+              }
+              return true;
+            })
+          };
+        }
+        return page;
+      }).filter(page => {
+        // Hide parent if it has children and all are filtered out
+        if (page.children && page.children.length === 0) return false;
+        return true;
+      }),
     }))
     .filter((route) => route.pages.length > 0 || route.layout === "auth");
 
