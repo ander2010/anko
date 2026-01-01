@@ -25,7 +25,17 @@ export function GlobalPlanLimits() {
                     valueAccessor: "id"
                 },
                 { name: "key", label: t("global.pages.plan-limits.fields.key"), type: "text" },
-                { name: "value_type", label: t("global.pages.plan-limits.fields.value_type"), type: "text", defaultValue: "int" },
+                {
+                    name: "value_type",
+                    label: t("global.pages.plan-limits.fields.value_type"),
+                    type: "select",
+                    options: [
+                        { value: "int", label: "Entero" },
+                        { value: "bool", label: "Booleano" },
+                        { value: "str", label: "Texto" }
+                    ],
+                    defaultValue: "int"
+                },
                 { name: "int_value", label: t("global.pages.plan-limits.fields.int_value"), type: "number" },
                 { name: "bool_value", label: t("global.pages.plan-limits.fields.bool_value"), type: "boolean" },
                 { name: "str_value", label: t("global.pages.plan-limits.fields.str_value"), type: "text" },

@@ -14,7 +14,6 @@ import {
     Select,
     Option,
     IconButton,
-    Chip,
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
@@ -22,7 +21,6 @@ import { useLanguage } from "@/context/language-context";
 
 export function GlobalCrudPage({ title, resource, columns, fields }) {
     const languageContext = useLanguage();
-    console.log("GlobalCrudPage context:", languageContext);
 
     if (!languageContext) {
         return <div className="p-4 text-red-500">Error: Language Context is null. Check Provider wrapping.</div>;
@@ -96,6 +94,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
             const initial = {};
             fields.forEach((f) => {
                 if (f.defaultValue !== undefined) initial[f.name] = f.defaultValue;
+                else if (f.type === "boolean") initial[f.name] = false;
                 else initial[f.name] = "";
             });
             setFormData(initial);
@@ -232,6 +231,29 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                                         {opts.map(opt => (
                                             <Option key={opt[valueKey]} value={String(opt[valueKey])}>
                                                 {opt[labelKey] || opt.title || opt.email || "Unknown"}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </div>
+                            );
+                        } else if (field.type === "select") {
+                            return (
+                                <div key={field.name} className="flex flex-col gap-2">
+                                    <Typography variant="small" color="blue-gray" className="font-medium">
+                                        {field.label}
+                                    </Typography>
+                                    <Select
+                                        label={`${t("global.crud.select")} ${field.label}`}
+                                        value={String(formData[field.name] || "")}
+                                        onChange={(val) => handleChange(field.name, val)}
+                                        animate={{
+                                            mount: { y: 0 },
+                                            unmount: { y: 25 },
+                                        }}
+                                    >
+                                        {(field.options || []).map(opt => (
+                                            <Option key={opt.value} value={String(opt.value)}>
+                                                {opt.label}
                                             </Option>
                                         ))}
                                     </Select>
