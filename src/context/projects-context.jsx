@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import projectService from "@/services/projectService";
-import authService from "@/services/authService";
+import { useAuth } from "./auth-context";
 
 const ProjectsContext = createContext();
 
 export function ProjectsProvider({ children }) {
+  const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [topics, setTopics] = useState([]);
   const [rules, setRules] = useState([]);
@@ -15,10 +16,16 @@ export function ProjectsProvider({ children }) {
 
   // Function to load all data
   const refreshAll = useCallback(async () => {
+    if (!user?.id) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const [projectsData, topicsData, rulesData, batteriesData] = await Promise.all([
-        projectService.getProjects(),
+        projectService.getProjects({ user: user.id }),
         projectService.getTopics(),
         projectService.getAllRules(),
         projectService.getAllBatteries()
@@ -35,12 +42,10 @@ export function ProjectsProvider({ children }) {
       setError(null);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
-      // Don't set global error here to avoid blocking valid parts of UI, 
-      // but you might want to show a toast or alert.
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   // Initial load
   useEffect(() => {

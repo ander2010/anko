@@ -47,9 +47,9 @@ const projectService = {
   },
 
 
-  async getProjects() {
+  async getProjects(params = {}) {
     try {
-      const res = await api.get(`${BASE}`);
+      const res = await api.get(`${BASE}`, { params });
       return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Failed to fetch projects" };
@@ -343,8 +343,8 @@ const projectService = {
 
 
   // -------- GENERIC CRUD (GLOBAL) --------
-  async getList(resource) {
-    const res = await api.get(`/${resource}/`);
+  async getList(resource, params = {}) {
+    const res = await api.get(`/${resource}/`, { params });
     return res.data;
   },
 

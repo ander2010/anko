@@ -179,7 +179,7 @@ export const routes = [
           },
           {
             icon: <FolderIcon {...icon} />,
-            name: "projects",
+            name: "global-projects",
             key: "dashboard.admin.projects",
             path: "/global-projects",
             element: <GlobalProjects />,

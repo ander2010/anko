@@ -20,7 +20,7 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
-export function GlobalCrudPage({ title, resource, columns, fields }) {
+export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {} }) {
     const languageContext = useLanguage();
 
     if (!languageContext) {
@@ -44,7 +44,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
     const fetchItems = async () => {
         setLoading(true);
         try {
-            const data = await projectService.getList(resource);
+            const data = await projectService.getList(resource, extraParams);
             if (Array.isArray(data)) {
                 setItems(data);
             } else if (data && Array.isArray(data.results)) {

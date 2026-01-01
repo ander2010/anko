@@ -34,7 +34,7 @@ export const es = {
         "deck-shares": "Decks Compartidos",
         "saved-decks": "Decks Guardados",
         users: "Usuarios",
-        projects: "Proyectos Generales"
+        "global-projects": "Proyectos Generales"
     },
     home: {
         hero: {
@@ -603,13 +603,13 @@ export const es = {
             projects: {
                 title: "Proyectos Generales",
                 columns: {
-                    name: "Nombre",
+                    title: "Título",
                     owner: "Dueño",
                     created_at: "Creado el",
                     updated_at: "Actualizado el"
                 },
                 fields: {
-                    name: "Nombre",
+                    title: "Título",
                     description: "Descripción",
                     owner: "Dueño"
                 }
