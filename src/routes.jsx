@@ -17,7 +17,8 @@ import {
 import {
   Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing, Faqs, AboutUs, ContactPage,
   GlobalResources, GlobalPermissions, GlobalRoles, GlobalPlans, GlobalPlanLimits, GlobalSubscriptions,
-  GlobalBatteryShares, GlobalSavedBatteries, GlobalInvites, GlobalDecks, GlobalFlashcards, GlobalDeckShares, GlobalSavedDecks
+  GlobalBatteryShares, GlobalSavedBatteries, GlobalInvites, GlobalDecks, GlobalFlashcards, GlobalDeckShares, GlobalSavedDecks,
+  GlobalUsers
 } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
@@ -71,6 +72,12 @@ export const routes = [
         icon: <ServerStackIcon {...icon} />,
         name: "admin", // Key for translations: sidenav.admin
         children: [
+          {
+            icon: <UserCircleIcon {...icon} />,
+            name: "users",
+            path: "/users",
+            element: <GlobalUsers />,
+          },
           {
             icon: <ServerStackIcon {...icon} />,
             name: "resources",

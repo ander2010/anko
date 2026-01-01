@@ -32,7 +32,8 @@ export const en = {
         decks: "Decks",
         flashcards: "Flashcards",
         "deck-shares": "Deck Shares",
-        "saved-decks": "Saved Decks"
+        "saved-decks": "Saved Decks",
+        users: "Users"
     },
     home: {
         hero: {
@@ -573,6 +574,26 @@ export const en = {
                 fields: {
                     user: "User",
                     battery: "Battery"
+                }
+            },
+            users: {
+                title: "Global Users",
+                columns: {
+                    username: "Username",
+                    email: "Email",
+                    first_name: "First Name",
+                    last_name: "Last Name",
+                    is_active: "Active",
+                    is_staff: "Staff"
+                },
+                fields: {
+                    username: "Username",
+                    email: "Email",
+                    first_name: "First Name",
+                    last_name: "Last Name",
+                    is_active: "Is Active",
+                    is_staff: "Is Staff",
+                    password: "Password (leave blank to keep)"
                 }
             }
         }
