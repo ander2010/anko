@@ -1,20 +1,22 @@
 import React from "react";
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalSavedBatteries() {
+    const { t } = useLanguage();
     return (
         <GlobalCrudPage
-            title="Global Saved Batteries"
+            title={t("global.pages.saved-batteries.title")}
             resource="saved-batteries"
             columns={[
-                { header: "User", accessor: "user" },
-                { header: "Battery", accessor: "battery" },
-                { header: "Saved At", accessor: "saved_at" },
+                { header: t("global.pages.saved-batteries.columns.user"), accessor: "user" },
+                { header: t("global.pages.saved-batteries.columns.battery"), accessor: "battery" },
+                { header: t("global.pages.saved-batteries.columns.saved_at"), accessor: "saved_at" },
             ]}
             fields={[
                 {
                     name: "user",
-                    label: "User",
+                    label: t("global.pages.saved-batteries.fields.user"),
                     type: "select-resource",
                     resource: "users",
                     labelAccessor: "email",
@@ -22,7 +24,7 @@ export function GlobalSavedBatteries() {
                 },
                 {
                     name: "battery",
-                    label: "Battery",
+                    label: t("global.pages.saved-batteries.fields.battery"),
                     type: "select-resource",
                     resource: "batteries",
                     labelAccessor: "name",

@@ -377,6 +377,204 @@ export const es = {
                 project: "Proyecto",
                 action: "Acción"
             }
+        },
+        crud: {
+            add_new: "Agregar Nuevo",
+            actions: "Acciones",
+            edit_item: "Editar Elemento",
+            create_item: "Crear Nuevo Elemento",
+            delete_title: "Confirmar Eliminación",
+            delete_message: "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.",
+            cancel: "Cancelar",
+            save: "Guardar",
+            delete: "Eliminar",
+            no_items: "No se encontraron elementos.",
+            select: "Seleccionar"
+        },
+        pages: {
+            invites: {
+                title: "Invitaciones Globales",
+                columns: {
+                    email: "Correo",
+                    role: "Rol",
+                    invited_by: "Invitado Por",
+                    accepted: "Aceptado"
+                },
+                fields: {
+                    email: "Correo",
+                    role: "Rol",
+                    invited_by: "Invitado Por"
+                }
+            },
+            decks: {
+                title: "Decks Globales",
+                columns: {
+                    name: "Nombre",
+                    owner: "Propietario",
+                    is_public: "Público"
+                },
+                fields: {
+                    name: "Nombre",
+                    description: "Descripción",
+                    owner: "Propietario",
+                    is_public: "Es Público"
+                }
+            },
+            flashcards: {
+                title: "Flashcards Globales",
+                columns: {
+                    deck: "Deck",
+                    front: "Frente",
+                    back: "Reverso"
+                },
+                fields: {
+                    deck: "Deck",
+                    front: "Contenido Frente",
+                    back: "Contenido Reverso"
+                }
+            },
+            "deck-shares": {
+                title: "Decks Compartidos Globales",
+                columns: {
+                    deck: "Deck",
+                    shared_with: "Compartido Con",
+                    permission: "Permiso"
+                },
+                fields: {
+                    deck: "Deck",
+                    shared_with: "Compartido Con",
+                    permission: "Permiso"
+                }
+            },
+            resources: {
+                title: "Recursos Globales",
+                columns: {
+                    key: "Clave",
+                    name: "Nombre",
+                    description: "Descripción"
+                },
+                fields: {
+                    key: "Clave (Slug)",
+                    name: "Nombre",
+                    description: "Descripción"
+                }
+            },
+            permissions: {
+                title: "Permisos Globales",
+                columns: {
+                    resource: "Recurso",
+                    action: "Acción",
+                    code: "Código"
+                },
+                fields: {
+                    resource: "Recurso",
+                    action: "Acción (ver, crear, actualizar, eliminar, gestionar)",
+                    code: "Código (Opcional)"
+                }
+            },
+            roles: {
+                title: "Roles Globales",
+                columns: {
+                    id: "ID",
+                    name: "Nombre",
+                    description: "Descripción"
+                },
+                fields: {
+                    name: "Nombre del Rol",
+                    description: "Descripción"
+                }
+            },
+            plans: {
+                title: "Planes Globales",
+                columns: {
+                    tier: "Nivel",
+                    name: "Nombre",
+                    price_cents: "Precio (Centavos)",
+                    is_active: "Activo"
+                },
+                fields: {
+                    tier: "Nivel (gratis, premium, ultra)",
+                    name: "Nombre",
+                    description: "Descripción",
+                    price_cents: "Precio (Centavos)",
+                    currency: "Moneda",
+                    billing_period: "Periodo de Facturación",
+                    max_documents: "Máx Documentos",
+                    max_batteries: "Máx Baterías",
+                    is_active: "Está Activo"
+                }
+            },
+            "plan-limits": {
+                title: "Límites de Plan Globales",
+                columns: {
+                    plan: "Plan",
+                    key: "Clave",
+                    value_type: "Tipo",
+                    int_value: "Valor Int",
+                    bool_value: "Valor Bool"
+                },
+                fields: {
+                    plan: "Plan",
+                    key: "Clave",
+                    value_type: "Tipo (int, bool, str)",
+                    int_value: "Valor Entero",
+                    bool_value: "Valor Booleano",
+                    str_value: "Valor Cadena"
+                }
+            },
+            "saved-decks": {
+                title: "Decks Guardados Globales",
+                columns: {
+                    user: "Usuario",
+                    deck: "Deck",
+                    saved_at: "Guardado El"
+                },
+                fields: {
+                    user: "Usuario",
+                    deck: "Deck"
+                }
+            },
+            subscriptions: {
+                title: "Suscripciones Globales",
+                columns: {
+                    user: "Usuario",
+                    plan: "Plan",
+                    status: "Estado",
+                    provider: "Proveedor"
+                },
+                fields: {
+                    user: "Usuario",
+                    plan: "Plan",
+                    status: "Estado (activo, cancelado, etc)",
+                    provider: "Proveedor (stripe, paypal)",
+                    provider_subscription_id: "ID Suscripción Proveedor"
+                }
+            },
+            "battery-shares": {
+                title: "Baterías Compartidas Globales",
+                columns: {
+                    battery: "Batería",
+                    shared_with: "Compartido Con",
+                    permission: "Permiso"
+                },
+                fields: {
+                    battery: "Batería",
+                    shared_with: "Compartido Con",
+                    permission: "Permiso (ver, editar)"
+                }
+            },
+            "saved-batteries": {
+                title: "Baterías Guardadas Globales",
+                columns: {
+                    user: "Usuario",
+                    battery: "Batería",
+                    saved_at: "Guardado El"
+                },
+                fields: {
+                    user: "Usuario",
+                    battery: "Batería"
+                }
+            }
         }
     },
     billing: {

@@ -377,6 +377,204 @@ export const en = {
                 project: "Project",
                 action: "Action"
             }
+        },
+        crud: {
+            add_new: "Add New",
+            actions: "Actions",
+            edit_item: "Edit Item",
+            create_item: "Create New Item",
+            delete_title: "Confirm Delete",
+            delete_message: "Are you sure you want to delete this item? This action cannot be undone.",
+            cancel: "Cancel",
+            save: "Save",
+            delete: "Delete",
+            no_items: "No items found.",
+            select: "Select"
+        },
+        pages: {
+            invites: {
+                title: "Global Invites",
+                columns: {
+                    email: "Email",
+                    role: "Role",
+                    invited_by: "Invited By",
+                    accepted: "Accepted"
+                },
+                fields: {
+                    email: "Email",
+                    role: "Role",
+                    invited_by: "Invited By"
+                }
+            },
+            decks: {
+                title: "Global Decks",
+                columns: {
+                    name: "Name",
+                    owner: "Owner",
+                    is_public: "Public"
+                },
+                fields: {
+                    name: "Name",
+                    description: "Description",
+                    owner: "Owner",
+                    is_public: "Is Public"
+                }
+            },
+            flashcards: {
+                title: "Global Flashcards",
+                columns: {
+                    deck: "Deck",
+                    front: "Front",
+                    back: "Back"
+                },
+                fields: {
+                    deck: "Deck",
+                    front: "Front Content",
+                    back: "Back Content"
+                }
+            },
+            "deck-shares": {
+                title: "Global Deck Shares",
+                columns: {
+                    deck: "Deck",
+                    shared_with: "Shared With",
+                    permission: "Permission"
+                },
+                fields: {
+                    deck: "Deck",
+                    shared_with: "Shared With",
+                    permission: "Permission"
+                }
+            },
+            resources: {
+                title: "Global Resources",
+                columns: {
+                    key: "Key",
+                    name: "Name",
+                    description: "Description"
+                },
+                fields: {
+                    key: "Key (Slug)",
+                    name: "Name",
+                    description: "Description"
+                }
+            },
+            permissions: {
+                title: "Global Permissions",
+                columns: {
+                    resource: "Resource",
+                    action: "Action",
+                    code: "Code"
+                },
+                fields: {
+                    resource: "Resource",
+                    action: "Action (view, create, update, delete, manage)",
+                    code: "Code (Optional)"
+                }
+            },
+            roles: {
+                title: "Global Roles",
+                columns: {
+                    id: "ID",
+                    name: "Name",
+                    description: "Description"
+                },
+                fields: {
+                    name: "Role Name",
+                    description: "Description"
+                }
+            },
+            plans: {
+                title: "Global Plans",
+                columns: {
+                    tier: "Tier",
+                    name: "Name",
+                    price_cents: "Price (Cents)",
+                    is_active: "Active"
+                },
+                fields: {
+                    tier: "Tier (free, premium, ultra)",
+                    name: "Name",
+                    description: "Description",
+                    price_cents: "Price (Cents)",
+                    currency: "Currency",
+                    billing_period: "Billing Period",
+                    max_documents: "Max Documents",
+                    max_batteries: "Max Batteries",
+                    is_active: "Is Active"
+                }
+            },
+            "plan-limits": {
+                title: "Global Plan Limits",
+                columns: {
+                    plan: "Plan",
+                    key: "Key",
+                    value_type: "Type",
+                    int_value: "Int Value",
+                    bool_value: "Bool Value"
+                },
+                fields: {
+                    plan: "Plan",
+                    key: "Key",
+                    value_type: "Type (int, bool, str)",
+                    int_value: "Integer Value",
+                    bool_value: "Boolean Value",
+                    str_value: "String Value"
+                }
+            },
+            "saved-decks": {
+                title: "Global Saved Decks",
+                columns: {
+                    user: "User",
+                    deck: "Deck",
+                    saved_at: "Saved At"
+                },
+                fields: {
+                    user: "User",
+                    deck: "Deck"
+                }
+            },
+            subscriptions: {
+                title: "Global Subscriptions",
+                columns: {
+                    user: "User",
+                    plan: "Plan",
+                    status: "Status",
+                    provider: "Provider"
+                },
+                fields: {
+                    user: "User",
+                    plan: "Plan",
+                    status: "Status (active, canceled, etc)",
+                    provider: "Provider (stripe, paypal)",
+                    provider_subscription_id: "Provider Sub ID"
+                }
+            },
+            "battery-shares": {
+                title: "Global Battery Shares",
+                columns: {
+                    battery: "Battery",
+                    shared_with: "Shared With",
+                    permission: "Permission"
+                },
+                fields: {
+                    battery: "Battery",
+                    shared_with: "Shared With",
+                    permission: "Permission (view, edit)"
+                }
+            },
+            "saved-batteries": {
+                title: "Global Saved Batteries",
+                columns: {
+                    user: "User",
+                    battery: "Battery",
+                    saved_at: "Saved At"
+                },
+                fields: {
+                    user: "User",
+                    battery: "Battery"
+                }
+            }
         }
     },
     billing: {

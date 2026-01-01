@@ -1,34 +1,36 @@
 import React from "react";
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalBatteryShares() {
+    const { t } = useLanguage();
     return (
         <GlobalCrudPage
-            title="Global Battery Shares"
+            title={t("global.pages.battery-shares.title")}
             resource="battery-shares"
             columns={[
-                { header: "Battery", accessor: "battery" },
-                { header: "Shared With", accessor: "shared_with" },
-                { header: "Permission", accessor: "permission" },
+                { header: t("global.pages.battery-shares.columns.battery"), accessor: "battery" },
+                { header: t("global.pages.battery-shares.columns.shared_with"), accessor: "shared_with" },
+                { header: t("global.pages.battery-shares.columns.permission"), accessor: "permission" },
             ]}
             fields={[
                 {
                     name: "battery",
-                    label: "Battery",
+                    label: t("global.pages.battery-shares.fields.battery"),
                     type: "select-resource",
                     resource: "batteries",
-                    labelAccessor: "name", // Assuming battery has name
+                    labelAccessor: "name",
                     valueAccessor: "id"
                 },
                 {
                     name: "shared_with",
-                    label: "Shared With (User)",
+                    label: t("global.pages.battery-shares.fields.shared_with"),
                     type: "select-resource",
                     resource: "users",
                     labelAccessor: "email",
                     valueAccessor: "id"
                 },
-                { name: "permission", label: "Permission (view, edit)", type: "text" },
+                { name: "permission", label: t("global.pages.battery-shares.fields.permission"), type: "text" },
             ]}
         />
     );

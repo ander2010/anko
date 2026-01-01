@@ -1,27 +1,29 @@
 import React from "react";
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalFlashcards() {
+    const { t } = useLanguage();
     return (
         <GlobalCrudPage
-            title="Global Flashcards"
+            title={t("global.pages.flashcards.title")}
             resource="flashcards"
             columns={[
-                { header: "Deck", accessor: "deck" },
-                { header: "Front", accessor: "front" },
-                { header: "Back", accessor: "back" },
+                { header: t("global.pages.flashcards.columns.deck"), accessor: "deck" },
+                { header: t("global.pages.flashcards.columns.front"), accessor: "front" },
+                { header: t("global.pages.flashcards.columns.back"), accessor: "back" },
             ]}
             fields={[
                 {
                     name: "deck",
-                    label: "Deck",
+                    label: t("global.pages.flashcards.fields.deck"),
                     type: "select-resource",
                     resource: "decks",
                     labelAccessor: "name",
                     valueAccessor: "id"
                 },
-                { name: "front", label: "Front Content", type: "textarea" },
-                { name: "back", label: "Back Content", type: "textarea" },
+                { name: "front", label: t("global.pages.flashcards.fields.front"), type: "textarea" },
+                { name: "back", label: t("global.pages.flashcards.fields.back"), type: "textarea" },
             ]}
         />
     );

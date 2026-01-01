@@ -18,8 +18,17 @@ import {
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalCrudPage({ title, resource, columns, fields }) {
+    const languageContext = useLanguage();
+    console.log("GlobalCrudPage context:", languageContext);
+
+    if (!languageContext) {
+        return <div className="p-4 text-red-500">Error: Language Context is null. Check Provider wrapping.</div>;
+    }
+
+    const { t } = languageContext;
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -37,9 +46,17 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
         setLoading(true);
         try {
             const data = await projectService.getList(resource);
-            setItems(data);
+            if (Array.isArray(data)) {
+                setItems(data);
+            } else if (data && Array.isArray(data.results)) {
+                setItems(data.results);
+            } else {
+                console.error(`Expected array for ${resource} but got:`, data);
+                setItems([]);
+            }
         } catch (error) {
             console.error(`Failed to fetch ${resource}`, error);
+            setItems([]);
         } finally {
             setLoading(false);
         }
@@ -54,7 +71,13 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                 try {
                     if (field.resource) {
                         const data = await projectService.getList(field.resource);
-                        options[field.name] = data;
+                        if (Array.isArray(data)) {
+                            options[field.name] = data;
+                        } else if (data && Array.isArray(data.results)) {
+                            options[field.name] = data.results;
+                        } else {
+                            options[field.name] = [];
+                        }
                     }
                 } catch (err) {
                     console.error(`Failed to fetch options for ${field.name}`, err);
@@ -124,7 +147,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                         {title}
                     </Typography>
                     <Button size="sm" color="white" className="flex items-center gap-2 text-gray-900" onClick={() => handleOpenDialog()}>
-                        <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add New
+                        <PlusIcon strokeWidth={2} className="h-4 w-4" /> {t("global.crud.add_new")}
                     </Button>
                 </CardHeader>
                 <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
@@ -140,7 +163,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                                 ))}
                                 <th className="border-b border-blue-gray-50 py-3 px-5 text-left">
                                     <Typography variant="small" className="text-[11px] font-bold uppercase text-blue-gray-400">
-                                        Actions
+                                        {t("global.crud.actions")}
                                     </Typography>
                                 </th>
                             </tr>
@@ -174,7 +197,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                             {items.length === 0 && !loading && (
                                 <tr>
                                     <td colSpan={columns.length + 1} className="py-6 text-center text-sm text-gray-500">
-                                        No items found.
+                                        {t("global.crud.no_items")}
                                     </td>
                                 </tr>
                             )}
@@ -184,7 +207,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
             </Card>
 
             <Dialog open={openDialog} handler={() => setOpenDialog(!openDialog)}>
-                <DialogHeader>{currentItem ? "Edit Item" : "Create New Item"}</DialogHeader>
+                <DialogHeader>{currentItem ? t("global.crud.edit_item") : t("global.crud.create_item")}</DialogHeader>
                 <DialogBody divider className="flex flex-col gap-4">
                     {fields.map((field) => {
                         if (field.type === "select-resource") {
@@ -198,7 +221,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                                         {field.label}
                                     </Typography>
                                     <Select
-                                        label={`Select ${field.label}`}
+                                        label={`${t("global.crud.select")} ${field.label}`}
                                         value={String(formData[field.name] || "")}
                                         onChange={(val) => handleChange(field.name, val)}
                                         animate={{
@@ -252,25 +275,25 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                 </DialogBody>
                 <DialogFooter>
                     <Button variant="text" color="red" onClick={() => setOpenDialog(false)} className="mr-1">
-                        Cancel
+                        {t("global.crud.cancel")}
                     </Button>
                     <Button variant="gradient" color="green" onClick={handleSave}>
-                        Save
+                        {t("global.crud.save")}
                     </Button>
                 </DialogFooter>
             </Dialog>
 
             <Dialog open={openDeleteDialog} handler={() => setOpenDeleteDialog(!openDeleteDialog)}>
-                <DialogHeader>Confirm Delete</DialogHeader>
+                <DialogHeader>{t("global.crud.delete_title")}</DialogHeader>
                 <DialogBody>
-                    Are you sure you want to delete this item? This action cannot be undone.
+                    {t("global.crud.delete_message")}
                 </DialogBody>
                 <DialogFooter>
                     <Button variant="text" color="blue-gray" onClick={() => setOpenDeleteDialog(false)} className="mr-1">
-                        Cancel
+                        {t("global.crud.cancel")}
                     </Button>
                     <Button variant="gradient" color="red" onClick={handleDelete}>
-                        Delete
+                        {t("global.crud.delete")}
                     </Button>
                 </DialogFooter>
             </Dialog>

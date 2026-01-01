@@ -1,20 +1,22 @@
 import React from "react";
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalSavedDecks() {
+    const { t } = useLanguage();
     return (
         <GlobalCrudPage
-            title="Global Saved Decks"
+            title={t("global.pages.saved-decks.title")}
             resource="saved-decks"
             columns={[
-                { header: "User", accessor: "user" },
-                { header: "Deck", accessor: "deck" },
-                { header: "Saved At", accessor: "saved_at" },
+                { header: t("global.pages.saved-decks.columns.user"), accessor: "user" },
+                { header: t("global.pages.saved-decks.columns.deck"), accessor: "deck" },
+                { header: t("global.pages.saved-decks.columns.saved_at"), accessor: "saved_at" },
             ]}
             fields={[
                 {
                     name: "user",
-                    label: "User",
+                    label: t("global.pages.saved-decks.fields.user"),
                     type: "select-resource",
                     resource: "users",
                     labelAccessor: "email",
@@ -22,7 +24,7 @@ export function GlobalSavedDecks() {
                 },
                 {
                     name: "deck",
-                    label: "Deck",
+                    label: t("global.pages.saved-decks.fields.deck"),
                     type: "select-resource",
                     resource: "decks",
                     labelAccessor: "name",

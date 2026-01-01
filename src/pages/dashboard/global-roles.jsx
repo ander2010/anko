@@ -1,19 +1,21 @@
 import React from "react";
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
+import { useLanguage } from "@/context/language-context";
 
 export function GlobalRoles() {
+    const { t } = useLanguage();
     return (
         <GlobalCrudPage
-            title="Global Roles"
+            title={t("global.pages.roles.title")}
             resource="roles"
             columns={[
-                { header: "ID", accessor: "id" },
-                { header: "Name", accessor: "name" },
-                { header: "Description", accessor: "description" },
+                { header: t("global.pages.roles.columns.id"), accessor: "id" },
+                { header: t("global.pages.roles.columns.name"), accessor: "name" },
+                { header: t("global.pages.roles.columns.description"), accessor: "description" },
             ]}
             fields={[
-                { name: "name", label: "Role Name", type: "text" },
-                { name: "description", label: "Description", type: "textarea" },
+                { name: "name", label: t("global.pages.roles.fields.name"), type: "text" },
+                { name: "description", label: t("global.pages.roles.fields.description"), type: "textarea" },
             ]}
         />
     );
