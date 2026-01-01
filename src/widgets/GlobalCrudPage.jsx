@@ -14,6 +14,7 @@ import {
     Select,
     Option,
     IconButton,
+    Checkbox,
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
@@ -95,6 +96,7 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
             fields.forEach((f) => {
                 if (f.defaultValue !== undefined) initial[f.name] = f.defaultValue;
                 else if (f.type === "boolean") initial[f.name] = false;
+                else if (f.multiple) initial[f.name] = [];
                 else initial[f.name] = "";
             });
             setFormData(initial);
@@ -105,7 +107,15 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
     const handleSave = async () => {
         try {
             if (currentItem) {
-                await projectService.updateItem(resource, currentItem.id, formData);
+                // Filter payload to exclude fields marked with excludeOnUpdate
+                const updatePayload = {};
+                Object.keys(formData).forEach(key => {
+                    const fieldConfig = fields.find(f => f.name === key);
+                    if (!fieldConfig || !fieldConfig.excludeOnUpdate) {
+                        updatePayload[key] = formData[key];
+                    }
+                });
+                await projectService.updateItem(resource, currentItem.id, updatePayload);
             } else {
                 await projectService.createItem(resource, formData);
             }
@@ -213,6 +223,41 @@ export function GlobalCrudPage({ title, resource, columns, fields }) {
                             const opts = selectOptions[field.name] || [];
                             const labelKey = field.labelAccessor || 'name';
                             const valueKey = field.valueAccessor || 'id';
+
+                            if (field.multiple) {
+                                return (
+                                    <div key={field.name} className="flex flex-col gap-2 border border-blue-gray-50 p-2 rounded-lg">
+                                        <Typography variant="small" color="blue-gray" className="font-medium">
+                                            {field.label}
+                                        </Typography>
+                                        <div className="max-h-40 overflow-y-auto flex flex-col gap-1 p-1">
+                                            {opts.map(opt => {
+                                                const val = opt[valueKey];
+                                                const currentVals = Array.isArray(formData[field.name]) ? formData[field.name] : [];
+                                                const isChecked = currentVals.some(v => String(v) === String(val));
+
+                                                return (
+                                                    <div key={val} className="flex items-center gap-2">
+                                                        <Checkbox
+                                                            id={`${field.name}-${val}`}
+                                                            checked={isChecked}
+                                                            onChange={(e) => {
+                                                                const newVals = e.target.checked
+                                                                    ? [...currentVals, val]
+                                                                    : currentVals.filter(v => String(v) !== String(val));
+                                                                handleChange(field.name, newVals);
+                                                            }}
+                                                        />
+                                                        <label htmlFor={`${field.name}-${val}`} className="text-xs text-blue-gray-600 cursor-pointer">
+                                                            {opt[labelKey] || opt.title || opt.email || "Unknown"}
+                                                        </label>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <div key={field.name} className="flex flex-col gap-2">

@@ -593,7 +593,9 @@ export const en = {
                     last_name: "Last Name",
                     is_active: "Is Active",
                     is_staff: "Is Staff",
-                    password: "Password (leave blank to keep)"
+                    password: "Password (leave blank to keep)",
+                    roles: "Roles",
+                    avatar: "Avatar URL"
                 }
             }
         }

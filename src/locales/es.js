@@ -593,7 +593,9 @@ export const es = {
                     last_name: "Apellido",
                     is_active: "Activo",
                     is_staff: "Es Staff",
-                    password: "Contraseña (dejar en blanco para no cambiar)"
+                    password: "Contraseña (dejar en blanco para no cambiar)",
+                    roles: "Roles",
+                    avatar: "URL del Avatar"
                 }
             }
         }

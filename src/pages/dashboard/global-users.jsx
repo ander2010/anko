@@ -23,13 +23,23 @@ export function GlobalUsers() {
                 },
             ]}
             fields={[
-                { name: "username", label: t("global.pages.users.fields.username"), type: "text" },
+                { name: "username", label: t("global.pages.users.fields.username"), type: "text", excludeOnUpdate: true },
                 { name: "email", label: t("global.pages.users.fields.email"), type: "email" },
                 { name: "first_name", label: t("global.pages.users.fields.first_name"), type: "text" },
                 { name: "last_name", label: t("global.pages.users.fields.last_name"), type: "text" },
                 { name: "is_active", label: t("global.pages.users.fields.is_active"), type: "boolean" },
                 { name: "is_staff", label: t("global.pages.users.fields.is_staff"), type: "boolean" },
-                { name: "password", label: t("global.pages.users.fields.password"), type: "password" },
+                {
+                    name: "roles",
+                    label: t("global.pages.users.fields.roles"),
+                    type: "select-resource",
+                    resource: "roles",
+                    labelAccessor: "name",
+                    valueAccessor: "id",
+                    multiple: true
+                },
+                { name: "avatar", label: t("global.pages.users.fields.avatar"), type: "text", excludeOnUpdate: true },
+                { name: "password", label: t("global.pages.users.fields.password"), type: "password", excludeOnUpdate: true },
             ]}
         />
     );
