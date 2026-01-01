@@ -584,7 +584,8 @@ export const es = {
                     first_name: "Nombre",
                     last_name: "Apellido",
                     is_active: "Activo",
-                    is_staff: "Staff"
+                    is_staff: "Staff",
+                    roles: "Roles"
                 },
                 fields: {
                     username: "Nombre de Usuario",

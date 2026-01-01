@@ -584,7 +584,8 @@ export const en = {
                     first_name: "First Name",
                     last_name: "Last Name",
                     is_active: "Active",
-                    is_staff: "Staff"
+                    is_staff: "Staff",
+                    roles: "Roles"
                 },
                 fields: {
                     username: "Username",
