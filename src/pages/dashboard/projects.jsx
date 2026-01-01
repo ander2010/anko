@@ -260,7 +260,7 @@ export function Projects() {
             title: t("projects.dialogs.confirm_title"),
             message: t("projects.dialogs.confirm_message"),
             confirmText: t("projects.dialogs.confirm_btn"),
-            variant: "default",
+            variant: "info",
         };
     };
 

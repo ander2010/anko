@@ -33,7 +33,8 @@ export const en = {
         flashcards: "Flashcards",
         "deck-shares": "Deck Shares",
         "saved-decks": "Saved Decks",
-        users: "Users"
+        users: "Users",
+        projects: "Global Projects"
     },
     home: {
         hero: {
@@ -597,6 +598,20 @@ export const en = {
                     password: "Password (leave blank to keep)",
                     roles: "Roles",
                     avatar: "Avatar URL"
+                }
+            },
+            projects: {
+                title: "Global Projects",
+                columns: {
+                    name: "Name",
+                    owner: "Owner",
+                    created_at: "Created At",
+                    updated_at: "Updated At"
+                },
+                fields: {
+                    name: "Name",
+                    description: "Description",
+                    owner: "Owner"
                 }
             }
         }
