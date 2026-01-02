@@ -35,7 +35,9 @@ export const es = {
         "deck-shares": "Decks Compartidos",
         "saved-decks": "Decks Guardados",
         users: "Usuarios",
-        "global-projects": "Proyectos Generales"
+        "global-projects": "Proyectos Generales",
+        "my-decks": "Mis Mazos",
+        "my-batteries": "Mis Baterías"
     },
     navbar: {
         welcome: "Bienvenido"
@@ -343,7 +345,10 @@ export const es = {
                 private: "Privado",
                 shared: "Compartido",
                 public: "Público"
-            }
+            },
+            my_decks: "Mis Mazos",
+            my_batteries: "Mis Baterías",
+            search_placeholder: "Buscar..."
         }
     },
     global: {

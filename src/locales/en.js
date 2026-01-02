@@ -35,7 +35,9 @@ export const en = {
         "deck-shares": "Deck Shares",
         "saved-decks": "Saved Decks",
         users: "Users",
-        "global-projects": "Global Projects"
+        "global-projects": "Global Projects",
+        "my-decks": "My Decks",
+        "my-batteries": "My Batteries"
     },
     navbar: {
         welcome: "Welcome"
@@ -343,7 +345,10 @@ export const en = {
                 private: "Private",
                 shared: "Shared",
                 public: "Public"
-            }
+            },
+            my_decks: "My Decks",
+            my_batteries: "My Batteries",
+            search_placeholder: "Search..."
         }
     },
     global: {

@@ -19,7 +19,7 @@ import {
   PencilIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
-import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
+import { ProfileInfoCard, MessageCard } from "@/widgets/cards/index";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
 
 export function Profile() {
@@ -199,9 +199,8 @@ export function Profile() {
                               alt={name}
                               size="xs"
                               variant="circular"
-                              className={`cursor-pointer border-2 border-white ${
-                                key === 0 ? "" : "-ml-2.5"
-                              }`}
+                              className={`cursor-pointer border-2 border-white ${key === 0 ? "" : "-ml-2.5"
+                                }`}
                             />
                           </Tooltip>
                         ))}

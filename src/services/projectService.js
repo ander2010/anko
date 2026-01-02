@@ -216,6 +216,15 @@ const projectService = {
     }
   },
 
+  async getUserBatteries() {
+    try {
+      const res = await api.get("/batteries/");
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch user batteries" };
+    }
+  },
+
   async createBattery(projectId, payload) {
     try {
       const res = await api.post("/batteries/", {
@@ -368,6 +377,11 @@ const projectService = {
     const res = await api.get("/decks/", {
       params: { project: projectId },
     });
+    return res.data;
+  },
+
+  async getUserDecks() {
+    const res = await api.get("/decks/");
     return res.data;
   },
 
