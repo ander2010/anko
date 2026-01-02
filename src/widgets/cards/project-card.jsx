@@ -61,12 +61,20 @@ export function ProjectCard({
     project?.owner?.name || project?.owner?.username || "Unknown";
 
   return (
-    <Card className="border border-blue-gray-100 shadow-sm hover:shadow-md transition-shadow">
+    <Card
+      className="border border-blue-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
+      onDoubleClick={() => onEnter(project)}
+    >
       <CardBody className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+            <Typography
+              variant="h6"
+              color="blue-gray"
+              className="mb-1 truncate cursor-pointer hover:text-blue-500 transition-colors"
+              onClick={() => onEnter(project)}
+            >
               {project.title || project.name || "Untitled"}
             </Typography>
 
