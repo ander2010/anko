@@ -411,6 +411,32 @@ export const en = {
             no_items: "No items found.",
             select: "Select"
         },
+        action: {
+            edit: "Edit",
+            delete: "Delete",
+            save: "Save",
+            cancel: "Cancel",
+            view: "View",
+            study: "Study",
+            flip: "Flip",
+            notes: "Notes",
+            front: "Front",
+            back: "Back",
+            explanation: "Explanation"
+        },
+        actions: {
+            edit: "Edit",
+            delete: "Delete",
+            save: "Save",
+            cancel: "Cancel",
+            view: "View",
+            study: "Study",
+            flip: "Flip",
+            notes: "Notes",
+            front: "Front",
+            back: "Back",
+            explanation: "Explanation"
+        },
         pages: {
             invites: {
                 title: "Global Invites",

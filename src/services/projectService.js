@@ -384,6 +384,13 @@ const projectService = {
     return res.data;
   },
 
+  async getDeckFlashcards(deckId) {
+    const res = await api.get("/flashcards/", {
+      params: { deck: deckId },
+    });
+    return res.data;
+  },
+
   async updateDeck(deckId, payload) {
     const res = await api.patch(`/decks/${deckId}/`, payload);
     return res.data;

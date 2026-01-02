@@ -10,6 +10,7 @@ import {
     MenuList,
     MenuItem,
     Chip,
+    Button,
 } from "@material-tailwind/react";
 import {
     EllipsisVerticalIcon,
@@ -17,10 +18,11 @@ import {
     TrashIcon,
     Square2StackIcon,
     ClockIcon,
+    BookOpenIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 
-export function DeckCard({ deck, onEdit, onDelete }) {
+export function DeckCard({ deck, onEdit, onDelete, onStudy }) {
     const { t } = useLanguage();
 
     const formatDate = (dateString) => {
@@ -60,6 +62,13 @@ export function DeckCard({ deck, onEdit, onDelete }) {
                                 variant="ghost"
                                 className="rounded-full px-2 py-0.5 text-[10px]"
                             />
+                            <Chip
+                                value={`${deck.flashcards_count || 0} ${t("project_detail.decks.cards_count")}`}
+                                size="sm"
+                                variant="ghost"
+                                color="blue-gray"
+                                className="rounded-full px-2 py-0.5 text-[10px]"
+                            />
                         </div>
                     </div>
 
@@ -72,7 +81,7 @@ export function DeckCard({ deck, onEdit, onDelete }) {
                         <MenuList>
                             <MenuItem onClick={() => onEdit(deck)} className="flex items-center gap-2">
                                 <PencilIcon className="h-4 w-4" />
-                                {t("global.actions.edit")}
+                                {t("global.action.edit")}
                             </MenuItem>
                             <hr className="my-1" />
                             <MenuItem
@@ -80,7 +89,7 @@ export function DeckCard({ deck, onEdit, onDelete }) {
                                 className="flex items-center gap-2 text-red-500 hover:bg-red-50"
                             >
                                 <TrashIcon className="h-4 w-4" />
-                                {t("global.actions.delete")}
+                                {t("global.action.delete")}
                             </MenuItem>
                         </MenuList>
                     </Menu>
@@ -92,11 +101,23 @@ export function DeckCard({ deck, onEdit, onDelete }) {
                     </Typography>
                 )}
 
-                <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50 mt-auto">
-                    <ClockIcon className="h-4 w-4 text-blue-gray-400" />
-                    <Typography variant="small" className="text-blue-gray-500 text-[11px]">
-                        {formatDate(deck.created_at)}
-                    </Typography>
+                <div className="flex items-center justify-between pt-3 border-t border-blue-gray-50 mt-auto">
+                    <div className="flex items-center gap-2">
+                        <ClockIcon className="h-4 w-4 text-blue-gray-400" />
+                        <Typography variant="small" className="text-blue-gray-500 text-[11px]">
+                            {formatDate(deck.created_at)}
+                        </Typography>
+                    </div>
+                    <Button
+                        variant="text"
+                        size="sm"
+                        color="blue"
+                        className="flex items-center gap-2 px-3 lg:px-4 py-1.5 normal-case"
+                        onClick={() => onStudy(deck)}
+                    >
+                        <BookOpenIcon className="h-4 w-4" />
+                        {t("global.action.study")}
+                    </Button>
                 </div>
             </CardBody>
         </Card>
@@ -111,10 +132,10 @@ DeckCard.propTypes = {
         visibility: PropTypes.string.isRequired,
         created_at: PropTypes.string,
         flashcards_count: PropTypes.number,
-        cards_count: PropTypes.number,
     }).isRequired,
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
+    onStudy: PropTypes.func,
 };
 
 export default DeckCard;

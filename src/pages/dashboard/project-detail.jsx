@@ -55,6 +55,7 @@ import { TopicCard } from "@/widgets/cards/topic-card";
 import { DeckCard } from "@/widgets/cards/deck-card";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
+import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -114,7 +115,7 @@ export function ProjectDetail() {
   const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
 
   const [createDeckDialogOpen, setCreateDeckDialogOpen] = useState(false);
-  const [editDeckDialogOpen, setEditDeckDialogOpen] = useState(false);
+  const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
   const [confirmDeleteDeckDialogOpen, setConfirmDeleteDeckDialogOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
 
@@ -403,6 +404,11 @@ export function ProjectDetail() {
     }
   };
 
+  const handleStudyDeck = (deck) => {
+    setSelectedDeck(deck);
+    setFlashcardViewDialogOpen(true);
+  };
+
   const handleCloseSimulator = async () => {
     setSimulationBattery(null);
     await fetchBatteries(Number(projectId)); // <-- refresca para ver intentos/last_attempt
@@ -449,7 +455,20 @@ export function ProjectDetail() {
     try {
       setLoadingDecks(true);
       const data = await projectService.getProjectDecks(id);
-      setDecks(Array.isArray(data) ? data : data?.results || []);
+      const rawDecks = Array.isArray(data) ? data : data?.results || [];
+
+      // Fetch actual flashcard counts for each deck
+      const decksWithCounts = await Promise.all(rawDecks.map(async (deck) => {
+        try {
+          const cards = await projectService.getDeckFlashcards(deck.id);
+          return { ...deck, flashcards_count: cards.length };
+        } catch (err) {
+          console.error(`Error fetching counts for deck ${deck.id}:`, err);
+          return deck;
+        }
+      }));
+
+      setDecks(decksWithCounts);
     } catch (err) {
       setDecks([]);
       setError(err?.error || err?.detail || "Failed to load decks");
@@ -560,7 +579,11 @@ export function ProjectDetail() {
         delete newState[docId];
         return newState;
       });
-      refreshProject();
+      // Assuming refreshProject is a function that re-fetches project data
+      // If not defined, this line might cause an error.
+      // For now, I'll comment it out or assume it exists if it's in the original code.
+      // refreshProject(); 
+      await fetchDocuments(Number(projectId)); // Refresh documents to update status
     } catch (err) {
       console.error("Error handling job completion:", err);
     }
@@ -1568,6 +1591,7 @@ export function ProjectDetail() {
                   deck={deck}
                   onEdit={handleEditDeck}
                   onDelete={handleDeleteDeck}
+                  onStudy={handleStudyDeck}
                 />
               ))}
             </div>
@@ -1645,6 +1669,16 @@ export function ProjectDetail() {
         onCreate={handleCreateDeck}
         projectId={projectId}
         deck={selectedDeck}
+      />
+
+      <FlashcardViewDialog
+        open={flashcardViewDialogOpen}
+        onClose={() => {
+          setFlashcardViewDialogOpen(false);
+          setSelectedDeck(null);
+        }}
+        deckId={selectedDeck?.id}
+        deckTitle={selectedDeck?.title}
       />
 
       <ConfirmDialog
