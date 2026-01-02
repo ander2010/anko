@@ -22,7 +22,7 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { user, logout } = useAuth();
-  const { language, changeLanguage } = useLanguage();
+  const { language, changeLanguage, t } = useLanguage();
 
   return (
     <Navbar
@@ -80,6 +80,13 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
+          {user && (
+            <div className="hidden xl:flex items-center px-2">
+              <Typography variant="small" color="blue-gray" className="font-normal opacity-75">
+                {t("navbar.welcome")}, <span className="font-bold">{user.first_name || user.username}</span>
+              </Typography>
+            </div>
+          )}
           {user ? (
             <Button
               variant="text"
@@ -88,7 +95,7 @@ export function DashboardNavbar() {
               onClick={logout}
             >
               <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              Sign Out
+              {t("sidenav.signout") || "Sign Out"}
             </Button>
           ) : (
             <Link to="/auth/sign-in">
@@ -98,7 +105,7 @@ export function DashboardNavbar() {
                 className="hidden items-center gap-1 px-4 xl:flex normal-case"
               >
                 <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-                Sign In
+                {t("sidenav.signin")}
               </Button>
             </Link>
           )}

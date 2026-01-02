@@ -9,6 +9,7 @@ export const en = {
         auth: "Authentication",
         signin: "Sign In",
         signup: "Sign Up",
+        signout: "Sign Out",
         docs: "Documentation",
         upgrade: "Upgrade to Pro",
         projects: "Projects",
@@ -35,6 +36,9 @@ export const en = {
         "saved-decks": "Saved Decks",
         users: "Users",
         "global-projects": "Global Projects"
+    },
+    navbar: {
+        welcome: "Welcome"
     },
     home: {
         hero: {

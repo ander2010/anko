@@ -9,6 +9,7 @@ export const es = {
         auth: "Autenticación",
         signin: "Iniciar Sesión",
         signup: "Registrarse",
+        signout: "Cerrar Sesión",
         docs: "Documentación",
         upgrade: "Mejorar a Pro",
         projects: "Proyectos",
@@ -35,6 +36,9 @@ export const es = {
         "saved-decks": "Decks Guardados",
         users: "Usuarios",
         "global-projects": "Proyectos Generales"
+    },
+    navbar: {
+        welcome: "Bienvenido"
     },
     home: {
         hero: {
