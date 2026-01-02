@@ -275,7 +275,8 @@ export const en = {
             documents: "Documents",
             topics: "Topics",
             rules: "Rules",
-            batteries: "Batteries"
+            batteries: "Batteries",
+            decks: "Decks"
         },
         docs: {
             btn_upload: "Upload Documents",

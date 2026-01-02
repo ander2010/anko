@@ -363,6 +363,31 @@ const projectService = {
     return res.data;
   },
 
+  // -------- DECKS --------
+  async getProjectDecks(projectId) {
+    const res = await api.get("/decks/", {
+      params: { project: projectId },
+    });
+    return res.data;
+  },
+
+  async createDeck(projectId, payload) {
+    const res = await api.post("/decks/", {
+      project: projectId,
+      ...payload,
+    });
+    return res.data;
+  },
+
+  async updateDeck(deckId, payload) {
+    const res = await api.patch(`/decks/${deckId}/`, payload);
+    return res.data;
+  },
+
+  async deleteDeck(deckId) {
+    const res = await api.delete(`/decks/${deckId}/`);
+    return res.data;
+  },
 };
 
 export default projectService;

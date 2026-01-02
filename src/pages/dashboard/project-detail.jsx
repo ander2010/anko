@@ -37,6 +37,7 @@ import {
   BoltIcon,
   PlayIcon,
   ViewColumnsIcon,
+  Square2StackIcon,
 } from "@heroicons/react/24/outline";
 
 import projectService from "@/services/projectService";
@@ -51,7 +52,9 @@ import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
 import { CreateTopicDialog } from "@/widgets/dialogs/create-topic-dialog";
 import { EditTopicDialog } from "@/widgets/dialogs/edit-topic-dialog";
 import { TopicCard } from "@/widgets/cards/topic-card";
+import { DeckCard } from "@/widgets/cards/deck-card";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
+import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -105,8 +108,15 @@ export function ProjectDetail() {
   const [topics, setTopics] = useState([]);
   const [rules, setRules] = useState([]);
   const [batteries, setBatteries] = useState([]);
+  const [decks, setDecks] = useState([]);
+  const [loadingDecks, setLoadingDecks] = useState(false);
   const [simulationBattery, setSimulationBattery] = useState(null);
   const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
+
+  const [createDeckDialogOpen, setCreateDeckDialogOpen] = useState(false);
+  const [editDeckDialogOpen, setEditDeckDialogOpen] = useState(false);
+  const [confirmDeleteDeckDialogOpen, setConfirmDeleteDeckDialogOpen] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState(null);
 
   const isOwner = useMemo(() => {
     if (!project || !user) return false;
@@ -400,7 +410,14 @@ export function ProjectDetail() {
 
   const fetchAll = async (id) => {
     setError(null);
-    await Promise.all([fetchProject(id), fetchDocuments(id), fetchTopics(id), fetchRules(id), fetchBatteries(id)]);
+    await Promise.all([
+      fetchProject(id),
+      fetchDocuments(id),
+      fetchTopics(id),
+      fetchRules(id),
+      fetchBatteries(id),
+      fetchDecks(id)
+    ]);
   };
 
   const fetchProject = async (id) => {
@@ -428,6 +445,19 @@ export function ProjectDetail() {
     }
   };
 
+  const fetchDecks = async (id) => {
+    try {
+      setLoadingDecks(true);
+      const data = await projectService.getProjectDecks(id);
+      setDecks(Array.isArray(data) ? data : data?.results || []);
+    } catch (err) {
+      setDecks([]);
+      setError(err?.error || err?.detail || "Failed to load decks");
+    } finally {
+      setLoadingDecks(false);
+    }
+  };
+
   const fetchDocuments = async (id) => {
     try {
       setLoadingDocs(true);
@@ -439,6 +469,45 @@ export function ProjectDetail() {
       setError(err?.error || "Failed to load documents");
     } finally {
       setLoadingDocs(false);
+    }
+  };
+
+  const handleCreateDeck = async (deckData) => {
+    try {
+      setError(null);
+      if (selectedDeck) {
+        await projectService.updateDeck(selectedDeck.id, deckData);
+      } else {
+        await projectService.createDeck(Number(projectId), deckData);
+      }
+      setCreateDeckDialogOpen(false);
+      setSelectedDeck(null);
+      await fetchDecks(Number(projectId));
+    } catch (err) {
+      setError(err?.error || err?.detail || "Failed to save deck");
+    }
+  };
+
+  const handleEditDeck = (deck) => {
+    setSelectedDeck(deck);
+    setCreateDeckDialogOpen(true);
+  };
+
+  const handleDeleteDeck = (deck) => {
+    setSelectedDeck(deck);
+    setConfirmDeleteDeckDialogOpen(true);
+  };
+
+  const handleConfirmDeleteDeck = async () => {
+    if (!selectedDeck) return;
+    try {
+      setError(null);
+      await projectService.deleteDeck(selectedDeck.id);
+      setConfirmDeleteDeckDialogOpen(false);
+      setSelectedDeck(null);
+      await fetchDecks(Number(projectId));
+    } catch (err) {
+      setError(err?.error || err?.detail || "Failed to delete deck");
     }
   };
 
@@ -690,6 +759,12 @@ export function ProjectDetail() {
                 <div className="flex items-center gap-2">
                   <BoltIcon className="h-5 w-5" />
                   {t("project_detail.tabs.batteries")} ({batteries.length})
+                </div>
+              </Tab>
+              <Tab value="decks" onClick={() => setActiveTab("decks")}>
+                <div className="flex items-center gap-2">
+                  <Square2StackIcon className="h-5 w-5" />
+                  {t("project_detail.tabs.decks")} ({decks.length})
                 </div>
               </Tab>
             </TabsHeader>
@@ -1446,6 +1521,65 @@ export function ProjectDetail() {
         </>
       )}
 
+      {activeTab === "decks" && (
+        <>
+          <div className="mb-6 flex justify-end">
+            <Button
+              className="flex items-center gap-2"
+              color="blue-gray"
+              onClick={() => {
+                setSelectedDeck(null);
+                setCreateDeckDialogOpen(true);
+              }}
+            >
+              <PlusIcon className="h-5 w-5" />
+              {t("project_detail.decks.btn_create")}
+            </Button>
+          </div>
+
+          {loadingDecks ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Spinner className="h-10 w-10 mb-4" />
+              <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
+            </div>
+          ) : decks.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {decks.map((deck) => (
+                <DeckCard
+                  key={deck.id}
+                  deck={deck}
+                  onEdit={handleEditDeck}
+                  onDelete={handleDeleteDeck}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="border border-blue-gray-100 shadow-sm">
+              <CardBody className="flex flex-col items-center justify-center py-12">
+                <Square2StackIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
+                <Typography variant="h5" color="blue-gray" className="mb-2">
+                  {t("project_detail.decks.empty.title")}
+                </Typography>
+                <Typography className="text-blue-gray-600 mb-4 text-center">
+                  {t("project_detail.decks.empty.desc")}
+                </Typography>
+                <Button
+                  className="flex items-center gap-2"
+                  color="blue-gray"
+                  onClick={() => {
+                    setSelectedDeck(null);
+                    setCreateDeckDialogOpen(true);
+                  }}
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  {t("project_detail.decks.btn_create")}
+                </Button>
+              </CardBody>
+            </Card>
+          )}
+        </>
+      )}
+
 
 
 
@@ -1482,6 +1616,26 @@ export function ProjectDetail() {
         open={!!simulationBattery}
         handler={handleCloseSimulator}
         battery={simulationBattery}
+      />
+
+      <CreateDeckDialog
+        open={createDeckDialogOpen}
+        onClose={() => {
+          setCreateDeckDialogOpen(false);
+          setSelectedDeck(null);
+        }}
+        onCreate={handleCreateDeck}
+        deck={selectedDeck}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteDeckDialogOpen}
+        onClose={() => setConfirmDeleteDeckDialogOpen(false)}
+        onConfirm={handleConfirmDeleteDeck}
+        title={language === "es" ? "Eliminar Mazo" : "Delete Deck"}
+        message={language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${selectedDeck?.title}"?` : `Are you sure you want to delete deck "${selectedDeck?.title}"?`}
+        confirmText={t("global.actions.delete")}
+        variant="danger"
       />
     </div>
   );
