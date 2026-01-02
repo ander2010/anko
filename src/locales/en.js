@@ -323,6 +323,23 @@ export const en = {
         },
         batteries: {
             btn_create: "Generate Battery"
+        },
+        decks: {
+            btn_create: "Create Deck",
+            description: "Description",
+            cards_count: "Cards Count",
+            sections: "Sections",
+            documents: "Documents",
+            visibility_label: "Public Visibility",
+            empty: {
+                title: "No decks found",
+                desc: "You haven't created any decks for this project yet."
+            },
+            visibility: {
+                private: "Private",
+                shared: "Shared",
+                public: "Public"
+            }
         }
     },
     global: {

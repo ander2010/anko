@@ -478,7 +478,13 @@ export function ProjectDetail() {
       if (selectedDeck) {
         await projectService.updateDeck(selectedDeck.id, deckData);
       } else {
-        await projectService.createDeck(Number(projectId), deckData);
+        // Prepare payload for create-with-cards
+        const payload = {
+          project_id: Number(projectId),
+          ...deckData,
+          cards_count: Number(deckData.cards_count || 0)
+        };
+        await projectService.createDeckWithCards(payload);
       }
       setCreateDeckDialogOpen(false);
       setSelectedDeck(null);
@@ -490,6 +496,17 @@ export function ProjectDetail() {
 
   const handleEditDeck = (deck) => {
     setSelectedDeck(deck);
+    setCreateDeckDialogOpen(true);
+  };
+
+  const handleCreateDeckFromTopic = (topic) => {
+    setSelectedDeck({
+      title: topic.name,
+      description: topic.description,
+      section_ids: topic.related_sections || [],
+      // topic doesn't have document_ids explicitly but we could infer them if needed
+      // however, related_sections is the main thing the user wants
+    });
     setCreateDeckDialogOpen(true);
   };
 
@@ -970,6 +987,7 @@ export function ProjectDetail() {
                   onEdit={handleEditTopic}
                   onArchive={handleArchiveTopic}
                   onDelete={handleDeleteTopic}
+                  onCreateDeck={handleCreateDeckFromTopic}
                 />
               ))}
             </div>
@@ -1625,6 +1643,7 @@ export function ProjectDetail() {
           setSelectedDeck(null);
         }}
         onCreate={handleCreateDeck}
+        projectId={projectId}
         deck={selectedDeck}
       />
 

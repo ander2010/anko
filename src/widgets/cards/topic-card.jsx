@@ -19,16 +19,19 @@ import {
     QuestionMarkCircleIcon,
     Squares2X2Icon,
     TrashIcon,
+    PlusIcon,
 } from "@heroicons/react/24/outline";
+import { useLanguage } from "@/context/language-context";
 
-export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, onDelete }) {
+export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, onDelete, onCreateDeck }) {
+    const { t } = useLanguage();
 
     const stats = useMemo(() => {
         const relatedSectionIds = topic.related_sections || [];
 
         // 1. Find which documents are involved
         // A document is involved if any of its sections are in relatedSectionIds
-        const involvedDocs = allDocumentsWithSections.filter(doc =>
+        const involvedDocs = (allDocumentsWithSections || []).filter(doc =>
             doc.sections && doc.sections.some(s => relatedSectionIds.includes(s.id))
         );
 
@@ -67,16 +70,20 @@ export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, 
                         <MenuList>
                             <MenuItem onClick={() => onEdit(topic)} className="flex items-center gap-2">
                                 <PencilIcon className="h-4 w-4" />
-                                Edit Topic
+                                {t("global.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => onCreateDeck(topic)} className="flex items-center gap-2">
+                                <PlusIcon className="h-4 w-4" />
+                                {t("project_detail.decks.btn_create")}
                             </MenuItem>
                             <MenuItem onClick={() => onArchive(topic)} className="flex items-center gap-2">
                                 <ArchiveBoxIcon className="h-4 w-4" />
-                                Archive
+                                {t("project_detail.topics.dialogs.archive_confirm")}
                             </MenuItem>
                             <hr className="my-1" />
                             <MenuItem onClick={() => onDelete(topic)} className="flex items-center gap-2 text-red-500 hover:bg-red-50">
                                 <TrashIcon className="h-4 w-4" />
-                                Delete
+                                {t("global.actions.delete")}
                             </MenuItem>
                         </MenuList>
                     </Menu>
@@ -87,19 +94,19 @@ export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, 
                     <div className="flex items-center gap-2">
                         <DocumentTextIcon className="h-4 w-4 text-blue-gray-400" />
                         <Typography variant="small" className="text-blue-gray-600 text-xs">
-                            {stats.documentsCount} docs
+                            {stats.documentsCount} {t("project_detail.documents")}
                         </Typography>
                     </div>
                     <div className="flex items-center gap-2">
                         <Squares2X2Icon className="h-4 w-4 text-blue-gray-400" />
                         <Typography variant="small" className="text-blue-gray-600 text-xs">
-                            {stats.sectionsCount} sections
+                            {stats.sectionsCount} {t("project_detail.docs.table.sections")}
                         </Typography>
                     </div>
                     <div className="flex items-center gap-2">
                         <QuestionMarkCircleIcon className="h-4 w-4 text-blue-gray-400" />
                         <Typography variant="small" className="text-blue-gray-600 text-xs">
-                            {topic.question_count_target ?? topic.questionsCount ?? 0} questions
+                            {topic.question_count_target ?? topic.questionsCount ?? 0} {t("global.rules.table.questions")}
                         </Typography>
                     </div>
                 </div>
@@ -138,6 +145,7 @@ TopicCard.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onArchive: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
+    onCreateDeck: PropTypes.func,
 };
 
 export default TopicCard;

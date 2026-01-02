@@ -86,7 +86,13 @@ export function DeckCard({ deck, onEdit, onDelete }) {
                     </Menu>
                 </div>
 
-                <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50 mt-4">
+                {deck.description && (
+                    <Typography variant="small" className="text-blue-gray-600 line-clamp-2 mb-3 mt-1">
+                        {deck.description}
+                    </Typography>
+                )}
+
+                <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50 mt-auto">
                     <ClockIcon className="h-4 w-4 text-blue-gray-400" />
                     <Typography variant="small" className="text-blue-gray-500 text-[11px]">
                         {formatDate(deck.created_at)}
@@ -101,8 +107,11 @@ DeckCard.propTypes = {
     deck: PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
         title: PropTypes.string.isRequired,
+        description: PropTypes.string,
         visibility: PropTypes.string.isRequired,
         created_at: PropTypes.string,
+        flashcards_count: PropTypes.number,
+        cards_count: PropTypes.number,
     }).isRequired,
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,

@@ -323,6 +323,23 @@ export const es = {
         },
         batteries: {
             btn_create: "Generar Batería"
+        },
+        decks: {
+            btn_create: "Crear Mazo",
+            description: "Descripción",
+            cards_count: "Cantidad de Fichas",
+            sections: "Secciones",
+            documents: "Documentos",
+            visibility_label: "Visibilidad Pública",
+            empty: {
+                title: "No se encontraron mazos",
+                desc: "Aún no has creado ningún mazo para este proyecto."
+            },
+            visibility: {
+                private: "Privado",
+                shared: "Compartido",
+                public: "Público"
+            }
         }
     },
     global: {

@@ -379,6 +379,11 @@ const projectService = {
     return res.data;
   },
 
+  async createDeckWithCards(payload) {
+    const res = await api.post("/decks/create-with-cards/", payload);
+    return res.data;
+  },
+
   async updateDeck(deckId, payload) {
     const res = await api.patch(`/decks/${deckId}/`, payload);
     return res.data;
