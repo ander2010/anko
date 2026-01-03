@@ -26,6 +26,7 @@ import {
   EllipsisVerticalIcon,
   ArrowDownTrayIcon,
   TrashIcon,
+  EyeIcon,
   InformationCircleIcon,
   DocumentTextIcon,
   CheckCircleIcon,
@@ -982,6 +983,14 @@ export function ProjectDetail() {
                                 >
                                   <ArrowDownTrayIcon className="h-4 w-4" />
                                   {t("project_detail.docs.actions.download")}
+                                </MenuItem>
+
+                                <MenuItem
+                                  onClick={() => setViewingDocument(doc)}
+                                  className="flex items-center gap-2"
+                                >
+                                  <EyeIcon className="h-4 w-4" />
+                                  {language === "es" ? "Ver Documento" : "View Document"}
                                 </MenuItem>
 
                                 <MenuItem
