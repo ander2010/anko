@@ -310,45 +310,47 @@ export function Projects() {
             {/* Filters and Search */}
             <Card className="border border-blue-gray-100 shadow-sm mb-6">
                 <CardBody className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
                         {/* Tabs */}
-                        <Tabs value={activeTab} className="w-full md:w-auto">
-                            <TabsHeader className="bg-blue-gray-50">
-                                <Tab
-                                    value="all"
-                                    onClick={() => setActiveTab("all")}
-                                    className="px-4"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <FolderIcon className="h-4 w-4" />
-                                        {t("projects.tabs.all")}
-                                    </div>
-                                </Tab>
-                                <Tab
-                                    value="owned"
-                                    onClick={() => setActiveTab("owned")}
-                                    className="px-4"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <UserGroupIcon className="h-4 w-4" />
-                                        {t("projects.tabs.owned")}
-                                    </div>
-                                </Tab>
-                                <Tab
-                                    value="member"
-                                    onClick={() => setActiveTab("member")}
-                                    className="px-4"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <UserGroupIcon className="h-4 w-4" />
-                                        {t("projects.tabs.shared")}
-                                    </div>
-                                </Tab>
-                            </TabsHeader>
-                        </Tabs>
+                        <div className="flex-1 min-w-[400px]">
+                            <Tabs value={activeTab} className="w-full">
+                                <TabsHeader className="bg-blue-gray-50">
+                                    <Tab
+                                        value="all"
+                                        onClick={() => setActiveTab("all")}
+                                        className="px-4"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <FolderIcon className="h-4 w-4" />
+                                            {t("projects.tabs.all")}
+                                        </div>
+                                    </Tab>
+                                    <Tab
+                                        value="owned"
+                                        onClick={() => setActiveTab("owned")}
+                                        className="px-4"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <UserGroupIcon className="h-4 w-4" />
+                                            {t("projects.tabs.owned")}
+                                        </div>
+                                    </Tab>
+                                    <Tab
+                                        value="member"
+                                        onClick={() => setActiveTab("member")}
+                                        className="px-4"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <UserGroupIcon className="h-4 w-4" />
+                                            {t("projects.tabs.shared")}
+                                        </div>
+                                    </Tab>
+                                </TabsHeader>
+                            </Tabs>
+                        </div>
 
                         {/* Search */}
-                        <div className="w-full md:w-72">
+                        <div className="w-full md:w-80">
                             <Input
                                 label={t("projects.search_placeholder")}
                                 icon={<MagnifyingGlassIcon className="h-5 w-5" />}
