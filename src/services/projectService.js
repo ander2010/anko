@@ -434,6 +434,15 @@ const projectService = {
     const res = await api.delete(`/decks/${deckId}/`);
     return res.data;
   },
+
+  async askProject(payload) {
+    try {
+      const res = await api.post(`${BASE}ask/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to get AI response" };
+    }
+  },
 };
 
 export default projectService;

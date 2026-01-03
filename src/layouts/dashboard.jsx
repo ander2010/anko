@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Cog6ToothIcon } from "@heroicons/react/24/solid";
+import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
   Sidenav,
   DashboardNavbar,
-  Configurator,
+  ChatPanel,
   Footer,
 } from "@/widgets/layout";
 import routes from "@/routes";
@@ -27,7 +27,7 @@ export function Dashboard() {
       />
       <div className="p-4 xl:ml-80">
         <DashboardNavbar />
-        <Configurator />
+        <ChatPanel />
         <IconButton
           size="lg"
           color="white"
@@ -35,7 +35,7 @@ export function Dashboard() {
           ripple={false}
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
-          <Cog6ToothIcon className="h-5 w-5" />
+          <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
         </IconButton>
         <Routes>
           {routes.map(({ layout, pages }) =>
