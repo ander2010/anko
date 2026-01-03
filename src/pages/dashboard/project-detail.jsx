@@ -56,6 +56,7 @@ import { DeckCard } from "@/widgets/cards/deck-card";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
+import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -103,6 +104,7 @@ export function ProjectDetail() {
 
   const [confirmDeleteTopicDialogOpen, setConfirmDeleteTopicDialogOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [viewingDocument, setViewingDocument] = useState(null);
 
   // topics/rules/batteries state
 
@@ -622,17 +624,24 @@ export function ProjectDetail() {
     }
   };
 
-  const handleDownloadDocument = (doc) => {
-    // Del API vendrá doc.url (string). No es un File local.
-    const href = doc?.url;
-    if (!href) return;
+  const handleDownloadDocument = async (doc) => {
+    try {
+      if (!doc?.id) return;
 
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = doc?.filename || "document";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+      const { url } = await projectService.getDocumentDownloadUrl(doc.id);
+      if (!url) return;
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc?.filename || "document";
+      a.target = "_blank"; // Open in new tab which usually triggers download for PDFs/files
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Error downloading document:", err);
+      // Optional: Show error to user
+    }
   };
 
   const handleDeleteDocument = (doc) => {
@@ -899,9 +908,15 @@ export function ProjectDetail() {
                       return (
                         <tr key={doc.id}>
                           <td className={rowClass}>
-                            <div className="flex items-center gap-2">
-                              <DocumentTextIcon className="h-5 w-5 text-blue-gray-400" />
-                              <Typography variant="small" className="font-medium text-blue-gray-900">
+                            <div
+                              className="flex items-center gap-2 cursor-pointer group"
+                              onClick={() => setViewingDocument(doc)}
+                            >
+                              <DocumentTextIcon className="h-5 w-5 text-blue-gray-400 group-hover:text-blue-500 transition-colors" />
+                              <Typography
+                                variant="small"
+                                className="font-medium text-blue-gray-900 group-hover:text-blue-500 transition-colors"
+                              >
                                 {doc.filename || doc.file || "Untitled"}
                               </Typography>
                             </div>
@@ -1724,6 +1739,12 @@ export function ProjectDetail() {
         message={language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${selectedDeck?.title}"?` : `Are you sure you want to delete deck "${selectedDeck?.title}"?`}
         confirmText={t("global.actions.delete")}
         variant="danger"
+      />
+
+      <DocumentViewerDialog
+        open={!!viewingDocument}
+        onClose={() => setViewingDocument(null)}
+        document={viewingDocument}
       />
     </div>
   );

@@ -8,3 +8,4 @@ export * from "@/widgets/dialogs/edit-topic-dialog";
 export * from "@/widgets/dialogs/exam-simulator-dialog";
 export * from "@/widgets/dialogs/flashcard-view-dialog";
 export * from "@/widgets/dialogs/upload-documents-dialog";
+export * from "@/widgets/dialogs/document-viewer-dialog";

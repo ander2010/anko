@@ -114,6 +114,15 @@ const projectService = {
     }
   },
 
+  async getDocumentDownloadUrl(documentId) {
+    try {
+      const res = await api.get(`/documents/${documentId}/download-url/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch download URL" };
+    }
+  },
+
   async updateProject(id, projectData) {
     try {
       const res = await api.patch(`${BASE}${id}/`, projectData);
