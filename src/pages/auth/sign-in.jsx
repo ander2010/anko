@@ -4,6 +4,7 @@ import {
   Checkbox,
   Button,
   Typography,
+  Spinner,
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -17,18 +18,22 @@ export function SignIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth(); // hook
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     try {
       await login({ username, password });
       navigate("/dashboard/home", { replace: true });
     } catch (err) {
       console.error(err);
       setError(err?.error || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,6 +55,7 @@ export function SignIn() {
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -64,13 +70,21 @@ export function SignIn() {
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
             />
           </div>
-          <Button className="mt-6" fullWidth type="submit">
-            Sign In
+          <Button className="mt-6 flex items-center justify-center gap-2" fullWidth type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <Spinner className="h-4 w-4" />
+                {language === "es" ? "Iniciando sesión..." : "Signing In..."}
+              </>
+            ) : (
+              language === "es" ? "Iniciar Sesión" : "Sign In"
+            )}
           </Button>
 
           {error && (

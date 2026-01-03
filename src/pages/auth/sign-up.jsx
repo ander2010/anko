@@ -4,6 +4,7 @@ import {
   Checkbox,
   Button,
   Typography,
+  Spinner,
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -17,17 +18,21 @@ export function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     try {
       await authService.register({ username, email, password });
       // After register, go to dashboard
       navigate("/dashboard/home");
     } catch (err) {
       setError(err?.error || JSON.stringify(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +60,7 @@ export function SignUp() {
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -68,6 +74,7 @@ export function SignUp() {
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -82,13 +89,21 @@ export function SignUp() {
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
             />
           </div>
-          <Button className="mt-6" fullWidth type="submit">
-            Register Now
+          <Button className="mt-6 flex items-center justify-center gap-2" fullWidth type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <Spinner className="h-4 w-4" />
+                {language === "es" ? "Registrando..." : "Registering..."}
+              </>
+            ) : (
+              language === "es" ? "Registrarse Ahora" : "Register Now"
+            )}
           </Button>
 
           {error && (
