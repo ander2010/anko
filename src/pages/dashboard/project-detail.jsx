@@ -113,6 +113,7 @@ export function ProjectDetail() {
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [simulationBattery, setSimulationBattery] = useState(null);
   const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
+  const [activeFlashcardJobs, setActiveFlashcardJobs] = useState({}); // { deckId: jobInfo }
 
   const [createDeckDialogOpen, setCreateDeckDialogOpen] = useState(false);
   const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
@@ -457,18 +458,8 @@ export function ProjectDetail() {
       const data = await projectService.getProjectDecks(id);
       const rawDecks = Array.isArray(data) ? data : data?.results || [];
 
-      // Fetch actual flashcard counts for each deck
-      const decksWithCounts = await Promise.all(rawDecks.map(async (deck) => {
-        try {
-          const cards = await projectService.getDeckFlashcards(deck.id);
-          return { ...deck, flashcards_count: cards.length };
-        } catch (err) {
-          console.error(`Error fetching counts for deck ${deck.id}:`, err);
-          return deck;
-        }
-      }));
-
-      setDecks(decksWithCounts);
+      // Backend already provides flashcards_count, no need to loop
+      setDecks(rawDecks);
     } catch (err) {
       setDecks([]);
       setError(err?.error || err?.detail || "Failed to load decks");
@@ -503,13 +494,52 @@ export function ProjectDetail() {
           ...deckData,
           cards_count: Number(deckData.cards_count || 0)
         };
-        await projectService.createDeckWithCards(payload);
+        const res = await projectService.createDeckWithCards(payload);
+
+        if (res.deck) {
+          // Add newly created deck to local state silently
+          setDecks(prev => [...prev, { ...res.deck, flashcards_count: res.cards_created || 0 }]);
+        }
+
+        if (res.job && res.deck) {
+          setActiveFlashcardJobs(prev => ({
+            ...prev,
+            [res.deck.id]: {
+              job_id: res.job.job_id,
+              ws_progress: res.job.ws_progress
+            }
+          }));
+        }
       }
       setCreateDeckDialogOpen(false);
       setSelectedDeck(null);
-      await fetchDecks(Number(projectId));
+      // fetchDecks removed to avoid global spinner
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to save deck");
+    }
+  };
+
+  const handleFlashcardJobComplete = async (deckId, jobId, lastData) => {
+    try {
+      // Remove job immediately to stop any further triggers from the UI
+      setActiveFlashcardJobs((prev) => {
+        const newState = { ...prev };
+        delete newState[deckId];
+        return newState;
+      });
+
+      // Use the new sync method via POST
+      await projectService.syncFlashcardsFromJob(deckId, jobId);
+
+      // Update state locally for the specific deck to avoid global loading/spinner
+      // We only fetch flashcards for this specific deck once to get the final count
+      const updatedCards = await projectService.getDeckFlashcards(deckId);
+
+      setDecks(prevDecks => prevDecks.map(d =>
+        d.id === deckId ? { ...d, flashcards_count: updatedCards.length } : d
+      ));
+    } catch (err) {
+      console.error("Error syncing flashcards after job complete:", err);
     }
   };
 
@@ -539,9 +569,12 @@ export function ProjectDetail() {
     try {
       setError(null);
       await projectService.deleteDeck(selectedDeck.id);
+
+      // Update state locally to avoid global loading spinner
+      setDecks(prev => prev.filter(d => d.id !== selectedDeck.id));
+
       setConfirmDeleteDeckDialogOpen(false);
       setSelectedDeck(null);
-      await fetchDecks(Number(projectId));
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to delete deck");
     }
@@ -1592,6 +1625,8 @@ export function ProjectDetail() {
                   onEdit={handleEditDeck}
                   onDelete={handleDeleteDeck}
                   onStudy={handleStudyDeck}
+                  job={activeFlashcardJobs[deck.id]}
+                  onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
                 />
               ))}
             </div>

@@ -30,16 +30,8 @@ export function MyDecks() {
             const data = await projectService.getUserDecks();
             const rawDecks = Array.isArray(data) ? data : data?.results || [];
 
-            // Fetch counts
-            const withCounts = await Promise.all(rawDecks.map(async (deck) => {
-                try {
-                    const cards = await projectService.getDeckFlashcards(deck.id);
-                    return { ...deck, flashcards_count: cards.length };
-                } catch (err) {
-                    return deck;
-                }
-            }));
-            setDecks(withCounts);
+            // Backend already provides flashcards_count, no need to loop
+            setDecks(rawDecks);
         } catch (err) {
             console.error("Error fetching user decks:", err);
         } finally {

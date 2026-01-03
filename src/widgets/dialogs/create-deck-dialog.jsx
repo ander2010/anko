@@ -38,7 +38,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         visibility: "private",
         section_ids: [],
         document_ids: [],
-        cards_count: 20,
+        cards_count: 3,
     });
     const [openAccordion, setOpenAccordion] = useState(0);
     const [scannedDocuments, setScannedDocuments] = useState([]);
@@ -54,7 +54,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     visibility: deck.visibility || "private",
                     section_ids: (deck.section_ids || []).map(Number),
                     document_ids: (deck.document_ids || []).map(Number),
-                    cards_count: deck.flashcards_count || deck.cards_count || 20,
+                    cards_count: deck.flashcards_count || deck.cards_count || 3,
                 });
             } else {
                 setFormData({
@@ -63,7 +63,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     visibility: "private",
                     section_ids: [],
                     document_ids: [],
-                    cards_count: 20,
+                    cards_count: 3,
                 });
             }
             if (projectId) {

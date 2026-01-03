@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -11,6 +11,7 @@ import {
     MenuItem,
     Chip,
     Button,
+    Progress,
 } from "@material-tailwind/react";
 import {
     EllipsisVerticalIcon,
@@ -21,9 +22,26 @@ import {
     BookOpenIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
+import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
 
-export function DeckCard({ deck, onEdit, onDelete, onStudy }) {
+export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }) {
     const { t } = useLanguage();
+    const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
+    const hasNotifiedComplete = useRef(false);
+
+    // Reset notification guard if job changes or resets
+    useEffect(() => {
+        if (!isCompleted) {
+            hasNotifiedComplete.current = false;
+        }
+    }, [isCompleted]);
+
+    useEffect(() => {
+        if (isCompleted && onJobComplete && !hasNotifiedComplete.current) {
+            hasNotifiedComplete.current = true;
+            onJobComplete(lastData);
+        }
+    }, [isCompleted, onJobComplete, lastData]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -95,6 +113,25 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy }) {
                     </Menu>
                 </div>
 
+                {job && !isCompleted && (
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-1">
+                            <Typography variant="small" className="text-blue-gray-600 font-medium capitalize">
+                                {status.toLowerCase()}...
+                            </Typography>
+                            <Typography variant="small" className="text-blue-gray-600 font-medium">
+                                {Math.round(progress)}%
+                            </Typography>
+                        </div>
+                        <Progress
+                            value={progress}
+                            variant="gradient"
+                            color={progress >= 100 ? "green" : "blue"}
+                            className="h-1.5"
+                        />
+                    </div>
+                )}
+
                 {deck.description && (
                     <Typography variant="small" className="text-blue-gray-600 line-clamp-2 mb-3 mt-1">
                         {deck.description}
@@ -136,6 +173,11 @@ DeckCard.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
     onStudy: PropTypes.func,
+    job: PropTypes.shape({
+        job_id: PropTypes.string,
+        ws_progress: PropTypes.string,
+    }),
+    onJobComplete: PropTypes.func,
 };
 
 export default DeckCard;

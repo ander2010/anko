@@ -398,9 +398,20 @@ const projectService = {
     return res.data;
   },
 
-  async getDeckFlashcards(deckId) {
+  async getDeckFlashcards(deckId, jobId = null) {
+    const params = { deck: deckId };
+    if (jobId) params.job_id = jobId;
     const res = await api.get("/flashcards/", {
-      params: { deck: deckId },
+      params,
+    });
+    return res.data;
+  },
+  async syncFlashcardsFromJob(deckId, jobId) {
+    const res = await api.post("/flashcards/sync-from-job/", {}, {
+      params: {
+        deck: deckId,
+        job_id: jobId,
+      }
     });
     return res.data;
   },
