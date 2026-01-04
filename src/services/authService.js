@@ -39,6 +39,15 @@ const authService = {
     }
   },
 
+  async updateProfile(data) {
+    try {
+      const res = await api.patch(`${BASE}me/`, data);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Update profile failed" };
+    }
+  },
+
   logout() {
     setAuthToken(null);
   },

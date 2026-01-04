@@ -649,6 +649,7 @@ export const es = {
                     is_active: "Activo",
                     is_staff: "Es Staff",
                     password: "Contraseña (dejar en blanco para no cambiar)",
+                    confirm_password: "Confirmar Contraseña",
                     roles: "Roles",
                     avatar: "URL del Avatar"
                 }

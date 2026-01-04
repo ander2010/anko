@@ -649,6 +649,7 @@ export const en = {
                     is_active: "Is Active",
                     is_staff: "Is Staff",
                     password: "Password (leave blank to keep)",
+                    confirm_password: "Confirm Password",
                     roles: "Roles",
                     avatar: "Avatar URL"
                 }

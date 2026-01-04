@@ -91,6 +91,12 @@ export function AuthProvider({ children }) {
     setRoles([]);
   };
 
+  const updateUser = async (data) => {
+    const updatedUser = await authService.updateProfile(data);
+    setUser(updatedUser);
+    return updatedUser;
+  };
+
   const value = {
     user,
     loading,
@@ -101,6 +107,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

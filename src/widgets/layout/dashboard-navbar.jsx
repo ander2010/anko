@@ -6,8 +6,19 @@ import {
   IconButton,
   Breadcrumbs,
   Input,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
+  Avatar,
 } from "@material-tailwind/react";
-import { UserCircleIcon, Bars3Icon } from "@heroicons/react/24/solid";
+import {
+  UserCircleIcon,
+  Bars3Icon,
+  PowerIcon,
+  PencilSquareIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
   setOpenConfigurator,
@@ -15,6 +26,8 @@ import {
 } from "@/context";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
+import { EditProfileDialog } from "@/widgets/dialogs/edit-profile-dialog";
+import { useState } from "react";
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -23,6 +36,7 @@ export function DashboardNavbar() {
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { user, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
+  const [openProfileDialog, setOpenProfileDialog] = useState(false);
 
   return (
     <Navbar
@@ -80,23 +94,53 @@ export function DashboardNavbar() {
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
           </IconButton>
-          {user && (
-            <div className="hidden xl:flex items-center px-2">
-              <Typography variant="small" color="blue-gray" className="font-normal opacity-75">
-                {t("navbar.welcome")}, <span className="font-bold">{user.first_name || user.username}</span>
-              </Typography>
-            </div>
-          )}
           {user ? (
-            <Button
-              variant="text"
-              color="blue-gray"
-              className="hidden items-center gap-1 px-4 xl:flex normal-case"
-              onClick={logout}
-            >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              {t("sidenav.signout") || "Sign Out"}
-            </Button>
+            <Menu>
+              <MenuHandler>
+                <Button
+                  variant="text"
+                  color="blue-gray"
+                  className="hidden items-center gap-2 px-4 xl:flex normal-case"
+                >
+                  <Avatar
+                    src="/img/bruce-mars.jpeg" // Using existing default image for now
+                    alt={user.username}
+                    size="xs"
+                    variant="circular"
+                  />
+                  <div className="flex flex-col items-start leading-tight">
+                    <Typography variant="small" color="blue-gray" className="font-bold">
+                      {user.first_name || user.username}
+                    </Typography>
+                    <Typography variant="small" color="blue-gray" className="text-[10px] font-normal opacity-50">
+                      {user.email}
+                    </Typography>
+                  </div>
+                  <ChevronDownIcon strokeWidth={2.5} className="h-3 w-3 text-blue-gray-500 ml-1" />
+                </Button>
+              </MenuHandler>
+              <MenuList className="w-56">
+                <MenuItem
+                  className="flex items-center gap-2"
+                  onClick={() => setOpenProfileDialog(true)}
+                >
+                  <PencilSquareIcon className="h-4 w-4 text-blue-gray-500" />
+                  <Typography variant="small" className="font-normal">
+                    {t("sidenav.profile") || "Profile"}
+                  </Typography>
+                </MenuItem>
+                <hr className="my-2 border-blue-gray-50" />
+                <MenuItem
+                  className="flex items-center gap-2 text-red-500 hover:bg-red-500/10 focus:bg-red-500/10"
+                  onClick={logout}
+                >
+                  <PowerIcon className="h-4 w-4" />
+                  <Typography variant="small" className="font-normal">
+                    {t("sidenav.signout") || "Sign Out"}
+                  </Typography>
+                </MenuItem>
+              </MenuList>
+            </Menu>
           ) : (
             <Link to="/auth/sign-in">
               <Button
@@ -109,6 +153,11 @@ export function DashboardNavbar() {
               </Button>
             </Link>
           )}
+
+          <EditProfileDialog
+            open={openProfileDialog}
+            handler={() => setOpenProfileDialog(false)}
+          />
         </div>
       </div>
     </Navbar>
