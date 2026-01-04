@@ -42,6 +42,40 @@ export const en = {
     navbar: {
         welcome: "Welcome"
     },
+    breadcrumbs: {
+        dashboard: "Dashboard",
+        home: "Home",
+        profile: "Profile",
+        tables: "Tables",
+        notifications: "Notifications",
+        projects: "Projects",
+        topics: "Topics",
+        rules: "Rules",
+        batteries: "Batteries",
+        sections: "Sections",
+        billing: "Billing & Plans",
+        faqs: "FAQs",
+        "about-us": "About Us",
+        "contact-us": "Contact Us",
+        permissions: "Permissions",
+        roles: "Roles",
+        plans: "Plans",
+        "plan-limits": "Plan Limits",
+        subscriptions: "Subscriptions",
+        "battery-shares": "Battery Shares",
+        "saved-batteries": "Saved Batteries",
+        invites: "Invites",
+        decks: "Decks",
+        flashcards: "Flashcards",
+        "deck-shares": "Deck Shares",
+        "saved-decks": "Saved Decks",
+        users: "Users",
+        "global-projects": "Global Projects",
+        "my-decks": "My Decks",
+        "my-batteries": "My Batteries",
+        orders: "Orders",
+        "global-sections": "Global Sections"
+    },
     home: {
         hero: {
             tags: {

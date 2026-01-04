@@ -60,7 +60,7 @@ export function DashboardNavbar() {
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
               >
-                {layout}
+                {t(`breadcrumbs.${layout}`) || layout}
               </Typography>
             </Link>
             <Typography
@@ -68,11 +68,11 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="font-normal"
             >
-              {page}
+              {t(`breadcrumbs.${page}`) || page}
             </Typography>
           </Breadcrumbs>
           <Typography variant="h6" color="blue-gray">
-            {page}
+            {t(`breadcrumbs.${page}`) || page}
           </Typography>
         </div>
         <div className="flex items-center">
