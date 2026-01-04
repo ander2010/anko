@@ -97,6 +97,25 @@ export function AuthProvider({ children }) {
     return updatedUser;
   };
 
+  const socialLogin = async (provider, token) => {
+    const { token: jwtToken, user: u } = await authService.socialLogin(provider, token);
+    window.localStorage.setItem("token", jwtToken);
+    setAuthToken(jwtToken);
+
+    // Fetch RBAC info after login
+    try {
+      const rbac = await rbacService.fetchAllowedRoutes();
+      setAllowedRoutes(rbac.allowed_routes || []);
+      setIsAdmin(rbac.is_admin || false);
+      setRoles(rbac.roles || []);
+    } catch (err) {
+      console.error("RBAC social login fetch failed", err);
+    }
+
+    setUser(u);
+    return u;
+  };
+
   const value = {
     user,
     loading,
@@ -108,6 +127,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateUser,
+    socialLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

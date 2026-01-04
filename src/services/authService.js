@@ -48,6 +48,21 @@ const authService = {
     }
   },
 
+  async socialLogin(provider, accessToken) {
+    try {
+      const endpoint = `${BASE}${provider}/`; // e.g. /auth/google/ or /auth/facebook/
+      console.log(`[AuthService] Sending POST to ${endpoint} with token prefix: ${accessToken?.substring(0, 10)}...`);
+      const res = await api.post(endpoint, { access_token: accessToken });
+      console.log(`[AuthService] Response from ${provider} social login:`, res.status, res.data);
+      const { token, user } = res.data;
+      if (token) setAuthToken(token);
+      return { token, user };
+    } catch (err) {
+      console.error(`[AuthService] Error in socialLogin for ${provider}:`, err?.response?.status, err?.response?.data || err.message);
+      throw err?.response?.data || { error: `Social login with ${provider} failed` };
+    }
+  },
+
   logout() {
     setAuthToken(null);
   },

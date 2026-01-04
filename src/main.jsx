@@ -18,23 +18,28 @@ import { MaterialTailwindControllerProvider } from "@/context";
 import { ProjectsProvider } from "@/context/projects-context";
 import AuthProvider from "@/context/auth-context";
 import { LanguageProvider } from "@/context/language-context";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./styles/tailwind.css";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <MaterialTailwindControllerProvider>
-          <AuthProvider>
-            <LanguageProvider>
-              <ProjectsProvider>
-                <App />
-              </ProjectsProvider>
-            </LanguageProvider>
-          </AuthProvider>
-        </MaterialTailwindControllerProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <BrowserRouter>
+        <ThemeProvider>
+          <MaterialTailwindControllerProvider>
+            <AuthProvider>
+              <LanguageProvider>
+                <ProjectsProvider>
+                  <App />
+                </ProjectsProvider>
+              </LanguageProvider>
+            </AuthProvider>
+          </MaterialTailwindControllerProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
 

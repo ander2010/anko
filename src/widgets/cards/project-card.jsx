@@ -189,7 +189,7 @@ export function ProjectCard({
         <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50">
           <ClockIcon className="h-4 w-4 text-blue-gray-400" />
           <Typography variant="small" className="text-blue-gray-500">
-            Updatedddd {formatDate(project.updated_at || project.updatedAt)}
+            Updated {formatDate(project.updated_at || project.updatedAt)}
           </Typography>
         </div>
       </CardBody>

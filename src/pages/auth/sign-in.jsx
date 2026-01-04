@@ -11,6 +11,7 @@ import { useState } from "react";
 import authService from "../../services/authService";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
+import { useGoogleLogin } from "@react-oauth/google";
 
 
 export function SignIn() {
@@ -20,7 +21,49 @@ export function SignIn() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // hook
+  const { login, socialLogin } = useAuth(); // hook
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log("Google Token Response Success:", tokenResponse);
+      setLoading(true);
+      setError(null);
+      try {
+        console.log("Attempting socialLogin in context with token...");
+        await socialLogin("google", tokenResponse.access_token);
+        console.log("Social login successful, navigating to dashboard.");
+        navigate("/dashboard/home", { replace: true });
+      } catch (err) {
+        console.error("Social login catch block error:", err);
+        setError(err?.error || "Google login failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error("Google useGoogleLogin onError callback:", error);
+      setError("Google Login Failed");
+      setLoading(false);
+    },
+  });
+
+  const handleSocialLogin = async (provider) => {
+    if (provider === "google") {
+      loginWithGoogle();
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      console.log(`Initiating POST login for ${provider}`);
+      setError(`Please integrate the ${provider} SDK to get the access_token first.`);
+    } catch (err) {
+      console.error(err);
+      setError(`Social login failed: ${err.error || "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,7 +137,14 @@ export function SignIn() {
           )}
 
           <div className="space-y-4 mt-8">
-            <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth>
+            <Button
+              size="lg"
+              color="white"
+              className="flex items-center gap-2 justify-center shadow-md"
+              fullWidth
+              onClick={() => handleSocialLogin('google')}
+              disabled={loading}
+            >
               <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_1156_824)">
                   <path d="M16.3442 8.18429C16.3442 7.64047 16.3001 7.09371 16.206 6.55872H8.66016V9.63937H12.9813C12.802 10.6329 12.2258 11.5119 11.3822 12.0704V14.0693H13.9602C15.4741 12.6759 16.3442 10.6182 16.3442 8.18429Z" fill="#4285F4" />
@@ -108,11 +158,18 @@ export function SignIn() {
                   </clipPath>
                 </defs>
               </svg>
-              <span>Sign in With Google</span>
+              <span>{language === "es" ? "Acceder con Google" : "Sign in With Google"}</span>
             </Button>
-            <Button size="lg" color="white" className="flex items-center gap-2 justify-center shadow-md" fullWidth>
-              <img src="/img/twitter-logo.svg" height={24} width={24} alt="" />
-              <span>Sign in With Twitter</span>
+            <Button
+              size="lg"
+              color="white"
+              className="flex items-center gap-2 justify-center shadow-md"
+              fullWidth
+              onClick={() => handleSocialLogin('facebook')}
+              disabled={loading}
+            >
+              <img src="/img/facebook-logo.svg" height={24} width={24} alt="" />
+              <span>{language === "es" ? "Acceder con Facebook" : "Sign in With Facebook"}</span>
             </Button>
           </div>
           <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
