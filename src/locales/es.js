@@ -798,5 +798,22 @@ export const es = {
             sign_in: "Iniciar Sesión",
             register: "Registrarse"
         }
+    },
+    chat: {
+        title: "IA Chat",
+        select_project: "Seleccionar Proyecto",
+        project_label: "Proyecto",
+        context_docs: "Contexto (Documentos)",
+        select_docs: "Seleccionar documentos",
+        docs_selected: "{count} seleccionado(s)",
+        no_docs: "No hay documentos",
+        no_docs_placeholder: "Selecciona documentos para comenzar.",
+        help_text: "Haz una pregunta sobre los documentos seleccionados.",
+        input_placeholder: "Escribe tu pregunta...",
+        ai_error: "Lo siento, no pude obtener una respuesta.",
+        conn_error: "Error de conexión.",
+        empty_state: "Selecciona un documento y haz una pregunta.",
+        loading: "Pensando...",
+        no_name: "Sin nombre"
     }
 };

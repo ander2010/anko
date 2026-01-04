@@ -798,5 +798,22 @@ export const en = {
             sign_in: "Sign In",
             register: "Register"
         }
+    },
+    chat: {
+        title: "AI Chat",
+        select_project: "Select Project",
+        project_label: "Project",
+        context_docs: "Context (Documents)",
+        select_docs: "Select documents",
+        docs_selected: "{count} selected",
+        no_docs: "No documents available",
+        no_docs_placeholder: "Select documents to start.",
+        help_text: "Ask a question about the selected documents.",
+        input_placeholder: "Type your question...",
+        ai_error: "Sorry, I couldn't get an answer.",
+        conn_error: "Connection error.",
+        empty_state: "Select a document and ask a question.",
+        loading: "Thinking...",
+        no_name: "No name"
     }
 };
