@@ -21,8 +21,8 @@ import { LanguageProvider } from "@/context/language-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./styles/tailwind.css";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-console.log("GOOGLE_CLIENT_ID loaded:", GOOGLE_CLIENT_ID);
+const GOOGLE_CLIENT_ID = "600601272216-ulj4ihc7ull70lg7p9c2v27fvrslf90d.apps.googleusercontent.com";
+console.log("GOOGLE_CLIENT_ID hardcoded:", GOOGLE_CLIENT_ID);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
