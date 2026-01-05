@@ -50,13 +50,20 @@ export function DocumentViewerDialog({ open, onClose, document }) {
             setLoading(true);
             setError(null);
 
-            // Get the document URL from backend
+            // 1. Get the document URL from backend (presigned or internal)
             const data = await projectService.getDocumentDownloadUrl(document.id, 'view');
+            const targetUrl = data.url;
 
-            // Fetch the actual document with bearer token in headers
-            const blobUrl = await projectService.fetchDocumentWithAuth(data.url);
-
-            setFileUrl(blobUrl);
+            try {
+                // 2. Attempt to fetch with Bearer token to get a Blob (best for internal files)
+                // If this is a cross-origin pre-signed URL, it might fail due to CORS
+                const blobUrl = await projectService.fetchDocumentWithAuth(targetUrl);
+                setFileUrl(blobUrl);
+            } catch (fetchErr) {
+                console.warn("fetchDocumentWithAuth failed, falling back to direct URL:", fetchErr);
+                // Fallback: Use the direct URL returned by the backend
+                setFileUrl(targetUrl);
+            }
         } catch (err) {
             console.error("Error fetching document URL:", err);
             setError(language === "es" ? "Error al obtener la URL del documento" : "Error fetching document URL");

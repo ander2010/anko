@@ -644,17 +644,9 @@ export function ProjectDetail() {
     }
   };
 
-  const handleOpenDocument = async (doc) => {
-    try {
-      if (!doc?.id) return;
-
-      const { url } = await projectService.getDocumentDownloadUrl(doc.id, 'view');
-      if (url) {
-        window.open(url, '_blank');
-      }
-    } catch (err) {
-      console.error("Error viewing document:", err);
-    }
+  const handleOpenDocument = (doc) => {
+    setSelectedDocument(doc);
+    setViewingDocument(doc);
   };
 
   const handleDeleteDocument = (doc) => {
@@ -923,7 +915,7 @@ export function ProjectDetail() {
                           <td className={rowClass}>
                             <div
                               className="flex items-center gap-2 cursor-pointer group"
-                              onClick={() => handleOpenDocument(doc)}
+                              onClick={() => setViewingDocument(doc)}
                             >
                               <DocumentTextIcon className="h-5 w-5 text-blue-gray-400 group-hover:text-blue-500 transition-colors" />
                               <Typography
@@ -998,7 +990,7 @@ export function ProjectDetail() {
                                 </MenuItem>
 
                                 <MenuItem
-                                  onClick={() => handleOpenDocument(doc)}
+                                  onClick={() => setViewingDocument(doc)}
                                   className="flex items-center gap-2"
                                 >
                                   <EyeIcon className="h-4 w-4" />

@@ -126,6 +126,18 @@ const projectService = {
     }
   },
 
+  async fetchDocumentWithAuth(url) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch file from storage");
+      const blob = await response.blob();
+      return window.URL.createObjectURL(blob);
+    } catch (err) {
+      console.error("fetchDocumentWithAuth error:", err);
+      throw err;
+    }
+  },
+
   async updateProject(id, projectData) {
     try {
       const res = await api.patch(`${BASE}${id}/`, projectData);
