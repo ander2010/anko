@@ -57,6 +57,8 @@ export const en = {
         sections: "Sections",
         billing: "Billing & Plans",
         faqs: "FAQs",
+        dashboard: "Dashboard",
+        project: "Project",
         "about-us": "About Us",
         "contact-us": "Contact Us",
         permissions: "Permissions",

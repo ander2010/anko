@@ -26,6 +26,7 @@ import {
 } from "@/context";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
+import { useProjects } from "@/context/projects-context";
 import { EditProfileDialog } from "@/widgets/dialogs/edit-profile-dialog";
 import { useState } from "react";
 
@@ -33,10 +34,27 @@ export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const { pathname } = useLocation();
-  const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { user, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
-  const [openProfileDialog, setOpenProfileDialog] = useState(false);
+  // Using useProjects hook instead
+  const { projects: allProjects } = useProjects();
+
+  const pathParts = pathname.split("/").filter((el) => el !== "");
+  const [layout, page, id] = pathParts;
+
+  const getBreadcrumbName = (part, index) => {
+    // If it's an ID and the previous part was 'project'
+    if (index === 2 && pathParts[1] === "project") {
+      const project = allProjects.find(p => String(p.id) === part);
+      return project ? (project.title || project.name) : part;
+    }
+
+    // Default translation lookup
+    return t(`breadcrumbs.${part}`) || part;
+  };
+
+  const currentPageName = getBreadcrumbName(page, 1);
+  const detailName = id ? getBreadcrumbName(id, 2) : null;
 
   return (
     <Navbar
@@ -68,11 +86,20 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="font-normal"
             >
-              {t(`breadcrumbs.${page}`) || page}
+              {currentPageName}
             </Typography>
+            {detailName && (
+              <Typography
+                variant="small"
+                color="blue-gray"
+                className="font-normal"
+              >
+                {detailName}
+              </Typography>
+            )}
           </Breadcrumbs>
           <Typography variant="h6" color="blue-gray">
-            {t(`breadcrumbs.${page}`) || page}
+            {detailName || currentPageName}
           </Typography>
         </div>
         <div className="flex items-center">

@@ -57,6 +57,8 @@ export const es = {
         sections: "Secciones",
         billing: "Planes y Pagos",
         faqs: "Preguntas Frecuentes",
+        dashboard: "Panel",
+        project: "Proyecto",
         "about-us": "Sobre Nosotros",
         "contact-us": "Contacto",
         permissions: "Permisos",
