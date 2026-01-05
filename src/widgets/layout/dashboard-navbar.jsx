@@ -36,6 +36,7 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
+  const [openProfileDialog, setOpenProfileDialog] = useState(false);
   // Using useProjects hook instead
   const { projects: allProjects } = useProjects();
 
