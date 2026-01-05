@@ -29,17 +29,34 @@ export function DocumentViewerDialog({ open, onClose, document }) {
         if (open && document?.id) {
             fetchUrl();
         } else {
+            // Cleanup blob URL if it exists
+            if (fileUrl && fileUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(fileUrl);
+            }
             setFileUrl(null);
             setError(null);
         }
+
+        // Cleanup on unmount
+        return () => {
+            if (fileUrl && fileUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(fileUrl);
+            }
+        };
     }, [open, document?.id]);
 
     const fetchUrl = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await projectService.getDocumentDownloadUrl(document.id);
-            setFileUrl(data.url);
+
+            // Get the document URL from backend
+            const data = await projectService.getDocumentDownloadUrl(document.id, 'view');
+
+            // Fetch the actual document with bearer token in headers
+            const blobUrl = await projectService.fetchDocumentWithAuth(data.url);
+
+            setFileUrl(blobUrl);
         } catch (err) {
             console.error("Error fetching document URL:", err);
             setError(language === "es" ? "Error al obtener la URL del documento" : "Error fetching document URL");

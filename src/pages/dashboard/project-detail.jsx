@@ -629,7 +629,7 @@ export function ProjectDetail() {
     try {
       if (!doc?.id) return;
 
-      const { url } = await projectService.getDocumentDownloadUrl(doc.id);
+      const { url } = await projectService.getDocumentDownloadUrl(doc.id, 'download');
       if (!url) return;
 
       const a = document.createElement("a");

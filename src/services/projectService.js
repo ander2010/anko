@@ -114,9 +114,12 @@ const projectService = {
     }
   },
 
-  async getDocumentDownloadUrl(documentId) {
+  async getDocumentDownloadUrl(documentId, mode = 'view') {
     try {
-      const res = await api.get(`/documents/${documentId}/download-url/`);
+      // mode can be 'view' or 'download'
+      const res = await api.get(`/documents/${documentId}/download-url/`, {
+        params: { mode }
+      });
       return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Failed to fetch download URL" };
