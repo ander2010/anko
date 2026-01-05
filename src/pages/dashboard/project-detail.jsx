@@ -635,13 +635,25 @@ export function ProjectDetail() {
       const a = document.createElement("a");
       a.href = url;
       a.download = doc?.filename || "document";
-      a.target = "_blank"; // Open in new tab which usually triggers download for PDFs/files
+      a.target = "_blank";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
     } catch (err) {
       console.error("Error downloading document:", err);
-      // Optional: Show error to user
+    }
+  };
+
+  const handleOpenDocument = async (doc) => {
+    try {
+      if (!doc?.id) return;
+
+      const { url } = await projectService.getDocumentDownloadUrl(doc.id, 'view');
+      if (url) {
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      console.error("Error viewing document:", err);
     }
   };
 
@@ -911,7 +923,7 @@ export function ProjectDetail() {
                           <td className={rowClass}>
                             <div
                               className="flex items-center gap-2 cursor-pointer group"
-                              onClick={() => setViewingDocument(doc)}
+                              onClick={() => handleOpenDocument(doc)}
                             >
                               <DocumentTextIcon className="h-5 w-5 text-blue-gray-400 group-hover:text-blue-500 transition-colors" />
                               <Typography
@@ -986,7 +998,7 @@ export function ProjectDetail() {
                                 </MenuItem>
 
                                 <MenuItem
-                                  onClick={() => setViewingDocument(doc)}
+                                  onClick={() => handleOpenDocument(doc)}
                                   className="flex items-center gap-2"
                                 >
                                   <EyeIcon className="h-4 w-4" />
