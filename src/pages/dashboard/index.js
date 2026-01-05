@@ -29,6 +29,7 @@ export * from "@/pages/dashboard/global-deck-shares";
 export * from "@/pages/dashboard/global-saved-decks";
 export * from "@/pages/dashboard/global-users";
 export * from "@/pages/dashboard/global-projects";
+export * from "@/pages/dashboard/global-support-requests";
 export * from "@/pages/dashboard/my-decks";
 export * from "@/pages/dashboard/my-batteries";
 

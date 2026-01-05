@@ -26,10 +26,50 @@ import {
 } from "@heroicons/react/24/solid";
 
 import { useLanguage } from "@/context/language-context";
+import supportService from "@/services/supportService";
 
 export function Home() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+
+  const [formData, setFormData] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [loading, setLoading] = React.useState(false);
+  const [status, setStatus] = React.useState({ type: "", message: "" });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: "", message: "" });
+
+    try {
+      await supportService.sendSupportRequest({
+        ...formData,
+        source: "dashboard_home",
+      });
+      setStatus({
+        type: "success",
+        message: t("contact_page.success_message"),
+      });
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      setStatus({
+        type: "error",
+        message: t("contact_page.error_message"),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Cómo funciona (3 pasos, con foco en preguntas/flashcards)
   const howItWorks = [
@@ -514,16 +554,51 @@ export function Home() {
                     </Button>
                   </div>
 
-                  <form className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <Input label={t("home.contact.form.name")} color="blue-gray" />
-                      <Input label={t("home.contact.form.phone")} type="tel" color="blue-gray" />
+                  {status.message && (
+                    <div className={`p-4 mb-6 rounded-lg ${status.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+                      {status.message}
                     </div>
-                    <Input label={t("home.contact.form.email")} type="email" required color="blue-gray" />
-                    <Textarea label={t("home.contact.form.desc")} required color="blue-gray" rows={4} />
+                  )}
 
-                    <Button color="blue-gray" fullWidth className="mt-2">
-                      {t("home.contact.form.button")}
+                  <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Input
+                        label={t("home.contact.form.name")}
+                        color="blue-gray"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                      />
+                      <Input
+                        label={t("home.contact.form.phone")}
+                        type="tel"
+                        color="blue-gray"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <Input
+                      label={t("home.contact.form.email")}
+                      type="email"
+                      required
+                      color="blue-gray"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                    <Textarea
+                      label={t("home.contact.form.desc")}
+                      required
+                      color="blue-gray"
+                      rows={4}
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                    />
+
+                    <Button color="blue-gray" fullWidth className="mt-2" type="submit" disabled={loading}>
+                      {loading ? (language === "es" ? "Enviando..." : "Sending...") : t("home.contact.form.button")}
                     </Button>
                   </form>
                 </div>

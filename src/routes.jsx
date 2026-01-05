@@ -18,7 +18,7 @@ import {
   Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing, Faqs, AboutUs, ContactPage,
   GlobalResources, GlobalPermissions, GlobalRoles, GlobalPlans, GlobalPlanLimits, GlobalSubscriptions,
   GlobalBatteryShares, GlobalSavedBatteries, GlobalInvites, GlobalDecks, GlobalFlashcards, GlobalDeckShares, GlobalSavedDecks,
-  GlobalUsers, GlobalProjects, MyDecks, MyBatteries
+  GlobalUsers, GlobalProjects, GlobalSupportRequests, MyDecks, MyBatteries
 } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
@@ -197,6 +197,13 @@ export const routes = [
             key: "dashboard.admin.projects",
             path: "/global-projects",
             element: <GlobalProjects />,
+          },
+          {
+            icon: <EnvelopeIcon {...icon} />,
+            name: "support-requests",
+            key: "dashboard.admin.support-requests",
+            path: "/support-requests",
+            element: <GlobalSupportRequests />,
           },
         ]
       },

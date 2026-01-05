@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Typography,
     Card,
@@ -9,9 +9,48 @@ import {
 } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
 import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/solid";
+import supportService from "@/services/supportService";
 
 export function ContactPage() {
     const { t, language } = useLanguage();
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "", // User mentioned "email" in their requirement object: "name", "phone", "message", "source"
+        phone: "",
+        message: "",
+    });
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState({ type: "", message: "" });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ type: "", message: "" });
+
+        try {
+            await supportService.sendSupportRequest({
+                ...formData,
+                source: "contact_page",
+            });
+            setStatus({
+                type: "success",
+                message: t("contact_page.success_message"),
+            });
+            setFormData({ name: "", email: "", phone: "", message: "" });
+        } catch (err) {
+            setStatus({
+                type: "error",
+                message: t("contact_page.error_message"),
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="mt-12 flex flex-col gap-10 max-w-6xl mx-auto">
@@ -58,7 +97,7 @@ export function ContactPage() {
                                 </div>
                                 <div>
                                     <Typography variant="small" className="opacity-70">{language === "es" ? "Teléfono" : "Phone"}</Typography>
-                                    <Typography className="font-bold">+1 (555) 123-4567</Typography>
+                                    <Typography className="font-bold">+1 (305) 123-4567</Typography>
                                 </div>
                             </div>
                         </CardBody>
@@ -71,15 +110,57 @@ export function ContactPage() {
                             <Typography variant="h4" color="blue-gray" className="mb-6">
                                 {t("contact_page.form_title")}
                             </Typography>
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Input label={language === "es" ? "Nombre Completo" : "Full Name"} size="lg" />
-                                    <Input label={language === "es" ? "Correo Electrónico" : "Email Address"} size="lg" />
+
+                            {status.message && (
+                                <div className={`p-4 mb-6 rounded-lg ${status.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+                                    {status.message}
                                 </div>
-                                <Input label={language === "es" ? "Asunto" : "Subject"} size="lg" />
-                                <Textarea label={language === "es" ? "Tu Mensaje" : "Your Message"} rows={6} />
-                                <Button variant="gradient" color="blue-gray" fullWidth size="lg">
-                                    {language === "es" ? "Enviar Mensaje" : "Send Message"}
+                            )}
+
+                            <form className="space-y-6" onSubmit={handleSubmit}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Input
+                                        label={language === "es" ? "Nombre Completo" : "Full Name"}
+                                        size="lg"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <Input
+                                        label={language === "es" ? "Correo Electrónico" : "Email Address"}
+                                        size="lg"
+                                        name="email"
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                                <Input
+                                    label={language === "es" ? "Teléfono" : "Phone"}
+                                    size="lg"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                />
+                                <Textarea
+                                    label={language === "es" ? "Tu Mensaje" : "Your Message"}
+                                    rows={6}
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <Button
+                                    variant="gradient"
+                                    color="blue-gray"
+                                    fullWidth
+                                    size="lg"
+                                    type="submit"
+                                    disabled={loading}
+                                >
+                                    {loading ? (language === "es" ? "Enviando..." : "Sending...") : (language === "es" ? "Enviar Mensaje" : "Send Message")}
                                 </Button>
                             </form>
                         </CardBody>

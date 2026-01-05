@@ -20,6 +20,7 @@ export const en = {
         billing: "Billing & Plans",
         faqs: "FAQs",
         "about-us": "About Us",
+        "contact": "Contact",
         "contact-us": "Contact Us",
         resources: "Global Resources",
         permissions: "Permissions",
@@ -37,7 +38,8 @@ export const en = {
         users: "Users",
         "global-projects": "Global Projects",
         "my-decks": "My Decks",
-        "my-batteries": "My Batteries"
+        "my-batteries": "My Batteries",
+        "support-requests": "Support Messages"
     },
     navbar: {
         welcome: "Welcome"
@@ -74,7 +76,8 @@ export const en = {
         "my-decks": "My Decks",
         "my-batteries": "My Batteries",
         orders: "Orders",
-        "global-sections": "Global Sections"
+        "global-sections": "Global Sections",
+        "support-requests": "Support Messages"
     },
     home: {
         hero: {
@@ -701,6 +704,24 @@ export const en = {
                     description: "Description",
                     owner: "Owner"
                 }
+            },
+            "support-requests": {
+                title: "Support Messages",
+                columns: {
+                    name: "Name",
+                    email: "Email",
+                    phone: "Phone",
+                    message: "Message",
+                    source: "Source",
+                    created_at: "Date"
+                },
+                fields: {
+                    name: "Name",
+                    email: "Email",
+                    phone: "Phone",
+                    message: "Message",
+                    source: "Source"
+                }
             }
         }
     },
@@ -798,19 +819,21 @@ export const en = {
     },
     contact_page: {
         title: "Get in Touch",
-        subtitle: "We're here to help you succeed.",
+        subtitle: "We're here to help. If you have any questions or suggestions, don't hesitate to write to us.",
         info_title: "Contact Information",
-        email: "support@ankostudio.com",
-        location: "Tech Hub, Silicon Valley, CA",
         form_title: "Send us a Message",
-        success_msg: "Thank you! We'll get back to you shortly."
+        email: "support@ankostudio.com",
+        location: "123 Main St, New York, NY, USA",
+        success_message: "Your message has been sent successfully. We will get in touch with you soon.",
+        error_message: "There was an error sending your message. Please try again.",
     },
     footer: {
         made_with: "made with",
         by: "by",
         for_better_web: "for a better web",
         links: {
-            about: "About Us"
+            about: "About Us",
+            contact: "Contact"
         }
     },
     landing: {

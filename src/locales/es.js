@@ -20,6 +20,7 @@ export const es = {
         billing: "Planes y Pagos",
         faqs: "Preguntas Frecuentes",
         "about-us": "Sobre Nosotros",
+        "contact": "Contacto",
         "contact-us": "Contacto",
         resources: "Recursos Globales",
         permissions: "Permisos",
@@ -37,7 +38,8 @@ export const es = {
         users: "Usuarios",
         "global-projects": "Proyectos Generales",
         "my-decks": "Mis Mazos",
-        "my-batteries": "Mis Baterías"
+        "my-batteries": "Mis Baterías",
+        "support-requests": "Mensajes de Soporte"
     },
     navbar: {
         welcome: "Bienvenido"
@@ -74,7 +76,8 @@ export const es = {
         "my-decks": "Mis Mazos",
         "my-batteries": "Mis Baterías",
         orders: "Órdenes",
-        "global-sections": "Secciones Globales"
+        "global-sections": "Secciones Globales",
+        "support-requests": "Mensajes de Soporte"
     },
     home: {
         hero: {
@@ -701,6 +704,24 @@ export const es = {
                     description: "Descripción",
                     owner: "Dueño"
                 }
+            },
+            "support-requests": {
+                title: "Mensajes de Soporte",
+                columns: {
+                    name: "Nombre",
+                    email: "Email",
+                    phone: "Teléfono",
+                    message: "Mensaje",
+                    source: "Origen",
+                    created_at: "Fecha"
+                },
+                fields: {
+                    name: "Nombre",
+                    email: "Email",
+                    phone: "Teléfono",
+                    message: "Mensaje",
+                    source: "Origen"
+                }
             }
         }
     },
@@ -798,19 +819,22 @@ export const es = {
     },
     contact_page: {
         title: "Ponte en Contacto",
-        subtitle: "Estamos aquí para ayudarte a tener éxito.",
+        subtitle: "Estamos aquí para ayudarte. Si tienes alguna duda o sugerencia, no dudes en escribirnos.",
         info_title: "Información de Contacto",
-        email: "support@ankostudio.com",
-        location: "Tech Hub, Silicon Valley, CA",
         form_title: "Envíanos un Mensaje",
-        success_msg: "¡Gracias! Te responderemos a la brevedad."
+        email: "soporte@ankostudio.com",
+        location: "Calle Principal 123, Ciudad de México, México",
+        success_message: "Tu mensaje ha sido enviado con éxito. Nos pondremos en contacto contigo pronto.",
+        error_message: "Hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo.",
     },
+
     footer: {
         made_with: "hecho con",
         by: "por",
         for_better_web: "para una mejor web",
         links: {
-            about: "Sobre Nosotros"
+            about: "Sobre Nosotros",
+            contact: "Contacto"
         }
     },
     landing: {
