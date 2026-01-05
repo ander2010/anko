@@ -132,24 +132,36 @@ const projectService = {
       const data = await this.getDocumentDownloadUrl(documentId, mode);
       const { url, filename } = data;
 
-      // 2. Perform the second GET to the actual file URL (e.g. S3)
-      // We use fetch here to avoid the Authorization header from our 'api' instance
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch file from storage");
+      try {
+        // 2. Attempt to fetch with Blob (allows custom filename and internal processing)
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Fetch failed");
 
-      const blob = await response.blob();
-      const localUrl = window.URL.createObjectURL(blob);
+        const blob = await response.blob();
+        const localUrl = window.URL.createObjectURL(blob);
 
-      if (mode === 'download') {
-        const link = document.createElement('a');
-        link.href = localUrl;
-        link.setAttribute('download', filename || 'document');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } else {
-        // mode === 'view'
-        window.open(localUrl, '_blank');
+        if (mode === 'download') {
+          const link = document.body.appendChild(document.createElement('a'));
+          link.href = localUrl;
+          link.download = filename || 'document';
+          link.click();
+          link.remove();
+        } else {
+          window.open(localUrl, '_blank');
+        }
+      } catch (fetchErr) {
+        console.warn("Fetch failed (possibly CORS), falling back to direct navigation:", fetchErr);
+        // Fallback: Direct navigation (avoids JS CORS blocks)
+        if (mode === 'download') {
+          const link = document.body.appendChild(document.createElement('a'));
+          link.href = url;
+          link.download = filename || '';
+          link.target = "_blank";
+          link.click();
+          link.remove();
+        } else {
+          window.open(url, '_blank');
+        }
       }
 
       return data;
