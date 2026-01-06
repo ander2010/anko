@@ -168,7 +168,7 @@ export function Home() {
   ];
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 space-y-24">
       {/* ================= HERO (premium) ================= */}
       <section className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white">
         {/* Fondo suave tipo SaaS */}
@@ -285,7 +285,7 @@ export function Home() {
       </section>
 
       {/* ================= CÓMO FUNCIONA ================= */}
-      <section id="como-funciona" className="mt-14">
+      <section id="como-funciona">
         <div className="mx-auto max-w-6xl px-1">
           <div className="text-center mb-8">
             <Typography variant="h3" color="blue-gray" className="mb-2">
