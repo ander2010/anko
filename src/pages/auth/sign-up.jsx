@@ -140,7 +140,7 @@ export function SignUp() {
             </Typography>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          {/* <div className="grid grid-cols-2 gap-4 mb-8">
             <Button
               variant="outline"
               color="zinc"
@@ -177,7 +177,7 @@ export function SignUp() {
                 {language === "es" ? "O regístrate con" : "Or register with"}
               </span>
             </div>
-          </div>
+          </div> */}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">

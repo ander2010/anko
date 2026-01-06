@@ -96,7 +96,7 @@ export function SignIn() {
             </Typography>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          {/* <div className="grid grid-cols-2 gap-4 mb-8">
             <Button
               variant="outline"
               color="zinc"
@@ -133,7 +133,7 @@ export function SignIn() {
                 {language === "es" ? "O continúa con" : "Or continue with"}
               </span>
             </div>
-          </div>
+          </div> */}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
