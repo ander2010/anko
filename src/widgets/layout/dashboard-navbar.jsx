@@ -60,110 +60,104 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-xl transition-all ${fixedNavbar
-        ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
-        : "px-0 py-1"
+      className={`transition-all ${fixedNavbar
+        ? "sticky top-4 z-40 py-2 shadow-premium bg-white/80 backdrop-blur-md border border-zinc-200/50"
+        : "px-0 py-1 border-b border-zinc-200/50"
         }`}
       fullWidth
       blurred={fixedNavbar}
     >
-      <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
-        <div className="capitalize">
-          <Breadcrumbs
-            className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
-              }`}
+      <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center px-4">
+        <div className="capitalize flex items-start gap-4">
+          <IconButton
+            variant="text"
+            className="grid text-zinc-600 mt-1"
+            onClick={() => setOpenSidenav(dispatch, !openSidenav)}
           >
-            <Link to={`/${layout}`}>
-              <Typography
-                variant="small"
-                color="blue-gray"
-                className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
-              >
-                {t(`breadcrumbs.${layout}`) || layout}
-              </Typography>
-            </Link>
-            <Typography
-              variant="small"
-              color="blue-gray"
-              className="font-normal"
+            <Bars3Icon strokeWidth={3} className="h-6 w-6" />
+          </IconButton>
+          <div>
+            <Breadcrumbs
+              className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
+                }`}
             >
-              {currentPageName}
-            </Typography>
-            {detailName && (
+              <Link to={`/${layout}`}>
+                <Typography
+                  variant="small"
+                  className="font-medium text-zinc-400 transition-all hover:text-indigo-600"
+                >
+                  {t(`breadcrumbs.${layout}`) || layout}
+                </Typography>
+              </Link>
               <Typography
                 variant="small"
-                color="blue-gray"
-                className="font-normal"
+                className="font-medium text-zinc-500"
               >
-                {detailName}
+                {currentPageName}
               </Typography>
-            )}
-          </Breadcrumbs>
-          <Typography variant="h6" color="blue-gray">
-            {detailName || currentPageName}
-          </Typography>
+              {detailName && (
+                <Typography
+                  variant="small"
+                  className="font-semibold text-zinc-900"
+                >
+                  {detailName}
+                </Typography>
+              )}
+            </Breadcrumbs>
+            <Typography variant="h5" className="font-bold tracking-tight text-zinc-900 mt-1">
+              {detailName || currentPageName}
+            </Typography>
+          </div>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+
 
           <Button
             variant="text"
-            color="blue-gray"
-            className="flex items-center gap-1 px-4 normal-case"
+            className="flex items-center gap-2 px-3 py-2 normal-case text-zinc-600 hover:bg-zinc-100"
             onClick={() => changeLanguage(language === "es" ? "en" : "es")}
           >
-            <span className="text-lg">{language === "es" ? "🇪🇸" : "🇺🇸"}</span>
-            {language.toUpperCase()}
+            <span className="text-base">{language === "es" ? "🇪🇸" : "🇺🇸"}</span>
+            <span className="text-xs font-bold">{language.toUpperCase()}</span>
           </Button>
-          <IconButton
-            variant="text"
-            color="blue-gray"
-            className="grid xl:hidden"
-            onClick={() => setOpenSidenav(dispatch, !openSidenav)}
-          >
-            <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
-          </IconButton>
+
+
+
           {user ? (
-            <Menu>
+            <Menu placement="bottom-end">
               <MenuHandler>
-                <Button
-                  variant="text"
-                  color="blue-gray"
-                  className="hidden items-center gap-2 px-4 xl:flex normal-case"
-                >
-                  <Avatar
-                    src="/img/bruce-mars.jpeg" // Using existing default image for now
-                    alt={user.username}
-                    size="xs"
-                    variant="circular"
-                  />
-                  <div className="flex flex-col items-start leading-tight">
-                    <Typography variant="small" color="blue-gray" className="font-bold">
-                      {user.first_name || user.username}
-                    </Typography>
-                    <Typography variant="small" color="blue-gray" className="text-[10px] font-normal opacity-50">
-                      {user.email}
-                    </Typography>
+                <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-zinc-100 transition-all">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs border border-white/20 shadow-sm">
+                    {user.first_name?.[0] || user.username?.[0] || "U"}
                   </div>
-                  <ChevronDownIcon strokeWidth={2.5} className="h-3 w-3 text-blue-gray-500 ml-1" />
-                </Button>
+                  <ChevronDownIcon strokeWidth={3} className="h-3 w-3 text-zinc-400" />
+                </button>
               </MenuHandler>
-              <MenuList className="w-56">
+              <MenuList className="w-56 p-2 border-zinc-200/60 shadow-xl rounded-xl">
+                <div className="px-3 py-2 mb-2">
+                  <Typography variant="small" className="font-bold text-zinc-900">
+                    {user.first_name || user.username}
+                  </Typography>
+                  <Typography variant="small" className="text-[11px] text-zinc-500 truncate">
+                    {user.email}
+                  </Typography>
+                </div>
+                <hr className="my-1 border-zinc-100" />
                 <MenuItem
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-3 py-2 rounded-lg text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
                   onClick={() => setOpenProfileDialog(true)}
                 >
-                  <PencilSquareIcon className="h-4 w-4 text-blue-gray-500" />
-                  <Typography variant="small" className="font-normal">
+                  <PencilSquareIcon className="h-4 w-4" />
+                  <Typography variant="small" className="font-medium">
                     {t("sidenav.profile") || "Profile"}
                   </Typography>
                 </MenuItem>
-                <hr className="my-2 border-blue-gray-50" />
                 <MenuItem
-                  className="flex items-center gap-2 text-red-500 hover:bg-red-500/10 focus:bg-red-500/10"
+                  className="flex items-center gap-3 py-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700"
                   onClick={logout}
                 >
                   <PowerIcon className="h-4 w-4" />
-                  <Typography variant="small" className="font-normal">
+                  <Typography variant="small" className="font-medium">
                     {t("sidenav.signout") || "Sign Out"}
                   </Typography>
                 </MenuItem>
@@ -172,11 +166,12 @@ export function DashboardNavbar() {
           ) : (
             <Link to="/auth/sign-in">
               <Button
-                variant="text"
-                color="blue-gray"
-                className="hidden items-center gap-1 px-4 xl:flex normal-case"
+                variant="gradient"
+                color="indigo"
+                size="sm"
+                className="hidden items-center gap-2 xl:flex normal-case shadow-md shadow-indigo-500/20"
               >
-                <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+                <UserCircleIcon className="h-4 w-4" />
                 {t("sidenav.signin")}
               </Button>
             </Link>

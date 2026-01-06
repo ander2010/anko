@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
+import { ChatBubbleLeftEllipsisIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
 import {
   Sidenav,
@@ -9,12 +9,12 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { ProjectDetail, ProjectTopics } from "@/pages/dashboard";
-import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useMaterialTailwindController, setOpenConfigurator, setOpenSidenav } from "@/context";
 import { useAuth } from "@/context/auth-context";
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType } = controller;
+  const { sidenavType, openSidenav } = controller;
   const { allowedRoutes, isAdmin } = useAuth();
 
   return (
@@ -25,7 +25,23 @@ export function Dashboard() {
           sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
         }
       />
-      <div className="p-4 xl:ml-80">
+
+
+      {/* Blinking Arrow Trigger - Visible when sidenav is closed */}
+      {!openSidenav && (
+        <IconButton
+          size="lg"
+          color="white"
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-40 rounded-l-none border-l-0 shadow-lg animate-pulse"
+          onClick={() => setOpenSidenav(dispatch, true)}
+        >
+          <ChevronRightIcon className="h-6 w-6 text-blue-gray-900" />
+        </IconButton>
+      )}
+      <div
+        className={`p-4 min-h-screen transition-all duration-300 ${openSidenav ? "xl:ml-80" : ""}`}
+        onClick={() => openSidenav && setOpenSidenav(dispatch, false)}
+      >
         <DashboardNavbar />
         <ChatPanel />
         <IconButton

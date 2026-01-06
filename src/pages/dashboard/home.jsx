@@ -327,69 +327,53 @@ export function Home() {
       </section>
 
       {/* ================= BENEFICIOS ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <div className="text-center mb-8">
-            <Typography variant="h3" color="blue-gray" className="mb-2">
+      <section className="px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <Typography variant="h2" className="text-3xl lg:text-5xl font-bold tracking-tight text-zinc-900">
               {t("home.benefits.title")}
             </Typography>
-            <Typography className="text-blue-gray-500">
+            <Typography className="text-zinc-500 font-medium text-lg max-w-2xl mx-auto">
               {t("home.benefits.subtitle")}
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {Array.isArray(benefits) && benefits.map((b) => (
-              <Card
-                key={b.title}
-                className="border border-blue-gray-100 shadow-sm rounded-2xl"
-              >
-                <CardBody className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="rounded-2xl bg-blue-gray-50 p-3">
-                      {React.createElement(b.icon, { className: "h-6 w-6 text-blue-gray-700" })}
-                    </div>
-                    <div>
-                      <Typography variant="h5" color="blue-gray" className="mb-1">
-                        {b.title}
-                      </Typography>
-                      <Typography className="text-blue-gray-600">{b.desc}</Typography>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
+              <div key={b.title} className="p-8 rounded-[2rem] bg-zinc-50 border border-zinc-100 hover:bg-white hover:shadow-premium transition-all duration-300 group">
+                <div className="mb-6 h-14 w-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-zinc-900 group-hover:scale-110 transition-transform">
+                  {React.createElement(b.icon, { className: "h-7 w-7" })}
+                </div>
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-2 tracking-tight">
+                  {b.title}
+                </Typography>
+                <Typography className="text-zinc-500 font-medium leading-relaxed text-sm">
+                  {b.desc}
+                </Typography>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ================= PARA QUIÉN ES ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <div className="text-center mb-8">
-            <Typography variant="h3" color="blue-gray" className="mb-2">
-              {t("home.for_who.title")}
-            </Typography>
-            <Typography className="text-blue-gray-500">
-              {t("home.for_who.subtitle")}
-            </Typography>
-          </div>
-
+      <section className="px-4">
+        <div className="max-w-7xl mx-auto">
           <Carousel
-            className="rounded-2xl overflow-hidden h-[400px] shadow-lg"
+            className="rounded-[3rem] overflow-hidden h-[500px] shadow-2xl border border-zinc-200"
             navigation={({ setActiveIndex, activeIndex, length }) => (
-              <div className="absolute bottom-4 left-2/4 z-50 flex -translate-x-2/4 gap-2">
+              <div className="absolute bottom-8 left-2/4 z-50 flex -translate-x-2/4 gap-3">
                 {new Array(length).fill("").map((_, i) => (
                   <span
                     key={i}
-                    className={`block h-1 cursor-pointer rounded-2xl transition-all content-[''] ${activeIndex === i ? "w-8 bg-white" : "w-4 bg-white/50"
+                    className={`block h-1.5 cursor-pointer rounded-full transition-all content-[''] ${activeIndex === i ? "w-10 bg-white" : "w-4 bg-white/40"
                       }`}
                     onClick={() => setActiveIndex(i)}
                   />
                 ))}
               </div>
             )}
-            transition={{ duration: 0.5, type: "tween" }}
+            transition={{ duration: 0.7, type: "tween" }}
             autoplay={true}
             loop={true}
           >
@@ -400,19 +384,17 @@ export function Home() {
                   alt={item.title}
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 grid h-full w-full place-items-center bg-black/40">
-                  <div className="w-3/4 text-center md:w-2/4">
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-zinc-900/40 to-transparent flex flex-col justify-end p-12 lg:p-20">
+                  <div className="max-w-2xl space-y-4">
                     <Typography
                       variant="h2"
-                      color="white"
-                      className="mb-4 text-3xl md:text-4xl lg:text-5xl"
+                      className="text-4xl lg:text-6xl font-extrabold text-white tracking-tight"
                     >
                       {item.title}
                     </Typography>
                     <Typography
                       variant="lead"
-                      color="white"
-                      className="mb-12 opacity-80"
+                      className="text-white/80 font-medium text-lg lg:text-xl"
                     >
                       {item.desc}
                     </Typography>
@@ -424,15 +406,14 @@ export function Home() {
         </div>
       </section>
 
-
       {/* ================= TESTIMONIOS ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <div className="text-center mb-10">
-            <Typography variant="h3" color="blue-gray" className="mb-2">
+      <section className="px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <Typography variant="h2" className="text-3xl lg:text-5xl font-bold tracking-tight text-zinc-900">
               {t("home.testimonials.title")}
             </Typography>
-            <Typography className="text-blue-gray-500">
+            <Typography className="text-zinc-500 font-medium text-lg max-w-2xl mx-auto">
               {t("home.testimonials.subtitle")}
             </Typography>
           </div>
@@ -442,163 +423,185 @@ export function Home() {
               {
                 name: t("home.testimonials.t1.name"),
                 role: t("home.testimonials.t1.role"),
-                img: "/img/avatar1.png",
+                img: "https://i.pravatar.cc/150?u=a",
                 quote: t("home.testimonials.t1.quote"),
               },
               {
                 name: t("home.testimonials.t2.name"),
                 role: t("home.testimonials.t2.role"),
-                img: "/img/avatar2.png",
+                img: "https://i.pravatar.cc/150?u=b",
                 quote: t("home.testimonials.t2.quote"),
               },
               {
                 name: t("home.testimonials.t3.name"),
                 role: t("home.testimonials.t3.role"),
-                img: "/img/avatar3.png",
+                img: "https://i.pravatar.cc/150?u=c",
                 quote: t("home.testimonials.t3.quote"),
               },
             ].map((t, idx) => (
-              <Card key={idx} className="rounded-2xl border border-blue-gray-100 shadow-sm">
-                <CardBody className="p-6">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={t.img}
-                      alt={t.name}
-                      className="h-12 w-12 rounded-full object-cover border border-blue-gray-100"
-                    />
-                    <div>
-                      <Typography className="font-semibold text-blue-gray-800">{t.name}</Typography>
-                      <Typography className="text-sm text-blue-gray-500">{t.role}</Typography>
-                    </div>
+              <div key={idx} className="p-8 rounded-[2.5rem] bg-white border border-zinc-200/60 shadow-premium flex flex-col">
+                <div className="flex-1">
+                  <div className="flex gap-1 mb-6">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <StarIcon key={star} className="h-4 w-4 text-amber-400" />
+                    ))}
                   </div>
-                  <Typography className="mt-4 text-blue-gray-600 italic">
+                  <Typography className="text-zinc-700 font-medium text-lg leading-relaxed italic mb-8">
                     &quot;{t.quote}&quot;
                   </Typography>
-                </CardBody>
-              </Card>
+                </div>
+                <div className="flex items-center gap-4 pt-6 border-t border-zinc-100">
+                  <img
+                    src={t.img}
+                    alt={t.name}
+                    className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-md"
+                  />
+                  <div>
+                    <Typography className="font-bold text-zinc-900 tracking-tight">{t.name}</Typography>
+                    <Typography className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{t.role}</Typography>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ================= FAQ ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <div className="text-center mb-10">
-            <Typography variant="h3" color="blue-gray" className="mb-2">
+      <section className="px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <Typography variant="h2" className="text-3xl lg:text-5xl font-bold tracking-tight text-zinc-900">
               {t("home.faq.title")}
             </Typography>
-            <Typography className="text-blue-gray-500">
+            <Typography className="text-zinc-500 font-medium text-lg">
               {t("home.faq.subtitle")}
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="space-y-4">
             {Array.isArray(faqs) && faqs.map((f) => (
-              <Card key={f.q} className="rounded-2xl border border-blue-gray-100 shadow-sm">
-                <CardBody className="p-6">
-                  <Typography variant="h5" color="blue-gray" className="mb-2">
-                    {f.q}
-                  </Typography>
-                  <Typography className="text-blue-gray-600">{f.a}</Typography>
-                </CardBody>
-              </Card>
+              <div key={f.q} className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100 hover:bg-white hover:border-zinc-200 transition-all group">
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-3 tracking-tight flex items-center gap-3">
+                  <QuestionMarkCircleIcon className="h-5 w-5 text-indigo-500" />
+                  {f.q}
+                </Typography>
+                <Typography className="text-zinc-500 font-medium pl-8 leading-relaxed">
+                  {f.a}
+                </Typography>
+              </div>
             ))}
           </div>
-          <div className="mt-8 text-center">
+
+          <div className="mt-12 text-center">
             <Button
-              variant="text"
-              color="blue-gray"
-              className="flex items-center gap-2 mx-auto"
+              variant="outline"
+              color="zinc"
+              className="rounded-xl border-zinc-200 hover:bg-zinc-50 normal-case text-sm font-bold shadow-sm transition-all"
               onClick={() => navigate("/dashboard/faqs")}
             >
-              {language === "es" ? "Ver todas las preguntas frecuentes" : "View all FAQs"}
-              <RocketLaunchIcon className="h-4 w-4" />
+              {language === "es" ? "Ver todas las preguntas" : "View all FAQs"}
+              <RocketLaunchIcon className="h-4 w-4 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* ================= CONTACTO ================= */}
-      <section className="mt-14">
-        <div className="mx-auto max-w-6xl px-1">
-          <Card className="overflow-hidden border border-blue-gray-100 shadow-sm rounded-2xl">
+      <section className="px-4">
+        <div className="max-w-7xl mx-auto">
+          <Card className="overflow-hidden border border-zinc-200/60 shadow-2xl rounded-[3rem]">
             <CardBody className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-2">
                 {/* Image Side */}
-                <div className="relative h-64 md:h-auto bg-blue-gray-50">
+                <div className="relative h-64 md:h-auto bg-zinc-900">
                   <img
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80"
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80"
                     alt="Contact support"
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover opacity-60"
                   />
-                  <div className="absolute inset-0 bg-blue-gray-900/10 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 to-black/80 flex flex-col justify-end p-12">
+                    <Typography variant="h3" className="text-white font-extrabold text-3xl mb-4">
+                      {language === "es" ? "¿Necesitas ayuda?" : "Need help?"}
+                    </Typography>
+                    <Typography className="text-white/70 font-medium text-lg leading-snug">
+                      {language === "es"
+                        ? "Nuestro equipo está listo para ayudarte a maximizar tu productividad."
+                        : "Our team is ready to help you maximize your productivity."}
+                    </Typography>
+                  </div>
                 </div>
 
                 {/* Form Side */}
-                <div className="p-8 lg:p-12 bg-white">
-                  <div className="mb-6">
-                    <Typography variant="h4" color="blue-gray" className="mb-2">
+                <div className="p-8 lg:p-16 bg-white">
+                  <div className="mb-10">
+                    <Typography variant="h3" className="font-bold text-zinc-900 mb-3 tracking-tight">
                       {t("home.contact.title")}
                     </Typography>
-                    <Typography className="text-blue-gray-500 mb-4">
+                    <Typography className="text-zinc-500 font-medium mb-6">
                       {t("home.contact.subtitle")}
                     </Typography>
-                    <Button
-                      variant="outlined"
-                      color="blue-gray"
-                      onClick={() => navigate("/dashboard/contact-us")}
-                      className="mb-4"
-                    >
-                      {language === "es" ? "Ir a la página de contacto" : "Go to Contact Page"}
-                    </Button>
                   </div>
 
                   {status.message && (
-                    <div className={`p-4 mb-6 rounded-lg ${status.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+                    <div className={`p-4 mb-8 rounded-xl font-bold text-sm ${status.type === "success" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"}`}>
                       {status.message}
                     </div>
                   )}
 
-                  <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <form className="space-y-6" onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <Input
                         label={t("home.contact.form.name")}
-                        color="blue-gray"
+                        className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
+                        labelProps={{ className: "hidden" }}
+                        placeholder={t("home.contact.form.name")}
                       />
                       <Input
                         label={t("home.contact.form.phone")}
                         type="tel"
-                        color="blue-gray"
+                        className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
+                        labelProps={{ className: "hidden" }}
+                        placeholder={t("home.contact.form.phone")}
                       />
                     </div>
                     <Input
                       label={t("home.contact.form.email")}
                       type="email"
                       required
-                      color="blue-gray"
+                      className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      labelProps={{ className: "hidden" }}
+                      placeholder={t("home.contact.form.email")}
                     />
                     <Textarea
                       label={t("home.contact.form.desc")}
                       required
-                      color="blue-gray"
+                      className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl"
                       rows={4}
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
+                      labelProps={{ className: "hidden" }}
+                      placeholder={t("home.contact.form.desc")}
                     />
 
-                    <Button color="blue-gray" fullWidth className="mt-2" type="submit" disabled={loading}>
+                    <Button
+                      className="py-4 bg-zinc-900 hover:bg-black rounded-xl shadow-xl shadow-zinc-200 flex items-center justify-center gap-3 normal-case text-sm font-bold transition-all hover:-translate-y-1"
+                      fullWidth
+                      type="submit"
+                      disabled={loading}
+                    >
                       {loading ? (language === "es" ? "Enviando..." : "Sending...") : t("home.contact.form.button")}
+                      {!loading && <BoltIcon className="h-4 w-4 text-indigo-400" />}
                     </Button>
                   </form>
                 </div>
@@ -609,27 +612,31 @@ export function Home() {
       </section>
 
       {/* ================= CTA FINAL ================= */}
-      <section className="mt-14 mb-10">
-        <div className="mx-auto max-w-6xl px-1">
-          <Card className="rounded-2xl border border-blue-gray-100 shadow-sm overflow-hidden">
-            <CardBody className="p-8 lg:p-12">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <Typography variant="h3" color="blue-gray" className="mb-2">
-                    {t("home.cta.title")}
-                  </Typography>
-                  <Typography className="text-blue-gray-500 max-w-2xl">
-                    {t("home.cta.subtitle")}
-                  </Typography>
-                </div>
-                <div className="flex gap-3">
-                  <Button color="blue-gray" onClick={() => navigate("/dashboard/projects")}>
-                    {t("home.cta.btn_create")}
-                  </Button>
-                </div>
+      <section className="px-4 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative rounded-[3rem] bg-indigo-600 p-12 lg:p-20 overflow-hidden shadow-2xl shadow-indigo-200">
+            {/* Decorative circles */}
+            <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+            <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center lg:justify-between gap-12 text-center lg:text-left">
+              <div className="space-y-6 max-w-2xl">
+                <Typography variant="h2" className="text-4xl lg:text-6xl font-extrabold text-white tracking-tight">
+                  {t("home.cta.title")}
+                </Typography>
+                <Typography variant="lead" className="text-indigo-100 font-medium text-lg lg:text-xl">
+                  {t("home.cta.subtitle")}
+                </Typography>
               </div>
-            </CardBody>
-          </Card>
+              <Button
+                size="lg"
+                className="rounded-2xl bg-white text-indigo-600 hover:bg-zinc-50 px-12 py-5 normal-case text-lg font-bold shadow-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                onClick={() => navigate("/dashboard/projects")}
+              >
+                {t("home.cta.btn_create")}
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

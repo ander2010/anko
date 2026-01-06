@@ -277,90 +277,63 @@ export function Projects() {
     // };
 
     return (
-        <div className="mt-12">
-            {/* Header */}
-            <Card className="border border-blue-gray-100 shadow-sm mb-6">
-                <CardHeader
-                    floated={false}
-                    shadow={false}
-                    color="transparent"
-                    className="m-0 p-6"
+        <div className="mt-8 space-y-8 pb-20">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-6 border-b border-zinc-200/60">
+                <div>
+                    <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 mb-1">
+                        {t("projects.title")}
+                    </Typography>
+                    <Typography className="text-zinc-500 font-medium">
+                        {t("projects.subtitle")}
+                    </Typography>
+                </div>
+                <Button
+                    className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 px-6 py-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5"
+                    onClick={() => setCreateDialogOpen(true)}
                 >
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
-                            <Typography variant="h4" color="blue-gray" className="mb-1">
-                                {t("projects.title")}
-                            </Typography>
-                            <Typography className="font-normal text-blue-gray-600">
-                                {t("projects.subtitle")}
-                            </Typography>
-                        </div>
-                        <Button
-                            className="flex items-center gap-2"
-                            color="blue-gray"
-                            onClick={() => setCreateDialogOpen(true)}
-                        >
-                            <PlusIcon className="h-5 w-5" />
-                            {t("projects.btn_create")}
-                        </Button>
-                    </div>
-                </CardHeader>
-            </Card>
+                    <PlusIcon className="h-5 w-5 stroke-[2.5]" />
+                    {t("projects.btn_create")}
+                </Button>
+            </div>
 
-            {/* Filters and Search */}
-            <Card className="border border-blue-gray-100 shadow-sm mb-6">
-                <CardBody className="p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        {/* Tabs */}
-                        <div className="flex-1 min-w-[400px]">
-                            <Tabs value={activeTab} className="w-full">
-                                <TabsHeader className="bg-blue-gray-50">
-                                    <Tab
-                                        value="all"
-                                        onClick={() => setActiveTab("all")}
-                                        className="px-4"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <FolderIcon className="h-4 w-4" />
-                                            {t("projects.tabs.all")}
-                                        </div>
-                                    </Tab>
-                                    <Tab
-                                        value="owned"
-                                        onClick={() => setActiveTab("owned")}
-                                        className="px-4"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <UserGroupIcon className="h-4 w-4" />
-                                            {t("projects.tabs.owned")}
-                                        </div>
-                                    </Tab>
-                                    <Tab
-                                        value="member"
-                                        onClick={() => setActiveTab("member")}
-                                        className="px-4"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <UserGroupIcon className="h-4 w-4" />
-                                            {t("projects.tabs.shared")}
-                                        </div>
-                                    </Tab>
-                                </TabsHeader>
-                            </Tabs>
-                        </div>
-
-                        {/* Search */}
-                        <div className="w-full md:w-80">
-                            <Input
-                                label={t("projects.search_placeholder")}
-                                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
+            {/* Filters and Search Bar - Unified */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
+                    <div className="inline-flex p-1 bg-zinc-100 rounded-2xl border border-zinc-200/60">
+                        {[
+                            { value: "all", label: t("projects.tabs.all"), icon: FolderIcon },
+                            { value: "owned", label: t("projects.tabs.owned"), icon: UserGroupIcon },
+                            { value: "member", label: t("projects.tabs.shared"), icon: UserGroupIcon }
+                        ].map((tab) => (
+                            <button
+                                key={tab.value}
+                                onClick={() => setActiveTab(tab.value)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === tab.value
+                                        ? "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/50"
+                                        : "text-zinc-500 hover:text-zinc-800"
+                                    }`}
+                            >
+                                <tab.icon className={`h-4 w-4 ${activeTab === tab.value ? "text-indigo-600" : "text-zinc-400"}`} />
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
-                </CardBody>
-            </Card>
+                </div>
+
+                <div className="relative w-full lg:w-96 group">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                        <MagnifyingGlassIcon className="h-5 w-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder={t("projects.search_placeholder") || "Search projects..."}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-zinc-50 border border-zinc-200 focus:border-indigo-600 focus:bg-white rounded-2xl text-sm font-medium transition-all outline-none"
+                    />
+                </div>
+            </div>
 
             {/* Projects Grid */}
             {filteredProjects.length > 0 ? (

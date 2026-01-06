@@ -50,54 +50,62 @@ export function MyDecks() {
     );
 
     return (
-        <div className="mt-12 mb-8 flex flex-col gap-12">
-            <Card>
-                <CardBody>
-                    <div className="mb-6 flex flex-col justify-between gap-8 md:flex-row md:items-center">
-                        <div>
-                            <Typography variant="h6" color="blue-gray">
-                                {t("project_detail.decks.my_decks")}
-                            </Typography>
-                            <Typography variant="small" className="font-normal text-blue-gray-600">
-                                {language === "es" ? "Todos tus mazos de estudio en un solo lugar" : "All your study decks in one place"}
-                            </Typography>
-                        </div>
-                        <div className="w-full shrink-0 md:w-72">
-                            <Input
-                                label={t("project_detail.decks.search_placeholder")}
-                                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+        <div className="mt-8 mb-8 flex flex-col gap-8 max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
+                        {t("project_detail.decks.my_decks")}
+                    </Typography>
+                    <Typography className="font-medium text-zinc-500 max-w-2xl">
+                        {language === "es" ? "Todos tus mazos de estudio en un solo lugar. Crea, estudia y mejora tu aprendizaje." : "All your study decks in one place. Create, study, and improve your learning."}
+                    </Typography>
+                </div>
+                <div className="w-full md:w-80">
+                    <div className="relative">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder={t("project_detail.decks.search_placeholder") || "Search decks..."}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white/50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium text-zinc-900 placeholder:text-zinc-400"
+                        />
                     </div>
+                </div>
+            </div>
 
-                    {loading ? (
-                        <div className="flex h-40 items-center justify-center">
-                            <Spinner className="h-8 w-8" />
-                        </div>
-                    ) : filteredDecks.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredDecks.map((deck) => (
-                                <DeckCard
-                                    key={deck.id}
-                                    deck={deck}
-                                    onEdit={() => { }} // Disabled for now or redirect to project
-                                    onDelete={() => { }} // Disabled for now or redirect to project
-                                    onStudy={() => handleStudyDeck(deck)}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-                            <Square2StackIcon className="h-16 w-16 mb-4" />
-                            <Typography variant="h6">
-                                {searchTerm ? (language === "es" ? "No se encontraron mazos para tu búsqueda" : "No decks found for your search") : t("project_detail.decks.empty.title")}
-                            </Typography>
-                        </div>
-                    )}
-                </CardBody>
-            </Card>
+            {loading ? (
+                <div className="flex h-64 items-center justify-center">
+                    <Spinner className="h-8 w-8 text-indigo-500" />
+                </div>
+            ) : filteredDecks.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                    {filteredDecks.map((deck) => (
+                        <DeckCard
+                            key={deck.id}
+                            deck={deck}
+                            onEdit={() => { }} // Disabled for now
+                            onDelete={() => { }} // Disabled for now
+                            onStudy={() => handleStudyDeck(deck)}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-zinc-200 text-center">
+                    <div className="h-16 w-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-zinc-50/50">
+                        <Square2StackIcon className="h-8 w-8 text-zinc-400" />
+                    </div>
+                    <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
+                        {searchTerm ? (language === "es" ? "No se encontraron mazos" : "No decks found") : t("project_detail.decks.empty.title") || "No decks yet"}
+                    </Typography>
+                    <Typography className="text-zinc-500 max-w-sm mb-6">
+                        {searchTerm
+                            ? (language === "es" ? "Intenta ajustar tus términos de búsqueda." : "Try adjusting your search terms.")
+                            : (language === "es" ? "Comienza creando tu primer mazo o genera uno desde tus documentos." : "Start by creating your first deck or generate one from your documents.")
+                        }
+                    </Typography>
+                </div>
+            )}
 
             <FlashcardViewDialog
                 open={flashcardViewDialogOpen}

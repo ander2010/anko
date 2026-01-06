@@ -13,6 +13,7 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import {
+  BoltIcon,
   EllipsisVerticalIcon,
   ArrowRightIcon,
   PencilIcon,
@@ -62,34 +63,28 @@ export function ProjectCard({
 
   return (
     <Card
-      className="border border-blue-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-default"
+      className="group border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium hover:shadow-premium-hover hover:-translate-y-1 transition-all duration-300 rounded-[2rem] overflow-hidden cursor-default"
       onDoubleClick={() => onEnter(project)}
     >
-      <CardBody className="p-4">
+      <CardBody className="p-7">
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1 min-w-0">
             <Typography
-              variant="h6"
-              color="blue-gray"
-              className="mb-1 truncate cursor-pointer hover:text-blue-500 transition-colors"
+              variant="h5"
+              className="font-bold text-zinc-900 mb-1.5 truncate tracking-tight group-hover:text-indigo-600 transition-colors cursor-pointer"
               onClick={() => onEnter(project)}
             >
               {project.title || project.name || "Untitled"}
             </Typography>
 
             <div className="flex items-center gap-2">
-              <Typography variant="small" className="font-normal text-blue-gray-500">
-                by {ownerLabel}
+              <Typography className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                BY {ownerLabel.toUpperCase()}
               </Typography>
 
               {isOwner && (
-                <Chip
-                  value="Owner"
-                  size="sm"
-                  color="blue"
-                  className="rounded-full px-2 py-0.5"
-                />
+                <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" title="Owner" />
               )}
             </div>
           </div>
@@ -97,25 +92,25 @@ export function ProjectCard({
           {/* Actions */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton variant="text" color="blue-gray" size="sm">
-                <EllipsisVerticalIcon className="h-5 w-5" />
+              <IconButton variant="text" color="zinc" size="sm" className="rounded-xl hover:bg-zinc-100">
+                <EllipsisVerticalIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600" />
               </IconButton>
             </MenuHandler>
 
-            <MenuList>
+            <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl backdrop-blur-md bg-white/90">
               <MenuItem
                 onClick={() => onEnter(project)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
               >
-                <ArrowRightIcon className="h-4 w-4" />
+                <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
                 Enter Project
               </MenuItem>
 
               <MenuItem
                 onClick={() => onUploadDocs(project)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
               >
-                <DocumentDuplicateIcon className="h-4 w-4" />
+                <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
                 Upload Documents
               </MenuItem>
 
@@ -123,20 +118,20 @@ export function ProjectCard({
                 <>
                   <MenuItem
                     onClick={() => onEdit(project)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
                   >
-                    <PencilIcon className="h-4 w-4" />
-                    Edit
+                    <PencilIcon className="h-4 w-4 text-zinc-400" />
+                    Edit Details
                   </MenuItem>
 
-                  <hr className="my-1" />
+                  <div className="my-1 border-t border-zinc-100" />
 
                   <MenuItem
                     onClick={() => onDelete(project)}
-                    className="flex items-center gap-2 text-red-500 hover:bg-red-50"
+                    className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50 hover:text-red-600"
                   >
                     <TrashIcon className="h-4 w-4" />
-                    Delete
+                    Delete Project
                   </MenuItem>
                 </>
               )}
@@ -144,17 +139,27 @@ export function ProjectCard({
           </Menu>
         </div>
 
-        {/* Documents Count */}
-        <div className="mb-3 flex items-center gap-2">
-          <DocumentTextIcon className="h-5 w-5 text-blue-gray-400" />
-          <Typography variant="small" className="text-blue-gray-600">
-            {documentCount} {documentCount === 1 ? "document" : "documents"}
-          </Typography>
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="p-4 rounded-[1.5rem] bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors">
+            <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Documents</Typography>
+            <div className="flex items-end gap-1.5">
+              <Typography className="text-2xl font-black text-zinc-900 leading-none">{documentCount}</Typography>
+              <DocumentTextIcon className="h-4 w-4 text-indigo-500 mb-0.5" />
+            </div>
+          </div>
+          <div className="p-4 rounded-[1.5rem] bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors">
+            <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Efficiency</Typography>
+            <div className="flex items-end gap-1.5">
+              <Typography className="text-2xl font-black text-zinc-900 leading-none">84%</Typography>
+              <BoltIcon className="h-4 w-4 text-purple-500 mb-0.5" />
+            </div>
+          </div>
         </div>
 
         {/* Real-time Progress for Jobs */}
         {processingJobs.length > 0 && (
-          <div className="mb-3 space-y-2">
+          <div className="mb-6 space-y-3">
             {processingJobs.map((job) => (
               <ProjectProcessingProgress
                 key={job.jobId}
@@ -167,30 +172,39 @@ export function ProjectCard({
 
         {/* Static Progress (legacy/backup) */}
         {documentCount > 0 && processingJobs.length === 0 && progress > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <Typography variant="small" className="text-blue-gray-600 font-medium">
-                Processing
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <Typography className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                PROCESSING
               </Typography>
-              <Typography variant="small" className="text-blue-gray-600 font-medium">
+              <Typography className="text-[10px] font-black text-indigo-600 uppercase">
                 {progress}%
               </Typography>
             </div>
-            <Progress
-              value={progress}
-              variant="gradient"
-              color={progress === 100 ? "green" : "blue"}
-              className="h-1.5"
-            />
+            <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-500 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         )}
 
         {/* Last Activity */}
-        <div className="flex items-center gap-2 pt-3 border-t border-blue-gray-50">
-          <ClockIcon className="h-4 w-4 text-blue-gray-400" />
-          <Typography variant="small" className="text-blue-gray-500">
-            Updated {formatDate(project.updated_at || project.updatedAt)}
-          </Typography>
+        <div className="flex items-center justify-between pt-5 border-t border-zinc-100">
+          <div className="flex items-center gap-2">
+            <ClockIcon className="h-3.5 w-3.5 text-zinc-400" />
+            <Typography className="text-[11px] font-medium text-zinc-500">
+              {formatDate(project.updated_at || project.updatedAt)}
+            </Typography>
+          </div>
+
+          <button
+            onClick={() => onEnter(project)}
+            className="h-8 w-8 rounded-full bg-zinc-900 text-white flex items-center justify-center hover:bg-indigo-600 hover:scale-110 active:scale-95 transition-all shadow-lg shadow-zinc-200"
+          >
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
         </div>
       </CardBody>
     </Card>

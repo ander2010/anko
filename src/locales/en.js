@@ -285,6 +285,7 @@ export const en = {
         no_projects_desc: "Try adjusting your search query",
         no_projects_cta: "Get started by creating your first project",
         dialogs: {
+            create_project_title: "Create New Project",
             delete_title: "Delete Project",
             delete_message: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
             archive_topic_title: "Archive Topic",
@@ -352,6 +353,8 @@ export const en = {
             }
         },
         topics: {
+            title: "Topics",
+            description_text: "Organize your study materials into focused topics for better learning.",
             btn_create: "Create Topic",
             empty: {
                 title: "No topics yet",
@@ -364,6 +367,8 @@ export const en = {
             }
         },
         rules: {
+            title: "Rules",
+            description_text: "Define rules for custom exam generation.",
             btn_create: "Create Rule"
         },
         batteries: {

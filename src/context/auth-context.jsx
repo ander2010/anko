@@ -77,7 +77,20 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (payload) => {
-    const { user: u } = await authService.register(payload);
+    const { token, user: u } = await authService.register(payload);
+    window.localStorage.setItem("token", token);
+    setAuthToken(token);
+
+    // Fetch RBAC info after register
+    try {
+      const rbac = await rbacService.fetchAllowedRoutes();
+      setAllowedRoutes(rbac.allowed_routes || []);
+      setIsAdmin(rbac.is_admin || false);
+      setRoles(rbac.roles || []);
+    } catch (err) {
+      console.error("RBAC register fetch failed", err);
+    }
+
     setUser(u);
     return u;
   };

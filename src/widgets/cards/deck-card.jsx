@@ -65,46 +65,45 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }
     };
 
     return (
-        <Card className="border border-blue-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <CardBody className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                        <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+        <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
+            <CardBody className="p-5 flex flex-col h-full">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0 pr-3">
+                        <Typography variant="h6" className="mb-1.5 truncate text-zinc-900 font-bold tracking-tight">
                             {deck.title}
                         </Typography>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <Chip
                                 value={t(`project_detail.decks.visibility.${deck.visibility}`)}
                                 size="sm"
                                 color={getVisibilityColor(deck.visibility)}
                                 variant="ghost"
-                                className="rounded-full px-2 py-0.5 text-[10px]"
+                                className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                             />
-                            <Chip
-                                value={`${deck.flashcards_count || 0} ${t("project_detail.decks.cards_count")}`}
-                                size="sm"
-                                variant="ghost"
-                                color="blue-gray"
-                                className="rounded-full px-2 py-0.5 text-[10px]"
-                            />
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-50 border border-zinc-100">
+                                <Square2StackIcon className="h-3 w-3 text-zinc-400" />
+                                <Typography className="text-[10px] font-bold text-zinc-600">
+                                    {deck.flashcards_count || 0}
+                                </Typography>
+                            </div>
                         </div>
                     </div>
 
                     <Menu placement="bottom-end">
                         <MenuHandler>
-                            <IconButton variant="text" color="blue-gray" size="sm">
+                            <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
                                 <EllipsisVerticalIcon className="h-5 w-5" />
                             </IconButton>
                         </MenuHandler>
-                        <MenuList>
-                            <MenuItem onClick={() => onEdit(deck)} className="flex items-center gap-2">
+                        <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
+                            <MenuItem onClick={() => onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
                                 <PencilIcon className="h-4 w-4" />
                                 {t("global.action.edit")}
                             </MenuItem>
-                            <hr className="my-1" />
+                            <hr className="my-1 border-zinc-100" />
                             <MenuItem
                                 onClick={() => onDelete(deck)}
-                                className="flex items-center gap-2 text-red-500 hover:bg-red-50"
+                                className="flex items-center gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm py-2"
                             >
                                 <TrashIcon className="h-4 w-4" />
                                 {t("global.action.delete")}
@@ -114,46 +113,47 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }
                 </div>
 
                 {job && !isCompleted && (
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-1">
-                            <Typography variant="small" className="text-blue-gray-600 font-medium capitalize">
+                    <div className="mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
+                        <div className="flex items-center justify-between mb-2">
+                            <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
                                 {status.toLowerCase()}...
                             </Typography>
-                            <Typography variant="small" className="text-blue-gray-600 font-medium">
+                            <Typography variant="small" className="text-indigo-900 font-bold text-xs">
                                 {Math.round(progress)}%
                             </Typography>
                         </div>
                         <Progress
                             value={progress}
-                            variant="gradient"
-                            color={progress >= 100 ? "green" : "blue"}
-                            className="h-1.5"
+                            size="sm"
+                            color="indigo"
+                            className="h-1.5 bg-indigo-100"
+                            barProps={{ className: "bg-indigo-500" }}
                         />
                     </div>
                 )}
 
                 {deck.description && (
-                    <Typography variant="small" className="text-blue-gray-600 line-clamp-2 mb-3 mt-1">
+                    <Typography variant="small" className="text-zinc-500 line-clamp-2 mb-4 text-sm leading-relaxed">
                         {deck.description}
                     </Typography>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-blue-gray-50 mt-auto">
-                    <div className="flex items-center gap-2">
-                        <ClockIcon className="h-4 w-4 text-blue-gray-400" />
-                        <Typography variant="small" className="text-blue-gray-500 text-[11px]">
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
+                    <div className="flex items-center gap-2 bg-zinc-50 px-2 py-1 rounded-md">
+                        <ClockIcon className="h-3.5 w-3.5 text-zinc-400" />
+                        <Typography variant="small" className="text-zinc-500 text-[10px] font-medium">
                             {formatDate(deck.created_at)}
                         </Typography>
                     </div>
                     <Button
-                        variant="text"
+                        variant="gradient"
                         size="sm"
-                        color="blue"
-                        className="flex items-center gap-2 px-3 lg:px-4 py-1.5 normal-case"
+                        color="indigo"
+                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all"
                         onClick={() => onStudy(deck)}
                     >
-                        <BookOpenIcon className="h-4 w-4" />
-                        {t("global.action.study")}
+                        <BookOpenIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-bold">{t("global.action.study")}</span>
                     </Button>
                 </div>
             </CardBody>

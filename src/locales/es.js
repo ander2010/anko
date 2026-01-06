@@ -285,6 +285,7 @@ export const es = {
         no_projects_desc: "Intenta ajustar tu búsqueda",
         no_projects_cta: "Comienza creando tu primer proyecto",
         dialogs: {
+            create_project_title: "Crear Nuevo Proyecto",
             delete_title: "Eliminar Proyecto",
             delete_message: '¿Estás seguro de que quieres eliminar "{name}"? Esta acción no se puede deshacer.',
             archive_topic_title: "Archivar Tema",
@@ -352,6 +353,8 @@ export const es = {
             }
         },
         topics: {
+            title: "Temas",
+            description_text: "Organiza tus materiales de estudio en temas enfocados para un mejor aprendizaje.",
             btn_create: "Crear Tema",
             empty: {
                 title: "Aún no hay temas",
@@ -364,6 +367,8 @@ export const es = {
             }
         },
         rules: {
+            title: "Reglas",
+            description_text: "Define reglas para la generación personalizada de exámenes.",
             btn_create: "Crear Regla"
         },
         batteries: {

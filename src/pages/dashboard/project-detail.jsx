@@ -766,106 +766,98 @@ export function ProjectDetail() {
 
   return (
     <div className="mt-12">
-      {/* Error */}
+      {/* Error Display */}
       {error && (
-        <Card className="border border-red-100 bg-red-50 shadow-sm mb-6">
-          <CardBody className="p-4">
-            <Typography color="red">{error}</Typography>
-          </CardBody>
-        </Card>
+        <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+          <Typography className="text-sm font-bold text-red-900">{error}</Typography>
+        </div>
       )}
 
-      {/* Header */}
-      <Card className="border border-blue-gray-100 shadow-sm mb-6">
-        <CardHeader floated={false} shadow={false} color="transparent" className="m-0 p-6">
-          <div className="flex flex-col gap-4">
-            <Button
-              variant="text"
-              className="flex items-center gap-2 w-fit"
-              onClick={() => navigate("/dashboard/projects")}
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              {t("project_detail.back")}
-            </Button>
+      {/* Header Area */}
+      <div className="flex flex-col gap-6 pb-2">
+        <button
+          onClick={() => navigate("/dashboard/projects")}
+          className="flex items-center gap-2 w-fit px-4 py-2 rounded-xl text-zinc-500 font-bold text-xs hover:bg-zinc-100 hover:text-zinc-900 transition-all group"
+        >
+          <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          {t("project_detail.back").toUpperCase()}
+        </button>
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <Typography variant="h4" color="blue-gray" className="mb-1">
-                  {project.title || project.name || "Untitled"}
-                </Typography>
-                <Typography className="font-normal text-blue-gray-600">
-                  {project.description || (language === "es" ? "Sin descripción" : "No description")}
-                </Typography>
-                {processingCount > 0 && (
-                  <Typography variant="small" className="text-blue-500 mt-2">
-                    {t("project_detail.processing", {
-                      count: processingCount,
-                      item: processingCount === 1 ? t("project_detail.document") : t("project_detail.documents")
-                    })}
-                  </Typography>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Chip
-                  value={isOwner ? "Owner" : "Member"}
-                  size="sm"
-                  color={isOwner ? "blue" : "blue-gray"}
-                  className="rounded-full"
-                />
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <Typography variant="h2" className="font-black tracking-tight text-zinc-900">
+                {project.title || project.name || "Untitled"}
+              </Typography>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"
+                }`}>
+                {isOwner ? "Owner" : "Member"}
               </div>
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+            <Typography className="text-zinc-500 font-medium max-w-2xl leading-relaxed">
+              {project.description || (language === "es" ? "Sin descripción" : "No description")}
+            </Typography>
 
-      {/* Tabs */}
-      <Card className="border border-blue-gray-100 shadow-sm mb-6">
-        <CardBody className="p-0">
-          <Tabs value={activeTab}>
-            <TabsHeader className="bg-transparent">
-              <Tab value="documents" onClick={() => setActiveTab("documents")}>
-                <div className="flex items-center gap-2">
-                  <DocumentTextIcon className="h-5 w-5" />
-                  {t("project_detail.tabs.documents")} ({documents.length})
-                </div>
-              </Tab>
-              <Tab value="topics" onClick={() => setActiveTab("topics")}>
-                <div className="flex items-center gap-2">
-                  <FolderIcon className="h-5 w-5" />
-                  {t("project_detail.tabs.topics")} ({topics.length})
-                </div>
-              </Tab>
-              <Tab value="rules" onClick={() => setActiveTab("rules")}>
-                <div className="flex items-center gap-2">
-                  <ClipboardDocumentListIcon className="h-5 w-5" />
-                  {t("project_detail.tabs.rules")} ({rules.length})
-                </div>
-              </Tab>
-              <Tab value="batteries" onClick={() => setActiveTab("batteries")}>
-                <div className="flex items-center gap-2">
-                  <BoltIcon className="h-5 w-5" />
-                  {t("project_detail.tabs.batteries")} ({batteries.length})
-                </div>
-              </Tab>
-              <Tab value="decks" onClick={() => setActiveTab("decks")}>
-                <div className="flex items-center gap-2">
-                  <Square2StackIcon className="h-5 w-5" />
-                  {t("project_detail.tabs.decks")} ({decks.length})
-                </div>
-              </Tab>
-            </TabsHeader>
-          </Tabs>
-        </CardBody>
-      </Card>
+            {processingCount > 0 && (
+              <div className="flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl w-fit">
+                <Spinner className="h-4 w-4 text-indigo-500" />
+                <Typography variant="small" className="font-bold text-indigo-600">
+                  {t("project_detail.processing", {
+                    count: processingCount,
+                    item: processingCount === 1 ? t("project_detail.document") : t("project_detail.documents")
+                  })}
+                </Typography>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Tabs Navigation */}
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
+        <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-2">
+          {[
+            { id: "documents", label: t("project_detail.tabs.documents"), count: documents.length, icon: DocumentTextIcon },
+            { id: "topics", label: t("project_detail.tabs.topics"), count: topics.length, icon: FolderIcon },
+            { id: "rules", label: t("project_detail.tabs.rules"), count: rules.length, icon: ClipboardDocumentListIcon },
+            { id: "batteries", label: t("project_detail.tabs.batteries"), count: batteries.length, icon: BoltIcon },
+            { id: "decks", label: t("project_detail.tabs.decks"), count: decks.length, icon: Square2StackIcon }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
+                ? "bg-white text-zinc-900 shadow-premium ring-1 ring-zinc-200/50"
+                : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50"
+                }`}
+            >
+              <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400 group-hover:text-zinc-500"}`} />
+              {tab.label}
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"
+                }`}>
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Documents tab */}
       {activeTab === "documents" && (
-        <>
-          <div className="mb-6 flex justify-end">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <Typography variant="h5" className="font-bold text-zinc-900">
+                {t("project_detail.tabs.documents")}
+              </Typography>
+              <Typography className="text-zinc-500 text-sm font-medium">
+                {language === "es" ? "Gestiona y analiza los archivos de este proyecto." : "Manage and analyze the files for this project."}
+              </Typography>
+            </div>
+
             <Button
-              className="flex items-center gap-2"
-              color="blue-gray"
+              className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95"
               onClick={() => setUploadDialogOpen(true)}
             >
               <DocumentArrowUpIcon className="h-5 w-5" />
@@ -873,170 +865,179 @@ export function ProjectDetail() {
             </Button>
           </div>
 
-          <Card className="border border-blue-gray-100 shadow-sm">
-            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] overflow-hidden">
+            <CardBody className="p-0">
               {loadingDocs ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Spinner className="h-10 w-10 mb-4" />
-                  <Typography className="text-blue-gray-600">{t("project_detail.docs.loading")}</Typography>
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Spinner className="h-8 w-8 text-indigo-500 mb-4" />
+                  <Typography className="text-zinc-500 font-bold text-sm tracking-tight uppercase tracking-widest">{t("project_detail.docs.loading")}</Typography>
                 </div>
               ) : documents.length > 0 ? (
-                <table className="w-full min-w-[760px] table-auto">
-                  <thead>
-                    <tr>
-                      {[
-                        t("project_detail.docs.table.name"),
-                        t("project_detail.docs.table.type"),
-                        t("project_detail.docs.table.size"),
-                        t("project_detail.docs.table.sections"),
-                        t("project_detail.docs.table.uploaded"),
-                        t("project_detail.docs.table.status"),
-                        t("project_detail.docs.table.actions")
-                      ].map((el) => (
-                        <th key={el} className="border-b border-blue-gray-50 py-3 px-6 text-left">
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {documents.map((doc, index) => {
-                      const rowClass = `py-3 px-6 ${index === documents.length - 1 ? "" : "border-b border-blue-gray-50"
-                        }`;
-
-                      return (
-                        <tr key={doc.id}>
-                          <td className={rowClass}>
-                            <div
-                              className="flex items-center gap-2 cursor-pointer group"
-                              onClick={() => setViewingDocument(doc)}
-                            >
-                              <DocumentTextIcon className="h-5 w-5 text-blue-gray-400 group-hover:text-blue-500 transition-colors" />
-                              <Typography
-                                variant="small"
-                                className="font-medium text-blue-gray-900 group-hover:text-blue-500 transition-colors"
-                              >
-                                {doc.filename || doc.file || "Untitled"}
-                              </Typography>
-                            </div>
-                          </td>
-
-                          <td className={rowClass}>
-                            <Chip value={doc.type} size="sm" variant="ghost" color="blue-gray" />
-                          </td>
-
-                          <td className={rowClass}>
-                            <Typography variant="small" className="text-blue-gray-600">
-                              {formatFileSize(doc.size)}
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[800px] table-auto text-left">
+                    <thead>
+                      <tr className="border-b border-zinc-100 bg-zinc-50/50">
+                        {[
+                          t("project_detail.docs.table.name"),
+                          t("project_detail.docs.table.type"),
+                          t("project_detail.docs.table.size"),
+                          t("project_detail.docs.table.sections"),
+                          t("project_detail.docs.table.uploaded"),
+                          t("project_detail.docs.table.status"),
+                          t("project_detail.docs.table.actions")
+                        ].map((el, idx) => (
+                          <th key={el} className={`py-4 px-6 ${idx === 0 ? "pl-8" : ""}`}>
+                            <Typography className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                              {el}
                             </Typography>
-                          </td>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
 
-                          <td className={rowClass}>
-                            <div className="flex items-center gap-2">
-                              <Typography variant="small" className="text-blue-gray-600 font-medium">
-                                {sectionsCounts[doc.id] || 0}
-                              </Typography>
-                              <Button
-                                size="sm"
-                                variant="text"
-                                className="flex items-center gap-1 p-1"
-                                onClick={() => handleViewMetadata(doc)}
+                    <tbody>
+                      {documents.map((doc, index) => {
+                        const isLast = index === documents.length - 1;
+                        const rowClass = `group transition-all hover:bg-zinc-50/50 ${isLast ? "" : "border-b border-zinc-100"}`;
+
+                        return (
+                          <tr key={doc.id} className={rowClass}>
+                            <td className="py-4 px-6 pl-8">
+                              <div
+                                className="flex items-center gap-3 cursor-pointer group/item"
+                                onClick={() => setViewingDocument(doc)}
                               >
-                                <ViewColumnsIcon className="h-4 w-4" />
-                                {t("project_detail.docs.actions.view")}
-                              </Button>
-                            </div>
-                          </td>
-
-                          <td className={rowClass}>
-                            <Typography variant="small" className="text-blue-gray-600">
-                              {formatDate(doc.uploaded_at || doc.created_at || doc.uploadedAt)}
-                            </Typography>
-                          </td>
-
-                          <td className={rowClass}>
-                            {activeJobs[doc.id] ? (
-                              <div className="w-32">
-                                <ProjectProcessingProgress
-                                  jobId={activeJobs[doc.id]}
-                                  onComplete={() => handleJobComplete(doc.id, activeJobs[doc.id])}
-                                />
+                                <div className="h-9 w-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 group-hover/item:bg-indigo-50 group-hover/item:text-indigo-600 transition-all">
+                                  <DocumentTextIcon className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <Typography className="font-bold text-zinc-900 text-sm group-hover/item:text-indigo-600 transition-colors truncate max-w-[200px]">
+                                    {doc.filename || doc.file || "Untitled"}
+                                  </Typography>
+                                  <Typography className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">
+                                    {language === "es" ? "Documento" : "Document"}
+                                  </Typography>
+                                </div>
                               </div>
-                            ) : (
-                              getStatusBadge(doc.status)
-                            )}
-                          </td>
+                            </td>
 
-                          <td className={rowClass}>
-                            <Menu placement="left-start">
-                              <MenuHandler>
-                                <IconButton variant="text" color="blue-gray" size="sm">
-                                  <EllipsisVerticalIcon className="h-5 w-5" />
-                                </IconButton>
-                              </MenuHandler>
-                              <MenuList>
-                                <MenuItem
-                                  onClick={() => handleDownloadDocument(doc)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <ArrowDownTrayIcon className="h-4 w-4" />
-                                  {t("project_detail.docs.actions.download")}
-                                </MenuItem>
+                            <td className="py-4 px-6">
+                              <div className="px-3 py-1 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] font-black uppercase w-fit tracking-widest">
+                                {doc.type}
+                              </div>
+                            </td>
 
-                                <MenuItem
-                                  onClick={() => setViewingDocument(doc)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                  {language === "es" ? "Ver Documento" : "View Document"}
-                                </MenuItem>
+                            <td className="py-4 px-6">
+                              <Typography className="text-zinc-600 font-bold text-xs font-mono">
+                                {formatFileSize(doc.size)}
+                              </Typography>
+                            </td>
 
-                                <MenuItem
-                                  onClick={() => handleViewMetadata(doc)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <InformationCircleIcon className="h-4 w-4" />
-                                  {t("project_detail.docs.actions.metadata")}
-                                </MenuItem>
+                            <td className="py-4 px-6">
+                              <div className="flex items-center gap-2">
+                                <Typography className="text-zinc-600 font-black text-sm">
+                                  {sectionsCounts[doc.id] || 0}
+                                </Typography>
+                                <Tooltip content={t("project_detail.docs.actions.view")}>
+                                  <IconButton
+                                    size="sm"
+                                    variant="text"
+                                    className="rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all"
+                                    onClick={() => handleViewMetadata(doc)}
+                                  >
+                                    <ViewColumnsIcon className="h-4 w-4" />
+                                  </IconButton>
+                                </Tooltip>
+                              </div>
+                            </td>
 
-                                {isOwner && (
-                                  <>
-                                    <hr className="my-1" />
-                                    <MenuItem
-                                      onClick={() => handleDeleteDocument(doc)}
-                                      className="flex items-center gap-2 text-red-500 hover:bg-red-50"
-                                    >
-                                      <TrashIcon className="h-4 w-4" />
-                                      {t("project_detail.docs.actions.delete")}
-                                    </MenuItem>
-                                  </>
-                                )}
-                              </MenuList>
-                            </Menu>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            <td className="py-4 px-6">
+                              <Typography className="text-zinc-500 font-medium text-xs">
+                                {formatDate(doc.uploaded_at || doc.created_at || doc.uploadedAt)}
+                              </Typography>
+                            </td>
+
+                            <td className="py-4 px-6">
+                              {activeJobs[doc.id] ? (
+                                <div className="w-32">
+                                  <ProjectProcessingProgress
+                                    jobId={activeJobs[doc.id]}
+                                    onComplete={() => handleJobComplete(doc.id, activeJobs[doc.id])}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  {getStatusBadge(doc.status)}
+                                </div>
+                              )}
+                            </td>
+
+                            <td className="py-4 px-6">
+                              <Menu placement="left-start">
+                                <MenuHandler>
+                                  <IconButton variant="text" className="rounded-xl text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" size="sm">
+                                    <EllipsisVerticalIcon className="h-5 w-5" />
+                                  </IconButton>
+                                </MenuHandler>
+                                <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl backdrop-blur-md bg-white/90">
+                                  <MenuItem
+                                    onClick={() => handleDownloadDocument(doc)}
+                                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900 transition-all"
+                                  >
+                                    <ArrowDownTrayIcon className="h-4 w-4 text-zinc-400" />
+                                    {t("project_detail.docs.actions.download")}
+                                  </MenuItem>
+
+                                  <MenuItem
+                                    onClick={() => setViewingDocument(doc)}
+                                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900 transition-all"
+                                  >
+                                    <EyeIcon className="h-4 w-4 text-zinc-400" />
+                                    {language === "es" ? "Ver Documento" : "View Document"}
+                                  </MenuItem>
+
+                                  <MenuItem
+                                    onClick={() => handleViewMetadata(doc)}
+                                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900 transition-all"
+                                  >
+                                    <InformationCircleIcon className="h-4 w-4 text-zinc-400" />
+                                    {t("project_detail.docs.actions.metadata")}
+                                  </MenuItem>
+
+                                  {isOwner && (
+                                    <>
+                                      <div className="my-2 border-t border-zinc-100" />
+                                      <MenuItem
+                                        onClick={() => handleDeleteDocument(doc)}
+                                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-600 font-bold text-xs hover:bg-red-50 hover:text-red-700 transition-all"
+                                      >
+                                        <TrashIcon className="h-4 w-4" />
+                                        {t("project_detail.docs.actions.delete")}
+                                      </MenuItem>
+                                    </>
+                                  )}
+                                </MenuList>
+                              </Menu>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <DocumentTextIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
-                  <Typography variant="h6" color="blue-gray" className="mb-2">
+                <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+                  <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
+                    <DocumentTextIcon className="h-10 w-10" />
+                  </div>
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                     {t("project_detail.docs.empty.title")}
                   </Typography>
-                  <Typography className="text-blue-gray-600 mb-4 text-center">
+                  <Typography className="text-zinc-500 text-sm max-w-sm font-medium mb-8">
                     {t("project_detail.docs.empty.desc")}
                   </Typography>
                   <Button
-                    className="flex items-center gap-2"
-                    color="blue-gray"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
                     onClick={() => setUploadDialogOpen(true)}
                   >
                     <DocumentArrowUpIcon className="h-5 w-5" />
@@ -1046,644 +1047,672 @@ export function ProjectDetail() {
               )}
             </CardBody>
           </Card>
-        </>
-      )}
-      {activeTab === "topics" && (
-        <>
-          <div className="mb-6 flex justify-end">
-            <Button
-              className="flex items-center gap-2"
-              color="blue-gray"
-              onClick={() => setCreateTopicDialogOpen(true)}
-            >
-              <PlusIcon className="h-5 w-5" />
-              {t("project_detail.topics.btn_create")}
-            </Button>
-          </div>
-
-          {topics.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {topics.map((topic) => (
-                <TopicCard
-                  key={topic.id}
-                  topic={topic}
-                  allDocumentsWithSections={documentsWithSections}
-                  onEdit={handleEditTopic}
-                  onArchive={handleArchiveTopic}
-                  onDelete={handleDeleteTopic}
-                  onCreateDeck={handleCreateDeckFromTopic}
-                />
-              ))}
-            </div>
-          ) : (
-            <Card className="border border-blue-gray-100 shadow-sm">
-              <CardBody className="flex flex-col items-center justify-center py-12">
-                <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
-                <Typography variant="h5" color="blue-gray" className="mb-2">
-                  {t("project_detail.topics.empty.title")}
-                </Typography>
-                <Typography className="text-blue-gray-600 mb-4 text-center">
-                  {t("project_detail.topics.empty.desc")}
-                </Typography>
-                <Button
-                  className="flex items-center gap-2"
-                  color="blue-gray"
-                  onClick={() => setCreateTopicDialogOpen(true)}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.topics.btn_create")}
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-
-          {/* Dialogs - Topics */}
-          <CreateTopicDialog
-            open={createTopicDialogOpen}
-            onClose={() => setCreateTopicDialogOpen(false)}
-            onCreate={handleCreateTopic}
-            projectId={projectId}
-          />
-
-          <EditTopicDialog
-            open={editTopicDialogOpen}
-            onClose={() => setEditTopicDialogOpen(false)}
-            onSave={handleSaveEditTopic}
-            topic={selectedTopic}
-            availableDocuments={readyDocuments}
-          />
-
-          <ConfirmDialog
-            open={confirmTopicDialogOpen}
-            onClose={() => setConfirmTopicDialogOpen(false)}
-            onConfirm={handleConfirmArchiveTopic}
-            title="Archive Topic"
-            message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
-            confirmText="Archive"
-            variant="info"
-          />
-          <ConfirmDialog
-            open={confirmTopicDialogOpen}
-            onClose={() => setConfirmTopicDialogOpen(false)}
-            onConfirm={handleConfirmArchiveTopic}
-            title="Archive Topic"
-            message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
-            confirmText="Archive"
-            variant="info"
-          />
-
-          <ConfirmDialog
-            open={confirmDeleteTopicDialogOpen}
-            onClose={() => setConfirmDeleteTopicDialogOpen(false)}
-            onConfirm={handleConfirmDeleteTopic}
-            title="Delete Topic"
-            message={`Are you sure you want to delete "${selectedTopic?.name}"? This action cannot be undone.`}
-            confirmText="Delete"
-            variant="danger"
-          />
-        </>
+        </div>
       )}
 
-      {activeTab === "rules" && (
-        <>
-          <div className="mb-6 flex justify-end">
-            <Button className="flex items-center gap-2" color="blue-gray" onClick={() => setShowCreateRule(true)}>
-              <PlusIcon className="h-5 w-5" />
-              {t("project_detail.rules.btn_create")}
-            </Button>
-          </div>
-
-          {showCreateRule && (
-            <Card className="mb-6 border border-blue-gray-100 shadow-sm">
-              <CardBody>
-                <Typography variant="h6" color="blue-gray" className="mb-4">
-                  {t("project_detail.rules.btn_create")}
+      {
+        activeTab === "topics" && (
+          <>
+            <div className="mb-8 flex items-start justify-between gap-6">
+              <div>
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                  {t("project_detail.topics.title")}
                 </Typography>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">
-                      {language === "es" ? "Nombre" : "Name"}
-                    </Typography>
-                    <input
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.name}
-                      onChange={(e) => setRuleForm((p) => ({ ...p, name: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Global Count</Typography>
-                    <input
-                      type="number"
-                      min="0"
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.global_count}
-                      onChange={(e) => setRuleForm((p) => ({ ...p, global_count: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Time Limit (minutes)</Typography>
-                    <input
-                      type="number"
-                      min="1"
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.time_limit}
-                      onChange={(e) => setRuleForm((p) => ({ ...p, time_limit: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Strategy</Typography>
-                    <select
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.distribution_strategy}
-                      onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
-                    >
-                      <option value="singleChoice">singleChoice</option>
-                      <option value="multiSelect">multiSelect</option>
-                      <option value="trueFalse">trueFalse</option>
-                      <option value="mixed">mixed</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Difficulty</Typography>
-                    <select
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.difficulty}
-                      onChange={(e) => setRuleForm((p) => ({ ...p, difficulty: e.target.value }))}
-                    >
-                      <option value="Easy">Easy</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Hard">Hard</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <Typography variant="small" className="mb-1 text-blue-gray-600">Topic Scope (optional)</Typography>
-                    <select
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      value={ruleForm.topic_scope || ""}
-                      onChange={(e) =>
-                        setRuleForm((p) => ({ ...p, topic_scope: e.target.value ? Number(e.target.value) : null }))
-                      }
-                    >
-                      <option value="">(Global)</option>
-                      {topics.map((t) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 mt-6">
-                  <Button variant="text" onClick={() => setShowCreateRule(false)}>
-                    {language === "es" ? "Cancelar" : "Cancel"}
-                  </Button>
-                  <Button color="blue-gray" onClick={handleCreateRule} disabled={!ruleForm.name}>
-                    {language === "es" ? "Guardar Regla" : "Save Rule"}
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          )}
-
-          {loadingRules ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Spinner className="h-10 w-10 mb-4" />
-              <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
-            </div>
-          ) : rules.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {rules.map((rule) => (
-                <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
-                  <CardBody>
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
-                        <Typography variant="small" className="text-blue-gray-500">
-                          {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
-                        </Typography>
-                      </div>
-
-                      {isOwner && (
-                        <IconButton
-                          size="sm"
-                          variant="text"
-                          color="red"
-                          onClick={async () => {
-                            try {
-                              setError(null);
-                              await projectService.deleteRule(rule.id);
-                              await fetchRules(Number(projectId));
-                            } catch (err) {
-                              setError(err?.error || err?.detail || "Failed to delete rule");
-                            }
-                          }}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      )}
-                    </div>
-
-                    <div className="space-y-1 text-sm text-blue-gray-600">
-                      <div className="flex justify-between">
-                        <span>{t("global.rules.table.questions")}</span>
-                        <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
-                        <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{t("global.rules.table.topic")}</span>
-                        <span className="font-medium text-blue-gray-900">
-                          {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
-                        </span>
-                      </div>
-                    </div>
-                  </CardBody>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-              <ClipboardDocumentListIcon className="h-16 w-16 mb-4" />
-              <Typography variant="h6" className="mb-2">{t("global.rules.no_rules")}</Typography>
-              <Typography>
-                {language === "es"
-                  ? "Crea una regla para definir cómo se generan las baterías."
-                  : "Create a rule to define how batteries are generated."}
-              </Typography>
-            </div>
-          )}
-        </>
-      )}{activeTab === "batteries" && (
-        <>
-          <div className="mb-6 flex justify-end">
-            <Button
-              className="flex items-center gap-2"
-              color="blue-gray"
-              onClick={() => setShowGenerateBattery(true)}
-            >
-              <BoltIcon className="h-5 w-5" />
-              {t("project_detail.batteries.btn_create")}
-            </Button>
-          </div>
-
-          {showGenerateBattery && (
-            <Card className="mb-6 border border-blue-gray-100 shadow-sm">
-              <CardBody>
-                <Typography variant="h6" color="blue-gray" className="mb-4">
-                  {language === "es" ? "Generar Nueva Batería" : "Generate New Battery"}
+                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                  {t("project_detail.topics.description_text")}
                 </Typography>
+              </div>
+              <Button
+                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                onClick={() => setCreateTopicDialogOpen(true)}
+              >
+                <PlusIcon className="h-5 w-5" />
+                {t("project_detail.topics.btn_create")}
+              </Button>
+            </div>
 
-                <div className="space-y-4">
-                  {/* Query Text */}
-                  <div>
-                    <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                      {language === "es" ? "Sobre qué quieres las preguntas (opcional)" : "What do you want questions about? (optional)"}
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                      placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
-                      value={batteryForm.query_text}
-                      onChange={(e) => setBatteryForm(prev => ({ ...prev, query_text: e.target.value }))}
-                    />
+            {topics.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {topics.map((topic) => (
+                  <TopicCard
+                    key={topic.id}
+                    topic={topic}
+                    allDocumentsWithSections={documentsWithSections}
+                    onEdit={handleEditTopic}
+                    onArchive={handleArchiveTopic}
+                    onDelete={handleDeleteTopic}
+                    onCreateDeck={handleCreateDeckFromTopic}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
+                <CardBody className="flex flex-col items-center justify-center py-24 text-center px-6">
+                  <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
+                    <FolderIcon className="h-10 w-10" />
                   </div>
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                    {t("project_detail.topics.empty.title")}
+                  </Typography>
+                  <Typography className="text-zinc-500 text-sm max-w-sm font-medium mb-8">
+                    {t("project_detail.topics.empty.desc")}
+                  </Typography>
+                  <Button
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                    onClick={() => setCreateTopicDialogOpen(true)}
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                    {t("project_detail.topics.btn_create")}
+                  </Button>
+                </CardBody>
+              </Card>
+            )}
 
-                  {/* Sections Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                      {language === "es" ? "Secciones (opcional)" : "Sections (optional)"}
-                    </label>
-                    <div className="mb-2">
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
-                        value={sectionSearch}
-                        onChange={(e) => setSectionSearch(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {batteryForm.sections.map((sec) => (
-                        <Chip
-                          key={sec.id}
-                          value={`${sec.documentName}: ${sec.name}`}
-                          onClose={() => {
-                            setBatteryForm(prev => ({
-                              ...prev,
-                              sections: prev.sections.filter((s) => s.id !== sec.id)
-                            }));
-                          }}
-                          className="rounded-full bg-blue-50 text-blue-900"
-                        />
-                      ))}
-                    </div>
-                    <div className="max-h-32 overflow-y-auto border border-blue-gray-100 rounded-md">
-                      {availableSections
-                        .filter(sec =>
-                          sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
-                          sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
-                        )
-                        .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
-                        .map((sec) => (
-                          <div
-                            key={sec.id}
-                            className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
-                            onClick={() => {
-                              setBatteryForm(prev => ({
-                                ...prev,
-                                sections: [...prev.sections, sec]
-                              }));
-                              setSectionSearch("");
-                            }}
-                          >
-                            <span className="font-medium text-blue-gray-800">{sec.name}</span>
-                            <span className="text-xs text-gray-500">{sec.documentName}</span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
+            {/* Dialogs - Topics */}
+            <CreateTopicDialog
+              open={createTopicDialogOpen}
+              onClose={() => setCreateTopicDialogOpen(false)}
+              onCreate={handleCreateTopic}
+              projectId={projectId}
+            />
+
+            <EditTopicDialog
+              open={editTopicDialogOpen}
+              onClose={() => setEditTopicDialogOpen(false)}
+              onSave={handleSaveEditTopic}
+              topic={selectedTopic}
+              availableDocuments={readyDocuments}
+            />
+
+            <ConfirmDialog
+              open={confirmTopicDialogOpen}
+              onClose={() => setConfirmTopicDialogOpen(false)}
+              onConfirm={handleConfirmArchiveTopic}
+              title="Archive Topic"
+              message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+              confirmText="Archive"
+              variant="info"
+            />
+            <ConfirmDialog
+              open={confirmTopicDialogOpen}
+              onClose={() => setConfirmTopicDialogOpen(false)}
+              onConfirm={handleConfirmArchiveTopic}
+              title="Archive Topic"
+              message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+              confirmText="Archive"
+              variant="info"
+            />
+
+            <ConfirmDialog
+              open={confirmDeleteTopicDialogOpen}
+              onClose={() => setConfirmDeleteTopicDialogOpen(false)}
+              onConfirm={handleConfirmDeleteTopic}
+              title="Delete Topic"
+              message={`Are you sure you want to delete "${selectedTopic?.name}"? This action cannot be undone.`}
+              confirmText="Delete"
+              variant="danger"
+            />
+          </>
+        )
+      }
+
+      {
+        activeTab === "rules" && (
+          <>
+            <div className="mb-8 flex items-start justify-between gap-6">
+              <div>
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                  {t("project_detail.rules.title")}
+                </Typography>
+                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                  {t("project_detail.rules.description_text")}
+                </Typography>
+              </div>
+              <Button
+                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                onClick={() => setShowCreateRule(true)}
+              >
+                <PlusIcon className="h-5 w-5" />
+                {t("project_detail.rules.btn_create")}
+              </Button>
+            </div>
+
+            {showCreateRule && (
+              <Card className="mb-6 border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
+                <CardBody>
+                  <Typography variant="h6" className="font-bold text-zinc-900 mb-4">
+                    {t("project_detail.rules.btn_create")}
+                  </Typography>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Rule Selection (Optional) */}
                     <div>
-                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                        {language === "es" ? "Regla (opcional)" : "Rule (optional)"}
-                      </label>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">
+                        {language === "es" ? "Nombre" : "Name"}
+                      </Typography>
+                      <input
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        value={ruleForm.name}
+                        onChange={(e) => setRuleForm((p) => ({ ...p, name: e.target.value }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">Global Count</Typography>
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        value={ruleForm.global_count}
+                        onChange={(e) => setRuleForm((p) => ({ ...p, global_count: e.target.value }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">Time Limit (minutes)</Typography>
+                      <input
+                        type="number"
+                        min="1"
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        value={ruleForm.time_limit}
+                        onChange={(e) => setRuleForm((p) => ({ ...p, time_limit: e.target.value }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">Strategy</Typography>
                       <select
                         className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={batteryForm.rule}
-                        onChange={(e) => setBatteryForm(prev => ({ ...prev, rule: e.target.value }))}
+                        value={ruleForm.distribution_strategy}
+                        onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
                       >
-                        <option value="">{language === "es" ? "Sin regla" : "No rule"}</option>
-                        {rules.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
+                        <option value="singleChoice">singleChoice</option>
+                        <option value="multiSelect">multiSelect</option>
+                        <option value="trueFalse">trueFalse</option>
+                        <option value="mixed">mixed</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">Difficulty</Typography>
+                      <select
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        value={ruleForm.difficulty}
+                        onChange={(e) => setRuleForm((p) => ({ ...p, difficulty: e.target.value }))}
+                      >
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Typography variant="small" className="mb-1 text-blue-gray-600">Topic Scope (optional)</Typography>
+                      <select
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        value={ruleForm.topic_scope || ""}
+                        onChange={(e) =>
+                          setRuleForm((p) => ({ ...p, topic_scope: e.target.value ? Number(e.target.value) : null }))
+                        }
+                      >
+                        <option value="">(Global)</option>
+                        {topics.map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
                       </select>
                     </div>
-
-                    {/* Quantity (conditional) */}
-                    {!batteryForm.rule && (
-                      <div>
-                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                          {language === "es" ? "Cantidad de Preguntas *" : "Number of Questions *"}
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                          value={batteryForm.quantity}
-                          onChange={(e) => setBatteryForm(prev => ({ ...prev, quantity: e.target.value }))}
-                        />
-                      </div>
-                    )}
-
-                    {/* Difficulty */}
-                    <div>
-                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                        {language === "es" ? "Dificultad *" : "Difficulty *"}
-                      </label>
-                      <select
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={batteryForm.difficulty}
-                        onChange={(e) => setBatteryForm(prev => ({ ...prev, difficulty: e.target.value }))}
-                      >
-                        <option value="easy">{language === "es" ? "Fácil" : "Easy"}</option>
-                        <option value="medium">{language === "es" ? "Medio" : "Medium"}</option>
-                        <option value="hard">{language === "es" ? "Difícil" : "Hard"}</option>
-                      </select>
-                    </div>
-
-                    {/* Question Format */}
-                    <div>
-                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                        {language === "es" ? "Formato de Pregunta *" : "Question Format *"}
-                      </label>
-                      <select
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={batteryForm.question_format}
-                        onChange={(e) => setBatteryForm(prev => ({ ...prev, question_format: e.target.value }))}
-                      >
-                        <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
-                        <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
-                        <option value="multi_select">{language === "es" ? "Selección Múltiple" : "Multi Select"}</option>
-                        <option value="mixed">{language === "es" ? "Mixto" : "Mixed"}</option>
-                      </select>
-                    </div>
-
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
+                  <div className="flex justify-end gap-2 mt-6">
+                    <Button variant="text" onClick={() => setShowCreateRule(false)}>
                       {language === "es" ? "Cancelar" : "Cancel"}
                     </Button>
-                    <Button
-                      color="blue-gray"
-                      onClick={handleGenerateBattery}
-                    >
-                      {language === "es" ? "Generar Batería" : "Generate Battery"}
+                    <Button color="blue-gray" onClick={handleCreateRule} disabled={!ruleForm.name}>
+                      {language === "es" ? "Guardar Regla" : "Save Rule"}
                     </Button>
                   </div>
-                </div>
-              </CardBody>
-            </Card>
-          )}
+                </CardBody>
+              </Card>
+            )}
 
-          {batteries.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {batteries.map((battery) => (
-                <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
-                  <CardBody>
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-1">
-                        <Chip
-                          value={battery.status}
-                          color={battery.status === "Ready" ? "green" : "blue-gray"}
-                          size="sm"
-                          variant="ghost"
-                          className="rounded-full"
-                        />
-                        <Tooltip content="Simulate Exam">
+            {loadingRules ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Spinner className="h-10 w-10 mb-4" />
+                <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
+              </div>
+            ) : rules.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {rules.map((rule) => (
+                  <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
+                    <CardBody>
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
+                          <Typography variant="small" className="text-blue-gray-500">
+                            {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
+                          </Typography>
+                        </div>
+
+                        {isOwner && (
                           <IconButton
                             size="sm"
                             variant="text"
-                            color="green"
-                            onClick={() => setSimulationBattery(battery)}
+                            color="red"
+                            onClick={async () => {
+                              try {
+                                setError(null);
+                                await projectService.deleteRule(rule.id);
+                                await fetchRules(Number(projectId));
+                              } catch (err) {
+                                setError(err?.error || err?.detail || "Failed to delete rule");
+                              }
+                            }}
                           >
-                            <PlayIcon className="h-4 w-4" />
+                            <TrashIcon className="h-4 w-4" />
                           </IconButton>
-                        </Tooltip>
+                        )}
                       </div>
 
-                      {isOwner && (
-                        <Menu placement="bottom-end">
-                          <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray">
-                              <EllipsisVerticalIcon className="h-5 w-5" />
-                            </IconButton>
-                          </MenuHandler>
-                          <MenuList>
-                            <MenuItem
-                              onClick={async () => {
-                                await projectService.markBatteryReady(battery.id);
-                                await fetchBatteries(Number(projectId));
-                              }}
-                            >
-                              Mark as Ready
-                            </MenuItem>
-                            <MenuItem
-                              onClick={async () => {
-                                await projectService.deleteBattery(battery.id);
-                                await fetchBatteries(Number(projectId));
-                              }}
-                              className="text-red-500"
-                            >
-                              Delete
-                            </MenuItem>
-                          </MenuList>
-                        </Menu>
-                      )}
-                    </div>
+                      <div className="space-y-1 text-sm text-blue-gray-600">
+                        <div className="flex justify-between">
+                          <span>{t("global.rules.table.questions")}</span>
+                          <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
+                          <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>{t("global.rules.table.topic")}</span>
+                          <span className="font-medium text-blue-gray-900">
+                            {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
+                          </span>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
+                <ClipboardDocumentListIcon className="h-16 w-16 mb-4" />
+                <Typography variant="h6" className="mb-2">{t("global.rules.no_rules")}</Typography>
+                <Typography>
+                  {language === "es"
+                    ? "Crea una regla para definir cómo se generan las baterías."
+                    : "Create a rule to define how batteries are generated."}
+                </Typography>
+              </div>
+            )}
+          </>
+        )
+      } {
+        activeTab === "batteries" && (
+          <>
+            <div className="mb-6 flex justify-end">
+              <Button
+                className="flex items-center gap-2"
+                color="blue-gray"
+                onClick={() => setShowGenerateBattery(true)}
+              >
+                <BoltIcon className="h-5 w-5" />
+                {t("project_detail.batteries.btn_create")}
+              </Button>
+            </div>
 
-                    <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
-                      {battery.name}
-                    </Typography>
+            {showGenerateBattery && (
+              <Card className="mb-6 border border-blue-gray-100 shadow-sm">
+                <CardBody>
+                  <Typography variant="h6" color="blue-gray" className="mb-4">
+                    {language === "es" ? "Generar Nueva Batería" : "Generate New Battery"}
+                  </Typography>
 
-                    <div className="flex gap-2 mb-4">
-                      <Chip
-                        value={battery.difficulty || "Medium"}
-                        size="sm"
-                        variant="outlined"
-                        className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
+                  <div className="space-y-4">
+                    {/* Query Text */}
+                    <div>
+                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                        {language === "es" ? "Sobre qué quieres las preguntas (opcional)" : "What do you want questions about? (optional)"}
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
+                        value={batteryForm.query_text}
+                        onChange={(e) => setBatteryForm(prev => ({ ...prev, query_text: e.target.value }))}
                       />
-                      <Typography variant="small" className="text-blue-gray-500 text-xs">
-                        {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
-                        {formatDate(battery.created_at || battery.createdAt)}
-                      </Typography>
                     </div>
 
-                    {/* Generation Progress */}
-                    {batteryProgress[battery.id] && (
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between gap-4 mb-1">
-                          <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                            {batteryProgress[battery.id].status}
-                          </Typography>
-                          <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                            {Math.round(batteryProgress[battery.id].percent || 0)}%
-                          </Typography>
-                        </div>
-                        <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
+                    {/* Sections Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                        {language === "es" ? "Secciones (opcional)" : "Sections (optional)"}
+                      </label>
+                      <div className="mb-2">
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
+                          value={sectionSearch}
+                          onChange={(e) => setSectionSearch(e.target.value)}
+                        />
                       </div>
-                    )}
-
-                    {/* Attempts summary */}
-                    <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
-                      {battery.attempts_count > 0 ? (
-                        <div className="flex items-center justify-between">
-                          <span className="text-blue-gray-700 font-semibold">
-                            {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
-                          </span>
-
-                          <span className="text-blue-gray-600">
-                            {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
-                      )}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {batteryForm.sections.map((sec) => (
+                          <Chip
+                            key={sec.id}
+                            value={`${sec.documentName}: ${sec.name}`}
+                            onClose={() => {
+                              setBatteryForm(prev => ({
+                                ...prev,
+                                sections: prev.sections.filter((s) => s.id !== sec.id)
+                              }));
+                            }}
+                            className="rounded-full bg-blue-50 text-blue-900"
+                          />
+                        ))}
+                      </div>
+                      <div className="max-h-32 overflow-y-auto border border-blue-gray-100 rounded-md">
+                        {availableSections
+                          .filter(sec =>
+                            sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
+                            sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
+                          )
+                          .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
+                          .map((sec) => (
+                            <div
+                              key={sec.id}
+                              className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
+                              onClick={() => {
+                                setBatteryForm(prev => ({
+                                  ...prev,
+                                  sections: [...prev.sections, sec]
+                                }));
+                                setSectionSearch("");
+                              }}
+                            >
+                              <span className="font-medium text-blue-gray-800">{sec.name}</span>
+                              <span className="text-xs text-gray-500">{sec.documentName}</span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
 
-                  </CardBody>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-              <BoltIcon className="h-16 w-16 mb-4" />
-              <Typography variant="h6" className="mb-2">
-                {t("global.batteries.no_batteries")}
-              </Typography>
-              <Typography>
-                {language === "es"
-                  ? "Genera baterías a partir de tus reglas configuradas."
-                  : "Generate batteries from your configured rules."}
-              </Typography>
-            </div>
-          )}
-        </>
-      )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Rule Selection (Optional) */}
+                      <div>
+                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                          {language === "es" ? "Regla (opcional)" : "Rule (optional)"}
+                        </label>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={batteryForm.rule}
+                          onChange={(e) => setBatteryForm(prev => ({ ...prev, rule: e.target.value }))}
+                        >
+                          <option value="">{language === "es" ? "Sin regla" : "No rule"}</option>
+                          {rules.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-      {activeTab === "decks" && (
-        <>
-          <div className="mb-6 flex justify-end">
-            <Button
-              className="flex items-center gap-2"
-              color="blue-gray"
-              onClick={() => {
-                setSelectedDeck(null);
-                setCreateDeckDialogOpen(true);
-              }}
-            >
-              <PlusIcon className="h-5 w-5" />
-              {t("project_detail.decks.btn_create")}
-            </Button>
-          </div>
+                      {/* Quantity (conditional) */}
+                      {!batteryForm.rule && (
+                        <div>
+                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                            {language === "es" ? "Cantidad de Preguntas *" : "Number of Questions *"}
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                            value={batteryForm.quantity}
+                            onChange={(e) => setBatteryForm(prev => ({ ...prev, quantity: e.target.value }))}
+                          />
+                        </div>
+                      )}
 
-          {loadingDecks ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Spinner className="h-10 w-10 mb-4" />
-              <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
-            </div>
-          ) : decks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {decks.map((deck) => (
-                <DeckCard
-                  key={deck.id}
-                  deck={deck}
-                  onEdit={handleEditDeck}
-                  onDelete={handleDeleteDeck}
-                  onStudy={handleStudyDeck}
-                  job={activeFlashcardJobs[deck.id]}
-                  onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
-                />
-              ))}
-            </div>
-          ) : (
-            <Card className="border border-blue-gray-100 shadow-sm">
-              <CardBody className="flex flex-col items-center justify-center py-12">
-                <Square2StackIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
-                <Typography variant="h5" color="blue-gray" className="mb-2">
-                  {t("project_detail.decks.empty.title")}
+                      {/* Difficulty */}
+                      <div>
+                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                          {language === "es" ? "Dificultad *" : "Difficulty *"}
+                        </label>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={batteryForm.difficulty}
+                          onChange={(e) => setBatteryForm(prev => ({ ...prev, difficulty: e.target.value }))}
+                        >
+                          <option value="easy">{language === "es" ? "Fácil" : "Easy"}</option>
+                          <option value="medium">{language === "es" ? "Medio" : "Medium"}</option>
+                          <option value="hard">{language === "es" ? "Difícil" : "Hard"}</option>
+                        </select>
+                      </div>
+
+                      {/* Question Format */}
+                      <div>
+                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                          {language === "es" ? "Formato de Pregunta *" : "Question Format *"}
+                        </label>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={batteryForm.question_format}
+                          onChange={(e) => setBatteryForm(prev => ({ ...prev, question_format: e.target.value }))}
+                        >
+                          <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
+                          <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
+                          <option value="multi_select">{language === "es" ? "Selección Múltiple" : "Multi Select"}</option>
+                          <option value="mixed">{language === "es" ? "Mixto" : "Mixed"}</option>
+                        </select>
+                      </div>
+
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
+                        {language === "es" ? "Cancelar" : "Cancel"}
+                      </Button>
+                      <Button
+                        color="blue-gray"
+                        onClick={handleGenerateBattery}
+                      >
+                        {language === "es" ? "Generar Batería" : "Generate Battery"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
+
+            {batteries.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {batteries.map((battery) => (
+                  <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
+                    <CardBody>
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1">
+                          <Chip
+                            value={battery.status}
+                            color={battery.status === "Ready" ? "green" : "blue-gray"}
+                            size="sm"
+                            variant="ghost"
+                            className="rounded-full"
+                          />
+                          <Tooltip content="Simulate Exam">
+                            <IconButton
+                              size="sm"
+                              variant="text"
+                              color="green"
+                              onClick={() => setSimulationBattery(battery)}
+                            >
+                              <PlayIcon className="h-4 w-4" />
+                            </IconButton>
+                          </Tooltip>
+                        </div>
+
+                        {isOwner && (
+                          <Menu placement="bottom-end">
+                            <MenuHandler>
+                              <IconButton size="sm" variant="text" color="blue-gray">
+                                <EllipsisVerticalIcon className="h-5 w-5" />
+                              </IconButton>
+                            </MenuHandler>
+                            <MenuList>
+                              <MenuItem
+                                onClick={async () => {
+                                  await projectService.markBatteryReady(battery.id);
+                                  await fetchBatteries(Number(projectId));
+                                }}
+                              >
+                                Mark as Ready
+                              </MenuItem>
+                              <MenuItem
+                                onClick={async () => {
+                                  await projectService.deleteBattery(battery.id);
+                                  await fetchBatteries(Number(projectId));
+                                }}
+                                className="text-red-500"
+                              >
+                                Delete
+                              </MenuItem>
+                            </MenuList>
+                          </Menu>
+                        )}
+                      </div>
+
+                      <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+                        {battery.name}
+                      </Typography>
+
+                      <div className="flex gap-2 mb-4">
+                        <Chip
+                          value={battery.difficulty || "Medium"}
+                          size="sm"
+                          variant="outlined"
+                          className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
+                        />
+                        <Typography variant="small" className="text-blue-gray-500 text-xs">
+                          {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
+                          {formatDate(battery.created_at || battery.createdAt)}
+                        </Typography>
+                      </div>
+
+                      {/* Generation Progress */}
+                      {batteryProgress[battery.id] && (
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between gap-4 mb-1">
+                            <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                              {batteryProgress[battery.id].status}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                              {Math.round(batteryProgress[battery.id].percent || 0)}%
+                            </Typography>
+                          </div>
+                          <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
+                        </div>
+                      )}
+
+                      {/* Attempts summary */}
+                      <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+                        {battery.attempts_count > 0 ? (
+                          <div className="flex items-center justify-between">
+                            <span className="text-blue-gray-700 font-semibold">
+                              {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
+                            </span>
+
+                            <span className="text-blue-gray-600">
+                              {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
+                        )}
+                      </div>
+
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
+                <BoltIcon className="h-16 w-16 mb-4" />
+                <Typography variant="h6" className="mb-2">
+                  {t("global.batteries.no_batteries")}
                 </Typography>
-                <Typography className="text-blue-gray-600 mb-4 text-center">
-                  {t("project_detail.decks.empty.desc")}
+                <Typography>
+                  {language === "es"
+                    ? "Genera baterías a partir de tus reglas configuradas."
+                    : "Generate batteries from your configured rules."}
                 </Typography>
-                <Button
-                  className="flex items-center gap-2"
-                  color="blue-gray"
-                  onClick={() => {
-                    setSelectedDeck(null);
-                    setCreateDeckDialogOpen(true);
-                  }}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.decks.btn_create")}
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-        </>
-      )}
+              </div>
+            )}
+          </>
+        )
+      }
+
+      {
+        activeTab === "decks" && (
+          <>
+            <div className="mb-6 flex justify-end">
+              <Button
+                className="flex items-center gap-2"
+                color="blue-gray"
+                onClick={() => {
+                  setSelectedDeck(null);
+                  setCreateDeckDialogOpen(true);
+                }}
+              >
+                <PlusIcon className="h-5 w-5" />
+                {t("project_detail.decks.btn_create")}
+              </Button>
+            </div>
+
+            {loadingDecks ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Spinner className="h-10 w-10 mb-4" />
+                <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
+              </div>
+            ) : decks.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {decks.map((deck) => (
+                  <DeckCard
+                    key={deck.id}
+                    deck={deck}
+                    onEdit={handleEditDeck}
+                    onDelete={handleDeleteDeck}
+                    onStudy={handleStudyDeck}
+                    job={activeFlashcardJobs[deck.id]}
+                    onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card className="border border-blue-gray-100 shadow-sm">
+                <CardBody className="flex flex-col items-center justify-center py-12">
+                  <Square2StackIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
+                  <Typography variant="h5" color="blue-gray" className="mb-2">
+                    {t("project_detail.decks.empty.title")}
+                  </Typography>
+                  <Typography className="text-blue-gray-600 mb-4 text-center">
+                    {t("project_detail.decks.empty.desc")}
+                  </Typography>
+                  <Button
+                    className="flex items-center gap-2"
+                    color="blue-gray"
+                    onClick={() => {
+                      setSelectedDeck(null);
+                      setCreateDeckDialogOpen(true);
+                    }}
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                    {t("project_detail.decks.btn_create")}
+                  </Button>
+                </CardBody>
+              </Card>
+            )}
+          </>
+        )
+      }
 
 
 
@@ -1759,7 +1788,7 @@ export function ProjectDetail() {
         onClose={() => setViewingDocument(null)}
         document={viewingDocument}
       />
-    </div>
+    </div >
   );
 }
 

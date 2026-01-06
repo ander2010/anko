@@ -428,7 +428,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
 
         {showAnswer && (
           <Alert
-            icon={<LightBulbIcon className="mt-px h-6 w-6" />}
+            icon={<LightBulbIcon className="mt-px h-6 w-6 text-yellow-600" />}
             className="mt-6 bg-blue-50 border border-blue-100 text-blue-900"
           >
             <Typography variant="h6" className="mb-1">
