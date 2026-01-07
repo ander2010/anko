@@ -68,18 +68,17 @@ export function DashboardNavbar() {
       blurred={fixedNavbar}
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center px-4">
-        <div className="capitalize flex items-start gap-4">
+        <div className="capitalize flex items-center gap-4">
           <IconButton
             variant="text"
-            className="grid text-zinc-600 mt-1"
+            className="grid text-zinc-600"
             onClick={() => setOpenSidenav(dispatch, !openSidenav)}
           >
             <Bars3Icon strokeWidth={3} className="h-6 w-6" />
           </IconButton>
           <div>
             <Breadcrumbs
-              className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
-                }`}
+              className="bg-transparent p-0 transition-all"
             >
               <Link to={`/${layout}`}>
                 <Typography
@@ -104,9 +103,7 @@ export function DashboardNavbar() {
                 </Typography>
               )}
             </Breadcrumbs>
-            <Typography variant="h5" className="font-bold tracking-tight text-zinc-900 mt-1">
-              {detailName || currentPageName}
-            </Typography>
+
           </div>
         </div>
         <div className="flex items-center gap-2">
