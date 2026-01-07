@@ -17,8 +17,13 @@ import {
     Switch,
     IconButton,
     Chip,
+    Tabs,
+    TabsHeader,
+    TabsBody,
+    Tab,
+    TabPanel,
 } from "@material-tailwind/react";
-import { ChevronDownIcon, XMarkIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, XMarkIcon, RectangleStackIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
@@ -32,6 +37,7 @@ function Icon({ id, open }) {
 
 export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = null }) {
     const { t, language } = useLanguage();
+    const [activeTab, setActiveTab] = useState("ai");
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -39,6 +45,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         section_ids: [],
         document_ids: [],
         cards_count: 3,
+        cards: [], // For manual mode
     });
     const [openAccordion, setOpenAccordion] = useState(0);
     const [scannedDocuments, setScannedDocuments] = useState([]);
@@ -55,7 +62,9 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     section_ids: (deck.section_ids || []).map(Number),
                     document_ids: (deck.document_ids || []).map(Number),
                     cards_count: deck.flashcards_count || deck.cards_count || 3,
+                    cards: [],
                 });
+                setActiveTab("ai"); // Default to AI for editing, or maybe we don't support converting yet?
             } else {
                 setFormData({
                     title: "",
@@ -64,7 +73,9 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     section_ids: [],
                     document_ids: [],
                     cards_count: 3,
+                    cards: [{ front: "", back: "", notes: "" }], // Initial empty card
                 });
+                setActiveTab("ai");
             }
             if (projectId) {
                 fetchSections();
@@ -160,11 +171,43 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         });
     };
 
+    // --- Manual Card Management ---
+    const [currentCard, setCurrentCard] = useState({ front: "", back: "", notes: "" });
+
+    const handleCurrentCardChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentCard(prev => ({ ...prev, [name]: value }));
+    };
+
+    const addCard = () => {
+        if (!currentCard.front.trim() || !currentCard.back.trim()) return;
+
+        setFormData(prev => ({
+            ...prev,
+            cards: [...prev.cards, { ...currentCard }]
+        }));
+        setCurrentCard({ front: "", back: "", notes: "" });
+    };
+
+    const removeCard = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            cards: prev.cards.filter((_, i) => i !== index)
+        }));
+    };
+
     const validate = () => {
         const newErrors = {};
         if (!formData.title.trim()) {
             newErrors.title = language === "es" ? "El título es obligatorio" : "Title is required";
         }
+
+        if (activeTab === "manual") {
+            if (formData.cards.length === 0) {
+                newErrors.general = language === "es" ? "Debes agregar al menos una ficha." : "You must add at least one card.";
+            }
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -172,7 +215,15 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
-            onCreate(formData);
+            // Include activeTab in onCreate so parent knows which service method to use
+            onCreate({ ...formData, mode: activeTab });
+            // Don't close immediately here because parent handles logic and loading/errors
+            // But currently the dialog expects to close or handle errors inside.
+            // The parent `handleCreateDeck` triggers async service calls.
+            // Ideally we'd have a loading state passed in. 
+            // For now, we assume parent closes dialog on success.
+            // But looking at existing code: `onCreate(formData); onClose();`
+            // So we'll keep onClose here.
             onClose();
         }
     };
@@ -182,32 +233,48 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
             open={open}
             handler={onClose}
             size="lg"
-            className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5"
+            className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5 h-[90vh] flex flex-col"
         >
-            <form onSubmit={handleSubmit} className="flex flex-col h-[90vh] md:h-[80vh]">
-                <DialogHeader className="relative p-0 overflow-hidden bg-zinc-50 border-b border-zinc-100">
-                    <div className="px-6 py-6 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
-                            <RectangleStackIcon className="h-6 w-6" />
+            <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                <DialogHeader className="relative p-0 overflow-hidden bg-zinc-50 border-b border-zinc-100 flex-none">
+                    <div className="px-6 py-4 flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
+                            <RectangleStackIcon className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
-                            <Typography variant="h5" className="text-zinc-900 font-black tracking-tight">
+                            <Typography variant="h6" className="text-zinc-900 font-black tracking-tight">
                                 {deck && deck.id
                                     ? (language === "es" ? "Editar Mazo" : "Edit Deck")
                                     : (language === "es" ? "Crear Mazo" : "Create Deck")
                                 }
-                            </Typography>
-                            <Typography variant="tiny" className="text-zinc-500 font-medium">
-                                {language === "es" ? "Configura tu mazo de flashcards" : "Configure your flashcard deck"}
                             </Typography>
                         </div>
                         <IconButton variant="text" color="blue-gray" onClick={onClose} className="rounded-full hover:bg-zinc-200/50">
                             <XMarkIcon className="h-6 w-6 text-zinc-400" strokeWidth={2} />
                         </IconButton>
                     </div>
+
+                    {!deck && (
+                        <div className="px-6 pb-0">
+                            <Tabs value={activeTab}>
+                                <TabsHeader
+                                    className="bg-zinc-100/50 p-1 rounded-xl"
+                                    indicatorProps={{ className: "bg-white shadow-sm rounded-lg" }}
+                                >
+                                    <Tab value="ai" onClick={() => setActiveTab("ai")} className="py-2 text-xs font-bold font-sans whitespace-nowrap">
+                                        {language === "es" ? "Generar con IA" : "AI Generation"}
+                                    </Tab>
+                                    <Tab value="manual" onClick={() => setActiveTab("manual")} className="py-2 text-xs font-bold font-sans whitespace-nowrap">
+                                        {language === "es" ? "Generar Manualmente" : "Manual Generation"}
+                                    </Tab>
+                                </TabsHeader>
+                            </Tabs>
+                        </div>
+                    )}
                 </DialogHeader>
 
                 <DialogBody className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+                    {/* Common Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
@@ -228,19 +295,21 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                 </Typography>
                             )}
                         </div>
-                        <div>
-                            <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
-                                {t("project_detail.decks.cards_count")}
-                            </Typography>
-                            <Input
-                                type="number"
-                                className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
-                                name="cards_count"
-                                value={formData.cards_count}
-                                onChange={handleChange}
-                                labelProps={{ className: "hidden" }}
-                            />
-                        </div>
+                        {activeTab === "ai" && (
+                            <div>
+                                <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+                                    {t("project_detail.decks.cards_count")}
+                                </Typography>
+                                <Input
+                                    type="number"
+                                    className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                    name="cards_count"
+                                    value={formData.cards_count}
+                                    onChange={handleChange}
+                                    labelProps={{ className: "hidden" }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -249,7 +318,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         </Typography>
                         <Textarea
                             placeholder={language === "es" ? "Describe este mazo..." : "Describe this deck..."}
-                            className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 min-h-[100px]"
+                            className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 min-h-[80px]"
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
@@ -280,104 +349,210 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         />
                     </div>
 
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <Typography variant="h6" className="font-black text-zinc-900">
-                                {t("project_detail.decks.documents")} & {t("project_detail.decks.sections")}
-                            </Typography>
-                            <Chip
-                                variant="ghost"
-                                color="indigo"
-                                className="rounded-lg border-indigo-100 bg-indigo-50 text-indigo-700 font-bold"
-                                value={`${formData.section_ids.length} ${t("project_detail.docs.table.sections")}`}
-                            />
-                        </div>
-
-                        {loadingSections ? (
-                            <div className="flex justify-center p-8 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                <Spinner className="h-6 w-6 text-indigo-500" />
-                            </div>
-                        ) : scannedDocuments.length === 0 ? (
-                            <div className="p-8 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
-                                <Typography variant="small" className="text-zinc-500 font-medium italic">
-                                    {language === "es" ? "No hay documentos con secciones procesadas." : "No documents with processed sections."}
+                    {/* AI SECTIONS SELECTION */}
+                    {activeTab === "ai" && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center justify-between mb-4">
+                                <Typography variant="h6" className="font-black text-zinc-900">
+                                    {t("project_detail.decks.documents")} & {t("project_detail.decks.sections")}
                                 </Typography>
+                                <Chip
+                                    variant="ghost"
+                                    color="indigo"
+                                    className="rounded-lg border-indigo-100 bg-indigo-50 text-indigo-700 font-bold"
+                                    value={`${formData.section_ids.length} ${t("project_detail.docs.table.sections")}`}
+                                />
                             </div>
-                        ) : (
-                            <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-                                {scannedDocuments.map((doc, index) => {
-                                    const docId = Number(doc.id);
-                                    const docSections = doc.sections || [];
-                                    const docSectionIds = docSections.map(s => Number(s.id));
 
-                                    const allSelected = docSectionIds.length > 0 && docSectionIds.every(id => formData.section_ids.includes(id));
-                                    const someSelected = docSectionIds.some(id => formData.section_ids.includes(id));
+                            {loadingSections ? (
+                                <div className="flex justify-center p-8 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                    <Spinner className="h-6 w-6 text-indigo-500" />
+                                </div>
+                            ) : scannedDocuments.length === 0 ? (
+                                <div className="p-8 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
+                                    <Typography variant="small" className="text-zinc-500 font-medium italic">
+                                        {language === "es" ? "No hay documentos con secciones procesadas." : "No documents with processed sections."}
+                                    </Typography>
+                                </div>
+                            ) : (
+                                <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                                    {scannedDocuments.map((doc, index) => {
+                                        const docId = Number(doc.id);
+                                        const docSections = doc.sections || [];
+                                        const docSectionIds = docSections.map(s => Number(s.id));
 
-                                    return (
-                                        <Accordion
-                                            key={docId}
-                                            open={openAccordion === index + 1}
-                                            icon={<Icon id={index + 1} open={openAccordion} />}
-                                            className="border-b border-zinc-100 last:border-b-0"
-                                        >
-                                            <AccordionHeader className={`py-3 px-4 hover:bg-zinc-50 transition-colors border-b-0 ${openAccordion === index + 1 ? "bg-zinc-50" : ""}`}>
-                                                <div className="flex items-center gap-4 w-full" onClick={e => e.stopPropagation()}>
-                                                    <Checkbox
-                                                        color="indigo"
-                                                        checked={allSelected}
-                                                        indeterminate={someSelected && !allSelected}
-                                                        onChange={() => handleDocumentToggle(doc)}
-                                                        className="h-4 w-4 rounded-md border-zinc-300 bg-white transition-all hover:scale-105 hover:before:opacity-0"
-                                                        containerProps={{ className: "p-0" }}
-                                                    />
-                                                    <div className="flex-1 text-left flex items-center justify-between" onClick={() => handleOpenAccordion(index + 1)}>
-                                                        <Typography variant="small" className="font-bold text-zinc-900">
-                                                            {doc.filename}
-                                                        </Typography>
-                                                        <Typography variant="small" className="font-bold text-zinc-400 text-[10px] bg-white border border-zinc-100 px-2 py-0.5 rounded-md">
-                                                            {docSections.length} {t("project_detail.docs.table.sections")}
-                                                        </Typography>
-                                                    </div>
-                                                </div>
-                                            </AccordionHeader>
-                                            <AccordionBody className="py-2 px-4 bg-zinc-50/50">
-                                                <div className="flex flex-col gap-1 pl-8 pr-2 pb-2">
-                                                    {docSections.map(section => (
-                                                        <div
-                                                            key={section.id}
-                                                            className={`flex items-start gap-4 p-2 rounded-lg cursor-pointer transition-all border border-transparent ${formData.section_ids.includes(Number(section.id)) ? "bg-white shadow-sm border-zinc-200" : "hover:bg-zinc-100"}`}
-                                                            onClick={() => handleSectionToggle(section.id, docId)}
-                                                        >
-                                                            <Checkbox
-                                                                color="indigo"
-                                                                checked={formData.section_ids.includes(Number(section.id))}
-                                                                onChange={() => handleSectionToggle(section.id, docId)}
-                                                                className="h-4 w-4 rounded-md border-zinc-300"
-                                                                containerProps={{ className: "p-0 mt-0.5" }}
-                                                                ripple={false}
-                                                            />
-                                                            <div className="flex-1">
-                                                                <Typography variant="small" className="font-bold text-xs text-zinc-900 mb-0.5">
-                                                                    {section.title || (language === "es" ? "Sin título" : "Untitled")}
-                                                                </Typography>
-                                                                {section.content && (
-                                                                    <Typography variant="small" className="text-[10px] text-zinc-500 line-clamp-2 leading-tight">
-                                                                        {section.content}
-                                                                    </Typography>
-                                                                )}
-                                                            </div>
+                                        const allSelected = docSectionIds.length > 0 && docSectionIds.every(id => formData.section_ids.includes(id));
+                                        const someSelected = docSectionIds.some(id => formData.section_ids.includes(id));
+
+                                        return (
+                                            <Accordion
+                                                key={docId}
+                                                open={openAccordion === index + 1}
+                                                icon={<Icon id={index + 1} open={openAccordion} />}
+                                                className="border-b border-zinc-100 last:border-b-0"
+                                            >
+                                                <AccordionHeader className={`py-3 px-4 hover:bg-zinc-50 transition-colors border-b-0 ${openAccordion === index + 1 ? "bg-zinc-50" : ""}`}>
+                                                    <div className="flex items-center gap-4 w-full" onClick={e => e.stopPropagation()}>
+                                                        <Checkbox
+                                                            color="indigo"
+                                                            checked={allSelected}
+                                                            indeterminate={someSelected && !allSelected}
+                                                            onChange={() => handleDocumentToggle(doc)}
+                                                            className="h-4 w-4 rounded-md border-zinc-300 bg-white transition-all hover:scale-105 hover:before:opacity-0"
+                                                            containerProps={{ className: "p-0" }}
+                                                        />
+                                                        <div className="flex-1 text-left flex items-center justify-between" onClick={() => handleOpenAccordion(index + 1)}>
+                                                            <Typography variant="small" className="font-bold text-zinc-900">
+                                                                {doc.filename}
+                                                            </Typography>
+                                                            <Typography variant="small" className="font-bold text-zinc-400 text-[10px] bg-white border border-zinc-100 px-2 py-0.5 rounded-md">
+                                                                {docSections.length} {t("project_detail.docs.table.sections")}
+                                                            </Typography>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </AccordionBody>
-                                        </Accordion>
-                                    );
-                                })}
+                                                    </div>
+                                                </AccordionHeader>
+                                                <AccordionBody className="py-2 px-4 bg-zinc-50/50">
+                                                    <div className="flex flex-col gap-1 pl-8 pr-2 pb-2">
+                                                        {docSections.map(section => (
+                                                            <div
+                                                                key={section.id}
+                                                                className={`flex items-start gap-4 p-2 rounded-lg cursor-pointer transition-all border border-transparent ${formData.section_ids.includes(Number(section.id)) ? "bg-white shadow-sm border-zinc-200" : "hover:bg-zinc-100"}`}
+                                                                onClick={() => handleSectionToggle(section.id, docId)}
+                                                            >
+                                                                <Checkbox
+                                                                    color="indigo"
+                                                                    checked={formData.section_ids.includes(Number(section.id))}
+                                                                    onChange={() => handleSectionToggle(section.id, docId)}
+                                                                    className="h-4 w-4 rounded-md border-zinc-300"
+                                                                    containerProps={{ className: "p-0 mt-0.5" }}
+                                                                    ripple={false}
+                                                                />
+                                                                <div className="flex-1">
+                                                                    <Typography variant="small" className="font-bold text-xs text-zinc-900 mb-0.5">
+                                                                        {section.title || (language === "es" ? "Sin título" : "Untitled")}
+                                                                    </Typography>
+                                                                    {section.content && (
+                                                                        <Typography variant="small" className="text-[10px] text-zinc-500 line-clamp-2 leading-tight">
+                                                                            {section.content}
+                                                                        </Typography>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </AccordionBody>
+                                            </Accordion>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* MANUAL CARDS ENTRY */}
+                    {activeTab === "manual" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Input Form Area */}
+                            <div className="p-5 bg-zinc-50/80 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">
+                                <div className="flex items-center justify-between">
+                                    <Typography variant="small" className="font-black text-zinc-900 uppercase tracking-wider text-[10px]">
+                                        {language === "es" ? "Nueva Ficha" : "New Card"}
+                                    </Typography>
+                                    <Chip
+                                        value={formData.cards.length}
+                                        size="sm"
+                                        variant="ghost"
+                                        color="indigo"
+                                        className="rounded-full"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input
+                                        label={language === "es" ? "Frente (Pregunta)" : "Front (Question)"}
+                                        name="front"
+                                        value={currentCard.front}
+                                        onChange={handleCurrentCardChange}
+                                        className="bg-white"
+                                    />
+                                    <Input
+                                        label={language === "es" ? "Reverso (Respuesta)" : "Back (Answer)"}
+                                        name="back"
+                                        value={currentCard.back}
+                                        onChange={handleCurrentCardChange}
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <Input
+                                    label={language === "es" ? "Notas (Opcional)" : "Notes (Optional)"}
+                                    name="notes"
+                                    value={currentCard.notes}
+                                    onChange={handleCurrentCardChange}
+                                    className="bg-white"
+                                />
+                                <div className="flex justify-end">
+                                    <Button
+                                        size="sm"
+                                        color="indigo"
+                                        className="flex items-center gap-2 normal-case"
+                                        onClick={addCard}
+                                        disabled={!currentCard.front.trim() || !currentCard.back.trim()}
+                                    >
+                                        <PlusIcon className="h-3 w-3" />
+                                        {language === "es" ? "Agregar a la lista" : "Add to list"}
+                                    </Button>
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Added Cards List */}
+                            {formData.cards.length > 0 && (
+                                <div className="space-y-3">
+                                    <Typography variant="small" className="font-bold text-zinc-500 text-xs uppercase tracking-wider ml-1">
+                                        {language === "es" ? "Fichas Agregadas" : "Added Cards"}
+                                    </Typography>
+                                    {formData.cards.map((card, index) => (
+                                        <div key={index} className="flex items-start justify-between p-4 bg-white rounded-xl border border-zinc-100 shadow-sm transition-all hover:border-indigo-100 hover:shadow-md group">
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <Typography variant="small" className="font-bold text-zinc-900 text-xs mb-1">
+                                                        {language === "es" ? "Frente" : "Front"}
+                                                    </Typography>
+                                                    <Typography variant="small" className="text-zinc-600 leading-snug">
+                                                        {card.front}
+                                                    </Typography>
+                                                </div>
+                                                <div>
+                                                    <Typography variant="small" className="font-bold text-zinc-900 text-xs mb-1">
+                                                        {language === "es" ? "Reverso" : "Back"}
+                                                    </Typography>
+                                                    <Typography variant="small" className="text-zinc-600 leading-snug">
+                                                        {card.back}
+                                                    </Typography>
+                                                </div>
+                                            </div>
+                                            <IconButton
+                                                size="sm"
+                                                color="red"
+                                                variant="text"
+                                                className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => removeCard(index)}
+                                            >
+                                                <TrashIcon className="h-4 w-4" />
+                                            </IconButton>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {errors.general && (
+                                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    {errors.general}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </DialogBody>
-                <DialogFooter className="bg-zinc-50/50 border-t border-zinc-100 p-4 flex justify-end gap-3">
+                <DialogFooter className="bg-zinc-50/50 border-t border-zinc-100 p-4 flex justify-end gap-3 flex-none">
                     <Button
                         variant="text"
                         color="blue-gray"
@@ -390,7 +565,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         type="submit"
                         variant="gradient"
                         color="indigo"
-                        disabled={loadingSections}
+                        disabled={loadingSections && activeTab === 'ai'}
                         className="normal-case font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
                     >
                         {deck && deck.id ? t("global.actions.save") : t("projects.dialogs.create")}

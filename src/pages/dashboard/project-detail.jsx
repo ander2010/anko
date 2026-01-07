@@ -489,34 +489,59 @@ export function ProjectDetail() {
     try {
       setError(null);
       if (selectedDeck) {
+        // Edit mode (assuming manual edits for now or just metadata)
         await projectService.updateDeck(selectedDeck.id, deckData);
+        // Refresh to get updates
+        await fetchDecks(Number(projectId));
       } else {
-        // Prepare payload for create-with-cards
-        const payload = {
-          project_id: Number(projectId),
-          ...deckData,
-          cards_count: Number(deckData.cards_count || 0)
-        };
-        const res = await projectService.createDeckWithCards(payload);
+        // CHECK MODE
+        if (deckData.mode === 'manual') {
+          // Manual Creation
+          const payload = {
+            project_id: Number(projectId),
+            title: deckData.title,
+            description: deckData.description,
+            visibility: deckData.visibility,
+            section_ids: deckData.section_ids,
+            cards: deckData.cards
+          };
+          const res = await projectService.createDeckManual(payload);
 
-        if (res.deck) {
-          // Add newly created deck to local state silently
-          setDecks(prev => [...prev, { ...res.deck, flashcards_count: res.cards_created || 0 }]);
-        }
+          // Add directly to state
+          if (res) {
+            setDecks(prev => [...prev, { ...res, flashcards_count: res.flashcards_count || (res.cards ? res.cards.length : 0) }]);
+          }
+        } else {
+          // AI Creation (Default)
+          const payload = {
+            project_id: Number(projectId),
+            ...deckData,
+            cards_count: Number(deckData.cards_count || 0)
+          };
+          // Remove mode from payload if it exists
+          delete payload.mode;
+          delete payload.cards; // Ensure no manual cards are sent to AI endpoint
 
-        if (res.job && res.deck) {
-          setActiveFlashcardJobs(prev => ({
-            ...prev,
-            [res.deck.id]: {
-              job_id: res.job.job_id,
-              ws_progress: res.job.ws_progress
-            }
-          }));
+          const res = await projectService.createDeckWithCards(payload);
+
+          if (res.deck) {
+            // Add newly created deck to local state silently
+            setDecks(prev => [...prev, { ...res.deck, flashcards_count: res.cards_created || 0 }]);
+          }
+
+          if (res.job && res.deck) {
+            setActiveFlashcardJobs(prev => ({
+              ...prev,
+              [res.deck.id]: {
+                job_id: res.job.job_id,
+                ws_progress: res.job.ws_progress
+              }
+            }));
+          }
         }
       }
       setCreateDeckDialogOpen(false);
       setSelectedDeck(null);
-      // fetchDecks removed to avoid global spinner
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to save deck");
     }

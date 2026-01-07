@@ -430,6 +430,12 @@ const projectService = {
     });
     return res.data;
   },
+
+  async createDeckManual(payload) {
+    const res = await api.post("/decks/create-with-flashcards/", payload);
+    return res.data;
+  },
+
   async syncFlashcardsFromJob(deckId, jobId) {
     const res = await api.post("/flashcards/sync-from-job/", {}, {
       params: {
