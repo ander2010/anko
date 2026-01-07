@@ -146,12 +146,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                         <Chip value={getStatusLabel(document.status)} size="sm" color={getStatusColor(document.status)} className="w-fit" />
                     </div>
 
-                    <div>
-                        <Typography variant="small" className="text-blue-gray-500 mb-1 flex items-center gap-1">
-                            <HashtagIcon className="h-4 w-4" /> {language === "es" ? "ID Interno" : "Internal ID"}
-                        </Typography>
-                        <Typography className="font-mono text-xs text-blue-gray-700 break-all">{document.hash || document.id}</Typography>
-                    </div>
+
 
                     {document.tags && document.tags.length > 0 && (
                         <div>
