@@ -45,6 +45,20 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
     onClose();
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFiles = Array.from(e.dataTransfer.files || []);
+    if (droppedFiles.length > 0) {
+      setFiles((prev) => [...prev, ...droppedFiles]);
+    }
+  };
+
   return (
     <Dialog open={open} handler={handleClose} size="md">
       <DialogHeader>
@@ -63,6 +77,8 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
         {/* File Upload Zone */}
         <label
           htmlFor="doc-upload"
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
           className="flex flex-col items-center justify-center w-full h-32 border-2 border-blue-gray-200 border-dashed rounded-lg cursor-pointer bg-blue-gray-50 hover:bg-blue-gray-100 transition-colors"
         >
           <div className="flex flex-col items-center justify-center pt-5 pb-6">

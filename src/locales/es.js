@@ -445,7 +445,7 @@ export const es = {
             table: {
                 id: "ID",
                 title: "Título",
-                content: "Vista Previa de Contenido",
+                preview: "Vista Previa de Contenido",
                 document: "Documento",
                 project: "Proyecto",
                 action: "Acción"

@@ -445,7 +445,7 @@ export const en = {
             table: {
                 id: "ID",
                 title: "Title",
-                content: "Content Preview",
+                preview: "Content Preview",
                 document: "Document",
                 project: "Project",
                 action: "Action"
