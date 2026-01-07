@@ -117,7 +117,11 @@ export function DashboardNavbar() {
             className="flex items-center gap-2 px-3 py-2 normal-case text-zinc-600 hover:bg-zinc-100"
             onClick={() => changeLanguage(language === "es" ? "en" : "es")}
           >
-            <span className="text-base">{language === "es" ? "🇪🇸" : "🇺🇸"}</span>
+            <img
+              src={language === "en" ? "https://flagcdn.com/w20/us.png" : "https://flagcdn.com/w20/es.png"}
+              alt={language}
+              className="h-3.5 w-5 rounded-sm"
+            />
             <span className="text-xs font-bold">{language.toUpperCase()}</span>
           </Button>
 
