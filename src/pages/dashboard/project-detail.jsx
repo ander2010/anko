@@ -110,8 +110,11 @@ export function ProjectDetail() {
   // topics/rules/batteries state
 
   const [topics, setTopics] = useState([]);
+  const [topicsSearch, setTopicsSearch] = useState("");
   const [rules, setRules] = useState([]);
+  const [rulesSearch, setRulesSearch] = useState("");
   const [batteries, setBatteries] = useState([]);
+  const [batteriesSearch, setBatteriesSearch] = useState("");
   const [decks, setDecks] = useState([]);
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
@@ -1074,8 +1077,9 @@ export function ProjectDetail() {
       {
         activeTab === "topics" && (
           <>
-            <div className="mb-8 flex items-start justify-between gap-6">
-              <div>
+            {/* Header + Actions Row */}
+            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+              <div className="flex-1">
                 <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                   {t("project_detail.topics.title")}
                 </Typography>
@@ -1083,28 +1087,49 @@ export function ProjectDetail() {
                   {t("project_detail.topics.description_text")}
                 </Typography>
               </div>
-              <Button
-                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                onClick={() => setCreateTopicDialogOpen(true)}
-              >
-                <PlusIcon className="h-5 w-5" />
-                {t("project_detail.topics.btn_create")}
-              </Button>
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                {/* Search Topics */}
+                <div className="relative flex-1 min-w-[240px]">
+                  <input
+                    type="text"
+                    placeholder={language === "es" ? "Buscar temas..." : "Search topics..."}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                    value={topicsSearch}
+                    onChange={(e) => setTopicsSearch(e.target.value)}
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <Button
+                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                  onClick={() => setCreateTopicDialogOpen(true)}
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  {t("project_detail.topics.btn_create")}
+                </Button>
+              </div>
             </div>
 
             {topics.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {topics.map((topic) => (
-                  <TopicCard
-                    key={topic.id}
-                    topic={topic}
-                    allDocumentsWithSections={documentsWithSections}
-                    onEdit={handleEditTopic}
-                    onArchive={handleArchiveTopic}
-                    onDelete={handleDeleteTopic}
-                    onCreateDeck={handleCreateDeckFromTopic}
-                  />
-                ))}
+                {topics
+                  .filter(t => t.name.toLowerCase().includes(topicsSearch.toLowerCase()))
+                  .map((topic) => (
+                    <TopicCard
+                      key={topic.id}
+                      topic={topic}
+                      allDocumentsWithSections={documentsWithSections}
+                      onEdit={handleEditTopic}
+                      onArchive={handleArchiveTopic}
+                      onDelete={handleDeleteTopic}
+                      onCreateDeck={handleCreateDeckFromTopic}
+                    />
+                  ))}
               </div>
             ) : (
               <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
@@ -1180,8 +1205,9 @@ export function ProjectDetail() {
       {
         activeTab === "rules" && (
           <>
-            <div className="mb-8 flex items-start justify-between gap-6">
-              <div>
+            {/* Header + Actions Row */}
+            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+              <div className="flex-1">
                 <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                   {t("project_detail.rules.title")}
                 </Typography>
@@ -1189,13 +1215,32 @@ export function ProjectDetail() {
                   {t("project_detail.rules.description_text")}
                 </Typography>
               </div>
-              <Button
-                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                onClick={() => setShowCreateRule(true)}
-              >
-                <PlusIcon className="h-5 w-5" />
-                {t("project_detail.rules.btn_create")}
-              </Button>
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                {/* Search Rules */}
+                <div className="relative flex-1 min-w-[240px]">
+                  <input
+                    type="text"
+                    placeholder={language === "es" ? "Buscar reglas..." : "Search rules..."}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                    value={rulesSearch}
+                    onChange={(e) => setRulesSearch(e.target.value)}
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <Button
+                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                  onClick={() => setShowCreateRule(true)}
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  {t("project_detail.rules.btn_create")}
+                </Button>
+              </div>
             </div>
 
             {showCreateRule && (
@@ -1302,56 +1347,58 @@ export function ProjectDetail() {
               </div>
             ) : rules.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {rules.map((rule) => (
-                  <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
-                    <CardBody>
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
-                          <Typography variant="small" className="text-blue-gray-500">
-                            {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
-                          </Typography>
+                {rules
+                  .filter(r => r.name.toLowerCase().includes(rulesSearch.toLowerCase()))
+                  .map((rule) => (
+                    <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
+                      <CardBody>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
+                            <Typography variant="small" className="text-blue-gray-500">
+                              {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
+                            </Typography>
+                          </div>
+
+                          {isOwner && (
+                            <IconButton
+                              size="sm"
+                              variant="text"
+                              color="red"
+                              onClick={async () => {
+                                try {
+                                  setError(null);
+                                  await projectService.deleteRule(rule.id);
+                                  await fetchRules(Number(projectId));
+                                } catch (err) {
+                                  setError(err?.error || err?.detail || "Failed to delete rule");
+                                }
+                              }}
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
+                          )}
                         </div>
 
-                        {isOwner && (
-                          <IconButton
-                            size="sm"
-                            variant="text"
-                            color="red"
-                            onClick={async () => {
-                              try {
-                                setError(null);
-                                await projectService.deleteRule(rule.id);
-                                await fetchRules(Number(projectId));
-                              } catch (err) {
-                                setError(err?.error || err?.detail || "Failed to delete rule");
-                              }
-                            }}
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </IconButton>
-                        )}
-                      </div>
-
-                      <div className="space-y-1 text-sm text-blue-gray-600">
-                        <div className="flex justify-between">
-                          <span>{t("global.rules.table.questions")}</span>
-                          <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                        <div className="space-y-1 text-sm text-blue-gray-600">
+                          <div className="flex justify-between">
+                            <span>{t("global.rules.table.questions")}</span>
+                            <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
+                            <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t("global.rules.table.topic")}</span>
+                            <span className="font-medium text-blue-gray-900">
+                              {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
-                          <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>{t("global.rules.table.topic")}</span>
-                          <span className="font-medium text-blue-gray-900">
-                            {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
-                          </span>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
+                      </CardBody>
+                    </Card>
+                  ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
@@ -1369,15 +1416,42 @@ export function ProjectDetail() {
       } {
         activeTab === "batteries" && (
           <>
-            <div className="mb-6 flex justify-end">
-              <Button
-                className="flex items-center gap-2"
-                color="blue-gray"
-                onClick={() => setShowGenerateBattery(true)}
-              >
-                <BoltIcon className="h-5 w-5" />
-                {t("project_detail.batteries.btn_create")}
-              </Button>
+            {/* Header + Actions Row */}
+            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+              <div className="flex-1">
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                  {t("project_detail.batteries.title")}
+                </Typography>
+                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                  {t("project_detail.batteries.description_text")}
+                </Typography>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                {/* Search Batteries */}
+                <div className="relative flex-1 min-w-[240px]">
+                  <input
+                    type="text"
+                    placeholder={t("project_detail.batteries.search_placeholder")}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                    value={batteriesSearch}
+                    onChange={(e) => setBatteriesSearch(e.target.value)}
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <Button
+                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                  onClick={() => setShowGenerateBattery(true)}
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  {t("project_detail.batteries.btn_create")}
+                </Button>
+              </div>
             </div>
 
             {showGenerateBattery && (
@@ -1547,112 +1621,114 @@ export function ProjectDetail() {
 
             {batteries.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {batteries.map((battery) => (
-                  <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
-                    <CardBody>
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-1">
-                          <Chip
-                            value={battery.status}
-                            color={battery.status === "Ready" ? "green" : "blue-gray"}
-                            size="sm"
-                            variant="ghost"
-                            className="rounded-full"
-                          />
-                          <Tooltip content="Simulate Exam">
-                            <IconButton
+                {batteries
+                  .filter(b => b.name.toLowerCase().includes(batteriesSearch.toLowerCase()))
+                  .map((battery) => (
+                    <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
+                      <CardBody>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-1">
+                            <Chip
+                              value={battery.status}
+                              color={battery.status === "Ready" ? "green" : "blue-gray"}
                               size="sm"
-                              variant="text"
-                              color="green"
-                              onClick={() => setSimulationBattery(battery)}
-                            >
-                              <PlayIcon className="h-4 w-4" />
-                            </IconButton>
-                          </Tooltip>
-                        </div>
-
-                        {isOwner && (
-                          <Menu placement="bottom-end">
-                            <MenuHandler>
-                              <IconButton size="sm" variant="text" color="blue-gray">
-                                <EllipsisVerticalIcon className="h-5 w-5" />
+                              variant="ghost"
+                              className="rounded-full"
+                            />
+                            <Tooltip content="Simulate Exam">
+                              <IconButton
+                                size="sm"
+                                variant="text"
+                                color="green"
+                                onClick={() => setSimulationBattery(battery)}
+                              >
+                                <PlayIcon className="h-4 w-4" />
                               </IconButton>
-                            </MenuHandler>
-                            <MenuList>
-                              <MenuItem
-                                onClick={async () => {
-                                  await projectService.markBatteryReady(battery.id);
-                                  await fetchBatteries(Number(projectId));
-                                }}
-                              >
-                                Mark as Ready
-                              </MenuItem>
-                              <MenuItem
-                                onClick={async () => {
-                                  await projectService.deleteBattery(battery.id);
-                                  await fetchBatteries(Number(projectId));
-                                }}
-                                className="text-red-500"
-                              >
-                                Delete
-                              </MenuItem>
-                            </MenuList>
-                          </Menu>
-                        )}
-                      </div>
-
-                      <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
-                        {battery.name}
-                      </Typography>
-
-                      <div className="flex gap-2 mb-4">
-                        <Chip
-                          value={battery.difficulty || "Medium"}
-                          size="sm"
-                          variant="outlined"
-                          className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
-                        />
-                        <Typography variant="small" className="text-blue-gray-500 text-xs">
-                          {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
-                          {formatDate(battery.created_at || battery.createdAt)}
-                        </Typography>
-                      </div>
-
-                      {/* Generation Progress */}
-                      {batteryProgress[battery.id] && (
-                        <div className="mb-3">
-                          <div className="flex items-center justify-between gap-4 mb-1">
-                            <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                              {batteryProgress[battery.id].status}
-                            </Typography>
-                            <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                              {Math.round(batteryProgress[battery.id].percent || 0)}%
-                            </Typography>
+                            </Tooltip>
                           </div>
-                          <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
+
+                          {isOwner && (
+                            <Menu placement="bottom-end">
+                              <MenuHandler>
+                                <IconButton size="sm" variant="text" color="blue-gray">
+                                  <EllipsisVerticalIcon className="h-5 w-5" />
+                                </IconButton>
+                              </MenuHandler>
+                              <MenuList>
+                                <MenuItem
+                                  onClick={async () => {
+                                    await projectService.markBatteryReady(battery.id);
+                                    await fetchBatteries(Number(projectId));
+                                  }}
+                                >
+                                  Mark as Ready
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={async () => {
+                                    await projectService.deleteBattery(battery.id);
+                                    await fetchBatteries(Number(projectId));
+                                  }}
+                                  className="text-red-500"
+                                >
+                                  Delete
+                                </MenuItem>
+                              </MenuList>
+                            </Menu>
+                          )}
                         </div>
-                      )}
 
-                      {/* Attempts summary */}
-                      <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
-                        {battery.attempts_count > 0 ? (
-                          <div className="flex items-center justify-between">
-                            <span className="text-blue-gray-700 font-semibold">
-                              {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
-                            </span>
+                        <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+                          {battery.name}
+                        </Typography>
 
-                            <span className="text-blue-gray-600">
-                              {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
-                            </span>
+                        <div className="flex gap-2 mb-4">
+                          <Chip
+                            value={battery.difficulty || "Medium"}
+                            size="sm"
+                            variant="outlined"
+                            className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
+                          />
+                          <Typography variant="small" className="text-blue-gray-500 text-xs">
+                            {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
+                            {formatDate(battery.created_at || battery.createdAt)}
+                          </Typography>
+                        </div>
+
+                        {/* Generation Progress */}
+                        {batteryProgress[battery.id] && (
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between gap-4 mb-1">
+                              <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                                {batteryProgress[battery.id].status}
+                              </Typography>
+                              <Typography variant="small" color="blue-gray" className="font-medium text-xs">
+                                {Math.round(batteryProgress[battery.id].percent || 0)}%
+                              </Typography>
+                            </div>
+                            <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
                           </div>
-                        ) : (
-                          <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
                         )}
-                      </div>
 
-                    </CardBody>
-                  </Card>
-                ))}
+                        {/* Attempts summary */}
+                        <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+                          {battery.attempts_count > 0 ? (
+                            <div className="flex items-center justify-between">
+                              <span className="text-blue-gray-700 font-semibold">
+                                {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
+                              </span>
+
+                              <span className="text-blue-gray-600">
+                                {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
+                          )}
+                        </div>
+
+                      </CardBody>
+                    </Card>
+                  ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
@@ -1674,13 +1750,24 @@ export function ProjectDetail() {
       {
         activeTab === "decks" && (
           <>
-            <div className="mb-6 flex justify-between items-center gap-4">
-              <div className="flex-1 max-w-sm">
-                <div className="relative">
+            {/* Header + Actions Row */}
+            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+              <div className="flex-1">
+                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                  {t("project_detail.decks.title")}
+                </Typography>
+                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                  {t("project_detail.decks.description_text")}
+                </Typography>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                {/* Search Decks */}
+                <div className="relative flex-1 min-w-[240px]">
                   <input
                     type="text"
-                    placeholder={language === "es" ? "Buscar mazos..." : "Search decks..."}
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm"
+                    placeholder={t("project_detail.decks.search_placeholder")}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
                     value={deckSearch}
                     onChange={(e) => setDeckSearch(e.target.value)}
                   />
@@ -1690,18 +1777,18 @@ export function ProjectDetail() {
                     </svg>
                   </div>
                 </div>
+
+                <Button
+                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                  onClick={() => {
+                    setSelectedDeck(null);
+                    setCreateDeckDialogOpen(true);
+                  }}
+                >
+                  <PlusIcon className="h-5 w-5" />
+                  {t("project_detail.decks.btn_create")}
+                </Button>
               </div>
-              <Button
-                className="flex items-center gap-2"
-                color="blue-gray"
-                onClick={() => {
-                  setSelectedDeck(null);
-                  setCreateDeckDialogOpen(true);
-                }}
-              >
-                <PlusIcon className="h-5 w-5" />
-                {t("project_detail.decks.btn_create")}
-              </Button>
             </div>
 
             {loadingDecks ? (

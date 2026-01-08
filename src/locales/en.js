@@ -372,9 +372,14 @@ export const en = {
             btn_create: "Create Rule"
         },
         batteries: {
+            title: "Batteries",
+            description_text: "Generate personalized exams and tests.",
+            search_placeholder: "Search batteries...",
             btn_create: "Generate Battery"
         },
         decks: {
+            title: "Decks",
+            description_text: "Study with flashcards.",
             btn_create: "Create Deck",
             description: "Description",
             cards_count: "Cards Count",

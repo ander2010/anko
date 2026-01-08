@@ -372,9 +372,14 @@ export const es = {
             btn_create: "Crear Regla"
         },
         batteries: {
+            title: "Baterías",
+            description_text: "Genera exámenes y tests personalizados.",
+            search_placeholder: "Buscar baterías...",
             btn_create: "Generar Batería"
         },
         decks: {
+            title: "Mazos",
+            description_text: "Estudia con tarjetas de memoria.",
             btn_create: "Crear Mazo",
             description: "Descripción",
             cards_count: "Cantidad de Fichas",
