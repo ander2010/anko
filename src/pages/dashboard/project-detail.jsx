@@ -114,6 +114,7 @@ export function ProjectDetail() {
   const [batteries, setBatteries] = useState([]);
   const [decks, setDecks] = useState([]);
   const [loadingDecks, setLoadingDecks] = useState(false);
+  const [deckSearch, setDeckSearch] = useState("");
   const [simulationBattery, setSimulationBattery] = useState(null);
   const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
   const [activeFlashcardJobs, setActiveFlashcardJobs] = useState({}); // { deckId: jobInfo }
@@ -505,12 +506,9 @@ export function ProjectDetail() {
             section_ids: deckData.section_ids,
             cards: deckData.cards
           };
-          const res = await projectService.createDeckManual(payload);
-
-          // Add directly to state
-          if (res) {
-            setDecks(prev => [...prev, { ...res, flashcards_count: res.flashcards_count || (res.cards ? res.cards.length : 0) }]);
-          }
+          await projectService.createDeckManual(payload);
+          // Refresh list from DB as requested
+          await fetchDecks(Number(projectId));
         } else {
           // AI Creation (Default)
           const payload = {
@@ -524,10 +522,8 @@ export function ProjectDetail() {
 
           const res = await projectService.createDeckWithCards(payload);
 
-          if (res.deck) {
-            // Add newly created deck to local state silently
-            setDecks(prev => [...prev, { ...res.deck, flashcards_count: res.cards_created || 0 }]);
-          }
+          // Refresh list from DB as requested
+          await fetchDecks(Number(projectId));
 
           if (res.job && res.deck) {
             setActiveFlashcardJobs(prev => ({
@@ -1678,7 +1674,23 @@ export function ProjectDetail() {
       {
         activeTab === "decks" && (
           <>
-            <div className="mb-6 flex justify-end">
+            <div className="mb-6 flex justify-between items-center gap-4">
+              <div className="flex-1 max-w-sm">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={language === "es" ? "Buscar mazos..." : "Search decks..."}
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm"
+                    value={deckSearch}
+                    onChange={(e) => setDeckSearch(e.target.value)}
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
               <Button
                 className="flex items-center gap-2"
                 color="blue-gray"
@@ -1699,17 +1711,19 @@ export function ProjectDetail() {
               </div>
             ) : decks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {decks.map((deck) => (
-                  <DeckCard
-                    key={deck.id}
-                    deck={deck}
-                    onEdit={handleEditDeck}
-                    onDelete={handleDeleteDeck}
-                    onStudy={handleStudyDeck}
-                    job={activeFlashcardJobs[deck.id]}
-                    onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
-                  />
-                ))}
+                {decks
+                  .filter(deck => deck.title.toLowerCase().includes(deckSearch.toLowerCase()))
+                  .map((deck) => (
+                    <DeckCard
+                      key={deck.id}
+                      deck={deck}
+                      onEdit={handleEditDeck}
+                      onDelete={handleDeleteDeck}
+                      onStudy={handleStudyDeck}
+                      job={activeFlashcardJobs[deck.id]}
+                      onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
+                    />
+                  ))}
               </div>
             ) : (
               <Card className="border border-blue-gray-100 shadow-sm">

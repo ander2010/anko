@@ -275,27 +275,73 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
 
                 <DialogBody className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
                     {/* Common Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
-                                {language === "es" ? "Título" : "Title"} <span className="text-red-500">*</span>
-                            </Typography>
-                            <Input
-                                placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"}
-                                className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                error={!!errors.title}
-                                labelProps={{ className: "hidden" }}
-                            />
-                            {errors.title && (
-                                <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
-                                    <span className="h-1 w-1 rounded-full bg-red-500" /> {errors.title}
+                    {/* Layout differs by tab for better space usage */}
+                    {activeTab === "manual" ? (
+                        <>
+                            {/* Manual Mode: Title + Visibility in one row */}
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="flex-1">
+                                    <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+                                        {language === "es" ? "Título" : "Title"} <span className="text-red-500">*</span>
+                                    </Typography>
+                                    <Input
+                                        placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"}
+                                        className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleChange}
+                                        error={!!errors.title}
+                                        labelProps={{ className: "hidden" }}
+                                    />
+                                    {errors.title && (
+                                        <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
+                                            <span className="h-1 w-1 rounded-full bg-red-500" /> {errors.title}
+                                        </Typography>
+                                    )}
+                                </div>
+                                <div className="flex-none min-w-[180px]">
+                                    <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+                                        {t("project_detail.decks.visibility_label")}
+                                    </Typography>
+                                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 h-[44px]">
+                                        <Typography variant="tiny" className="text-zinc-500 font-medium mr-2">
+                                            {formData.visibility === "public" ? "Public" : "Private"}
+                                        </Typography>
+                                        <Switch
+                                            checked={formData.visibility === "public"}
+                                            onChange={handleVisibilityChange}
+                                            color="indigo"
+                                            className="h-full w-full checked:bg-indigo-500"
+                                            containerProps={{ className: "w-8 h-5" }}
+                                            circleProps={{ className: "before:hidden left-0.5 border-none h-4 w-4" }}
+                                            ripple={false}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        /* AI Mode: Standard Layout */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+                                    {language === "es" ? "Título" : "Title"} <span className="text-red-500">*</span>
                                 </Typography>
-                            )}
-                        </div>
-                        {activeTab === "ai" && (
+                                <Input
+                                    placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"}
+                                    className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    error={!!errors.title}
+                                    labelProps={{ className: "hidden" }}
+                                />
+                                {errors.title && (
+                                    <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
+                                        <span className="h-1 w-1 rounded-full bg-red-500" /> {errors.title}
+                                    </Typography>
+                                )}
+                            </div>
                             <div>
                                 <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
                                     {t("project_detail.decks.cards_count")}
@@ -309,8 +355,8 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     labelProps={{ className: "hidden" }}
                                 />
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div>
                         <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
@@ -327,27 +373,30 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100">
-                        <div className="flex flex-col">
-                            <Typography variant="small" className="font-bold text-zinc-900">
-                                {t("project_detail.decks.visibility_label")}
-                            </Typography>
-                            <Typography variant="tiny" className="text-zinc-500 font-medium">
-                                {formData.visibility === "public"
-                                    ? (language === "es" ? "Visible para todos los usuarios" : "Visible to all users")
-                                    : (language === "es" ? "Solo visible para ti" : "Visible only to you")
-                                }
-                            </Typography>
+                    {/* AI Mode: Visibility is separate below description */}
+                    {activeTab === "ai" && (
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100">
+                            <div className="flex flex-col">
+                                <Typography variant="small" className="font-bold text-zinc-900">
+                                    {t("project_detail.decks.visibility_label")}
+                                </Typography>
+                                <Typography variant="tiny" className="text-zinc-500 font-medium">
+                                    {formData.visibility === "public"
+                                        ? (language === "es" ? "Visible para todos los usuarios" : "Visible to all users")
+                                        : (language === "es" ? "Solo visible para ti" : "Visible only to you")
+                                    }
+                                </Typography>
+                            </div>
+                            <Switch
+                                checked={formData.visibility === "public"}
+                                onChange={handleVisibilityChange}
+                                color="indigo"
+                                className="h-full w-full checked:bg-indigo-500"
+                                containerProps={{ className: "w-11 h-6" }}
+                                circleProps={{ className: "before:hidden left-0.5 border-none" }}
+                            />
                         </div>
-                        <Switch
-                            checked={formData.visibility === "public"}
-                            onChange={handleVisibilityChange}
-                            color="indigo"
-                            className="h-full w-full checked:bg-indigo-500"
-                            containerProps={{ className: "w-11 h-6" }}
-                            circleProps={{ className: "before:hidden left-0.5 border-none" }}
-                        />
-                    </div>
+                    )}
 
                     {/* AI SECTIONS SELECTION */}
                     {activeTab === "ai" && (

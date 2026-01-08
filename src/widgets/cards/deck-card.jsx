@@ -83,7 +83,7 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }
                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-50 border border-zinc-100">
                                 <Square2StackIcon className="h-3 w-3 text-zinc-400" />
                                 <Typography className="text-[10px] font-bold text-zinc-600">
-                                    {deck.flashcards_count || 0}
+                                    {deck.flashcards_count || deck.cardsCount || deck.flashcards?.length || deck.card_count || 0}
                                 </Typography>
                             </div>
                         </div>
