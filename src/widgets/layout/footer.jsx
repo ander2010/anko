@@ -42,7 +42,7 @@ export function Footer({ brandName, brandLink, routes }) {
 }
 
 Footer.defaultProps = {
-  brandName: "ANKO Studio",
+  brandName: "Ankard",
   brandLink: "/dashboard/home",
   routes: [
     { name: "about", path: "/dashboard/about-us" },

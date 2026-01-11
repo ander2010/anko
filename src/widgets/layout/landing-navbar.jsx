@@ -20,7 +20,7 @@ export function LandingNavbar() {
                     <Typography
                         className="mr-4 ml-2 cursor-pointer py-1.5 font-bold text-xl tracking-tight"
                     >
-                        ANKO Studio
+                        Ankard
                     </Typography>
                 </Link>
 

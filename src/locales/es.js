@@ -1,7 +1,7 @@
 export const es = {
     sidenav: {
-        brand: "ANKO Studio",
-        admin: "Global Admin",
+        brand: "ANKARD",
+        admin: "Admin Global",
         dashboard: "Panel",
         profile: "Perfil",
         tables: "Tablas",
@@ -90,7 +90,7 @@ export const es = {
             },
             title_1: "Aprende con preguntas.",
             title_2: "Domina con práctica.",
-            subtitle_prefix: "Anko Studio",
+            subtitle_prefix: "Ankard",
             subtitle_mid1: "convierte tus documentos en",
             subtitle_flashcards: "flashcards",
             subtitle_mid2: "y",
@@ -211,7 +211,7 @@ export const es = {
             }
         },
         testimonials: {
-            title: "Lo que dicen quienes estudian con Anko Studio",
+            title: "Lo que dicen quienes estudian con Ankard",
             subtitle: "Opiniones centradas en lo importante: práctica, enfoque y resultados.",
             t1: {
                 name: "María S.",
@@ -233,11 +233,11 @@ export const es = {
             title: "Preguntas frecuentes",
             subtitle: "Respuestas claras para empezar sin dudas.",
             q1: {
-                q: "¿Qué es Anko Studio?",
+                q: "¿Qué es Ankard?",
                 a: "Es una plataforma de estudio que convierte contenido en preguntas y flashcards para practicar y medir tu progreso."
             },
             q2: {
-                q: "¿Anko Studio sirve para certificaciones?",
+                q: "¿Ankard sirve para certificaciones?",
                 a: "Sí. Puedes estudiar por temas, practicar con sets de preguntas y ver tu avance para enfocarte en lo que te falta."
             },
             q3: {
@@ -787,7 +787,7 @@ export const es = {
     },
     faqs_page: {
         title: "Preguntas Frecuentes",
-        subtitle: "Todo lo que necesitas saber sobre ANKO Studio.",
+        subtitle: "Todo lo que necesitas saber sobre Ankard.",
         categories: {
             general: "General",
             practice: "Práctica y Preguntas",
@@ -795,11 +795,11 @@ export const es = {
         },
         questions: {
             q1: {
-                q: "¿Qué es ANKO Studio?",
-                a: "ANKO Studio es una plataforma de estudio inteligente que te ayuda a convertir tus documentos en tarjetas de aprendizaje (flashcards) y cuestionarios interactivos usando análisis de IA."
+                q: "¿Qué es Ankard?",
+                a: "ANKARD es una plataforma de estudio inteligente que te ayuda a convertir tus documentos en tarjetas de aprendizaje (flashcards) y cuestionarios interactivos usando análisis de IA."
             },
             q2: {
-                q: "¿Es ANKO Studio gratuito?",
+                q: "¿Es Ankard gratuito?",
                 a: "Sí, ofrecemos un plan Gratuito generoso que te permite crear hasta 2 proyectos y practicar diariamente con tipos de preguntas básicos."
             },
             q3: {
@@ -817,12 +817,12 @@ export const es = {
         }
     },
     about_us: {
-        title: "Sobre ANKO Studio",
+        title: "Sobre Ankard",
         subtitle: "Redefiniendo cómo estudia el mundo.",
         mission_title: "Nuestra Misión",
         mission_text: "Nuestra misión es empoderar a estudiantes y aprendices constantes transformando la lectura pasiva en una práctica activa y efectiva. Creemos que el aprendizaje es más poderoso cuando es interactivo, mensurable y personalizado.",
         story_title: "Nuestra Historia",
-        story_text: "ANKO Studio nació en una habitación de estudiantes a partir de una frustración simple: leer cientos de páginas no significa que hayas aprendido el material. Creamos una herramienta para ayudarnos a evaluarnos, enfocarnos en nuestras debilidades y rastrear el progreso real.",
+        story_text: "ANKARD nació en una habitación de estudiantes a partir de una frustración simple: leer cientos de páginas no significa que hayas aprendido el material. Creamos una herramienta para ayudarnos a evaluarnos, enfocarnos en nuestras debilidades y rastrear el progreso real.",
         values: {
             v1: "Práctica Activa sobre Lectura Pasiva",
             v2: "Progreso Basado en Datos",
@@ -834,7 +834,7 @@ export const es = {
         subtitle: "Estamos aquí para ayudarte. Si tienes alguna duda o sugerencia, no dudes en escribirnos.",
         info_title: "Información de Contacto",
         form_title: "Envíanos un Mensaje",
-        email: "soporte@ankostudio.com",
+        email: "soporte@ankard.com",
         location: "Calle Principal 123, Ciudad de México, México",
         success_message: "Tu mensaje ha sido enviado con éxito. Nos pondremos en contacto contigo pronto.",
         error_message: "Hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo.",

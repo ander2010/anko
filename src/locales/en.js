@@ -1,6 +1,6 @@
 export const en = {
     sidenav: {
-        brand: "ANKO Studio",
+        brand: "ANKARD",
         admin: "Global Admin",
         dashboard: "Dashboard",
         profile: "Profile",
@@ -90,7 +90,7 @@ export const en = {
             },
             title_1: "Learn with questions.",
             title_2: "Master with practice.",
-            subtitle_prefix: "Anko Studio",
+            subtitle_prefix: "Ankard",
             subtitle_mid1: "turns your documents into",
             subtitle_flashcards: "flashcards",
             subtitle_mid2: "and",
@@ -211,7 +211,7 @@ export const en = {
             }
         },
         testimonials: {
-            title: "What those studying with Anko Studio say",
+            title: "What those studying with Ankard say",
             subtitle: "Opinions focused on what matters: practice, focus, and results.",
             t1: {
                 name: "Maria S.",
@@ -233,11 +233,11 @@ export const en = {
             title: "Frequently Asked Questions",
             subtitle: "Clear answers to start without doubts.",
             q1: {
-                q: "What is Anko Studio?",
+                q: "What is Ankard?",
                 a: "It is a study platform that turns content into questions and flashcards to practice and measure your progress."
             },
             q2: {
-                q: "Does Anko Studio work for certifications?",
+                q: "Does Ankard work for certifications?",
                 a: "Yes. You can study by topics, practice with question sets, and see your progress to focus on what you're missing."
             },
             q3: {
@@ -787,7 +787,7 @@ export const en = {
     },
     faqs_page: {
         title: "Frequently Asked Questions",
-        subtitle: "Everything you need to know about ANKO Studio.",
+        subtitle: "Everything you need to know about Ankard.",
         categories: {
             general: "General",
             practice: "Practice & Questions",
@@ -795,11 +795,11 @@ export const en = {
         },
         questions: {
             q1: {
-                q: "What is ANKO Studio?",
-                a: "ANKO Studio is an intelligent study platform that helps you convert your documents into interactive flashcards and question sets using AI-driven analysis."
+                q: "What is Ankard?",
+                a: "ANKARD is an intelligent study platform that helps you convert your documents into interactive flashcards and question sets using AI-driven analysis."
             },
             q2: {
-                q: "Is ANKO Studio free?",
+                q: "Is Ankard free?",
                 a: "Yes, we offer a generous Free plan that allows you to create up to 2 projects and practice daily with basic question types."
             },
             q3: {
@@ -817,12 +817,12 @@ export const en = {
         }
     },
     about_us: {
-        title: "About ANKO Studio",
+        title: "About Ankard",
         subtitle: "Redefining how the world studies.",
         mission_title: "Our Mission",
         mission_text: "Our mission is to empower students and lifelong learners by transforming passive reading into active, effective practice. We believe that learning is most powerful when it's engaging, measurable, and personalized.",
         story_title: "Our Story",
-        story_text: "ANKO Studio was born in a dorm room from a simple frustration: reading hundreds of pages doesn't mean you've learned the material. We built a tool to help us test ourselves, focus on our weaknesses, and track real progress. Today, we're helping thousands of users study smarter.",
+        story_text: "ANKARD was born in a dorm room from a simple frustration: reading hundreds of pages doesn't mean you've learned the material. We built a tool to help us test ourselves, focus on our weaknesses, and track real progress. Today, we're helping thousands of users study smarter.",
         values: {
             v1: "Active Practice over Passive Reading",
             v2: "Data-driven Learning Progress",
@@ -834,7 +834,7 @@ export const en = {
         subtitle: "We're here to help. If you have any questions or suggestions, don't hesitate to write to us.",
         info_title: "Contact Information",
         form_title: "Send us a Message",
-        email: "support@ankostudio.com",
+        email: "support@ankard.com",
         location: "123 Main St, New York, NY, USA",
         success_message: "Your message has been sent successfully. We will get in touch with you soon.",
         error_message: "There was an error sending your message. Please try again.",

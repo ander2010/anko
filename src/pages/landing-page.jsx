@@ -196,7 +196,7 @@ export function LandingPage() {
                                 <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl overflow-hidden">
                                     <img
                                         src="/img/anko-hero.png"
-                                        alt="Anko Studio UI"
+                                        alt="Ankard UI"
                                         className="h-[320px] w-full object-cover lg:h-[420px]"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

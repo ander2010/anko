@@ -95,8 +95,8 @@ export function SignUp() {
               </Typography>
               <Typography className="text-white/70 text-lg font-medium">
                 {language === "es"
-                  ? "Anko Studio utiliza IA avanzada para ayudarte a dominar cualquier tema en tiempo récord."
-                  : "Anko Studio uses advanced AI to help you master any subject in record time."}
+                  ? "Ankard  utiliza IA avanzada para ayudarte a dominar cualquier tema en tiempo récord."
+                  : "Ankard  uses advanced AI to help you master any subject in record time."}
               </Typography>
 
               <div className="mt-12 bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left">
@@ -136,7 +136,7 @@ export function SignUp() {
               {language === "es" ? "Crea tu cuenta" : "Create your account"}
             </Typography>
             <Typography className="text-zinc-500 font-medium mt-2">
-              {language === "es" ? "Empieza tu viaje con Anko Studio gratis" : "Start your journey with Anko Studio for free"}
+              {language === "es" ? "Empieza tu viaje con Ankard gratis" : "Start your journey with Ankard for free"}
             </Typography>
           </div>
 

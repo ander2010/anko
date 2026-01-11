@@ -92,7 +92,7 @@ export function SignIn() {
               {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
             </Typography>
             <Typography className="text-zinc-500 font-medium mt-2">
-              {language === "es" ? "Ingresa a tu cuenta de Anko Studio" : "Log in to your Anko Studio account"}
+              {language === "es" ? "Ingresa a tu cuenta de Ankard" : "Log in to your Ankard account"}
             </Typography>
           </div>
 
@@ -227,8 +227,8 @@ export function SignIn() {
               </Typography>
               <Typography className="text-white/70 text-lg font-medium">
                 {language === "es"
-                  ? "Únete a miles de estudiantes que ya están potenciando su aprendizaje con Anko Studio."
-                  : "Join thousands of students who are already powering their learning with Anko Studio."}
+                  ? "Únete a miles de estudiantes que ya están potenciando su aprendizaje con Ankard."
+                  : "Join thousands of students who are already powering their learning with Ankard."}
               </Typography>
 
               <div className="mt-12 grid grid-cols-2 gap-6 w-full max-w-sm">
