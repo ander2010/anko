@@ -195,7 +195,7 @@ export function LandingPage() {
                                 <div className="absolute -inset-6 rounded-3xl bg-blue-gray-50/70 blur-2xl" />
                                 <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl overflow-hidden">
                                     <img
-                                        src="/img/anko-hero.png"
+                                        src="/img/anko-hero.jpg"
                                         alt="Ankard UI"
                                         className="h-[320px] w-full object-cover lg:h-[420px]"
                                     />
