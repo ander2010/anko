@@ -28,16 +28,23 @@ export function Dashboard() {
 
 
       {/* Blinking Arrow Trigger - Visible when sidenav is closed */}
-      {!openSidenav && (
+      {/* Blinking Arrow Trigger */}
+      {/* Blinking Arrow Trigger */}
+      {/* Blinking Arrow Trigger */}
+      <div
+        className={`fixed left-0 z-50 transition-all duration-300 ${openSidenav ? "invisible opacity-0 -translate-x-full" : "visible opacity-100 translate-x-0"
+          }`}
+        style={{ position: "fixed", top: "50%", transform: "translateY(-50%)" }}
+      >
         <IconButton
           size="lg"
           color="white"
-          className="fixed left-0 top-1/2 -translate-y-1/2 z-40 rounded-l-none border-l-0 shadow-lg animate-pulse"
+          className="rounded-l-none border-l-0 shadow-lg"
           onClick={() => setOpenSidenav(dispatch, true)}
         >
           <ChevronRightIcon className="h-6 w-6 text-blue-gray-900" />
         </IconButton>
-      )}
+      </div>
       <div
         className={`p-4 min-h-screen transition-all duration-300 ${openSidenav ? "xl:ml-80" : ""}`}
         onClick={() => openSidenav && setOpenSidenav(dispatch, false)}

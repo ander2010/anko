@@ -238,7 +238,7 @@ export function Home() {
               <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl">
                 {/* Usa tu mockup aquí */}
                 <img
-                  src="/img/anko-hero.jpg"
+                  src="/img/anko-hero.png"
                   alt="Anko Studio UI"
                   className="h-[320px] w-full rounded-2xl object-cover lg:h-[380px]"
                 />
