@@ -58,6 +58,7 @@ import { ProjectProcessingProgress } from "@/widgets/project/project-processing-
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
 import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
+import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -280,23 +281,26 @@ export function ProjectDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  const fetchSectionsCounts = async () => {
+    try {
+      if (!projectId) return;
+
+      const data = await projectService.getDocumentsWithSections(projectId);
+
+      // Store full list involved in sections
+      setDocumentsWithSections(data.documents || []);
+
+      const counts = {};
+      data.documents?.forEach(doc => {
+        counts[doc.id] = doc.sections ? doc.sections.length : 0;
+      });
+      setSectionsCounts(counts);
+    } catch (err) {
+      console.error("Failed to fetch section counts", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchSectionsCounts = async () => {
-      try {
-        const data = await projectService.getDocumentsWithSections(projectId);
-
-        // Store full list involved in sections
-        setDocumentsWithSections(data.documents || []);
-
-        const counts = {};
-        data.documents?.forEach(doc => {
-          counts[doc.id] = doc.sections ? doc.sections.length : 0;
-        });
-        setSectionsCounts(counts);
-      } catch (err) {
-        console.error("Failed to fetch section counts", err);
-      }
-    };
     if (projectId) {
       fetchSectionsCounts();
     }
@@ -644,6 +648,7 @@ export function ProjectDetail() {
       // For now, I'll comment it out or assume it exists if it's in the original code.
       // refreshProject(); 
       await fetchDocuments(Number(projectId)); // Refresh documents to update status
+      await fetchSectionsCounts(); // Refresh section counts
     } catch (err) {
       console.error("Error handling job completion:", err);
     }
@@ -797,6 +802,9 @@ export function ProjectDetail() {
           <Typography className="text-sm font-bold text-red-900">{error}</Typography>
         </div>
       )}
+
+      {/* Blocking Loader when processing documents */}
+      {processingCount > 0 && <CookingLoader />}
 
       {/* Header Area */}
       <div className="flex flex-col gap-6 pb-2">

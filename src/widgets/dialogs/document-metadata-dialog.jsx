@@ -183,7 +183,9 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                                     <CardBody className="p-4">
                                         <div className="flex justify-between items-start mb-2">
                                             <Typography variant="subtitle1" className="font-bold text-blue-gray-900">
-                                                {section.title || (language === "es" ? "Sección sin título" : "Untitled Section")}
+                                                {section.title
+                                                    ? section.title.charAt(0).toUpperCase() + section.title.slice(1)
+                                                    : (language === "es" ? "Sección sin título" : "Untitled Section")}
                                             </Typography>
                                             <Chip value={`${language === "es" ? "Orden" : "Order"}: ${section.order}`} size="sm" variant="ghost" className="rounded-full" />
                                         </div>

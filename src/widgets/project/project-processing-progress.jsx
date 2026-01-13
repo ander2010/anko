@@ -2,9 +2,11 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Typography, Progress } from "@material-tailwind/react";
 import { useJobProgress } from "@/hooks/use-job-progress";
+import { useLanguage } from "@/context/language-context";
 
 export function ProjectProcessingProgress({ jobId, onComplete }) {
-    const { progress, status, error, isCompleted, docId } = useJobProgress(jobId);
+    const { progress, error, isCompleted, docId } = useJobProgress(jobId);
+    const { language } = useLanguage();
 
     React.useEffect(() => {
         if (isCompleted && onComplete) {
@@ -20,11 +22,19 @@ export function ProjectProcessingProgress({ jobId, onComplete }) {
         );
     }
 
+    const getStatusText = () => {
+        const p = Math.round(progress);
+        if (p <= 50) {
+            return language === "es" ? "Procesando..." : "Processing...";
+        }
+        return language === "es" ? "Finalizando..." : "Finishing...";
+    };
+
     return (
         <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
                 <Typography variant="small" className="text-blue-gray-600 font-medium capitalize">
-                    {status.toLowerCase()}...
+                    {getStatusText()}
                 </Typography>
                 <Typography variant="small" className="text-blue-gray-600 font-medium">
                     {Math.round(progress)}%
