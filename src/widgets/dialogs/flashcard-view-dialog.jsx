@@ -107,7 +107,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                             </Typography>
                         </div>
                     ) : (
-                        <div className="w-full max-w-2xl h-full flex flex-col items-center justify-center perspective-1000">
+                        <div className="w-full max-w-3xl h-full flex flex-col items-center justify-center perspective-1000">
                             {/* Card Container with Flip Animation */}
                             <div
                                 className={`relative w-full aspect-[3/2] md:aspect-[16/9] transition-transform duration-700 transform-style-3d cursor-pointer ${isFlipped ? "rotate-y-180" : ""}`}
