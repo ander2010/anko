@@ -84,6 +84,29 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, projectId, deck]);
 
+    useEffect(() => {
+        const loadCardsIfNeeded = async () => {
+            if (activeTab === "manual" && deck?.id && formData.cards.length === 0) {
+                try {
+                    const cards = await projectService.getDeckFlashcards(deck.id);
+                    if (cards && cards.length > 0) {
+                        setFormData(prev => ({
+                            ...prev,
+                            cards: cards.map(c => ({
+                                front: c.front || c.question || "",
+                                back: c.back || c.answer || "",
+                                notes: c.explanation || c.notes || ""
+                            }))
+                        }));
+                    }
+                } catch (err) {
+                    console.error("Failed to load existing flashcards", err);
+                }
+            }
+        };
+        loadCardsIfNeeded();
+    }, [activeTab, deck, formData.cards.length]);
+
     const fetchSections = async () => {
         try {
             setLoadingSections(true);

@@ -1299,10 +1299,10 @@ export function ProjectDetail() {
                         value={ruleForm.distribution_strategy}
                         onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
                       >
-                        <option value="singleChoice">singleChoice</option>
-                        <option value="multiSelect">multiSelect</option>
-                        <option value="trueFalse">trueFalse</option>
-                        <option value="mixed">mixed</option>
+                        <option value="singleChoice">Single Choice</option>
+                        <option value="multiSelect">Multi Select</option>
+                        <option value="trueFalse">True False</option>
+                        <option value="mixed">Mixed</option>
                       </select>
                     </div>
 

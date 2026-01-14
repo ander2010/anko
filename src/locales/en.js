@@ -338,7 +338,7 @@ export const en = {
             status: {
                 pending: "Pending",
                 processing: "Processing",
-                ready: "Ready",
+                ready: "Finalized",
                 failed: "Failed"
             },
             actions: {
