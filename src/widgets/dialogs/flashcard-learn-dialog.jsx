@@ -140,9 +140,31 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
                             <Typography color="gray" className="mb-6">
                                 {language === "es" ? "No hay más fichas por ahora." : "No more cards for now."}
                             </Typography>
-                            <Button color="indigo" onClick={onClose}>
-                                {language === "es" ? "Volver" : "Back"}
-                            </Button>
+                            <div className="flex justify-center gap-4">
+                                <Button color="indigo" onClick={onClose} variant="outlined">
+                                    {language === "es" ? "Volver" : "Back"}
+                                </Button>
+                                <Button
+                                    color="indigo"
+                                    onClick={async () => {
+                                        try {
+                                            setLoading(true);
+                                            await projectService.shuffleDeckCards(deckId);
+                                            setFinished(false);
+                                            setSeq(0);
+                                            setJobId(null);
+                                            await loadNextCard(0);
+                                        } catch (error) {
+                                            console.error("Shuffle failed:", error);
+                                            setLoading(false);
+                                        }
+                                    }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <ArrowPathIcon className="h-4 w-4" />
+                                    {language === "es" ? "Barajar" : "Shuffle"}
+                                </Button>
+                            </div>
                         </div>
                     ) : card ? (
                         <div className="w-full max-w-3xl h-full flex flex-col items-center justify-center perspective-1000">

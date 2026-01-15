@@ -486,6 +486,17 @@ const projectService = {
     }
   },
 
+  async shuffleDeckCards(deckId) {
+    try {
+      const res = await api.post(`${BASE_FLASHCARDS}/shuffle-deck-cards/`, {
+        deck_id: deckId,
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to shuffle deck" };
+    }
+  },
+
   async askProject(payload) {
     try {
       const res = await api.post(`${BASE}ask/`, payload);
