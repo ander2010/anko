@@ -203,34 +203,43 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
                             </div>
 
                             {/* Response / Feedback Actions */}
-                            <div className={`mt-10 flex items-center gap-3 transition-opacity duration-300 ${isFlipped ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-                                <Button
-                                    size="md"
-                                    color="red"
-                                    variant="gradient"
-                                    className="rounded-full px-6"
-                                    onClick={(e) => { e.stopPropagation(); handleRate(1); }}
-                                >
-                                    {language === "es" ? "Difícil" : "Hard"}
-                                </Button>
-                                <Button
-                                    size="md"
-                                    color="amber"
-                                    variant="gradient"
-                                    className="rounded-full px-6"
-                                    onClick={(e) => { e.stopPropagation(); handleRate(2); }}
-                                >
-                                    {language === "es" ? "Bien" : "Good"}
-                                </Button>
-                                <Button
-                                    size="md"
-                                    color="green"
-                                    variant="gradient"
-                                    className="rounded-full px-6"
-                                    onClick={(e) => { e.stopPropagation(); handleRate(3); }}
-                                >
-                                    {language === "es" ? "Fácil" : "Easy"}
-                                </Button>
+                            {/* Response / Feedback Actions */}
+                            <div className="mt-10 flex items-center gap-3 justify-center min-h-[60px]">
+                                {!isFlipped ? (
+                                    <Button
+                                        size="lg"
+                                        color="indigo"
+                                        variant="gradient"
+                                        className="rounded-full px-12 shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:scale-105"
+                                        onClick={(e) => { e.stopPropagation(); handleRate(2); }}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span>{language === "es" ? "Siguiente" : "Next"}</span>
+                                            <ChevronRightIcon className="h-4 w-4 stroke-2" />
+                                        </div>
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            size="md"
+                                            color="red"
+                                            variant="gradient"
+                                            className="rounded-full px-8 shadow-md hover:shadow-red-500/20 transition-all transform hover:scale-105"
+                                            onClick={(e) => { e.stopPropagation(); handleRate(0); }}
+                                        >
+                                            {language === "es" ? "Difícil" : "Hard"}
+                                        </Button>
+                                        <Button
+                                            size="md"
+                                            color="green"
+                                            variant="gradient"
+                                            className="rounded-full px-8 shadow-md hover:shadow-green-500/20 transition-all transform hover:scale-105"
+                                            onClick={(e) => { e.stopPropagation(); handleRate(1); }}
+                                        >
+                                            {language === "es" ? "Bien" : "Good"}
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ) : null}
