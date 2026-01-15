@@ -480,7 +480,8 @@ export const en = {
             notes: "Notes",
             front: "Front",
             back: "Back",
-            explanation: "Explanation"
+            explanation: "Explanation",
+            learn: "Learn"
         },
         actions: {
             edit: "Edit",

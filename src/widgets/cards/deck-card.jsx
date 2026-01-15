@@ -24,7 +24,7 @@ import {
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
 
-export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }) {
+export function DeckCard({ deck, onEdit, onDelete, onStudy, onLearn, job, onJobComplete }) {
     const { t } = useLanguage();
     const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
     const hasNotifiedComplete = useRef(false);
@@ -138,13 +138,17 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }
                     </Typography>
                 )}
 
-                <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
-                    <div className="flex items-center gap-2 bg-zinc-50 px-2 py-1 rounded-md">
-                        <ClockIcon className="h-3.5 w-3.5 text-zinc-400" />
-                        <Typography variant="small" className="text-zinc-500 text-[10px] font-medium">
-                            {formatDate(deck.created_at)}
-                        </Typography>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outlined"
+                        size="sm"
+                        color="indigo"
+                        className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
+                        onClick={() => onLearn && onLearn(deck)}
+                    >
+                        <BookOpenIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-bold">{t("global.action.learn")}</span>
+                    </Button>
                     <Button
                         variant="gradient"
                         size="sm"
@@ -157,7 +161,7 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, job, onJobComplete }
                     </Button>
                 </div>
             </CardBody>
-        </Card>
+        </Card >
     );
 }
 
@@ -173,6 +177,7 @@ DeckCard.propTypes = {
     onEdit: PropTypes.func.isRequired,
     onDelete: PropTypes.func.isRequired,
     onStudy: PropTypes.func,
+    onLearn: PropTypes.func,
     job: PropTypes.shape({
         job_id: PropTypes.string,
         ws_progress: PropTypes.string,

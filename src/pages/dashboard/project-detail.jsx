@@ -57,6 +57,7 @@ import { DeckCard } from "@/widgets/cards/deck-card";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
+import { FlashcardLearnDialog } from "@/widgets/dialogs/flashcard-learn-dialog";
 import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
 import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 
@@ -125,6 +126,8 @@ export function ProjectDetail() {
 
   const [createDeckDialogOpen, setCreateDeckDialogOpen] = useState(false);
   const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
+  const [learnDialogOpen, setLearnDialogOpen] = useState(false);
+  const [learnDeck, setLearnDeck] = useState(null);
   const [confirmDeleteDeckDialogOpen, setConfirmDeleteDeckDialogOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
 
@@ -419,6 +422,11 @@ export function ProjectDetail() {
   const handleStudyDeck = (deck) => {
     setSelectedDeck(deck);
     setFlashcardViewDialogOpen(true);
+  };
+
+  const handleLearnDeck = (deck) => {
+    setLearnDeck(deck);
+    setLearnDialogOpen(true);
   };
 
   const handleCloseSimulator = async () => {
@@ -987,9 +995,6 @@ export function ProjectDetail() {
                               <Typography className="text-zinc-500 font-medium text-xs">
                                 {formatDate(doc.uploaded_at || doc.created_at || doc.uploadedAt)}
                               </Typography>
-                            </td>
-
-                            <td className="py-4 px-6">
                               {activeJobs[doc.id] ? (
                                 <div className="w-32">
                                   <ProjectProcessingProgress
@@ -1815,6 +1820,7 @@ export function ProjectDetail() {
                       onEdit={handleEditDeck}
                       onDelete={handleDeleteDeck}
                       onStudy={handleStudyDeck}
+                      onLearn={handleLearnDeck}
                       job={activeFlashcardJobs[deck.id]}
                       onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
                     />
@@ -1897,15 +1903,29 @@ export function ProjectDetail() {
         deck={selectedDeck}
       />
 
-      <FlashcardViewDialog
-        open={flashcardViewDialogOpen}
-        onClose={() => {
-          setFlashcardViewDialogOpen(false);
-          setSelectedDeck(null);
-        }}
-        deckId={selectedDeck?.id}
-        deckTitle={selectedDeck?.title}
-      />
+      {selectedDeck && (
+        <FlashcardViewDialog
+          open={flashcardViewDialogOpen}
+          onClose={() => {
+            setFlashcardViewDialogOpen(false);
+            setSelectedDeck(null);
+          }}
+          deckId={selectedDeck.id}
+          deckTitle={selectedDeck.title}
+        />
+      )}
+
+      {learnDeck && (
+        <FlashcardLearnDialog
+          open={learnDialogOpen}
+          onClose={() => {
+            setLearnDialogOpen(false);
+            setLearnDeck(null);
+          }}
+          deckId={learnDeck.id}
+          deckTitle={learnDeck.title}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmDeleteDeckDialogOpen}

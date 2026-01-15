@@ -1,6 +1,7 @@
 import api from "./api";
 
 const BASE = "/projects/";
+const BASE_FLASHCARDS = "/flashcards";
 
 const projectService = {
   async createProject(projectData, logoFile = null, documentFiles = []) {
@@ -454,6 +455,35 @@ const projectService = {
   async deleteDeck(deckId) {
     const res = await api.delete(`/decks/${deckId}/`);
     return res.data;
+  },
+
+  async wsPullCard({ deckId, jobId, lastSeq = 0 }) {
+    try {
+      const res = await api.post(`${BASE_FLASHCARDS}/ws-pull-card/`, {
+        deck_id: deckId,
+        job_id: jobId,
+        last_seq: lastSeq,
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to pull card" };
+    }
+  },
+
+  async wsPushFeedback({ deckId, jobId, seq, cardId, rating, timeToAnswerMs = 500 }) {
+    try {
+      const res = await api.post(`${BASE_FLASHCARDS}/ws-push-feedback/`, {
+        deck_id: deckId,
+        job_id: jobId,
+        seq,
+        card_id: cardId,
+        rating,
+        time_to_answer_ms: timeToAnswerMs,
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to push feedback" };
+    }
   },
 
   async askProject(payload) {
