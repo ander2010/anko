@@ -19,7 +19,9 @@ import { ProjectsProvider } from "@/context/projects-context";
 import AuthProvider from "@/context/auth-context";
 import { LanguageProvider } from "@/context/language-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import "@uppy/dashboard/dist/style.min.css";
 import "./styles/tailwind.css";
+
 
 const GOOGLE_CLIENT_ID = "600601272216-ulj4ihc7ull70lg7p9c2v27fvrslf90d.apps.googleusercontent.com";
 console.log("GOOGLE_CLIENT_ID hardcoded:", GOOGLE_CLIENT_ID);

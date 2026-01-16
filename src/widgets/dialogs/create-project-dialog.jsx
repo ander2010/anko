@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -10,12 +10,13 @@ import {
   Textarea,
   Typography,
 } from "@material-tailwind/react";
-import { DocumentArrowUpIcon, XMarkIcon, FolderPlusIcon } from "@heroicons/react/24/outline";
-import projectService from "../../services/projectService";
+import { FolderPlusIcon } from "@heroicons/react/24/outline";
+import projectService, { API_BASE } from "../../services/projectService";
 import { useLanguage } from "@/context/language-context";
 
-
-
+import Uppy from "@uppy/core";
+import XHRUpload from "@uppy/xhr-upload";
+import { Dashboard } from "@uppy/react";
 
 export function CreateProjectDialog({ open, onClose, onCreate }) {
   const { t, language } = useLanguage();
@@ -24,32 +25,38 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
     description: "",
   });
 
-  const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Initialize Uppy
+  const uppy = useMemo(() => {
+    return new Uppy({
+      id: 'create-project-uploader',
+      autoProceed: false,
+      restrictions: {
+        maxFileSize: 400 * 1024 * 1024, // 400MB
+        allowedFileTypes: ['.pdf', '.doc', '.docx', '.txt', '.md'],
+      },
+    }).use(XHRUpload, {
+      endpoint: 'will-be-set-later', // Placeholder
+      formData: true,
+      fieldName: 'files',
+      headers: {},
+      // Bundle files in one request if backend supports it, otherwise separate requests
+      // Standard local backend likely handles one-by-one or list.
+      // Assuming 'files' takes multiple, bundle: true might be needed if the endpoint expects a list.
+      // But projectService.uploadProjectDocuments uses formData.append("files", file).
+      // Let's set bundle: true to send all in one request if possible, or usually XHRUpload sends one by one.
+      // If backend expects `files` list in one POST: bundle: true.
+      // Checking projectService: sends FormData with multiple "files" entries.
+      bundle: true,
+    });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  // ✅ solo documentos
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    setFiles((prev) => [...prev, ...selectedFiles]);
-  };
-
-  const removeFile = (index) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const validate = () => {
@@ -67,26 +74,34 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
 
     setLoading(true);
     try {
-      // ✅ 1) crear proyecto (solo JSON)
+      // 1) Create project
       const created = await projectService.createProject({
-        title: formData.name, // tu API usa title
+        title: formData.name,
         description: formData.description,
       });
 
-      // ✅ 2) subir documentos (si hay)
+      // 2) Upload documents if any added to Uppy
+      const files = uppy.getFiles();
       if (files.length > 0) {
-        await projectService.uploadProjectDocuments(created.id, files);
+        // Update endpoint with new project ID
+        uppy.getPlugin('XHRUpload').setOptions({
+          endpoint: `${API_BASE}/projects/${created.id}/documents/`,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          }
+        });
+
+        await uppy.upload();
       }
 
       onCreate(created);
+      handleClose();
 
-      setFormData({ name: "", description: "" });
-      setFiles([]);
-      setErrors({});
-      onClose();
     } catch (err) {
+      console.error(err);
       const msg = err?.detail || err?.error || (language === "es" ? "Error al crear el proyecto" : "Failed to create project");
       setErrors((prev) => ({ ...prev, submit: msg }));
+      // If upload failed but project created, we might want to warn user, but for now just show error.
     } finally {
       setLoading(false);
     }
@@ -94,8 +109,8 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
 
   const handleClose = () => {
     setFormData({ name: "", description: "" });
-    setFiles([]);
     setErrors({});
+    uppy.cancelAll(); // Clear files
     onClose();
   };
 
@@ -120,7 +135,6 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
                 {language === "es" ? "Inicia un nuevo espacio de trabajo" : "Start a new workspace"}
               </Typography>
             </div>
-
           </div>
         </DialogHeader>
 
@@ -160,78 +174,25 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
             />
           </div>
 
-          {/* Docs */}
+          {/* Docs with Uppy */}
           <div>
             <Typography variant="small" className="font-bold text-zinc-900 mb-2 ml-1 flex items-center justify-between">
               <span>{language === "es" ? "Documentos Iniciales" : "Initial Documents"}</span>
               <span className="text-indigo-500 text-[10px] bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">{language === "es" ? "Opcional" : "Optional"}</span>
             </Typography>
-            <label
-              htmlFor="file-upload"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-zinc-200 border-dashed rounded-2xl cursor-pointer bg-zinc-50/50 hover:bg-zinc-50 hover:border-indigo-400/50 transition-all group"
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <div className="h-10 w-10 rounded-full bg-white shadow-sm border border-zinc-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <DocumentArrowUpIcon className="w-5 h-5 text-indigo-500" />
-                </div>
-                <Typography variant="small" className="text-zinc-600 font-medium">
-                  <span className="text-indigo-600 font-bold hover:underline">{t("projects.dialogs.upload_docs_click")}</span> {t("projects.dialogs.upload_docs_drag") || "or drag and drop"}
-                </Typography>
-                <Typography variant="small" className="text-zinc-400 text-[10px] mt-1">
-                  PDF, DOCX, TXT, MD (Max 10MB)
-                </Typography>
-              </div>
-              <input
-                id="file-upload"
-                type="file"
-                className="hidden"
-                multiple
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.txt,.md"
+
+            <div className="border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50">
+              <Dashboard
+                uppy={uppy}
+                width="100%"
+                height={250}
+                hideUploadButton={true}
+                showProgressDetails={true}
+                theme="light"
               />
-            </label>
+            </div>
           </div>
 
-          {files.length > 0 && (
-            <div className="space-y-3">
-              <Typography variant="small" className="font-bold text-zinc-900 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                {t("projects.dialogs.upload_docs_selected")} ({files.length})
-              </Typography>
-              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-white border border-zinc-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="h-8 w-8 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 flex-shrink-0">
-                        <DocumentArrowUpIcon className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <Typography variant="small" className="font-bold text-zinc-900 truncate">
-                          {file.name}
-                        </Typography>
-                        <Typography variant="tiny" className="text-zinc-400 font-medium">
-                          {formatFileSize(file.size)}
-                        </Typography>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="text"
-                      color="red"
-                      className="p-2 rounded-full hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
-                      onClick={() => removeFile(index)}
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </DialogBody>
 
         <DialogFooter className="border-t border-zinc-100 p-4 flex items-center justify-end gap-3 bg-zinc-50/50">

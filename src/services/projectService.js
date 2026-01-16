@@ -1,4 +1,6 @@
-import api from "./api";
+import api, { API_BASE } from "./api";
+
+export { API_BASE };
 
 const BASE = "/projects/";
 const BASE_FLASHCARDS = "/flashcards";

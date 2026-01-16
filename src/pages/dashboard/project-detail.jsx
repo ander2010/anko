@@ -619,10 +619,18 @@ export function ProjectDetail() {
     }
   };
 
-  const handleUploadDocuments = async (pId, files) => {
+  const handleUploadDocuments = async (pId, filesOrResponse) => {
     try {
       setError(null);
-      const response = await projectService.uploadProjectDocuments(Number(pId), files);
+      let response;
+
+      // Check if we received a response object (from Uppy) or a list of files (from legacy input)
+      if (filesOrResponse && !Array.isArray(filesOrResponse) && (filesOrResponse.processing || filesOrResponse.message)) {
+        response = filesOrResponse;
+      } else {
+        // Fallback for manual file list
+        response = await projectService.uploadProjectDocuments(Number(pId), filesOrResponse);
+      }
 
       if (response.processing) {
         const newJobs = {};
@@ -656,7 +664,11 @@ export function ProjectDetail() {
       // For now, I'll comment it out or assume it exists if it's in the original code.
       // refreshProject(); 
       await fetchDocuments(Number(projectId)); // Refresh documents to update status
-      await fetchSectionsCounts(); // Refresh section counts
+
+      // Add a small delay to allow backend to finalize section creation before fetching counts
+      setTimeout(() => {
+        fetchSectionsCounts();
+      }, 1000);
     } catch (err) {
       console.error("Error handling job completion:", err);
     }
@@ -995,6 +1007,9 @@ export function ProjectDetail() {
                               <Typography className="text-zinc-500 font-medium text-xs">
                                 {formatDate(doc.uploaded_at || doc.created_at || doc.uploadedAt)}
                               </Typography>
+                            </td>
+
+                            <td className="py-4 px-6">
                               {activeJobs[doc.id] ? (
                                 <div className="w-32">
                                   <ProjectProcessingProgress
