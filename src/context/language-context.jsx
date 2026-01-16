@@ -18,7 +18,7 @@ export function LanguageProvider({ children }) {
         localStorage.setItem("language", lang);
     };
 
-    const t = (key) => {
+    const t = (key, params) => {
         if (!key || typeof key !== "string") return "";
         const keys = key.split(".");
         let value = dictionaryList[language];
@@ -26,6 +26,12 @@ export function LanguageProvider({ children }) {
         for (const k of keys) {
             value = value?.[k];
             if (value === undefined) break;
+        }
+
+        if (typeof value === "string" && params && typeof params === "object") {
+            Object.keys(params).forEach(paramKey => {
+                value = value.replace(new RegExp(`{${paramKey}}`, "g"), params[paramKey]);
+            });
         }
 
         return value || key;

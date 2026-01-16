@@ -324,6 +324,9 @@ export const es = {
             batteries: "Baterías",
             decks: "Mazos"
         },
+        dialogs: {
+            delete_message: '¿Estás seguro de que quieres eliminar "{name}"? Esta acción no se puede deshacer.'
+        },
         docs: {
             btn_upload: "Subir Documentos",
             table: {
@@ -887,5 +890,6 @@ export const es = {
         empty_state: "Selecciona un documento y haz una pregunta.",
         loading: "Pensando...",
         no_name: "Sin nombre"
-    }
+    },
+
 };

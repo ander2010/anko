@@ -324,6 +324,9 @@ export const en = {
             batteries: "Batteries",
             decks: "Decks"
         },
+        dialogs: {
+            delete_message: 'Are you sure you want to delete "{name}"? This action cannot be undone.'
+        },
         docs: {
             btn_upload: "Upload Documents",
             table: {
@@ -887,4 +890,5 @@ export const en = {
         loading: "Thinking...",
         no_name: "No name"
     }
+
 };
