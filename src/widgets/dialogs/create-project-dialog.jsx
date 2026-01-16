@@ -53,6 +53,25 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
     });
   }, []);
 
+  // Inject fresh token before upload starts
+  useEffect(() => {
+    const handleUploadStart = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        uppy.getPlugin('XHRUpload').setOptions({
+          headers: {
+            Authorization: `Token ${token}`,
+          }
+        });
+      }
+    };
+
+    uppy.on('upload', handleUploadStart);
+    return () => {
+      uppy.off('upload', handleUploadStart);
+    };
+  }, [uppy]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -85,10 +104,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
       if (files.length > 0) {
         // Update endpoint with new project ID
         uppy.getPlugin('XHRUpload').setOptions({
-          endpoint: `${API_BASE}/projects/${created.id}/documents/`,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }
+          endpoint: `${API_BASE}/projects/${created.id}/documents/`
         });
 
         await uppy.upload();
