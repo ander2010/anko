@@ -22,9 +22,14 @@ export function useJobProgress(jobId) {
         if (!jobId || isCompleted || retryCount >= MAX_RETRIES) return;
 
         const token = localStorage.getItem("token");
+        const streamUrl =
+        `${API_BASE.replace(/\/$/, "")}/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
+            (token ? `&token=${encodeURIComponent(token)}` : "");
+
+        const eventSource = new EventSource(streamUrl); 
         // Using relative URL as requested by the user to avoid 406 error
-        const streamUrl = `/api/projects/progress-stream/?job_id=${jobId}${token ? `&token=${token}` : ""}`;
-        let eventSource = new EventSource(streamUrl);
+        // const streamUrl = `/api/projects/progress-stream/?job_id=${jobId}${token ? `&token=${token}` : ""}`;
+        // let eventSource = new EventSource(streamUrl);
 
         const handleMessage = (event) => {
             try {
