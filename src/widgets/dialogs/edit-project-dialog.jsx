@@ -47,7 +47,7 @@ export function EditProjectDialog({ open, onClose, onSave, project }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validate()) {
+        if (validate() && project?.id) {
             setLoading(true);
             try {
                 await projectService.updateProject(project.id, {

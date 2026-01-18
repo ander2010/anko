@@ -76,7 +76,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
           }
         });
       }
-      if (onUpload) {
+      if (onUpload && project?.id) {
         onUpload(project.id, body);
       }
     };
@@ -87,7 +87,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       uppy.off('upload', handleUploadStart);
       uppy.off('upload-success', handleUploadSuccess);
     };
-  }, [uppy, project.id, onUpload, addJob]);
+  }, [uppy, project?.id, onUpload, addJob]);
 
   // Handle upload completion
   useEffect(() => {

@@ -285,10 +285,10 @@ export function ProjectDetail() {
   useEffect(() => {
     if (!projectId || !globalActiveJobs.length) return;
 
-    const projectJobs = globalActiveJobs.filter(j => String(j.projectId) === String(projectId));
+    const projectJobs = globalActiveJobs.filter(j => j && String(j.projectId) === String(projectId));
 
     // Resume battery jobs (re-trigger SSE logic) if not active
-    projectJobs.filter(j => j.type === 'battery').forEach(j => {
+    projectJobs.filter(j => j && j.type === 'battery').forEach(j => {
       if (!batteryProgress[j.id]) {
         resumeBatterySSE(j.id);
       }
@@ -659,33 +659,21 @@ export function ProjectDetail() {
     try {
       const targetProjectId = pId || projectId;
       setError(null);
-      let response;
 
-      if (filesOrResponse && !Array.isArray(filesOrResponse) && (filesOrResponse.processing || filesOrResponse.message)) {
-        response = filesOrResponse;
-      } else {
-        response = await projectService.uploadProjectDocuments(Number(targetProjectId), filesOrResponse);
-      }
-
-      if (response.processing) {
-        response.processing.forEach((p) => {
-          if (p.document?.id && p.external?.job_id) {
-            addJob({
-              id: String(p.external.job_id),
-              type: "document",
-              projectId: String(targetProjectId),
-              docId: String(p.document.id) // Ensure docId is a string
-            });
-            console.log("[ProjectDetail] Registered document job for project:", String(targetProjectId), "doc:", String(p.document.id), "job:", p.external.job_id);
-          }
-        });
+      // If it's a direct response from Uppy (via UploadDocumentsDialog),
+      // the jobs are already registered internally by the dialog.
+      if (filesOrResponse && !Array.isArray(filesOrResponse) && filesOrResponse.processing) {
+        // Just refresh
+      } else if (Array.isArray(filesOrResponse)) {
+        // Fallback for legacy calls if any
+        await projectService.uploadProjectDocuments(Number(targetProjectId), filesOrResponse);
       }
 
       await fetchDocuments(Number(targetProjectId));
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to upload documents");
     }
-  }, [projectId, addJob]);
+  }, [projectId, fetchDocuments]);
 
   const handleJobComplete = useCallback(async (docId, jobId) => {
     try {
@@ -1752,14 +1740,35 @@ export function ProjectDetail() {
 
                         {/* Generation Progress */}
                         {batteryProgress[String(battery.id)] && (
-                          <div className="mt-4 pt-4 border-t border-blue-gray-50">
+                          <div className="mt-4 pt-4 border-t border-blue-gray-50 group/batprog">
                             <div className="flex justify-between items-center mb-1">
-                              <Typography variant="small" className="font-medium text-blue-600">
-                                {batteryProgress[String(battery.id)].status}
-                              </Typography>
-                              <Typography variant="small" className="font-bold text-blue-600">
-                                {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
-                              </Typography>
+                              <div className="flex items-center gap-2">
+                                <Typography variant="small" className="font-medium text-blue-600">
+                                  {batteryProgress[String(battery.id)].status}
+                                </Typography>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Typography variant="small" className="font-bold text-blue-600">
+                                  {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
+                                </Typography>
+                                <IconButton
+                                  size="sm"
+                                  variant="text"
+                                  color="blue-gray"
+                                  className="h-5 w-5 rounded-md opacity-0 group-hover/batprog:opacity-100 transition-opacity"
+                                  onClick={() => {
+                                    setBatteryProgress(prev => {
+                                      const ns = { ...prev };
+                                      delete ns[battery.id];
+                                      return ns;
+                                    });
+                                    removeJob(battery.id);
+                                  }}
+                                  title={language === "es" ? "Quitar" : "Dismiss"}
+                                >
+                                  <XMarkIcon className="h-3.5 w-3.5" />
+                                </IconButton>
+                              </div>
                             </div>
                             <Progress value={Math.round(batteryProgress[String(battery.id)].percent || 0)} size="sm" color="blue" />
                           </div>

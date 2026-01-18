@@ -87,7 +87,7 @@ export function useJobProgress(jobId) {
         };
     }, [jobId, retryCount, isCompleted]);
 
-    return { progress, status, error, isCompleted, currentStep, docId };
+    return { progress, status, error, isCompleted, setIsCompleted, currentStep, docId };
 }
 
 export default useJobProgress;

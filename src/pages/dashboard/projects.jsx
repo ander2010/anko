@@ -32,12 +32,12 @@ import { useLanguage } from "@/context/language-context";
 import { useJobs } from "@/context/job-context";
 
 export function Projects() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
     const { user } = useAuth();
     // Use global state
     const { projects, createProject, deleteProject, refreshAll, loading: contextLoading } = useProjects();
-    const { activeJobs: globalActiveJobs, addJob, removeJob } = useJobs();
+    const { activeJobs: globalActiveJobs, addJob, removeJob, clearAllJobs } = useJobs();
 
     // Local UI state
     const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +51,7 @@ export function Projects() {
     const activeJobs = useMemo(() => {
         const projectJobs = {};
         globalActiveJobs.forEach(job => {
+            if (!job) return; // Safety check
             const pid = job.projectId ? String(job.projectId) : null;
             if (pid) {
                 if (!projectJobs[pid]) projectJobs[pid] = [];
@@ -94,26 +95,13 @@ export function Projects() {
         setUploadDialogOpen(true);
     };
 
-    const handleDoUploadDocs = async (projectId, files) => {
+    const handleDoUploadDocs = async (projectId, response) => {
+        // Jobs are already registered by UploadDocumentsDialog internal handler.
+        // We just need to refresh the projects list to see the new document counts.
         try {
-            const response = await projectService.uploadDocuments(projectId, files);
-            if (response.processing) {
-                response.processing.map(p => {
-                    const jobId = p.external?.job_id;
-                    if (jobId) {
-                        addJob({
-                            id: jobId,
-                            type: "document",
-                            projectId: String(projectId),
-                            docId: p.document?.id
-                        });
-                    }
-                    return { jobId };
-                });
-            }
             await refreshAll();
         } catch (err) {
-            setError(err?.error || "Failed to upload documents");
+            setError(err?.error || "Failed to refresh project list");
         }
     };
     const handleJobComplete = async (projectId, jobId, docId) => {
@@ -210,7 +198,6 @@ export function Projects() {
         const project = projects.find((p) => p.id === projectId);
         return project?.documents || [];
     };
-
     const handleEnterProject = (project) => {
         navigate(`/dashboard/project/${project.id}`);
     };
@@ -293,13 +280,25 @@ export function Projects() {
                         {t("projects.subtitle")}
                     </Typography>
                 </div>
-                <Button
-                    className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 px-6 py-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5"
-                    onClick={() => setCreateDialogOpen(true)}
-                >
-                    <PlusIcon className="h-5 w-5 stroke-[2.5]" />
-                    {t("projects.btn_create")}
-                </Button>
+                <div className="flex items-center gap-3">
+                    {globalActiveJobs.length > 0 && (
+                        <Button
+                            variant="text"
+                            color="red"
+                            className="flex items-center gap-2 rounded-xl normal-case text-xs font-bold hover:bg-red-50"
+                            onClick={clearAllJobs}
+                        >
+                            {language === "es" ? "Limpiar Todo" : "Clear All"}
+                        </Button>
+                    )}
+                    <Button
+                        className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 px-6 py-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5"
+                        onClick={() => setCreateDialogOpen(true)}
+                    >
+                        <PlusIcon className="h-5 w-5 stroke-[2.5]" />
+                        {t("projects.btn_create")}
+                    </Button>
+                </div>
             </div>
 
             {/* Filters and Search Bar - Unified */}

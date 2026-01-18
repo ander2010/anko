@@ -12,8 +12,30 @@ export function JobsProvider({ children }) {
             try {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) {
-                    console.log("[JobContext] Initial recovery:", parsed.length, "jobs found.");
-                    return parsed;
+                    const now = Date.now();
+                    const TWO_HOURS = 2 * 60 * 60 * 1000;
+
+                    // Filter out:
+                    // 1. Invalid objects
+                    // 2. Jobs without IDs
+                    // 3. Jobs older than 2 hours (stale zombies)
+                    const validJobs = parsed.filter(j => {
+                        const isValid = j && typeof j === 'object' && j.id;
+                        if (!isValid) return false;
+
+                        // If it has a timestamp, check if it's too old
+                        if (j.createdAt) {
+                            const age = now - j.createdAt;
+                            if (age > TWO_HOURS) {
+                                console.log("[JobContext] Pruning stale job:", j.id, "Age:", Math.round(age / 60000), "mins");
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+
+                    console.log("[JobContext] Initial recovery:", validJobs.length, "valid jobs found.");
+                    return validJobs;
                 }
             } catch (e) {
                 console.error("[JobContext] Recovery failed:", e);
@@ -49,7 +71,8 @@ export function JobsProvider({ children }) {
                 ...job,
                 id: String(job.id),
                 projectId: job.projectId ? String(job.projectId) : undefined,
-                docId: job.docId ? String(job.docId) : undefined
+                docId: job.docId ? String(job.docId) : undefined,
+                createdAt: Date.now() // Timestamp for expiration
             };
             console.log("[JobContext] Job Registered:", newJob.id, "for Project:", newJob.projectId);
             return [...prev, newJob];
@@ -63,6 +86,11 @@ export function JobsProvider({ children }) {
         syncActiveJobs((prev) => prev.filter((j) => String(j.id) !== sid));
     }, []);
 
+    const clearAllJobs = useCallback(() => {
+        console.log("[JobContext] Clearing all jobs manually.");
+        syncActiveJobs([]);
+    }, []);
+
     const getJobsForProject = (projectId) => {
         return activeJobs.filter((j) => String(j.projectId) === String(projectId));
     };
@@ -71,6 +99,7 @@ export function JobsProvider({ children }) {
         activeJobs,
         addJob,
         removeJob,
+        clearAllJobs,
         getJobsForProject,
     };
 
