@@ -21,8 +21,12 @@ export function useJobProgress(jobId) {
         if (!jobId || isCompleted || retryCount >= MAX_RETRIES) return;
 
         const token = localStorage.getItem("token");
-        // Using relative URL to leverage Vite proxy and avoid CORS/406 issues
-        const streamUrl = `/api/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
+
+        // Use API_BASE to construct absolute URL for production support.
+        // If API_BASE is relative (starts with /), it will still work locally via proxy.
+        // We ensure no double slashes if API_BASE ends with /
+        const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+        const streamUrl = `${base}/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
             (token ? `&token=${encodeURIComponent(token)}` : "");
 
         console.log("[useJobProgress] Connecting to:", streamUrl);

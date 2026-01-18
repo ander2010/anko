@@ -297,8 +297,9 @@ export function ProjectDetail() {
   }, [projectId, globalActiveJobs]);
 
   const resumeBatterySSE = (batteryId) => {
-    // Using relative URL to leverage Vite proxy
-    const sseUrl = `/api/batteries/${batteryId}/progress-stream-bat/`;
+    // Use API_BASE to construct absolute URL for production support.
+    const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+    const sseUrl = `${base}/batteries/${batteryId}/progress-stream-bat/`;
     console.log("[ProjectDetail] Resuming battery SSE:", sseUrl);
     const es = new EventSource(sseUrl);
 
