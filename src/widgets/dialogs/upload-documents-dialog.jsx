@@ -30,7 +30,6 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       endpoint: 'placeholder',
       formData: true,
       fieldName: 'files',
-      fieldName: 'files',
       headers: {},
       bundle: true,
     });
