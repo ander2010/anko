@@ -49,7 +49,7 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
       // Let's set bundle: true to send all in one request if possible, or usually XHRUpload sends one by one.
       // If backend expects `files` list in one POST: bundle: true.
       // Checking projectService: sends FormData with multiple "files" entries.
-      bundle: true,
+      bundle: false,
     });
   }, []);
 

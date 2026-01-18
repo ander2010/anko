@@ -31,7 +31,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       formData: true,
       fieldName: 'files',
       headers: {},
-      bundle: true,
+      bundle: false,
     });
 
     return u;
