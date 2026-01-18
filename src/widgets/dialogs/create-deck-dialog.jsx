@@ -494,13 +494,13 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                                                 <Checkbox
                                                                     color="indigo"
                                                                     checked={formData.section_ids.includes(Number(section.id))}
-                                                                    onChange={() => handleSectionToggle(section.id, docId)}
-                                                                    className="h-4 w-4 rounded-md border-zinc-300"
-                                                                    containerProps={{ className: "p-0 mt-0.5" }}
+                                                                    readOnly
+                                                                    className="h-4 w-4 rounded-md border-zinc-300 pointer-events-none"
+                                                                    containerProps={{ className: "p-0 mt-0.5 pointer-events-none" }}
                                                                     ripple={false}
                                                                 />
                                                                 <div className="flex-1">
-                                                                    <Typography variant="small" className="font-bold text-xs text-zinc-900 mb-0.5">
+                                                                    <Typography variant="small" className="font-bold text-xs text-zinc-900 mb-0.5 capitalize">
                                                                         {section.title || (language === "es" ? "Sin título" : "Untitled")}
                                                                     </Typography>
                                                                     {section.content && (

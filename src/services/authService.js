@@ -6,10 +6,10 @@ const authService = {
   async login({ username, password }) {
     try {
       const res = await api.post(`${BASE}login/`, { username, password });
-      console.log("LOGIN RAW DATA:", res.data);
+
 
       const { token, user } = res.data;
-      console.log("TOKEN:", token);
+
       if (token) setAuthToken(token);
       return { token, user };
     } catch (err) {
@@ -51,9 +51,9 @@ const authService = {
   async socialLogin(provider, accessToken) {
     try {
       const endpoint = `${BASE}${provider}/`; // e.g. /auth/google/ or /auth/facebook/
-      console.log(`[AuthService] Sending POST to ${endpoint} with token prefix: ${accessToken?.substring(0, 10)}...`);
+
       const res = await api.post(endpoint, { access_token: accessToken });
-      console.log(`[AuthService] Response from ${provider} social login:`, res.status, res.data);
+
       const { token, user } = res.data;
       if (token) setAuthToken(token);
       return { token, user };

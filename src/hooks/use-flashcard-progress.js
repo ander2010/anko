@@ -23,13 +23,13 @@ export function useFlashcardProgress(wsUrl) {
             socket = new WebSocket(wsUrl);
 
             socket.onopen = () => {
-                console.log("WebSocket connection opened for flashcard progress:", wsUrl);
+
             };
 
             socket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log("WebSocket message received:", data);
+
 
                     setLastData(data);
 
@@ -58,7 +58,7 @@ export function useFlashcardProgress(wsUrl) {
             };
 
             socket.onclose = (event) => {
-                console.log("WebSocket connection closed:", event.code, event.reason);
+
                 if (finalStatus === "completed" || lastKnownProgress >= 100) {
                     setIsCompleted(true);
                 } else if (!isCompleted && event.code !== 1000) {

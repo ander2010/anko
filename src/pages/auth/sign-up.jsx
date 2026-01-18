@@ -25,13 +25,13 @@ export function SignUp() {
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log("Google Token Response (Register) Success:", tokenResponse);
+
       setLoading(true);
       setError(null);
       try {
-        console.log("Attempting socialLogin (register) in context with token...");
+
         await socialLogin("google", tokenResponse.access_token);
-        console.log("Social register successful, navigating.");
+
         navigate("/dashboard/home", { replace: true });
       } catch (err) {
         console.error("Social register catch block error:", err);

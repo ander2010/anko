@@ -25,13 +25,13 @@ export function SignIn() {
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      console.log("Google Token Response Success:", tokenResponse);
+
       setLoading(true);
       setError(null);
       try {
-        console.log("Attempting socialLogin in context with token...");
+
         await socialLogin("google", tokenResponse.access_token);
-        console.log("Social login successful, navigating to dashboard.");
+
         navigate("/dashboard/home", { replace: true });
       } catch (err) {
         console.error("Social login catch block error:", err);
@@ -55,7 +55,7 @@ export function SignIn() {
     setError(null);
     setLoading(true);
     try {
-      console.log(`Initiating POST login for ${provider}`);
+
       setError(`Please integrate the ${provider} SDK to get the access_token first.`);
     } catch (err) {
       console.error(err);

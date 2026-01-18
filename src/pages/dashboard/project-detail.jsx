@@ -168,7 +168,7 @@ export function ProjectDetail() {
       }
 
       const res = await projectService.startGenerateBattery(payload);
-      console.log("startGenerateBattery response:", res); // Debug log
+
 
       setShowGenerateBattery(false);
 
@@ -189,17 +189,17 @@ export function ProjectDetail() {
       const batteryId = res?.battery?.id;
       if (batteryId) {
         const sseUrl = `${import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api"}/batteries/${batteryId}/progress-stream-bat/`;
-        console.log("Initializing SSE at:", sseUrl); // Debug log
+
 
         // If 'token' is truly not needed (e.g. cookie auth or public), removes it.
         const es = new EventSource(sseUrl);
 
         es.onopen = () => {
-          console.log("SSE Connection Opened");
+
         };
 
         es.addEventListener("progress", (e) => {
-          console.log("SSE Progress Event:", e.data); // Debug log
+
           const data = JSON.parse(e.data);
           setBatteryProgress(prev => ({
             ...prev,
@@ -208,7 +208,7 @@ export function ProjectDetail() {
         });
 
         es.addEventListener("end", async (e) => {
-          console.log("ended:", e.data);
+
           es.close();
 
           try {
