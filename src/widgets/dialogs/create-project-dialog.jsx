@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import projectService, { API_BASE } from "../../services/projectService";
 import { useLanguage } from "@/context/language-context";
+import { useJobs } from "@/context/job-context";
 
 import Uppy from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
@@ -20,6 +21,7 @@ import { Dashboard } from "@uppy/react";
 
 export function CreateProjectDialog({ open, onClose, onCreate }) {
   const { t, language } = useLanguage();
+  const { addJob } = useJobs();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,9 +47,6 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
       // Bundle files in one request if backend supports it, otherwise separate requests
       // Standard local backend likely handles one-by-one or list.
       // Assuming 'files' takes multiple, bundle: true might be needed if the endpoint expects a list.
-      // But projectService.uploadProjectDocuments uses formData.append("files", file).
-      // Let's set bundle: true to send all in one request if possible, or usually XHRUpload sends one by one.
-      // If backend expects `files` list in one POST: bundle: true.
       // Checking projectService: sends FormData with multiple "files" entries.
       bundle: false,
     });
@@ -98,6 +97,27 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
         title: formData.name,
         description: formData.description,
       });
+
+      // Capture job IDs from successful uploads if needed
+      // Actually, since uppy.upload() is called, we should listen for success
+      const successHandler = (file, response) => {
+        const body = response.body;
+        if (body.processing) {
+          body.processing.forEach(p => {
+            const jobId = p.external?.job_id;
+            if (jobId) {
+              addJob({
+                id: String(jobId),
+                type: 'document',
+                projectId: String(created.id),
+                docId: String(p.document?.id)
+              });
+            }
+          });
+        }
+      };
+
+      uppy.on('upload-success', successHandler);
 
       // 2) Upload documents if any added to Uppy
       const files = uppy.getFiles();

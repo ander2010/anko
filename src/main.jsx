@@ -18,6 +18,7 @@ import { MaterialTailwindControllerProvider } from "@/context";
 import { ProjectsProvider } from "@/context/projects-context";
 import AuthProvider from "@/context/auth-context";
 import { LanguageProvider } from "@/context/language-context";
+import { JobsProvider } from "@/context/job-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "@uppy/dashboard/dist/style.min.css";
 import "./styles/tailwind.css";
@@ -33,9 +34,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <MaterialTailwindControllerProvider>
             <AuthProvider>
               <LanguageProvider>
-                <ProjectsProvider>
-                  <App />
-                </ProjectsProvider>
+                <JobsProvider>
+                  <ProjectsProvider>
+                    <App />
+                  </ProjectsProvider>
+                </JobsProvider>
               </LanguageProvider>
             </AuthProvider>
           </MaterialTailwindControllerProvider>

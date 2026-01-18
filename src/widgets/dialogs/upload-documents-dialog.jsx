@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   Dialog,
@@ -9,7 +9,8 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
-import { API_BASE } from "../../services/projectService"; // Ensure this import works
+import { useJobs } from "@/context/job-context";
+import { API_BASE } from "@/services/api"; // Ensure this import works
 
 import Uppy from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
@@ -17,6 +18,7 @@ import { Dashboard } from "@uppy/react";
 
 export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
   const { t } = useLanguage();
+  const { addJob } = useJobs();
 
   const uppy = useMemo(() => {
     const u = new Uppy({
@@ -59,22 +61,38 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       }
     };
 
+    const handleUploadSuccess = (file, response) => {
+      const body = response.body;
+      if (body.processing) {
+        body.processing.forEach(p => {
+          const jobId = p.external?.job_id;
+          if (jobId) {
+            addJob({
+              id: String(jobId),
+              type: 'document',
+              projectId: String(project.id),
+              docId: String(p.document?.id)
+            });
+          }
+        });
+      }
+      if (onUpload) {
+        onUpload(project.id, body);
+      }
+    };
+
     uppy.on('upload', handleUploadStart);
+    uppy.on('upload-success', handleUploadSuccess);
     return () => {
       uppy.off('upload', handleUploadStart);
+      uppy.off('upload-success', handleUploadSuccess);
     };
-  }, [uppy]);
+  }, [uppy, project.id, onUpload, addJob]);
 
   // Handle upload completion
   useEffect(() => {
     const handleComplete = (result) => {
       if (result.successful.length > 0) {
-        if (onUpload) {
-          // Extract response from the first successful file (bundle: true shares response)
-          // or iterate if needed. Typically with bundle: true, it's one XHR.
-          const response = result.successful[0].response?.body;
-          onUpload(project.id, response);
-        }
         onClose();
       }
     };

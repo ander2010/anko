@@ -1,5 +1,4 @@
-
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -42,11 +41,13 @@ import {
 } from "@heroicons/react/24/outline";
 
 import projectService from "@/services/projectService";
+import { API_BASE } from "@/services/api";
 import { UploadDocumentsDialog } from "@/widgets/dialogs/upload-documents-dialog";
 import { DocumentMetadataDialog } from "@/widgets/dialogs/document-metadata-dialog";
 import { ConfirmDialog } from "@/widgets/dialogs/confirm-dialog";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
+import { useJobs } from "@/context/job-context";
 
 // Si todavía no tienes Topics/Rules/Batteries en API, puedes dejar esto así (arrays vacíos)
 import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
@@ -66,6 +67,7 @@ export function ProjectDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t, language } = useLanguage();
+  const { activeJobs: globalActiveJobs, addJob, removeJob } = useJobs();
 
   const [activeTab, setActiveTab] = useState("documents");
 
@@ -110,7 +112,6 @@ export function ProjectDetail() {
   const [viewingDocument, setViewingDocument] = useState(null);
 
   // topics/rules/batteries state
-
   const [topics, setTopics] = useState([]);
   const [topicsSearch, setTopicsSearch] = useState("");
   const [rules, setRules] = useState([]);
@@ -121,8 +122,47 @@ export function ProjectDetail() {
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
   const [simulationBattery, setSimulationBattery] = useState(null);
-  const [activeJobs, setActiveJobs] = useState({}); // { documentId: jobId }
-  const [activeFlashcardJobs, setActiveFlashcardJobs] = useState({}); // { deckId: jobInfo }
+
+  const activeJobs = useMemo(() => {
+    const jobs = {};
+    const pid = String(projectId);
+    const filtered = globalActiveJobs.filter(
+      (j) => j.type === "document" && String(j.projectId) === pid
+    );
+
+    // TRACE: Help debug why persistence might fail
+    if (globalActiveJobs.length > 0) {
+      console.group("[Persistence Trace] Project: " + pid);
+      console.log("Global jobs (raw):", globalActiveJobs);
+      console.log("Filtered for this project:", filtered);
+      console.groupEnd();
+    }
+
+    filtered.forEach((j) => {
+      if (j.docId) {
+        const sid = String(j.docId);
+        jobs[sid] = j.id;
+        console.log("[ProjectDetail] Mapping job", j.id, "to docId", sid);
+      }
+    });
+    return jobs;
+  }, [globalActiveJobs, projectId]);
+
+  const activeFlashcardJobs = useMemo(() => {
+    const jobs = {};
+    const filtered = globalActiveJobs.filter(
+      (j) => j.type === "flashcard" && String(j.projectId) === String(projectId)
+    );
+    if (filtered.length > 0) {
+      console.log("[ProjectDetail] Found active flashcard jobs:", filtered);
+    }
+    filtered.forEach((j) => {
+      if (j.deckId) {
+        jobs[String(j.deckId)] = { job_id: j.id, ws_progress: j.ws_url };
+      }
+    });
+    return jobs;
+  }, [globalActiveJobs, projectId]);
 
   const [createDeckDialogOpen, setCreateDeckDialogOpen] = useState(false);
   const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
@@ -135,8 +175,6 @@ export function ProjectDetail() {
     if (!project || !user) return false;
     return project?.owner?.id === user?.id;
   }, [project, user]);
-
-
 
   const [showCreateRule, setShowCreateRule] = useState(false);
   const [ruleForm, setRuleForm] = useState({
@@ -188,53 +226,12 @@ export function ProjectDetail() {
       // Init SSE for progress
       const batteryId = res?.battery?.id;
       if (batteryId) {
-        const sseUrl = `${import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api"}/batteries/${batteryId}/progress-stream-bat/`;
-
-
-        // If 'token' is truly not needed (e.g. cookie auth or public), removes it.
-        const es = new EventSource(sseUrl);
-
-        es.onopen = () => {
-
-        };
-
-        es.addEventListener("progress", (e) => {
-
-          const data = JSON.parse(e.data);
-          setBatteryProgress(prev => ({
-            ...prev,
-            [batteryId]: data
-          }));
+        addJob({
+          id: String(batteryId),
+          type: 'battery',
+          projectId: String(projectId)
         });
-
-        es.addEventListener("end", async (e) => {
-
-          es.close();
-
-          try {
-            await projectService.saveQuestionsFromQa(batteryId);
-          } catch (err) {
-            console.error("Error saving questions:", err);
-          }
-
-          // Update status to completed or remove from progress map
-          // Refresh batteries to get final data
-          fetchBatteries(Number(projectId));
-          setBatteryProgress(prev => {
-            const newState = { ...prev };
-            // remove or keep as '100%'?
-            // Let's keep it as 100% until refresh or manually cleared?
-            // Actually fetching batteries updates the list with 'Ready'.
-            // So progress overlay can be removed.
-            delete newState[batteryId];
-            return newState;
-          });
-        });
-
-        es.addEventListener("error", (e) => {
-          console.error("SSE error", e);
-          es.close();
-        });
+        resumeBatterySSE(batteryId);
       }
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to generate battery");
@@ -284,6 +281,52 @@ export function ProjectDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
+  // Resume persistent battery jobs on mount/projectId change
+  useEffect(() => {
+    if (!projectId || !globalActiveJobs.length) return;
+
+    const projectJobs = globalActiveJobs.filter(j => String(j.projectId) === String(projectId));
+
+    // Resume battery jobs (re-trigger SSE logic) if not active
+    projectJobs.filter(j => j.type === 'battery').forEach(j => {
+      if (!batteryProgress[j.id]) {
+        resumeBatterySSE(j.id);
+      }
+    });
+
+  }, [projectId, globalActiveJobs]);
+
+  const resumeBatterySSE = (batteryId) => {
+    // Using relative URL to leverage Vite proxy
+    const sseUrl = `/api/batteries/${batteryId}/progress-stream-bat/`;
+    console.log("[ProjectDetail] Resuming battery SSE:", sseUrl);
+    const es = new EventSource(sseUrl);
+
+    es.addEventListener("progress", (e) => {
+      const data = JSON.parse(e.data);
+      setBatteryProgress(prev => ({ ...prev, [batteryId]: data }));
+    });
+
+    es.addEventListener("end", async (e) => {
+      es.close();
+      try { await projectService.saveQuestionsFromQa(batteryId); } catch (err) { }
+      fetchBatteries(Number(projectId));
+      setBatteryProgress(prev => {
+        const newState = { ...prev };
+        delete newState[batteryId];
+        return newState;
+      });
+      removeJob(batteryId); // Clear from persistence
+    });
+
+    es.addEventListener("error", (e) => {
+      console.error("SSE error", e);
+      es.close();
+      // Optional: don't removeJob yet so it can retry next refresh?
+      // Or remove if it's a permanent error.
+    });
+  };
+
   const fetchSectionsCounts = async () => {
     try {
       if (!projectId) return;
@@ -316,7 +359,7 @@ export function ProjectDetail() {
         doc.sections.forEach(sec => {
           sections.push({
             id: sec.id,
-            name: sec.title || sec.name || `Section ${sec.id}`,
+            name: sec.title || sec.name || `Section ${sec.id} `,
             documentName: doc.filename || doc.name || "Unknown Doc",
             docId: doc.id
           });
@@ -540,14 +583,15 @@ export function ProjectDetail() {
           // Refresh list from DB as requested
           await fetchDecks(Number(projectId));
 
-          if (res.job && res.deck) {
-            setActiveFlashcardJobs(prev => ({
-              ...prev,
-              [res.deck.id]: {
-                job_id: res.job.job_id,
-                ws_progress: res.job.ws_progress
-              }
-            }));
+          if (res.job_id) {
+            const deckId = res.deck?.id || res.id;
+            addJob({
+              id: String(res.job_id),
+              type: "flashcard",
+              projectId: String(projectId),
+              deckId: String(deckId),
+              ws_url: res.ws_progress
+            });
           }
         }
       }
@@ -559,27 +603,18 @@ export function ProjectDetail() {
   };
 
   const handleFlashcardJobComplete = async (deckId, jobId, lastData) => {
-    try {
-      // Remove job immediately to stop any further triggers from the UI
-      setActiveFlashcardJobs((prev) => {
-        const newState = { ...prev };
-        delete newState[deckId];
-        return newState;
-      });
+    if (jobId) removeJob(jobId);
 
-      // Use the new sync method via POST
-      await projectService.syncFlashcardsFromJob(deckId, jobId);
+    // Use the new sync method via POST
+    await projectService.syncFlashcardsFromJob(deckId, jobId);
 
-      // Update state locally for the specific deck to avoid global loading/spinner
-      // We only fetch flashcards for this specific deck once to get the final count
-      const updatedCards = await projectService.getDeckFlashcards(deckId);
+    // Update state locally for the specific deck to avoid global loading/spinner
+    // We only fetch flashcards for this specific deck once to get the final count
+    const updatedCards = await projectService.getDeckFlashcards(deckId);
 
-      setDecks(prevDecks => prevDecks.map(d =>
-        d.id === deckId ? { ...d, flashcards_count: updatedCards.length } : d
-      ));
-    } catch (err) {
-      console.error("Error syncing flashcards after job complete:", err);
-    }
+    setDecks(prevDecks => prevDecks.map(d =>
+      d.id === deckId ? { ...d, flashcards_count: updatedCards.length } : d
+    ));
   };
 
   const handleEditDeck = (deck) => {
@@ -619,60 +654,54 @@ export function ProjectDetail() {
     }
   };
 
-  const handleUploadDocuments = async (pId, filesOrResponse) => {
+  const handleUploadDocuments = useCallback(async (pId, filesOrResponse) => {
     try {
+      const targetProjectId = pId || projectId;
       setError(null);
       let response;
 
-      // Check if we received a response object (from Uppy) or a list of files (from legacy input)
       if (filesOrResponse && !Array.isArray(filesOrResponse) && (filesOrResponse.processing || filesOrResponse.message)) {
         response = filesOrResponse;
       } else {
-        // Fallback for manual file list
-        response = await projectService.uploadProjectDocuments(Number(pId), filesOrResponse);
+        response = await projectService.uploadProjectDocuments(Number(targetProjectId), filesOrResponse);
       }
 
       if (response.processing) {
-        const newJobs = {};
-        response.processing.forEach(p => {
+        response.processing.forEach((p) => {
           if (p.document?.id && p.external?.job_id) {
-            newJobs[p.document.id] = p.external.job_id;
+            addJob({
+              id: String(p.external.job_id),
+              type: "document",
+              projectId: String(targetProjectId),
+              docId: String(p.document.id) // Ensure docId is a string
+            });
+            console.log("[ProjectDetail] Registered document job for project:", String(targetProjectId), "doc:", String(p.document.id), "job:", p.external.job_id);
           }
         });
-        setActiveJobs(prev => ({ ...prev, ...newJobs }));
       }
 
-      await fetchDocuments(Number(projectId));
+      await fetchDocuments(Number(targetProjectId));
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to upload documents");
     }
-  };
+  }, [projectId, addJob]);
 
-  const handleJobComplete = async (docId, jobId) => {
+  const handleJobComplete = useCallback(async (docId, jobId) => {
     try {
+      console.log("[ProjectDetail] Job complete:", { docId, jobId });
       if (docId) {
-        // Fetch tags as requested by the user
         await projectService.getDocumentTags(docId);
       }
-      setActiveJobs((prev) => {
-        const newState = { ...prev };
-        delete newState[docId];
-        return newState;
-      });
-      // Assuming refreshProject is a function that re-fetches project data
-      // If not defined, this line might cause an error.
-      // For now, I'll comment it out or assume it exists if it's in the original code.
-      // refreshProject(); 
-      await fetchDocuments(Number(projectId)); // Refresh documents to update status
+      if (jobId) removeJob(jobId);
+      await fetchDocuments(Number(projectId));
 
-      // Add a small delay to allow backend to finalize section creation before fetching counts
       setTimeout(() => {
         fetchSectionsCounts();
       }, 1000);
     } catch (err) {
       console.error("Error handling job completion:", err);
     }
-  };
+  }, [projectId, removeJob, fetchDocuments, fetchSectionsCounts]);
 
   const handleDownloadDocument = async (doc) => {
     try {
@@ -774,7 +803,7 @@ export function ProjectDetail() {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(b) / Math.log(k));
-    return `${Math.round((b / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
+    return `${Math.round((b / Math.pow(k, i)) * 100) / 100} ${sizes[i]} `;
   };
 
   const formatDate = (dateString) => {
@@ -842,8 +871,7 @@ export function ProjectDetail() {
               <Typography variant="h2" className="font-black tracking-tight text-zinc-900">
                 {project.title || project.name || "Untitled"}
               </Typography>
-              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"
-                }`}>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"} `}>
                 {isOwner ? "Owner" : "Member"}
               </div>
             </div>
@@ -886,8 +914,7 @@ export function ProjectDetail() {
             >
               <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400 group-hover:text-zinc-500"}`} />
               {tab.label}
-              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"
-                }`}>
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"}`}>
                 {tab.count}
               </span>
             </button>
@@ -1010,11 +1037,11 @@ export function ProjectDetail() {
                             </td>
 
                             <td className="py-4 px-6">
-                              {activeJobs[doc.id] ? (
+                              {activeJobs[String(doc.id)] ? (
                                 <div className="w-32">
                                   <ProjectProcessingProgress
-                                    jobId={activeJobs[doc.id]}
-                                    onComplete={() => handleJobComplete(doc.id, activeJobs[doc.id])}
+                                    jobId={activeJobs[String(doc.id)]}
+                                    onComplete={() => handleJobComplete(String(doc.id), activeJobs[String(doc.id)])}
                                   />
                                 </div>
                               ) : (
@@ -1203,7 +1230,7 @@ export function ProjectDetail() {
               onClose={() => setConfirmTopicDialogOpen(false)}
               onConfirm={handleConfirmArchiveTopic}
               title="Archive Topic"
-              message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+              message={`Are you sure you want to archive "${selectedTopic?.name}" ? You can restore it later.`}
               confirmText="Archive"
               variant="info"
             />
@@ -1212,7 +1239,7 @@ export function ProjectDetail() {
               onClose={() => setConfirmTopicDialogOpen(false)}
               onConfirm={handleConfirmArchiveTopic}
               title="Archive Topic"
-              message={`Are you sure you want to archive "${selectedTopic?.name}"? You can restore it later.`}
+              message={`Are you sure you want to archive "${selectedTopic?.name}" ? You can restore it later.`}
               confirmText="Archive"
               variant="info"
             />
@@ -1222,7 +1249,7 @@ export function ProjectDetail() {
               onClose={() => setConfirmDeleteTopicDialogOpen(false)}
               onConfirm={handleConfirmDeleteTopic}
               title="Delete Topic"
-              message={`Are you sure you want to delete "${selectedTopic?.name}"? This action cannot be undone.`}
+              message={`Are you sure you want to delete "${selectedTopic?.name}" ? This action cannot be undone.`}
               confirmText="Delete"
               variant="danger"
             />
@@ -1420,7 +1447,7 @@ export function ProjectDetail() {
                           <div className="flex justify-between">
                             <span>{t("global.rules.table.topic")}</span>
                             <span className="font-medium text-blue-gray-900">
-                              {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
+                              {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope} ` : (language === "es" ? "Global" : "Global")}
                             </span>
                           </div>
                         </div>
@@ -1522,7 +1549,7 @@ export function ProjectDetail() {
                         {batteryForm.sections.map((sec) => (
                           <Chip
                             key={sec.id}
-                            value={`${sec.documentName}: ${sec.name}`}
+                            value={`${sec.documentName}: ${sec.name} `}
                             onClose={() => {
                               setBatteryForm(prev => ({
                                 ...prev,
@@ -1723,17 +1750,17 @@ export function ProjectDetail() {
                         </div>
 
                         {/* Generation Progress */}
-                        {batteryProgress[battery.id] && (
-                          <div className="mb-3">
-                            <div className="flex items-center justify-between gap-4 mb-1">
-                              <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                                {batteryProgress[battery.id].status}
+                        {batteryProgress[String(battery.id)] && (
+                          <div className="mt-4 pt-4 border-t border-blue-gray-50">
+                            <div className="flex justify-between items-center mb-1">
+                              <Typography variant="small" className="font-medium text-blue-600">
+                                {batteryProgress[String(battery.id)].status}
                               </Typography>
-                              <Typography variant="small" color="blue-gray" className="font-medium text-xs">
-                                {Math.round(batteryProgress[battery.id].percent || 0)}%
+                              <Typography variant="small" className="font-bold text-blue-600">
+                                {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
                               </Typography>
                             </div>
-                            <Progress value={Math.round(batteryProgress[battery.id].percent || 0)} size="sm" color="blue" />
+                            <Progress value={Math.round(batteryProgress[String(battery.id)].percent || 0)} size="sm" color="blue" />
                           </div>
                         )}
 
@@ -1836,8 +1863,8 @@ export function ProjectDetail() {
                       onDelete={handleDeleteDeck}
                       onStudy={handleStudyDeck}
                       onLearn={handleLearnDeck}
-                      job={activeFlashcardJobs[deck.id]}
-                      onJobComplete={(lastData) => handleFlashcardJobComplete(deck.id, activeFlashcardJobs[deck.id]?.job_id, lastData)}
+                      job={activeFlashcardJobs[String(deck.id)]}
+                      onJobComplete={(lastData) => handleFlashcardJobComplete(String(deck.id), activeFlashcardJobs[String(deck.id)]?.job_id, lastData)}
                     />
                   ))}
               </div>
@@ -1947,7 +1974,7 @@ export function ProjectDetail() {
         onClose={() => setConfirmDeleteDeckDialogOpen(false)}
         onConfirm={handleConfirmDeleteDeck}
         title={language === "es" ? "Eliminar Mazo" : "Delete Deck"}
-        message={language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${selectedDeck?.title}"?` : `Are you sure you want to delete deck "${selectedDeck?.title}"?`}
+        message={language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${selectedDeck?.title}" ? ` : `Are you sure you want to delete deck "${selectedDeck?.title}" ? `}
         confirmText={t("global.actions.delete")}
         variant="danger"
       />

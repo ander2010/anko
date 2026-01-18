@@ -9,10 +9,11 @@ export function ProjectProcessingProgress({ jobId, onComplete }) {
     const { language } = useLanguage();
 
     React.useEffect(() => {
+        console.log("[ProjectProcessingProgress] Tracking jobId:", jobId, "Current status:", { progress, isCompleted, docId });
         if (isCompleted && onComplete) {
             onComplete(jobId, docId);
         }
-    }, [isCompleted, jobId, docId, onComplete]);
+    }, [isCompleted, jobId, docId, onComplete, progress]);
 
     if (error && progress === 0) {
         return (

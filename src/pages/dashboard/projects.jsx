@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Card,
@@ -29,6 +29,7 @@ import UploadDocumentsDialog from "@/widgets/dialogs/upload-documents-dialog";
 import { useProjects } from "@/context/projects-context";
 
 import { useLanguage } from "@/context/language-context";
+import { useJobs } from "@/context/job-context";
 
 export function Projects() {
     const { t } = useLanguage();
@@ -36,6 +37,7 @@ export function Projects() {
     const { user } = useAuth();
     // Use global state
     const { projects, createProject, deleteProject, refreshAll, loading: contextLoading } = useProjects();
+    const { activeJobs: globalActiveJobs, addJob, removeJob } = useJobs();
 
     // Local UI state
     const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +48,17 @@ export function Projects() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
     const [error, setError] = useState(null);
-    const [activeJobs, setActiveJobs] = useState({}); // { projectId: [{ jobId }] }
+    const activeJobs = useMemo(() => {
+        const projectJobs = {};
+        globalActiveJobs.forEach(job => {
+            const pid = job.projectId ? String(job.projectId) : null;
+            if (pid) {
+                if (!projectJobs[pid]) projectJobs[pid] = [];
+                projectJobs[pid].push({ jobId: job.id, docId: job.docId });
+            }
+        });
+        return projectJobs;
+    }, [globalActiveJobs]);
 
     // No local fetch needed, context handles it.
     useEffect(() => {
@@ -86,11 +98,18 @@ export function Projects() {
         try {
             const response = await projectService.uploadDocuments(projectId, files);
             if (response.processing) {
-                const newJobs = response.processing.map(p => ({ jobId: p.external?.job_id }));
-                setActiveJobs(prev => ({
-                    ...prev,
-                    [projectId]: [...(prev[projectId] || []), ...newJobs]
-                }));
+                response.processing.map(p => {
+                    const jobId = p.external?.job_id;
+                    if (jobId) {
+                        addJob({
+                            id: jobId,
+                            type: "document",
+                            projectId: String(projectId),
+                            docId: p.document?.id
+                        });
+                    }
+                    return { jobId };
+                });
             }
             await refreshAll();
         } catch (err) {
@@ -103,21 +122,7 @@ export function Projects() {
                 // Fetch tags as requested by user
                 await projectService.getDocumentTags(docId);
             }
-            setActiveJobs((prev) => {
-                const projectJobs = prev[projectId] || [];
-                const filtered = projectJobs.filter((j) => j.jobId !== jobId);
-
-                if (filtered.length === 0) {
-                    const next = { ...prev };
-                    delete next[projectId];
-                    return next;
-                }
-
-                return {
-                    ...prev,
-                    [projectId]: filtered,
-                };
-            });
+            if (jobId) removeJob(jobId);
             refreshAll();
         } catch (err) {
             console.error("Error handling job completion:", err);
@@ -310,8 +315,8 @@ export function Projects() {
                                 key={tab.value}
                                 onClick={() => setActiveTab(tab.value)}
                                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all whitespace-nowrap ${activeTab === tab.value
-                                        ? "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/50"
-                                        : "text-zinc-500 hover:text-zinc-800"
+                                    ? "bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200/50"
+                                    : "text-zinc-500 hover:text-zinc-800"
                                     }`}
                             >
                                 <tab.icon className={`h-4 w-4 ${activeTab === tab.value ? "text-indigo-600" : "text-zinc-400"}`} />
@@ -356,7 +361,7 @@ export function Projects() {
                             project={project}
                             documentCount={project.documents_count ?? 0}
                             progress={0}
-                            processingJobs={activeJobs[project.id] || []}
+                            processingJobs={activeJobs[String(project.id)] || []}
                             isOwner={project?.owner?.id === user?.id}
                             onEnter={handleEnterProject}
                             onEdit={handleEditProject}

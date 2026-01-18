@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
+import { API_BASE } from "@/services/api";
 
 /**
  * Hook to connect to a job's progress stream.
@@ -22,11 +21,16 @@ export function useJobProgress(jobId) {
         if (!jobId || isCompleted || retryCount >= MAX_RETRIES) return;
 
         const token = localStorage.getItem("token");
-        const streamUrl =
-        `${API_BASE.replace(/\/$/, "")}/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
+        // Using relative URL to leverage Vite proxy and avoid CORS/406 issues
+        const streamUrl = `/api/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
             (token ? `&token=${encodeURIComponent(token)}` : "");
 
-        const eventSource = new EventSource(streamUrl); 
+        console.log("[useJobProgress] Connecting to:", streamUrl);
+        const eventSource = new EventSource(streamUrl);
+
+        eventSource.onopen = () => {
+            console.log("[useJobProgress] SSE Connected for jobId:", jobId);
+        };
         // Using relative URL as requested by the user to avoid 406 error
         // const streamUrl = `/api/projects/progress-stream/?job_id=${jobId}${token ? `&token=${token}` : ""}`;
         // let eventSource = new EventSource(streamUrl);
