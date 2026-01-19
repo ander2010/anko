@@ -17,7 +17,7 @@ import {
     ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
-import projectService from "@/services/projectService";
+import projectService, { API_BASE } from "@/services/projectService";
 
 export function DocumentViewerDialog({ open, onClose, document }) {
     const { language } = useLanguage();
@@ -52,10 +52,16 @@ export function DocumentViewerDialog({ open, onClose, document }) {
 
             // 1. Get the document URL from backend (presigned or internal)
             const data = await projectService.getDocumentDownloadUrl(document.id, 'view');
-            const targetUrl = data.url;
+            let targetUrl = data.url;
+
+            // Normalize relative URLs
+            if (targetUrl && targetUrl.startsWith('/')) {
+                const origin = API_BASE.replace('/api', '');
+                targetUrl = `${origin}${targetUrl}`;
+            }
 
             try {
-                // 2. Attempt to fetch with Bearer token to get a Blob (best for internal files)
+                // 2. Attempt to fetch with Token to get a Blob (best for internal files)
                 // If this is a cross-origin pre-signed URL, it might fail due to CORS
                 const blobUrl = await projectService.fetchDocumentWithAuth(targetUrl);
                 setFileUrl(blobUrl);

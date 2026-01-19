@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE } from "@/services/api";
 
 /**
  * Hook to connect to a flashcard creation job's WebSocket progress stream.
@@ -20,14 +21,49 @@ export function useFlashcardProgress(wsUrl) {
         let lastKnownProgress = 0;
 
         try {
-            socket = new WebSocket(wsUrl);
+            // Normalize relative URLs OR absolute URLs to use the correct API_BASE host
+            // This handles cases where backend returns "localhost:8080" but we need "localhost:8000"
+            let finalWsUrl = wsUrl;
+
+            // Determine correct host and protocol from API_BASE
+            let protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            let host;
+
+            if (API_BASE.startsWith("http")) {
+                const url = new URL(API_BASE);
+                host = url.host; // e.g. 127.0.0.1:8000
+                if (API_BASE.startsWith("https")) {
+                    protocol = "wss:";
+                } else {
+                    protocol = "ws:";
+                }
+            } else {
+                host = window.location.host;
+            }
+
+            // If it's already absolute (start with ws/wss), strip it to path to re-apply host
+            if (finalWsUrl.match(/^wss?:\/\//)) {
+                // Remove protocol and host, keep path
+                const parts = finalWsUrl.split("/");
+                // parts[0] = protocol, parts[1] = "", parts[2] = host, parts[3...] = path
+                const path = "/" + parts.slice(3).join("/");
+                finalWsUrl = `${protocol}//${host}${path}`;
+                console.log("[useFlashcardProgress] Rewrote absolute URL:", wsUrl, "->", finalWsUrl);
+            } else if (finalWsUrl.startsWith("/")) {
+                finalWsUrl = `${protocol}//${host}${finalWsUrl}`;
+                console.log("[useFlashcardProgress] Normalized relative URL:", wsUrl, "->", finalWsUrl);
+            }
+
+            console.log("[useFlashcardProgress] Connecting to:", finalWsUrl);
+            socket = new WebSocket(finalWsUrl);
 
             socket.onopen = () => {
-
+                console.log("[useFlashcardProgress] Connected to WS");
             };
 
             socket.onmessage = (event) => {
                 try {
+                    console.log("[useFlashcardProgress] WS Message:", event.data);
                     const data = JSON.parse(event.data);
 
 

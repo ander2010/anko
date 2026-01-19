@@ -580,19 +580,98 @@ export function ProjectDetail() {
           delete payload.cards; // Ensure no manual cards are sent to AI endpoint
 
           const res = await projectService.createDeckWithCards(payload);
+          console.log("[ProjectDetail] createDeckWithCards response:", res);
 
           // Refresh list from DB as requested
           await fetchDecks(Number(projectId));
 
-          if (res.job_id) {
-            const deckId = res.deck?.id || res.id;
+          // Correctly extract job_id from nested job object or root (fallback)
+          const jobId = res.job?.job_id || res.job_id;
+
+          if (jobId) {
+            console.log("Job ID found:", jobId);
+            // Robust deckId extraction: check res.deck.id, res.deck_id, res.id, or res.deck (if it's an ID)
+            const deckId = res.deck?.id || res.deck_id || res.id || (typeof res.deck === 'number' || typeof res.deck === 'string' ? res.deck : null);
+
+            if (!deckId) {
+              console.error("[ProjectDetail] CRITICAL: Could not extract deckId from response:", res);
+              setError("Deck created but failed to track progress (missing ID).");
+              return;
+            }
+            // Use res.job.ws_progress if available, else res.ws_progress
+            const wsUrl = res.job?.ws_progress || res.ws_progress;
+            console.log("[ProjectDetail] Registering flashcard job:", jobId, "for deck:", deckId, "WS:", wsUrl);
             addJob({
-              id: String(res.job_id),
+              id: String(jobId),
               type: "flashcard",
               projectId: String(projectId),
               deckId: String(deckId),
               ws_url: res.ws_progress
             });
+
+            // CRITICAL: Call sync immediately to ensure flashcards appear
+            // This handles cases where WebSocket completes too fast or fails
+            console.log("[ProjectDetail] Starting immediate sync for deck:", deckId, "job:", res.job_id);
+
+            // Poll for completion with exponential backoff
+            const pollForCompletion = async (attempts = 0, maxAttempts = 20) => {
+              try {
+                // Wait a bit before first attempt (backend needs time to generate)
+                // EDITED: Start with shorter delay to catch fast jobs, but retry implies waiting
+                const delay = attempts === 0 ? 500 : Math.min(1000 * Math.pow(1.5, attempts), 10000);
+                await new Promise(resolve => setTimeout(resolve, delay));
+
+                console.log(`[ProjectDetail] Sync attempt ${attempts + 1}/${maxAttempts} for deck ${deckId}`);
+
+                // Try to sync
+                try {
+                  await projectService.syncFlashcardsFromJob(deckId, jobId);
+                } catch (e) {
+                  console.warn("[ProjectDetail] Sync call failed (may be too early):", e);
+                  // Don't abort, checking flashcards count is the real test
+                }
+
+                // Fetch updated deck to get flashcard count
+                const updatedCards = await projectService.getDeckFlashcards(deckId);
+
+                if (updatedCards && updatedCards.length > 0) {
+                  console.log(`[ProjectDetail] Sync successful! Found ${updatedCards.length} flashcards`);
+
+                  // Update deck count
+                  setDecks(prevDecks => prevDecks.map(d =>
+                    d.id === deckId ? { ...d, flashcards_count: updatedCards.length } : d
+                  ));
+
+                  // Remove job from queue
+                  removeJob(String(jobId));
+                  return true;
+                }
+
+                // If no cards yet and we have attempts left, try again
+                if (attempts < maxAttempts - 1) {
+                  console.log(`[ProjectDetail] No cards yet, will retry...`);
+                  return pollForCompletion(attempts + 1, maxAttempts);
+                } else {
+                  console.warn(`[ProjectDetail] Max attempts reached, flashcards may not be ready yet`);
+                  removeJob(String(jobId));
+                  return false;
+                }
+              } catch (err) {
+                console.error(`[ProjectDetail] Sync attempt ${attempts + 1} failed:`, err);
+
+                // Retry on error if attempts remain
+                if (attempts < maxAttempts - 1) {
+                  return pollForCompletion(attempts + 1, maxAttempts);
+                } else {
+                  console.error("[ProjectDetail] Sync failed after max attempts");
+                  removeJob(String(jobId));
+                  return false;
+                }
+              }
+            };
+
+            // Start polling in background
+            pollForCompletion();
           }
         }
       }
@@ -604,6 +683,7 @@ export function ProjectDetail() {
   };
 
   const handleFlashcardJobComplete = async (deckId, jobId, lastData) => {
+    console.log("[ProjectDetail] Flashcard job complete for deck:", deckId, "Job:", jobId);
     if (jobId) removeJob(jobId);
 
     // Use the new sync method via POST
@@ -699,8 +779,15 @@ export function ProjectDetail() {
       const { url } = await projectService.getDocumentDownloadUrl(doc.id, 'download');
       if (!url) return;
 
+      // Normalize relative URLs
+      let targetUrl = url;
+      if (targetUrl.startsWith("/")) {
+        const origin = API_BASE.replace("/api", "");
+        targetUrl = `${origin}${targetUrl}`;
+      }
+
       const a = document.createElement("a");
-      a.href = url;
+      a.href = targetUrl;
       a.download = doc?.filename || "document";
       a.target = "_blank";
       document.body.appendChild(a);

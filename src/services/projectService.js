@@ -131,8 +131,14 @@ const projectService = {
 
   async fetchDocumentWithAuth(url) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch file from storage");
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) {
+        headers["Authorization"] = `Token ${token}`;
+      }
+
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error(`Failed to fetch file from storage: ${response.statusText}`);
       const blob = await response.blob();
       return window.URL.createObjectURL(blob);
     } catch (err) {
@@ -434,19 +440,16 @@ const projectService = {
     return res.data;
   },
 
-  async createDeckManual(payload) {
-    const res = await api.post("/decks/create-with-flashcards/", payload);
-    return res.data;
-  },
+
 
   async syncFlashcardsFromJob(deckId, jobId) {
-    const res = await api.post("/flashcards/sync-from-job/", {}, {
-      params: {
-        deck: deckId,
-        job_id: jobId,
-      }
-    });
-    return res.data;
+    try {
+      // Backend expects query params: /flashcards/sync-from-job/?deck=...&job_id=...
+      const res = await api.post(`/flashcards/sync-from-job/?deck=${deckId}&job_id=${jobId}`, {});
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to sync flashcards from job" };
+    }
   },
 
   async updateDeck(deckId, payload) {
