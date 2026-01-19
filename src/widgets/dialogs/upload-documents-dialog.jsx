@@ -26,6 +26,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       autoProceed: false,
       restrictions: {
         maxFileSize: 400 * 1024 * 1024,
+        maxNumberOfFiles: 10,
         allowedFileTypes: ['.pdf', '.doc', '.docx', '.txt', '.md'],
       },
     }).use(XHRUpload, {
@@ -33,7 +34,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
       formData: true,
       fieldName: 'files',
       headers: {},
-      bundle: true,
+      bundle: false,
     });
 
     return u;
