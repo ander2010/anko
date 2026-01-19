@@ -463,17 +463,22 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                                 icon={<Icon id={index + 1} open={openAccordion} />}
                                                 className="border-b border-zinc-100 last:border-b-0"
                                             >
-                                                <AccordionHeader className={`py-3 px-4 hover:bg-zinc-50 transition-colors border-b-0 ${openAccordion === index + 1 ? "bg-zinc-50" : ""}`}>
-                                                    <div className="flex items-center gap-4 w-full" onClick={e => e.stopPropagation()}>
-                                                        <Checkbox
-                                                            color="indigo"
-                                                            checked={allSelected}
-                                                            indeterminate={someSelected && !allSelected}
-                                                            onChange={() => handleDocumentToggle(doc)}
-                                                            className="h-4 w-4 rounded-md border-zinc-300 bg-white transition-all hover:scale-105 hover:before:opacity-0"
-                                                            containerProps={{ className: "p-0" }}
-                                                        />
-                                                        <div className="flex-1 text-left flex items-center justify-between" onClick={() => handleOpenAccordion(index + 1)}>
+                                                <AccordionHeader
+                                                    className={`py-3 px-4 hover:bg-zinc-50 transition-colors border-b-0 ${openAccordion === index + 1 ? "bg-zinc-50" : ""}`}
+                                                    onClick={() => handleOpenAccordion(index + 1)}
+                                                >
+                                                    <div className="flex items-center gap-4 w-full">
+                                                        <div onClick={(e) => e.stopPropagation()}>
+                                                            <Checkbox
+                                                                color="indigo"
+                                                                checked={allSelected}
+                                                                indeterminate={someSelected && !allSelected}
+                                                                onChange={() => handleDocumentToggle(doc)}
+                                                                className="h-4 w-4 rounded-md border-zinc-300 bg-white transition-all hover:scale-105 hover:before:opacity-0"
+                                                                containerProps={{ className: "p-0" }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 text-left flex items-center justify-between">
                                                             <Typography variant="small" className="font-bold text-zinc-900">
                                                                 {doc.filename}
                                                             </Typography>
