@@ -229,6 +229,20 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
             if (formData.cards.length === 0) {
                 newErrors.general = language === "es" ? "Debes agregar al menos una ficha." : "You must add at least one card.";
             }
+        } else {
+            // AI Generation mode
+            // Case A: No documents/sections available to process
+            if (scannedDocuments.length === 0) {
+                newErrors.general = language === "es"
+                    ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                    : "You don't have any sections available. You should upload a document so the system can process the content.";
+            }
+            // Case B: Sections exist but none selected
+            else if (formData.section_ids.length === 0) {
+                newErrors.general = language === "es"
+                    ? "Usted debe seleccionar al menos una sección para generar las fichas."
+                    : "You must select at least one section to generate the cards.";
+            }
         }
 
         setErrors(newErrors);
@@ -443,11 +457,13 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                             ) : scannedDocuments.length === 0 ? (
                                 <div className="p-8 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
                                     <Typography variant="small" className="text-zinc-500 font-medium italic">
-                                        {language === "es" ? "No hay documentos con secciones procesadas." : "No documents with processed sections."}
+                                        {language === "es"
+                                            ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                                            : "You don't have any sections available. You should upload a document so the system can process the content."}
                                     </Typography>
                                 </div>
                             ) : (
-                                <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                                <div className={`border rounded-2xl overflow-hidden bg-white shadow-sm transition-colors ${errors.general ? "border-red-500 bg-red-50/5" : "border-zinc-200"} `}>
                                     {scannedDocuments.map((doc, index) => {
                                         const docId = Number(doc.id);
                                         const docSections = doc.sections || [];

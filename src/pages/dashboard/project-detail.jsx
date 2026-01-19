@@ -38,6 +38,7 @@ import {
   PlayIcon,
   ViewColumnsIcon,
   Square2StackIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 import projectService from "@/services/projectService";
@@ -83,6 +84,7 @@ export function ProjectDetail() {
   const [sectionSearch, setSectionSearch] = useState("");
   const [availableSections, setAvailableSections] = useState([]);
   const [batteryProgress, setBatteryProgress] = useState({});
+  const [batteryErrors, setBatteryErrors] = useState({});
 
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -188,13 +190,32 @@ export function ProjectDetail() {
   const handleGenerateBattery = async () => {
     try {
       setError(null);
+      setBatteryErrors({});
+
+      // Case A: No sections available in the project
+      if (availableSections.length === 0) {
+        const msg = language === "es"
+          ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+          : "You don't have any sections. You should upload a document so the system can process the content.";
+        setBatteryErrors({ sections: msg });
+        return;
+      }
+
+      // Case B: Sections exist but none were selected
+      if (batteryForm.sections.length === 0) {
+        const msg = language === "es"
+          ? "Usted debe seleccionar al menos una sección."
+          : "You must select at least one section.";
+        setBatteryErrors({ sections: msg });
+        return;
+      }
 
       // query_text is now optional
 
       const payload = {
         project: Number(projectId),
         query_text: batteryForm.query_text,
-        sections: batteryForm.sections.length > 0 ? batteryForm.sections.map(s => s.id) : null,
+        sections: batteryForm.sections.map(s => s.id),
         quantity: Number(batteryForm.quantity),
         difficulty: batteryForm.difficulty,
         question_format: batteryForm.question_format,
@@ -1609,18 +1630,26 @@ export function ProjectDetail() {
 
                     {/* Sections Selection */}
                     <div>
-                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                        {language === "es" ? "Secciones (opcional)" : "Sections (optional)"}
+                      <label className={`block text-sm font-medium mb-2 ${batteryErrors.sections ? "text-red-500" : "text-blue-gray-700"} `}>
+                        {language === "es" ? "Secciones *" : "Sections *"}
                       </label>
                       <div className="mb-2">
                         <input
                           type="text"
-                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
                           placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
                           value={sectionSearch}
                           onChange={(e) => setSectionSearch(e.target.value)}
                         />
                       </div>
+
+                      {batteryErrors.sections && (
+                        <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                          {batteryErrors.sections}
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap gap-2 mb-2">
                         {batteryForm.sections.map((sec) => (
                           <Chip
@@ -1636,7 +1665,7 @@ export function ProjectDetail() {
                           />
                         ))}
                       </div>
-                      <div className="max-h-32 overflow-y-auto border border-blue-gray-100 rounded-md">
+                      <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
                         {availableSections
                           .filter(sec =>
                             sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
@@ -1653,6 +1682,7 @@ export function ProjectDetail() {
                                   sections: [...prev.sections, sec]
                                 }));
                                 setSectionSearch("");
+                                if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
                               }}
                             >
                               <span className="font-medium text-blue-gray-800">{sec.name}</span>
