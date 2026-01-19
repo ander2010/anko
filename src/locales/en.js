@@ -214,7 +214,7 @@ export const en = {
             title: "What those studying with Ankard say",
             subtitle: "Opinions focused on what matters: practice, focus, and results.",
             t1: {
-                name: "Maria S.",
+                name: "Rafael S.",
                 role: "Med Student",
                 quote: "I used to read and think I understood. With flashcard-style questions, I saw where I failed and improved faster."
             },

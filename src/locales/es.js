@@ -214,7 +214,7 @@ export const es = {
             title: "Lo que dicen quienes estudian con Ankard",
             subtitle: "Opiniones centradas en lo importante: práctica, enfoque y resultados.",
             t1: {
-                name: "María S.",
+                name: "Rafael S.",
                 role: "Estudiante de Medicina",
                 quote: "Antes leía y creía que entendía. Con las preguntas tipo flashcard vi en qué fallaba y mejoré más rápido."
             },
