@@ -310,7 +310,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
           </div>
 
           <div className="mt-4 text-xs text-blue-gray-500">
-            {language === "es" ? "Intento #" : "Attempt #"}{attempt?.id || "—"}{" "}
+            {language === "es" ? "Intento #" : "Attempt #"}{(battery.attempts_count || 0) + 1}{" "}
             {savingAttempt ? `• ${language === "es" ? "Guardando intento..." : "Saving attempt..."}` : ""}
           </div>
         </DialogBody>
