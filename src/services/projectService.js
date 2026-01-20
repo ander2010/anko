@@ -431,6 +431,12 @@ const projectService = {
     return res.data;
   },
 
+  async createDeckManual(payload) {
+    const res = await api.post("/decks/create-with-flashcards/", payload);
+
+    return res.data;
+  },
+
   async getDeckFlashcards(deckId, jobId = null) {
     const params = { deck: deckId };
     if (jobId) params.job_id = jobId;

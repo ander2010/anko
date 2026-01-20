@@ -73,7 +73,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     section_ids: [],
                     document_ids: [],
                     cards_count: 3,
-                    cards: [{ front: "", back: "", notes: "" }], // Initial empty card
+                    cards: [], // Start with empty list
                 });
                 setActiveTab("ai");
             }
