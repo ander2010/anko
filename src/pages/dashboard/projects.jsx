@@ -359,6 +359,8 @@ export function Projects() {
                             key={project.id}
                             project={project}
                             documentCount={project.documents_count ?? 0}
+                            batteriesCount={project.batteries_count ?? 0}
+                            decksCount={project.decks_count ?? 0}
                             progress={0}
                             processingJobs={activeJobs[String(project.id)] || []}
                             isOwner={project?.owner?.id === user?.id}

@@ -67,6 +67,15 @@ const projectService = {
       throw err?.response?.data || { error: "Failed to fetch project" };
     }
   },
+
+  async getProjectCounts(projectId) {
+    try {
+      const res = await api.get(`${BASE}${projectId}/counts/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch counts" };
+    }
+  },
   async getProjectDocuments(projectId) {
     try {
       const res = await api.get(`/projects/${projectId}/documents/`);

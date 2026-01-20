@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Card,
@@ -21,13 +21,18 @@ import {
   TrashIcon,
   DocumentTextIcon,
   ClockIcon,
+  RectangleStackIcon,
 } from "@heroicons/react/24/outline";
 
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
+import { useLanguage } from "@/context/language-context";
+import projectService from "@/services/projectService";
 
 export function ProjectCard({
   project,
   documentCount = 0,
+  batteriesCount = 0,
+  decksCount = 0,
   progress = 0,
   processingJobs = [], // Array of { id, jobId }
   isOwner,
@@ -37,21 +42,53 @@ export function ProjectCard({
   onUploadDocs,
   onJobComplete,
 }) {
+  const { t, language } = useLanguage();
+  const [counts, setCounts] = useState({
+    documents: documentCount,
+    batteries: batteriesCount,
+    decks: decksCount,
+  });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const data = await projectService.getProjectCounts(project.id);
+        setCounts({
+          documents: data.documents_count ?? documentCount,
+          batteries: data.batteries_count ?? 0,
+          decks: data.decks_count ?? 0,
+        });
+      } catch (err) {
+        console.error("[ProjectCard] Error fetching counts:", err);
+      }
+    };
+
+    if (project.id) {
+      fetchCounts();
+    }
+  }, [project.id, documentCount]);
+
   const formatDate = (dateString) => {
     if (!dateString) return "—";
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) return "—";
 
     const now = new Date();
+    // Using Math.floor to ensure same-day items show "Today"
     const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays === 0) return language === "es" ? "Hoy" : "Today";
+    if (diffDays === 1) return language === "es" ? "Ayer" : "Yesterday";
+    if (diffDays < 7) return language === "es" ? `Hace ${diffDays} días` : `${diffDays} days ago`;
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return language === "es"
+        ? `Hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`
+        : `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    }
 
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -80,7 +117,7 @@ export function ProjectCard({
 
             <div className="flex items-center gap-2">
               <Typography className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                BY {ownerLabel.toUpperCase()}
+                {language === "es" ? "POR" : "BY"} {ownerLabel.toUpperCase()}
               </Typography>
 
               {isOwner && (
@@ -103,7 +140,7 @@ export function ProjectCard({
                 className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
-                Enter Project
+                {language === "es" ? "Entrar al Proyecto" : "Enter Project"}
               </MenuItem>
 
               <MenuItem
@@ -111,7 +148,7 @@ export function ProjectCard({
                 className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
-                Upload Documents
+                {language === "es" ? "Subir Documentos" : "Upload Documents"}
               </MenuItem>
 
               {isOwner && (
@@ -121,7 +158,7 @@ export function ProjectCard({
                     className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
                   >
                     <PencilIcon className="h-4 w-4 text-zinc-400" />
-                    Edit Details
+                    {language === "es" ? "Editar Detalles" : "Edit Details"}
                   </MenuItem>
 
                   <div className="my-1 border-t border-zinc-100" />
@@ -131,7 +168,7 @@ export function ProjectCard({
                     className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50 hover:text-red-600"
                   >
                     <TrashIcon className="h-4 w-4" />
-                    Delete Project
+                    {language === "es" ? "Eliminar Proyecto" : "Delete Project"}
                   </MenuItem>
                 </>
               )}
@@ -140,19 +177,32 @@ export function ProjectCard({
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="p-4 rounded-[1.5rem] bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors">
-            <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Documents</Typography>
-            <div className="flex items-end gap-1.5">
-              <Typography className="text-2xl font-black text-zinc-900 leading-none">{documentCount}</Typography>
-              <DocumentTextIcon className="h-4 w-4 text-indigo-500 mb-0.5" />
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors">
+            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
+              {t("project_detail.tabs.documents")}
+            </Typography>
+            <div className="flex items-end gap-1">
+              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.documents}</Typography>
+              <DocumentTextIcon className="h-3.5 w-3.5 text-indigo-500 mb-0.5" />
             </div>
           </div>
-          <div className="p-4 rounded-[1.5rem] bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors">
-            <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Efficiency</Typography>
-            <div className="flex items-end gap-1.5">
-              <Typography className="text-2xl font-black text-zinc-900 leading-none">84%</Typography>
-              <BoltIcon className="h-4 w-4 text-purple-500 mb-0.5" />
+          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors">
+            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
+              {t("project_detail.tabs.batteries")}
+            </Typography>
+            <div className="flex items-end gap-1">
+              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.batteries}</Typography>
+              <BoltIcon className="h-3.5 w-3.5 text-purple-500 mb-0.5" />
+            </div>
+          </div>
+          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-orange-100 group-hover:bg-orange-50/30 transition-colors">
+            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
+              {t("project_detail.tabs.decks")}
+            </Typography>
+            <div className="flex items-end gap-1">
+              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.decks}</Typography>
+              <RectangleStackIcon className="h-3.5 w-3.5 text-orange-500 mb-0.5" />
             </div>
           </div>
         </div>
@@ -175,7 +225,7 @@ export function ProjectCard({
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <Typography className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                PROCESSING
+                {language === "es" ? "PROCESANDO" : "PROCESSING"}
               </Typography>
               <Typography className="text-[10px] font-black text-indigo-600 uppercase">
                 {progress}%
@@ -235,6 +285,8 @@ ProjectCard.propTypes = {
   }).isRequired,
 
   documentCount: PropTypes.number,
+  batteriesCount: PropTypes.number,
+  decksCount: PropTypes.number,
   progress: PropTypes.number,
   processingJobs: PropTypes.arrayOf(
     PropTypes.shape({
