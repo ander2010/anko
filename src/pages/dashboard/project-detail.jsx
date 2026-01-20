@@ -847,15 +847,28 @@ export function ProjectDetail() {
     setMetadataDialogOpen(true);
   };
 
-  const statusMap = {
-    pending: t("project_detail.docs.status.pending"),
-    processing: t("project_detail.docs.status.processing"),
-    ready: t("project_detail.docs.status.ready"),
-    failed: t("project_detail.docs.status.failed")
-  };
+  const getStatusBadge = (doc) => {
+    if (!doc) return "—";
 
-  const getStatusBadge = (status) => {
-    const val = statusMap[status] || status || "—";
+    // Heuristic: If it has sections, it's definitely ready/finalizado
+    const hasSections = (sectionsCounts[doc.id] || 0) > 0;
+    const rawStatus = (doc.status || "").toLowerCase();
+
+    // Normalize status: treat 'completed' or 'finalized' as 'ready'
+    let status = rawStatus;
+    if (hasSections || status === "completed" || status === "finalized") {
+      status = "ready";
+    }
+
+    const statusMap = {
+      pending: t("project_detail.docs.status.pending"),
+      processing: t("project_detail.docs.status.processing"),
+      ready: t("project_detail.docs.status.ready"),
+      failed: t("project_detail.docs.status.failed")
+    };
+
+    const val = statusMap[status] || doc.status || "—";
+
     switch (status) {
       case "pending":
         return <Chip value={val} size="sm" color="gray" className="rounded-full" />;
@@ -876,7 +889,7 @@ export function ProjectDetail() {
             icon={<CheckCircleIcon className="h-4 w-4" />}
             size="sm"
             color="green"
-            className="rounded-full"
+            className="rounded-full shadow-sm shadow-green-200"
           />
         );
       case "failed":
@@ -1143,7 +1156,7 @@ export function ProjectDetail() {
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  {getStatusBadge(doc.status)}
+                                  {getStatusBadge(doc)}
                                 </div>
                               )}
                             </td>
