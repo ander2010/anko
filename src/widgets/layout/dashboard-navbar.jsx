@@ -41,7 +41,6 @@ export function DashboardNavbar() {
   const { projects: allProjects } = useProjects();
 
   const pathParts = pathname.split("/").filter((el) => el !== "");
-  const [layout, page, id] = pathParts;
 
   const getBreadcrumbName = (part, index) => {
     // If it's an ID and the previous part was 'project'
@@ -53,9 +52,6 @@ export function DashboardNavbar() {
     // Default translation lookup
     return t(`breadcrumbs.${part}`) || part;
   };
-
-  const currentPageName = getBreadcrumbName(page, 1);
-  const detailName = id ? getBreadcrumbName(id, 2) : null;
 
   return (
     <Navbar
@@ -80,28 +76,41 @@ export function DashboardNavbar() {
             <Breadcrumbs
               className="bg-transparent p-0 transition-all"
             >
-              <Link to={`/${layout}`}>
-                <Typography
-                  variant="small"
-                  className="font-medium text-zinc-400 transition-all hover:text-indigo-600"
-                >
-                  {t(`breadcrumbs.${layout}`) || layout}
-                </Typography>
-              </Link>
-              <Typography
-                variant="small"
-                className="font-medium text-zinc-500"
-              >
-                {currentPageName}
-              </Typography>
-              {detailName && (
-                <Typography
-                  variant="small"
-                  className="font-semibold text-zinc-900"
-                >
-                  {detailName}
-                </Typography>
-              )}
+              {pathParts.map((part, index) => {
+                const isLast = index === pathParts.length - 1;
+                const name = getBreadcrumbName(part, index);
+                const layout = pathParts[0];
+
+                if (!isLast) {
+                  let path = "/" + pathParts.slice(0, index + 1).join("/");
+
+                  // Special case: link 'project' detail prefix back to 'projects' list
+                  if (part === "project" && index === 1) {
+                    path = `/${layout}/projects`;
+                  }
+
+                  return (
+                    <Link key={path} to={path}>
+                      <Typography
+                        variant="small"
+                        className="font-medium text-zinc-400 transition-all hover:text-indigo-600"
+                      >
+                        {name}
+                      </Typography>
+                    </Link>
+                  );
+                }
+
+                return (
+                  <Typography
+                    key={index}
+                    variant="small"
+                    className="font-semibold text-zinc-900"
+                  >
+                    {name}
+                  </Typography>
+                );
+              })}
             </Breadcrumbs>
 
           </div>
@@ -187,7 +196,5 @@ export function DashboardNavbar() {
     </Navbar>
   );
 }
-
-DashboardNavbar.displayName = "/src/widgets/layout/dashboard-navbar.jsx";
 
 export default DashboardNavbar;

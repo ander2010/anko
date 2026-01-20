@@ -1630,66 +1630,82 @@ export function ProjectDetail() {
 
                     {/* Sections Selection */}
                     <div>
-                      <label className={`block text-sm font-medium mb-2 ${batteryErrors.sections ? "text-red-500" : "text-blue-gray-700"} `}>
+                      <label className={`block text-sm font-medium mb-2 ${(batteryErrors.sections || availableSections.length === 0) ? "text-red-500" : "text-blue-gray-700"} `}>
                         {language === "es" ? "Secciones *" : "Sections *"}
                       </label>
-                      <div className="mb-2">
-                        <input
-                          type="text"
-                          className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
-                          placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
-                          value={sectionSearch}
-                          onChange={(e) => setSectionSearch(e.target.value)}
-                        />
-                      </div>
 
-                      {batteryErrors.sections && (
-                        <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                          {batteryErrors.sections}
+                      {availableSections.length === 0 ? (
+                        <div className="p-4 text-center bg-red-50/50 rounded-xl border border-dashed border-red-200 animate-in fade-in zoom-in-95 duration-500">
+                          <div className="flex flex-col items-center gap-2">
+                            <ExclamationCircleIcon className="h-6 w-6 text-red-400 mb-1" />
+                            <Typography variant="small" className="text-red-900 font-bold leading-relaxed px-4">
+                              {language === "es"
+                                ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                                : "You don't have any sections available. You should upload a document so the system can process the content."}
+                            </Typography>
+                          </div>
                         </div>
-                      )}
+                      ) : (
+                        <>
+                          <div className="mb-2">
+                            <input
+                              type="text"
+                              className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
+                              placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
+                              value={sectionSearch}
+                              onChange={(e) => setSectionSearch(e.target.value)}
+                            />
+                          </div>
 
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {batteryForm.sections.map((sec) => (
-                          <Chip
-                            key={sec.id}
-                            value={`${sec.documentName}: ${sec.name} `}
-                            onClose={() => {
-                              setBatteryForm(prev => ({
-                                ...prev,
-                                sections: prev.sections.filter((s) => s.id !== sec.id)
-                              }));
-                            }}
-                            className="rounded-full bg-blue-50 text-blue-900"
-                          />
-                        ))}
-                      </div>
-                      <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
-                        {availableSections
-                          .filter(sec =>
-                            sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
-                            sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
-                          )
-                          .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
-                          .map((sec) => (
-                            <div
-                              key={sec.id}
-                              className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
-                              onClick={() => {
-                                setBatteryForm(prev => ({
-                                  ...prev,
-                                  sections: [...prev.sections, sec]
-                                }));
-                                setSectionSearch("");
-                                if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
-                              }}
-                            >
-                              <span className="font-medium text-blue-gray-800">{sec.name}</span>
-                              <span className="text-xs text-gray-500">{sec.documentName}</span>
+                          {batteryErrors.sections && (
+                            <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                              {batteryErrors.sections}
                             </div>
-                          ))}
-                      </div>
+                          )}
+
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {batteryForm.sections.map((sec) => (
+                              <Chip
+                                key={sec.id}
+                                value={`${sec.documentName}: ${sec.name} `}
+                                onClose={() => {
+                                  setBatteryForm(prev => ({
+                                    ...prev,
+                                    sections: prev.sections.filter((s) => s.id !== sec.id)
+                                  }));
+                                }}
+                                className="rounded-full bg-blue-50 text-blue-900"
+                              />
+                            ))}
+                          </div>
+                          <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
+                            {availableSections
+                              .filter(sec =>
+                                sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
+                                sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
+                              )
+                              .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
+                              .map((sec) => (
+                                <div
+                                  key={sec.id}
+                                  className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
+                                  onClick={() => {
+                                    setBatteryForm(prev => ({
+                                      ...prev,
+                                      sections: [...prev.sections, sec]
+                                    }));
+                                    setSectionSearch("");
+                                    if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
+                                  }}
+                                >
+                                  <span className="font-medium text-blue-gray-800">{sec.name}</span>
+                                  <span className="text-xs text-gray-500">{sec.documentName}</span>
+                                </div>
+                              ))}
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

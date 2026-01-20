@@ -23,7 +23,7 @@ import {
     Tab,
     TabPanel,
 } from "@material-tailwind/react";
-import { ChevronDownIcon, XMarkIcon, RectangleStackIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, XMarkIcon, RectangleStackIcon, PlusIcon, TrashIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
@@ -455,12 +455,15 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     <Spinner className="h-6 w-6 text-indigo-500" />
                                 </div>
                             ) : scannedDocuments.length === 0 ? (
-                                <div className="p-8 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
-                                    <Typography variant="small" className="text-zinc-500 font-medium italic">
-                                        {language === "es"
-                                            ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
-                                            : "You don't have any sections available. You should upload a document so the system can process the content."}
-                                    </Typography>
+                                <div className="p-8 text-center bg-red-50/50 rounded-2xl border border-dashed border-red-200 animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <ExclamationCircleIcon className="h-8 w-8 text-red-400 mb-1" />
+                                        <Typography variant="small" className="text-red-900 font-bold max-w-[280px] mx-auto leading-relaxed">
+                                            {language === "es"
+                                                ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                                                : "You don't have any sections available. You should upload a document so the system can process the content."}
+                                        </Typography>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className={`border rounded-2xl overflow-hidden bg-white shadow-sm transition-colors ${errors.general ? "border-red-500 bg-red-50/5" : "border-zinc-200"} `}>
