@@ -467,6 +467,15 @@ const projectService = {
     }
   },
 
+  async addFlashcards(payload) {
+    try {
+      const res = await api.post("/decks/add-flashcards/", payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to add flashcards" };
+    }
+  },
+
   async updateDeck(deckId, payload) {
     const res = await api.patch(`/decks/${deckId}/`, payload);
     return res.data;

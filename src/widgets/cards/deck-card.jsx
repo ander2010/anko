@@ -20,12 +20,13 @@ import {
     Square2StackIcon,
     ClockIcon,
     BookOpenIcon,
+    PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
 
-export function DeckCard({ deck, onEdit, onDelete, onStudy, onLearn, job, onJobComplete }) {
-    const { t } = useLanguage();
+export function DeckCard({ deck, onEdit, onDelete, onStudy, onLearn, onAddCards, job, onJobComplete }) {
+    const { t, language } = useLanguage();
     const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
     const hasNotifiedComplete = useRef(false);
 
@@ -80,11 +81,20 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, onLearn, job, onJobC
                                 variant="ghost"
                                 className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                             />
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-50 border border-zinc-100">
+                            <div className="flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md bg-zinc-50 border border-zinc-100">
                                 <Square2StackIcon className="h-3 w-3 text-zinc-400" />
                                 <Typography className="text-[10px] font-bold text-zinc-600">
                                     {deck.flashcards_count || deck.cardsCount || deck.flashcards?.length || deck.card_count || 0}
                                 </Typography>
+                                <IconButton
+                                    variant="text"
+                                    size="sm"
+                                    className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
+                                    onClick={() => onAddCards && onAddCards(deck)}
+                                    title={language === "es" ? "Más fichas" : "More flashcards"}
+                                >
+                                    <PlusIcon className="h-3 w-3" strokeWidth={3} />
+                                </IconButton>
                             </div>
                         </div>
                     </div>
@@ -99,6 +109,10 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, onLearn, job, onJobC
                             <MenuItem onClick={() => onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
                                 <PencilIcon className="h-4 w-4" />
                                 {t("global.action.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => onAddCards && onAddCards(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
+                                <PlusIcon className="h-4 w-4" />
+                                {language === "es" ? "Añadir Fichas" : "Add Flashcards"}
                             </MenuItem>
                             <hr className="my-1 border-zinc-100" />
                             <MenuItem
@@ -178,6 +192,7 @@ DeckCard.propTypes = {
     onDelete: PropTypes.func.isRequired,
     onStudy: PropTypes.func,
     onLearn: PropTypes.func,
+    onAddCards: PropTypes.func,
     job: PropTypes.shape({
         job_id: PropTypes.string,
         ws_progress: PropTypes.string,

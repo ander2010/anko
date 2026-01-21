@@ -62,6 +62,7 @@ import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
 import { FlashcardLearnDialog } from "@/widgets/dialogs/flashcard-learn-dialog";
 import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
 import { CookingLoader } from "@/widgets/loaders/cooking-loader";
+import { AddFlashcardsDialog } from "@/widgets/dialogs/add-flashcards-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -172,6 +173,14 @@ export function ProjectDetail() {
   const [learnDeck, setLearnDeck] = useState(null);
   const [confirmDeleteDeckDialogOpen, setConfirmDeleteDeckDialogOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
+
+  const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
+  const [selectedDeckForAdd, setSelectedDeckForAdd] = useState(null);
+
+  const handleOpenAddCards = (deck) => {
+    setSelectedDeckForAdd(deck);
+    setAddFlashcardsOpen(true);
+  };
 
   const isOwner = useMemo(() => {
     if (!project || !user) return false;
@@ -2019,6 +2028,7 @@ export function ProjectDetail() {
                       onDelete={handleDeleteDeck}
                       onStudy={handleStudyDeck}
                       onLearn={handleLearnDeck}
+                      onAddCards={handleOpenAddCards}
                       job={activeFlashcardJobs[String(deck.id)]}
                       onJobComplete={(lastData) => handleFlashcardJobComplete(String(deck.id), activeFlashcardJobs[String(deck.id)]?.job_id, lastData)}
                     />
@@ -2099,6 +2109,17 @@ export function ProjectDetail() {
         onCreate={handleCreateDeck}
         projectId={projectId}
         deck={selectedDeck}
+      />
+
+      <AddFlashcardsDialog
+        open={addFlashcardsOpen}
+        onClose={() => {
+          setAddFlashcardsOpen(false);
+          setSelectedDeckForAdd(null);
+        }}
+        onSuccess={() => fetchDecks(projectId)}
+        deckId={selectedDeckForAdd?.id}
+        deckTitle={selectedDeckForAdd?.title}
       />
 
       {selectedDeck && (
