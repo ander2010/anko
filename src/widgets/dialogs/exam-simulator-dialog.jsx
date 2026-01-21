@@ -372,7 +372,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
                     : (language === "es" ? "Opción Única" : "Single Choice")}
               </span>
               <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-                {language === "es" ? "tema" : "topic"}: {currentQuestion.topicName || (language === "es" ? "General" : "General")}
+                {language === "es" ? "tema" : "topic"}: {currentQuestion.topicName || battery.name || (language === "es" ? "General" : "General")}
               </span>
             </div>
           </CardBody>

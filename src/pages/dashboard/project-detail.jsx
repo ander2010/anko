@@ -223,6 +223,7 @@ export function ProjectDetail() {
 
       const payload = {
         project: Number(projectId),
+        name: batteryForm.query_text.trim() || (language === "es" ? "Batería" : "Battery"),
         query_text: batteryForm.query_text,
         sections: batteryForm.sections.map(s => s.id),
         quantity: Number(batteryForm.quantity),
