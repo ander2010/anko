@@ -2110,6 +2110,7 @@ export function ProjectDetail() {
         onCreate={handleCreateDeck}
         projectId={projectId}
         deck={selectedDeck}
+        existingDecks={decks}
       />
 
       <AddFlashcardsDialog

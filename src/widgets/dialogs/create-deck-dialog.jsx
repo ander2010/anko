@@ -35,7 +35,7 @@ function Icon({ id, open }) {
     );
 }
 
-export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = null }) {
+export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = null, existingDecks = [] }) {
     const { t, language } = useLanguage();
     const [activeTab, setActiveTab] = useState("ai");
     const [formData, setFormData] = useState({
@@ -221,8 +221,25 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
 
     const validate = () => {
         const newErrors = {};
-        if (!formData.title.trim()) {
+        const titleTrimmed = formData.title.trim();
+
+        if (!titleTrimmed) {
             newErrors.title = language === "es" ? "El título es obligatorio" : "Title is required";
+        } else if (existingDecks && Array.isArray(existingDecks)) {
+            // Check for duplicate title with case-insensitive and trimmed comparison
+            const duplicate = existingDecks.find(ed => {
+                const edTitle = (ed.title || ed.name || "").trim().toLowerCase();
+                const matchesTitle = edTitle === titleTrimmed.toLowerCase();
+                const isDifferentDeck = !deck || String(ed.id) !== String(deck.id);
+                return matchesTitle && isDifferentDeck;
+            });
+
+            if (duplicate) {
+                const msg = language === "es"
+                    ? "Ya tienes un mazo con el mismo nombre, se sugiere cambiarlo"
+                    : "You already have a deck with the same name, it is suggested to change it";
+                newErrors.title = msg;
+            }
         }
 
         if (activeTab === "manual") {
@@ -238,7 +255,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     : "You don't have any sections available. You should upload a document so the system can process the content.";
             }
             // Case B: Sections exist but none selected
-            else if (formData.section_ids.length === 0) {
+            else if (formData.section_ids.length === 0 && !newErrors.title) {
                 newErrors.general = language === "es"
                     ? "Usted debe seleccionar al menos una sección para generar las fichas."
                     : "You must select at least one section to generate the cards.";
@@ -542,6 +559,12 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     })}
                                 </div>
                             )}
+                            {errors.general && (
+                                <div className="p-3 mt-4 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                    {errors.general}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -638,7 +661,6 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     ))}
                                 </div>
                             )}
-
                             {errors.general && (
                                 <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2">
                                     <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
@@ -678,6 +700,7 @@ CreateDeckDialog.propTypes = {
     onCreate: PropTypes.func.isRequired,
     projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     deck: PropTypes.object,
+    existingDecks: PropTypes.array,
 };
 
 export default CreateDeckDialog;
