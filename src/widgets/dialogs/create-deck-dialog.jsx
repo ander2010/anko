@@ -54,6 +54,11 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
 
     useEffect(() => {
         if (open) {
+            // Reset state for a clean start
+            setErrors({});
+            setOpenAccordion(0);
+            setCurrentCard({ front: "", back: "", notes: "" });
+
             if (deck) {
                 setFormData({
                     title: deck.title || "",
@@ -64,7 +69,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     cards_count: deck.flashcards_count || deck.cards_count || 3,
                     cards: [],
                 });
-                setActiveTab("ai"); // Default to AI for editing, or maybe we don't support converting yet?
+                setActiveTab("ai");
             } else {
                 setFormData({
                     title: "",
@@ -73,7 +78,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     section_ids: [],
                     document_ids: [],
                     cards_count: 3,
-                    cards: [], // Start with empty list
+                    cards: [],
                 });
                 setActiveTab("ai");
             }
@@ -124,6 +129,28 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // Real-time validation for duplicate titles
+        if (name === "title") {
+            const titleTrimmed = value.trim();
+            if (titleTrimmed && existingDecks && Array.isArray(existingDecks)) {
+                const duplicate = existingDecks.find(ed => {
+                    const edTitle = (ed.title || ed.name || "").trim().toLowerCase();
+                    const matchesTitle = edTitle === titleTrimmed.toLowerCase();
+                    const isDifferentDeck = !deck || String(ed.id) !== String(deck.id);
+                    return matchesTitle && isDifferentDeck;
+                });
+
+                if (duplicate) {
+                    const msg = language === "es"
+                        ? "Ya tienes un mazo con el mismo nombre, se sugiere cambiarlo"
+                        : "You already have a deck with the same name, it is suggested to change it";
+                    setErrors((prev) => ({ ...prev, title: msg }));
+                    return;
+                }
+            }
+        }
+
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
@@ -340,7 +367,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     </Typography>
                                     <Input
                                         placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"}
-                                        className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                        className={`!bg-zinc-50/50 rounded-xl !text-zinc-900 ${errors.title ? "!border-red-500 focus:!border-red-600 shadow-sm shadow-red-50" : "!border-zinc-200 focus:!border-indigo-600"}`}
                                         name="title"
                                         value={formData.title}
                                         onChange={handleChange}
@@ -383,7 +410,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                 </Typography>
                                 <Input
                                     placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"}
-                                    className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                    className={`!bg-zinc-50/50 rounded-xl !text-zinc-900 ${errors.title ? "!border-red-500 focus:!border-red-600 shadow-sm shadow-red-50" : "!border-zinc-200 focus:!border-indigo-600"}`}
                                     name="title"
                                     value={formData.title}
                                     onChange={handleChange}
