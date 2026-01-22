@@ -888,7 +888,10 @@ export const en = {
         conn_error: "Connection error.",
         empty_state: "Select a document and ask a question.",
         loading: "Thinking...",
-        no_name: "No name"
+        no_name: "No name",
+        missing_context: "Select a project and documents to start chatting",
+        no_docs_title: "Context Required",
+        select_project_first: "Select a project first"
     }
 
 };

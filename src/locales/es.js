@@ -889,7 +889,10 @@ export const es = {
         conn_error: "Error de conexión.",
         empty_state: "Selecciona un documento y haz una pregunta.",
         loading: "Pensando...",
-        no_name: "Sin nombre"
+        no_name: "Sin nombre",
+        missing_context: "Selecciona un proyecto y documentos para chatear",
+        no_docs_title: "Contexto Requerido",
+        select_project_first: "Selecciona un proyecto primero"
     },
 
 };
