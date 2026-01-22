@@ -405,6 +405,7 @@ export function Projects() {
                 open={createDialogOpen}
                 onClose={() => setCreateDialogOpen(false)}
                 onCreate={handleCreateProject}
+                projects={projects}
             />
 
             <EditProjectDialog

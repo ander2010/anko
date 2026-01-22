@@ -286,6 +286,7 @@ export const en = {
         no_projects_cta: "Get started by creating your first project",
         dialogs: {
             create_project_title: "Create New Project",
+            duplicate_name_error: "You already have a project with this name, please choose another one.",
             delete_title: "Delete Project",
             delete_message: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
             archive_topic_title: "Archive Topic",

@@ -19,7 +19,7 @@ import Uppy from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import { Dashboard } from "@uppy/react";
 
-export function CreateProjectDialog({ open, onClose, onCreate }) {
+export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) {
   const { t, language } = useLanguage();
   const { addJob } = useJobs();
   const [formData, setFormData] = useState({
@@ -74,14 +74,42 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // Real-time validation for duplicate name
+    if (name === "name") {
+      const trimmedValue = value.trim().toLowerCase();
+      const isDuplicate = projects.some(
+        (p) => (p.title || p.name || "").trim().toLowerCase() === trimmedValue
+      );
+
+      if (isDuplicate) {
+        setErrors((prev) => ({
+          ...prev,
+          name: t("projects.dialogs.duplicate_name_error") || "You already have a project with this name.",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    } else {
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.name.trim()) {
+    const nameValue = formData.name.trim();
+
+    if (!nameValue) {
       newErrors.name = language === "es" ? "El nombre del proyecto es obligatorio" : "Project name is required";
+    } else {
+      const isDuplicate = projects.some(
+        (p) => (p.title || p.name || "").trim().toLowerCase() === nameValue.toLowerCase()
+      );
+      if (isDuplicate) {
+        newErrors.name = t("projects.dialogs.duplicate_name_error") || "You already have a project with this name.";
+      }
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -181,7 +209,8 @@ export function CreateProjectDialog({ open, onClose, onCreate }) {
             </Typography>
             <Input
               placeholder={language === "es" ? "Ej. Microbiología 101" : "Ex. Microbiology 101"}
-              className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+              className={`!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 transition-all ${errors.name ? "!border-red-500 shadow-sm shadow-red-500/10" : ""
+                }`}
               value={formData.name}
               name="name"
               onChange={handleChange}
@@ -268,6 +297,7 @@ CreateProjectDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onCreate: PropTypes.func.isRequired,
+  projects: PropTypes.array,
 };
 
 export default CreateProjectDialog;
