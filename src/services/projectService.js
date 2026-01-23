@@ -534,6 +534,17 @@ const projectService = {
       throw err?.response?.data || { error: "Failed to get AI response" };
     }
   },
+
+  async getChatSessionMessages(index = 1) {
+    try {
+      const res = await api.get(`${BASE}chat/session-messages/`, {
+        params: { index },
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch session messages" };
+    }
+  },
 };
 
 export default projectService;

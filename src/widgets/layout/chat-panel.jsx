@@ -31,8 +31,10 @@ export function ChatPanel() {
     const [selectedDocs, setSelectedDocs] = useState([]);
     const [sessionId, setSessionId] = useState(crypto.randomUUID());
     const [messages, setMessages] = useState([]);
+    const [activeHistoryIndex, setActiveHistoryIndex] = useState(null);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const [historyLoading, setHistoryLoading] = useState(false);
     const scrollRef = useRef(null);
 
     const isContextReady = selectedProject && selectedDocs.length > 0;
@@ -40,7 +42,55 @@ export function ChatPanel() {
     const handleNewChat = () => {
         setMessages([]);
         setSessionId(crypto.randomUUID());
+        setActiveHistoryIndex(null);
         console.log("[ChatPanel] New session created:", sessionId);
+    };
+
+    const handleSwitchSession = async (index) => {
+        if (historyLoading) return;
+        setHistoryLoading(true);
+        setActiveHistoryIndex(index);
+
+        try {
+            const data = await projectService.getChatSessionMessages(index);
+            if (data && data.messages) {
+                // Backend sends messages in DESC order (newest first by ID)
+                // We need to reverse to get chronological order (oldest first)
+                // Then for each message: question comes first, then answer
+                const reversedMessages = [...data.messages].reverse();
+                const mappedMessages = [];
+
+                reversedMessages.forEach(m => {
+                    // Add user question first
+                    if (m.question) {
+                        mappedMessages.push({
+                            role: "user",
+                            text: m.question,
+                            timestamp: m.created_at
+                        });
+                    }
+                    // Then add AI answer
+                    if (m.answer) {
+                        mappedMessages.push({
+                            role: "ai",
+                            text: m.answer,
+                            timestamp: m.created_at
+                        });
+                    }
+                });
+
+                setMessages(mappedMessages);
+                setSessionId(data.selected_session_id || String(data.selected_session_pk));
+            }
+        } catch (err) {
+            console.error("Error switching session:", err);
+            setMessages([{
+                role: "ai",
+                text: (language === "es" ? "No se pudo cargar la sesión histórica." : "Failed to load history session.")
+            }]);
+        } finally {
+            setHistoryLoading(false);
+        }
     };
 
     // Load Projects on mount
@@ -178,19 +228,26 @@ export function ChatPanel() {
                             {[1, 2, 3, 4, 5].map((num) => (
                                 <button
                                     key={num}
-                                    className={`h-6 w-6 rounded-md text-[10px] font-bold transition-all flex items-center justify-center ${num === 1
-                                            ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
-                                            : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                                        }`}
+                                    disabled={historyLoading}
+                                    onClick={() => handleSwitchSession(num)}
+                                    className={`h-6 w-6 rounded-md text-[10px] font-bold transition-all flex items-center justify-center ${activeHistoryIndex === num
+                                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                                        } ${historyLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                                 >
-                                    {num}
+                                    {historyLoading && activeHistoryIndex === num ? (
+                                        <Spinner className="h-2 w-2 text-white" />
+                                    ) : num}
                                 </button>
                             ))}
                         </div>
                     </div>
-                    <Typography className="text-[9px] font-bold text-zinc-300 uppercase truncate max-w-[100px] opacity-60">
-                        {sessionId?.slice(0, 8)}...
-                    </Typography>
+                    <div className="flex items-center gap-2">
+                        {historyLoading && <Spinner className="h-2 w-2 text-indigo-400" />}
+                        <Typography className="text-[9px] font-bold text-zinc-300 uppercase truncate max-w-[100px] opacity-60">
+                            {sessionId?.slice(0, 8)}...
+                        </Typography>
+                    </div>
                 </div>
             </div>
 
@@ -353,24 +410,62 @@ export function ChatPanel() {
                     </div>
                 )}
 
-                {messages.map((msg, idx) => (
-                    <div
-                        key={idx}
-                        className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
-                    >
+                {messages.map((msg, idx) => {
+                    // Format timestamp if available
+                    let formattedTime = "";
+                    if (msg.timestamp) {
+                        try {
+                            const date = new Date(msg.timestamp);
+                            const now = new Date();
+                            const isToday = date.toDateString() === now.toDateString();
+
+                            if (isToday) {
+                                formattedTime = date.toLocaleTimeString(language === "es" ? "es-ES" : "en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                });
+                            } else {
+                                formattedTime = date.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Error formatting timestamp:", e);
+                        }
+                    }
+
+                    return (
                         <div
-                            className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-sm ${msg.role === "user"
-                                ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none"
-                                : "bg-white text-zinc-800 border border-zinc-100 rounded-tl-none"
-                                }`}
+                            key={idx}
+                            className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
                         >
-                            {msg.text}
+                            <div
+                                className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-sm ${msg.role === "user"
+                                    ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none"
+                                    : "bg-white text-zinc-800 border border-zinc-100 rounded-tl-none"
+                                    }`}
+                            >
+                                {msg.text}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 px-1">
+                                <Typography className="text-[9px] uppercase font-black text-zinc-400 tracking-widest">
+                                    {msg.role === "user" ? (language === "es" ? "Tú" : "You") : "AI"}
+                                </Typography>
+                                {formattedTime && (
+                                    <>
+                                        <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                                        <Typography className="text-[9px] font-medium text-zinc-400">
+                                            {formattedTime}
+                                        </Typography>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                        <Typography className="text-[9px] uppercase font-black text-zinc-400 mt-1 px-1 tracking-widest">
-                            {msg.role === "user" ? (language === "es" ? "Tú" : "You") : "AI"}
-                        </Typography>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {loading && (
                     <div className="flex justify-start items-start gap-2">
