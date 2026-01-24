@@ -34,13 +34,17 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
     const [sections, setSections] = useState([]);
     const [loadingSections, setLoadingSections] = useState(false);
     const [errorSections, setErrorSections] = useState(null);
+    const [summary, setSummary] = useState(null);
+    const [loadingSummary, setLoadingSummary] = useState(false);
 
     useEffect(() => {
         if (open && document && projectId) {
             fetchSections();
+            fetchSummary();
         } else {
             setSections([]);
             setErrorSections(null);
+            setSummary(null);
         }
     }, [open, document, projectId]);
 
@@ -64,6 +68,19 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
             setErrorSections(typeof err === 'string' ? err : (err?.error || err?.detail || t("global.sections.loading_error")));
         } finally {
             setLoadingSections(false);
+        }
+    };
+
+    const fetchSummary = async () => {
+        setLoadingSummary(true);
+        try {
+            const data = await projectService.getDocumentSummary(document.id);
+            setSummary(data.summary || null);
+        } catch (err) {
+            console.error("Failed to fetch summary:", err);
+            setSummary(null);
+        } finally {
+            setLoadingSummary(false);
         }
     };
 
@@ -146,7 +163,26 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                         <Chip value={getStatusLabel(document.status)} size="sm" color={getStatusColor(document.status)} className="w-fit" />
                     </div>
 
-
+                    {/* Document Summary */}
+                    <div>
+                        <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Resumen" : "Summary"}</Typography>
+                        {loadingSummary ? (
+                            <div className="flex items-center gap-2">
+                                <Spinner className="h-4 w-4" />
+                                <Typography variant="small" className="text-blue-gray-400">{language === "es" ? "Cargando..." : "Loading..."}</Typography>
+                            </div>
+                        ) : summary ? (
+                            <div className="bg-blue-gray-50 p-3 rounded-lg border border-blue-gray-100">
+                                <Typography variant="small" className="text-blue-gray-700 leading-relaxed">
+                                    {summary}
+                                </Typography>
+                            </div>
+                        ) : (
+                            <Typography variant="small" className="text-blue-gray-400 italic">
+                                {language === "es" ? "No disponible" : "Not available"}
+                            </Typography>
+                        )}
+                    </div>
 
                     {document.tags && document.tags.length > 0 && (
                         <div>
@@ -177,23 +213,46 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                             {errorSections}
                         </div>
                     ) : sections.length > 0 ? (
-                        <div className="space-y-4">
-                            {sections.map((section) => (
-                                <Card key={section.id} className="shadow-sm border border-blue-gray-100">
-                                    <CardBody className="p-4">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <Typography variant="subtitle1" className="font-bold text-blue-gray-900">
-                                                {section.title
-                                                    ? section.title.charAt(0).toUpperCase() + section.title.slice(1)
-                                                    : (language === "es" ? "Sección sin título" : "Untitled Section")}
-                                            </Typography>
-                                            <Chip value={`${language === "es" ? "Orden" : "Order"}: ${section.order}`} size="sm" variant="ghost" className="rounded-full" />
+                        <div className="space-y-3">
+                            {sections.map((section, index) => (
+                                <div
+                                    key={section.id}
+                                    className="group relative bg-white rounded-xl border border-blue-gray-100 hover:border-indigo-200 transition-all duration-200 overflow-hidden hover:shadow-md"
+                                >
+                                    {/* Gradient accent bar */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+                                    <div className="p-4 pl-5">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center flex-shrink-0">
+                                                        <Typography className="text-xs font-black text-indigo-600">
+                                                            {section.order}
+                                                        </Typography>
+                                                    </div>
+                                                    <Typography variant="h6" className="font-bold text-blue-gray-900 truncate">
+                                                        {section.title
+                                                            ? section.title.charAt(0).toUpperCase() + section.title.slice(1)
+                                                            : (language === "es" ? "Sección sin título" : "Untitled Section")}
+                                                    </Typography>
+                                                </div>
+                                                {/* {section.content && (
+                                                    <Typography variant="small" className="text-blue-gray-500 line-clamp-2 mt-2">
+                                                        {section.content.substring(0, 120)}...
+                                                    </Typography>
+                                                )} */}
+                                            </div>
+                                            <Chip
+                                                value={language === "es" ? "Sección" : "Section"}
+                                                size="sm"
+                                                variant="ghost"
+                                                color="indigo"
+                                                className="rounded-full flex-shrink-0"
+                                            />
                                         </div>
-                                        <div className="prose prose-sm max-w-none text-blue-gray-700 bg-gray-50 p-3 rounded border border-gray-100 overflow-x-auto">
-                                            <pre className="whitespace-pre-wrap font-sans text-sm">{section.content}</pre>
-                                        </div>
-                                    </CardBody>
-                                </Card>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     ) : (

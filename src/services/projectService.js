@@ -126,6 +126,15 @@ const projectService = {
     }
   },
 
+  async getDocumentSummary(documentId) {
+    try {
+      const res = await api.get(`/documents/${documentId}/summary/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch document summary" };
+    }
+  },
+
   async getDocumentDownloadUrl(documentId, mode = 'view') {
     try {
       // mode can be 'view' or 'download'
