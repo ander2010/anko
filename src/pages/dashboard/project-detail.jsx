@@ -637,7 +637,7 @@ export function ProjectDetail() {
               type: "flashcard",
               projectId: String(projectId),
               deckId: String(deckId),
-              ws_url: res.ws_progress
+              ws_url: wsUrl
             });
 
             // CRITICAL: Call sync immediately to ensure flashcards appear

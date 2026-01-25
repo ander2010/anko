@@ -109,7 +109,7 @@ export function UploadDocumentsDialog({ open, onClose, onUpload, project }) {
     onClose();
   };
 
-  if (!open) return null;
+
 
   return (
     <Dialog open={open} handler={handleClose} size="md">

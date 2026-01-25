@@ -1,4 +1,5 @@
 import api, { API_BASE } from "./api";
+import { apiFetch } from "../crypto/encriptedApi";
 
 export { API_BASE };
 
@@ -52,36 +53,69 @@ const projectService = {
 
   async getProjects(params = {}) {
     try {
-      const res = await api.get(`${BASE}`, { params });
-      return res.data;
+      const token = localStorage.getItem("token");
+      const queryString = new URLSearchParams(params).toString();
+      const url = `${API_BASE}${BASE}${queryString ? `?${queryString}` : ""}`;
+
+      const { ok, data, status } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch projects" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch projects" };
+      throw err?.response?.data || err || { error: "Failed to fetch projects" };
     }
   },
 
   async getProjectDetail(id) {
     try {
-      const res = await api.get(`${BASE}${id}/`);
-      return res.data;
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}${BASE}${id}/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch project" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch project" };
+      throw err?.response?.data || err || { error: "Failed to fetch project" };
     }
   },
 
   async getProjectCounts(projectId) {
     try {
-      const res = await api.get(`${BASE}${projectId}/counts/`);
-      return res.data;
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}${BASE}${projectId}/counts/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch counts" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch counts" };
+      throw err?.response?.data || err || { error: "Failed to fetch counts" };
     }
   },
   async getProjectDocuments(projectId) {
     try {
-      const res = await api.get(`/projects/${projectId}/documents/`);
-      return res.data;
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/projects/${projectId}/documents/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch documents" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch documents" };
+      throw err?.response?.data || err || { error: "Failed to fetch documents" };
     }
   },
 
@@ -102,10 +136,18 @@ const projectService = {
 
   async getDocumentsWithSections(projectId) {
     try {
-      const res = await api.get(`/projects/${projectId}/documents-with-sections/`);
-      return res.data; // Expected: { projectId: ..., documents: [...] }
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/projects/${projectId}/documents-with-sections/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch document sections" };
+      }
+
+      return data; // Expected: { projectId: ..., documents: [...] }
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch document sections" };
+      throw err?.response?.data || err || { error: "Failed to fetch document sections" };
     }
   },
 
@@ -258,21 +300,35 @@ const projectService = {
   // -------- BATTERIES --------
   async getProjectBatteries(projectId) {
     try {
-      const res = await api.get("/batteries/", {
-        params: { project: projectId },
-      });
-      return res.data;
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/?project=${projectId}`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch batteries" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch batteries" };
+      throw err?.response?.data || err || { error: "Failed to fetch batteries" };
     }
   },
 
   async getUserBatteries() {
     try {
-      const res = await api.get("/batteries/");
-      return res.data;
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch user batteries" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to fetch user batteries" };
+      throw err?.response?.data || err || { error: "Failed to fetch user batteries" };
     }
   },
 
@@ -359,6 +415,58 @@ const projectService = {
     return res.data;
   },
 
+  // -------- BATTERY ENCRYPTED ACTIONS --------
+  async getBatteryAttempts(batteryId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/${batteryId}/attempts/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch battery attempts" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch battery attempts" };
+    }
+  },
+
+  async getBatteryResults(batteryId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/${batteryId}/results/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch battery results" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch battery results" };
+    }
+  },
+
+  async getBatteryStats(batteryId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/${batteryId}/stats/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch battery stats" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch battery stats" };
+    }
+  },
+
   // -------- BATTERY ATTEMPTS --------
   async startBatteryAttempt(batteryId) {
     try {
@@ -425,15 +533,37 @@ const projectService = {
 
   // -------- DECKS --------
   async getProjectDecks(projectId) {
-    const res = await api.get("/decks/", {
-      params: { project: projectId },
-    });
-    return res.data;
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/decks/?project=${projectId}`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch decks" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch decks" };
+    }
   },
 
   async getUserDecks() {
-    const res = await api.get("/decks/");
-    return res.data;
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/decks/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch user decks" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch user decks" };
+    }
   },
 
   async createDeck(projectId, payload) {
@@ -456,23 +586,60 @@ const projectService = {
   },
 
   async getDeckFlashcards(deckId, jobId = null) {
-    const params = { deck: deckId };
-    if (jobId) params.job_id = jobId;
-    const res = await api.get("/flashcards/", {
-      params,
-    });
-    return res.data;
+    try {
+      const token = localStorage.getItem("token");
+      const params = { deck: deckId };
+      if (jobId) params.job_id = jobId;
+
+      const queryString = new URLSearchParams(params).toString();
+      const url = `${API_BASE}/flashcards/${queryString ? `?${queryString}` : ""}`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch flashcards" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch flashcards" };
+    }
+  },
+
+  async getFlashcardDetail(flashcardId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/flashcards/${flashcardId}/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch flashcard detail" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch flashcard detail" };
+    }
   },
 
 
 
   async syncFlashcardsFromJob(deckId, jobId) {
     try {
+      const token = localStorage.getItem("token");
       // Backend expects query params: /flashcards/sync-from-job/?deck=...&job_id=...
-      const res = await api.post(`/flashcards/sync-from-job/?deck=${deckId}&job_id=${jobId}`, {});
-      return res.data;
+      const url = `${API_BASE}/flashcards/sync-from-job/?deck=${deckId}&job_id=${jobId}`;
+
+      const { ok, data } = await apiFetch(url, { method: "POST", token });
+
+      if (!ok) {
+        throw data || { error: "Failed to sync flashcards from job" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to sync flashcards from job" };
+      throw err?.response?.data || err || { error: "Failed to sync flashcards from job" };
     }
   },
 
@@ -497,14 +664,26 @@ const projectService = {
 
   async wsPullCard({ deckId, jobId, lastSeq = 0 }) {
     try {
-      const res = await api.post(`${BASE_FLASHCARDS}/ws-pull-card/`, {
-        deck_id: deckId,
-        job_id: jobId,
-        last_seq: lastSeq,
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}${BASE_FLASHCARDS}/ws-pull-card/`;
+
+      const { ok, data } = await apiFetch(url, {
+        method: "POST",
+        token,
+        body: JSON.stringify({
+          deck_id: deckId,
+          job_id: jobId,
+          last_seq: lastSeq,
+        }),
       });
-      return res.data;
+
+      if (!ok) {
+        throw data || { error: "Failed to pull card" };
+      }
+
+      return data;
     } catch (err) {
-      throw err?.response?.data || { error: "Failed to pull card" };
+      throw err?.response?.data || err || { error: "Failed to pull card" };
     }
   },
 
