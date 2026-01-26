@@ -45,8 +45,8 @@ export function useJobProgress(jobId) {
             try {
                 let data = JSON.parse(event.data);
 
-                // Re-added decryption logic (relaxed check: flor/nonce + casa/ciphertext)
-                if (data.casa && data.flor && token) {
+                // Re-added decryption logic (relaxed check: _n (nonce) + _t (ciphertext))
+                if (data._t && data._n && token) {
                     try {
                         const decrypted = await decryptEnvelope(data, token);
                         data = decrypted.data || decrypted;
