@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_BASE } from "@/services/api";
 
-import { decryptEnvelope } from "../crypto/encriptedApi";
-
 /**
  * Hook to connect to a job's progress stream.
  * @param {string} jobId - The ID of the job to track.
@@ -37,23 +35,10 @@ export function useJobProgress(jobId) {
         eventSource.onopen = () => {
             console.log("[useJobProgress] SSE Connected for jobId:", jobId);
         };
-        // Using relative URL as requested by the user to avoid 406 error
-        // const streamUrl = `/api/projects/progress-stream/?job_id=${jobId}${token ? `&token=${token}` : ""}`;
-        // let eventSource = new EventSource(streamUrl);
 
-        const handleMessage = async (event) => {
+        const handleMessage = (event) => {
             try {
-                let data = JSON.parse(event.data);
-
-                // Re-added decryption logic (relaxed check: _n (nonce) + _t (ciphertext))
-                if (data._t && data._n && token) {
-                    try {
-                        const decrypted = await decryptEnvelope(data, token);
-                        data = decrypted.data || decrypted;
-                    } catch (decErr) {
-                        console.error("Error decrypting SSE message:", decErr);
-                    }
-                }
+                const data = JSON.parse(event.data);
 
                 if (data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat") {
                     setProgress(parseFloat(data.progress || progress));
