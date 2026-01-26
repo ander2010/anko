@@ -27,15 +27,16 @@ async function importAesGcmKeyFromToken(token) {
 }
 
 export async function decryptEnvelope(envelope, token) {
-    // envelope: {v, alg, nonce, ciphertext}
+    // envelope: { flor (nonce), casa (ciphertext) }
     // Updated: alg and v are optional to save bandwidth
-    if (!envelope || !envelope.nonce || !envelope.ciphertext) {
-        throw new Error("Invalid encrypted envelope (missing nonce or ciphertext)");
+    // Renamed: nonce -> flor, ciphertext -> casa
+    if (!envelope || !envelope.flor || !envelope.casa) {
+        throw new Error("Invalid encrypted envelope (missing flor or casa)");
     }
 
     const key = await importAesGcmKeyFromToken(token);
-    const nonce = b64urlToBytes(envelope.nonce);
-    const ciphertext = b64urlToBytes(envelope.ciphertext);
+    const nonce = b64urlToBytes(envelope.flor);
+    const ciphertext = b64urlToBytes(envelope.casa);
 
     const plainBuf = await crypto.subtle.decrypt(
         { name: "AES-GCM", iv: nonce },
@@ -67,11 +68,12 @@ export async function apiFetch(url, { token, ...options } = {}) {
     const json = await res.json();
 
     // Detecta envelope cifrado (alg and v are now optional)
+    // Keys replaced: nonce->flor, ciphertext->casa
     const isEncrypted =
         json &&
         typeof json === "object" &&
-        typeof json.nonce === "string" &&
-        typeof json.ciphertext === "string";
+        typeof json.flor === "string" &&
+        typeof json.casa === "string";
 
     if (!isEncrypted) {
         return { ok: res.ok, status: res.status, data: json };
