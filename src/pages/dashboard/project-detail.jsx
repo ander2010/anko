@@ -1796,8 +1796,8 @@ export function ProjectDetail() {
                         >
                           <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
                           <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
-                          <option value="multi_select">{language === "es" ? "Selección Múltiple" : "Multi Select"}</option>
-                          <option value="mixed">{language === "es" ? "Mixto" : "Mixed"}</option>
+                          <option value="multiple_choice">{language === "es" ? "Selección Múltiple" : "Multiple Choice"}</option>
+                          <option value="variety">{language === "es" ? "Variado" : "Variety"}</option>
                         </select>
                       </div>
 
