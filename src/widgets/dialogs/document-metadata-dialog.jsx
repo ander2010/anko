@@ -118,7 +118,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
             case "ready": return language === "es" ? "Listo" : "Ready";
             case "processing": return language === "es" ? "Procesando" : "Processing";
             case "error": return language === "es" ? "Error" : "Error";
-            default: return language === "es" ? "Desconocido" : "Unknown";
+            default: return language === "es" ? "Finalizado" : "Finalized";
         }
     };
 
@@ -155,7 +155,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                         <Typography variant="small" className="text-blue-gray-500 mb-1 flex items-center gap-1">
                             <CalendarIcon className="h-4 w-4" /> {language === "es" ? "Subido el" : "Uploaded At"}
                         </Typography>
-                        <Typography className="font-medium text-blue-gray-900">{formatDate(document.uploadedAt)}</Typography>
+                        <Typography className="font-medium text-blue-gray-900">{formatDate(document.uploaded_at)}</Typography>
                     </div>
 
                     <div>
@@ -173,7 +173,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                             </div>
                         ) : summary ? (
                             <div className="bg-blue-gray-50 p-3 rounded-lg border border-blue-gray-100">
-                                <Typography variant="small" className="text-blue-gray-700 leading-relaxed">
+                                <Typography variant="small" className="text-blue-gray-700 leading-relaxed text-justify">
                                     {summary}
                                 </Typography>
                             </div>
