@@ -24,7 +24,7 @@ const authService = {
       const res = await api.post(`${BASE}register/`, payload);
       const { token, user } = res.data;
       if (token) setAuthToken(token);
-      return { token, user };
+      return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Register failed" };
     }

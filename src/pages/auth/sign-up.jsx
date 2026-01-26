@@ -70,9 +70,16 @@ export function SignUp() {
     setError(null);
     setLoading(true);
     try {
-      await register({ username, email, password });
-      // After register, go to dashboard
-      navigate("/dashboard/home");
+      const res = await register({ username, email, password });
+      console.log("Register Res:", res);
+
+      // Check if email verification was sent
+      if (res && res.email_verification === "sent") {
+        navigate("/auth/email-verification");
+      } else {
+        // After register, go to dashboard
+        navigate("/dashboard/home");
+      }
     } catch (err) {
       setError(err?.error || JSON.stringify(err));
     } finally {

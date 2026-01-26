@@ -77,7 +77,8 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (payload) => {
-    const { token, user: u } = await authService.register(payload);
+    const response = await authService.register(payload);
+    const { token, user: u } = response;
     window.localStorage.setItem("token", token);
     setAuthToken(token);
 
@@ -92,7 +93,8 @@ export function AuthProvider({ children }) {
     }
 
     setUser(u);
-    return u;
+    // Return full response (or mixed) so caller can check flags like email_verification
+    return { ...response, user: u };
   };
 
   const logout = () => {
