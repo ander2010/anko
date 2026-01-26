@@ -28,8 +28,9 @@ async function importAesGcmKeyFromToken(token) {
 
 export async function decryptEnvelope(envelope, token) {
     // envelope: {v, alg, nonce, ciphertext}
-    if (!envelope || envelope.v !== 1 || envelope.alg !== "AES-256-GCM") {
-        throw new Error("Unsupported encrypted envelope");
+    // Updated: alg and v are optional to save bandwidth
+    if (!envelope || !envelope.nonce || !envelope.ciphertext) {
+        throw new Error("Invalid encrypted envelope (missing nonce or ciphertext)");
     }
 
     const key = await importAesGcmKeyFromToken(token);
@@ -65,14 +66,12 @@ export async function apiFetch(url, { token, ...options } = {}) {
 
     const json = await res.json();
 
-    // Detecta envelope cifrado
+    // Detecta envelope cifrado (alg and v are now optional)
     const isEncrypted =
         json &&
         typeof json === "object" &&
-        json.v === 1 &&
         typeof json.nonce === "string" &&
-        typeof json.ciphertext === "string" &&
-        json.alg === "AES-256-GCM";
+        typeof json.ciphertext === "string";
 
     if (!isEncrypted) {
         return { ok: res.ok, status: res.status, data: json };

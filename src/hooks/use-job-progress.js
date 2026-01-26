@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { API_BASE } from "@/services/api";
 
+import { decryptEnvelope } from "../crypto/encriptedApi";
+
 /**
  * Hook to connect to a job's progress stream.
  * @param {string} jobId - The ID of the job to track.
@@ -39,9 +41,19 @@ export function useJobProgress(jobId) {
         // const streamUrl = `/api/projects/progress-stream/?job_id=${jobId}${token ? `&token=${token}` : ""}`;
         // let eventSource = new EventSource(streamUrl);
 
-        const handleMessage = (event) => {
+        const handleMessage = async (event) => {
             try {
-                const data = JSON.parse(event.data);
+                let data = JSON.parse(event.data);
+
+                // Re-added decryption logic (relaxed check: nonce + ciphertext)
+                if (data.ciphertext && data.nonce && token) {
+                    try {
+                        const decrypted = await decryptEnvelope(data, token);
+                        data = decrypted.data || decrypted;
+                    } catch (decErr) {
+                        console.error("Error decrypting SSE message:", decErr);
+                    }
+                }
 
                 if (data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat") {
                     setProgress(parseFloat(data.progress || progress));
