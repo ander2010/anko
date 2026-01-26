@@ -17,8 +17,6 @@ import {
     ArrowPathIcon,
     LightBulbIcon,
     DocumentTextIcon,
-    HandThumbUpIcon,
-    HandThumbDownIcon,
 } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
@@ -164,30 +162,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                 </div>
                             </div>
 
-                            {/* Response / Feedback Actions */}
-                            <div className={`mt-10 flex items-center gap-6 transition-all duration-500 ${isFlipped ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}>
-                                <Button
-                                    size="lg"
-                                    color="red"
-                                    variant="gradient"
-                                    className="rounded-full p-4 hover:scale-110 active:scale-95 transition-transform shadow-lg shadow-red-500/20"
-                                    onClick={() => handleNext()}
-                                >
-                                    <HandThumbDownIcon className="h-6 w-6 text-white" />
-                                </Button>
-                                <Typography className="font-medium text-zinc-400 text-sm uppercase tracking-widest">
-                                    {language === "es" ? "Valorar" : "Rate"}
-                                </Typography>
-                                <Button
-                                    size="lg"
-                                    color="green"
-                                    variant="gradient"
-                                    className="rounded-full p-4 hover:scale-110 active:scale-95 transition-transform shadow-lg shadow-green-500/20"
-                                    onClick={() => handleNext()}
-                                >
-                                    <HandThumbUpIcon className="h-6 w-6 text-white" />
-                                </Button>
-                            </div>
+
                         </div>
                     )}
                 </DialogBody>
