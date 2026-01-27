@@ -242,12 +242,7 @@ export function ChatPanel() {
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {historyLoading && <Spinner className="h-2 w-2 text-indigo-400" />}
-                        <Typography className="text-[9px] font-bold text-zinc-300 uppercase truncate max-w-[100px] opacity-60">
-                            {sessionId?.slice(0, 8)}...
-                        </Typography>
-                    </div>
+
                 </div>
             </div>
 

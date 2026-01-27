@@ -73,24 +73,9 @@ export function ProjectCard({
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) return "—";
 
-    const now = new Date();
-    // Using Math.floor to ensure same-day items show "Today"
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return language === "es" ? "Hoy" : "Today";
-    if (diffDays === 1) return language === "es" ? "Ayer" : "Yesterday";
-    if (diffDays < 7) return language === "es" ? `Hace ${diffDays} días` : `${diffDays} days ago`;
-    if (diffDays < 30) {
-      const weeks = Math.floor(diffDays / 7);
-      return language === "es"
-        ? `Hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`
-        : `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
-    }
-
     return date.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
-      month: "short",
       day: "numeric",
+      month: "long",
       year: "numeric",
     });
   };
