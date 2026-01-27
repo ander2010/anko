@@ -163,7 +163,10 @@ export function ProjectCard({
 
         {/* Stats Section */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors">
+          <div
+            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors cursor-pointer"
+            onClick={() => onEnter(project, "documents")}
+          >
             <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
               {t("project_detail.tabs.documents")}
             </Typography>
@@ -172,7 +175,10 @@ export function ProjectCard({
               <DocumentTextIcon className="h-3.5 w-3.5 text-indigo-500 mb-0.5" />
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors">
+          <div
+            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors cursor-pointer"
+            onClick={() => onEnter(project, "batteries")}
+          >
             <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
               {t("project_detail.tabs.batteries")}
             </Typography>
@@ -181,7 +187,10 @@ export function ProjectCard({
               <BoltIcon className="h-3.5 w-3.5 text-purple-500 mb-0.5" />
             </div>
           </div>
-          <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-orange-100 group-hover:bg-orange-50/30 transition-colors">
+          <div
+            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-orange-100 group-hover:bg-orange-50/30 transition-colors cursor-pointer"
+            onClick={() => onEnter(project, "decks")}
+          >
             <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
               {t("project_detail.tabs.decks")}
             </Typography>

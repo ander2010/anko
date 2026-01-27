@@ -198,8 +198,8 @@ export function Projects() {
         const project = projects.find((p) => p.id === projectId);
         return project?.documents || [];
     };
-    const handleEnterProject = (project) => {
-        navigate(`/dashboard/project/${project.id}`);
+    const handleEnterProject = (project, tab = null) => {
+        navigate(`/dashboard/project/${project.id}`, { state: { activeTab: tab } });
     };
 
     const handleEditProject = (project) => {

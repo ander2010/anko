@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
   CardHeader,
@@ -71,7 +71,8 @@ export function ProjectDetail() {
   const { t, language } = useLanguage();
   const { activeJobs: globalActiveJobs, addJob, removeJob } = useJobs();
 
-  const [activeTab, setActiveTab] = useState("documents");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "documents");
 
   const [showGenerateBattery, setShowGenerateBattery] = useState(false);
   const [batteryForm, setBatteryForm] = useState({
