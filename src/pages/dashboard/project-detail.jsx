@@ -1892,14 +1892,7 @@ export function ProjectDetail() {
                                 </IconButton>
                               </MenuHandler>
                               <MenuList>
-                                <MenuItem
-                                  onClick={async () => {
-                                    await projectService.markBatteryReady(battery.id);
-                                    await fetchBatteries(Number(projectId));
-                                  }}
-                                >
-                                  Mark as Ready
-                                </MenuItem>
+
                                 <MenuItem
                                   onClick={async () => {
                                     await projectService.deleteBattery(battery.id);
