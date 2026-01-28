@@ -446,16 +446,10 @@ export function ChatPanel() {
                                 {msg.text}
                             </div>
                             <div className="flex items-center gap-2 mt-1 px-1">
-                                <Typography className="text-[9px] uppercase font-black text-zinc-400 tracking-widest">
-                                    {msg.role === "user" ? (language === "es" ? "Tú" : "You") : "AI"}
-                                </Typography>
                                 {formattedTime && (
-                                    <>
-                                        <span className="h-1 w-1 rounded-full bg-zinc-300" />
-                                        <Typography className="text-[9px] font-medium text-zinc-400">
-                                            {formattedTime}
-                                        </Typography>
-                                    </>
+                                    <Typography className="text-[9px] font-medium text-zinc-400">
+                                        {formattedTime}
+                                    </Typography>
                                 )}
                             </div>
                         </div>
