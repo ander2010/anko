@@ -222,9 +222,20 @@ export function ProjectDetail() {
 
       // query_text is now optional
 
+      const name = batteryForm.query_text.trim() || (language === "es" ? "Batería" : "Battery");
+
+      // Check for duplicates
+      if (batteries.some(b => (b.name || "").toLowerCase() === name.toLowerCase())) {
+        const msg = language === "es"
+          ? "Ya existe una batería con este nombre. Por favor, elige uno diferente."
+          : "A battery with this name already exists. Please choose a different one.";
+        setBatteryErrors({ query_text: msg });
+        return;
+      }
+
       const payload = {
         project: Number(projectId),
-        name: batteryForm.query_text.trim() || (language === "es" ? "Batería" : "Battery"),
+        name: name,
         query_text: batteryForm.query_text,
         sections: batteryForm.sections.map(s => s.id),
         quantity: Number(batteryForm.quantity),
@@ -1622,7 +1633,10 @@ export function ProjectDetail() {
 
                 <Button
                   className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                  onClick={() => setShowGenerateBattery(true)}
+                  onClick={() => {
+                    setBatteryErrors({});
+                    setShowGenerateBattery(true);
+                  }}
                 >
                   <PlusIcon className="h-5 w-5" />
                   {t("project_detail.batteries.btn_create")}
@@ -1645,11 +1659,32 @@ export function ProjectDetail() {
                       </label>
                       <input
                         type="text"
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                        className={`w-full px-3 py-2 border rounded-md transition-all ${batteryErrors.query_text ? "border-red-500 bg-red-50/10 focus:border-red-600 focus:ring-1 focus:ring-red-600" : "border-blue-gray-200 focus:border-indigo-500"} `}
                         placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
                         value={batteryForm.query_text}
-                        onChange={(e) => setBatteryForm(prev => ({ ...prev, query_text: e.target.value }))}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setBatteryForm(prev => ({ ...prev, query_text: val }));
+
+                          // Real-time validation
+                          const trimmed = val.trim().toLowerCase() || (language === "es" ? "batería" : "battery");
+                          if (batteries.some(b => (b.name || "").toLowerCase() === trimmed)) {
+                            setBatteryErrors(prev => ({
+                              ...prev,
+                              query_text: language === "es"
+                                ? "Ya existe una batería con este nombre o información."
+                                : "A battery with this name or info already exists."
+                            }));
+                          } else {
+                            setBatteryErrors(prev => ({ ...prev, query_text: null }));
+                          }
+                        }}
                       />
+                      {batteryErrors.query_text && (
+                        <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
+                          <span className="h-1 w-1 rounded-full bg-red-500" /> {batteryErrors.query_text}
+                        </Typography>
+                      )}
                     </div>
 
                     {/* Sections Selection */}
@@ -1811,6 +1846,7 @@ export function ProjectDetail() {
                       <Button
                         color="blue-gray"
                         onClick={handleGenerateBattery}
+                        disabled={!!batteryErrors.query_text || availableSections.length === 0}
                       >
                         {language === "es" ? "Generar Batería" : "Generate Battery"}
                       </Button>
