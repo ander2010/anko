@@ -66,6 +66,24 @@ const authService = {
   logout() {
     setAuthToken(null);
   },
+
+  async requestPasswordReset(email) {
+    try {
+      const res = await api.post(`${BASE}password-reset/`, { email });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Password reset request failed" };
+    }
+  },
+
+  async confirmPasswordReset(data) {
+    try {
+      const res = await api.post(`${BASE}password-reset-confirm/`, data);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Password reset confirmation failed" };
+    }
+  },
 };
 
 export default authService;

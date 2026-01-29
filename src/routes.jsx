@@ -20,7 +20,7 @@ import {
   GlobalBatteryShares, GlobalSavedBatteries, GlobalInvites, GlobalDecks, GlobalFlashcards, GlobalDeckShares, GlobalSavedDecks,
   GlobalUsers, GlobalProjects, GlobalSupportRequests, MyDecks, MyBatteries
 } from "@/pages/dashboard";
-import { SignIn, SignUp, EmailVerification } from "@/pages/auth";
+import { SignIn, SignUp, EmailVerification, ForgotPassword, ResetPassword } from "@/pages/auth";
 
 
 const icon = {
@@ -273,6 +273,14 @@ export const routes = [
       {
         path: "/email-verification",
         element: <EmailVerification />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "/reset-password/:uid/:token",
+        element: <ResetPassword />,
       },
     ],
   },
