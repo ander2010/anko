@@ -84,6 +84,24 @@ const authService = {
       throw err?.response?.data || { error: "Password reset confirmation failed" };
     }
   },
+
+  async resendVerification(username) {
+    try {
+      const res = await api.post(`${BASE}resend-verification/`, { username });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to resend verification email" };
+    }
+  },
+
+  async verifyEmail(token) {
+    try {
+      const res = await api.post(`${BASE}verify-email/`, { token });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Verification failed" };
+    }
+  },
 };
 
 export default authService;

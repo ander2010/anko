@@ -192,6 +192,24 @@ export function SignIn() {
                 <Typography variant="small" color="red" className="text-center font-medium text-xs">
                   {typeof error === 'string' ? error : JSON.stringify(error)}
                 </Typography>
+                {(typeof error === 'string' && error.toLowerCase().includes('not verified')) && (
+                  <div className="mt-2 text-center">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await authService.resendVerification(username);
+                          setError(language === 'es' ? 'Email de verificación re-enviado' : 'Verification email resent');
+                        } catch (err) {
+                          setError(err?.error || (language === 'es' ? 'Error al re-enviar email' : 'Error resending email'));
+                        }
+                      }}
+                      className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                    >
+                      {language === 'es' ? 'Re-enviar email de verificación' : 'Resend verification email'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
