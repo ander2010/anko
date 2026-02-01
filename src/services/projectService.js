@@ -158,6 +158,14 @@ const projectService = {
       throw err?.response?.data || { error: "Failed to delete document" };
     }
   },
+  async registerDocument(data) {
+    try {
+      const resp = await api.post("/documents/register/", data);
+      return resp.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to register document" };
+    }
+  },
 
   async getDocumentTags(documentId) {
     try {

@@ -6,12 +6,27 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
   },
+  esbuild: {
+    target: "esnext",
+  },
+  optimizeDeps: {
+    include: ["@uppy/core", "@uppy/dashboard", "@uppy/aws-s3", "@uppy/react"],
+    esbuildOptions: {
+      target: "esnext",
+    },
+  },
   server: {
     proxy: {
       "/api": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,
         secure: false,
+      },
+      "/companion": {
+        target: "http://127.0.0.1:3020",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
       },
     },
   },

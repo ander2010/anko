@@ -44,6 +44,7 @@ import {
 import projectService from "@/services/projectService";
 import { API_BASE } from "@/services/api";
 import { UploadDocumentsDialog } from "@/widgets/dialogs/upload-documents-dialog";
+import { UppyUploadDialog } from "@/widgets/dialogs/uppy-upload-dialog";
 import { DocumentMetadataDialog } from "@/widgets/dialogs/document-metadata-dialog";
 import { ConfirmDialog } from "@/widgets/dialogs/confirm-dialog";
 import { useAuth } from "@/context/auth-context";
@@ -103,6 +104,7 @@ export function ProjectDetail() {
 
   // dialogs
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uppyUploadDialogOpen, setUppyUploadDialogOpen] = useState(false);
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -1067,13 +1069,22 @@ export function ProjectDetail() {
               </Typography>
             </div>
 
-            <Button
-              className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95"
-              onClick={() => setUploadDialogOpen(true)}
-            >
-              <DocumentArrowUpIcon className="h-5 w-5" />
-              {t("project_detail.docs.btn_upload")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95"
+                onClick={() => setUploadDialogOpen(true)}
+              >
+                <DocumentArrowUpIcon className="h-5 w-5" />
+                {t("project_detail.docs.btn_upload")}
+              </Button>
+              <Button
+                className="flex items-center gap-2 bg-indigo-600 shadow-lg shadow-indigo-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-zinc-900 hover:shadow-zinc-500/20 active:scale-95 text-white"
+                onClick={() => setUppyUploadDialogOpen(true)}
+              >
+                <DocumentArrowUpIcon className="h-5 w-5" />
+                Upload Document Front
+              </Button>
+            </div>
           </div>
 
           <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] overflow-hidden">
@@ -1247,13 +1258,22 @@ export function ProjectDetail() {
                   <Typography className="text-zinc-500 text-sm max-w-sm font-medium mb-8">
                     {t("project_detail.docs.empty.desc")}
                   </Typography>
-                  <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
-                    onClick={() => setUploadDialogOpen(true)}
-                  >
-                    <DocumentArrowUpIcon className="h-5 w-5" />
-                    {t("project_detail.docs.btn_upload")}
-                  </Button>
+                  <div className="flex gap-4">
+                    <Button
+                      className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                      onClick={() => setUploadDialogOpen(true)}
+                    >
+                      <DocumentArrowUpIcon className="h-5 w-5" />
+                      {t("project_detail.docs.btn_upload")}
+                    </Button>
+                    <Button
+                      className="flex items-center gap-2 bg-indigo-600 shadow-lg shadow-indigo-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-zinc-900 hover:shadow-zinc-500/20 active:scale-95 text-white"
+                      onClick={() => setUppyUploadDialogOpen(true)}
+                    >
+                      <DocumentArrowUpIcon className="h-5 w-5" />
+                      Upload Document Front
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardBody>
@@ -2106,6 +2126,12 @@ export function ProjectDetail() {
         open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
         onUpload={handleUploadDocuments}
+        project={project}
+      />
+
+      <UppyUploadDialog
+        open={uppyUploadDialogOpen}
+        onClose={() => setUppyUploadDialogOpen(false)}
         project={project}
       />
 
