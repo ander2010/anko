@@ -79,22 +79,26 @@ export function AuthProvider({ children }) {
   const register = async (payload) => {
     const response = await authService.register(payload);
     const { token, user: u } = response;
-    window.localStorage.setItem("token", token);
-    setAuthToken(token);
 
-    // Fetch RBAC info after register
-    try {
-      const rbac = await rbacService.fetchAllowedRoutes();
-      setAllowedRoutes(rbac.allowed_routes || []);
-      setIsAdmin(rbac.is_admin || false);
-      setRoles(rbac.roles || []);
-    } catch (err) {
-      console.error("RBAC register fetch failed", err);
+    if (token) {
+      window.localStorage.setItem("token", token);
+      setAuthToken(token);
+
+      // Fetch RBAC info after register
+      try {
+        const rbac = await rbacService.fetchAllowedRoutes();
+        setAllowedRoutes(rbac.allowed_routes || []);
+        setIsAdmin(rbac.is_admin || false);
+        setRoles(rbac.roles || []);
+      } catch (err) {
+        console.error("RBAC register fetch failed", err);
+      }
+
+      setUser(u);
     }
 
-    setUser(u);
     // Return full response (or mixed) so caller can check flags like email_verification
-    return { ...response, user: u };
+    return { ...response, user: u || null };
   };
 
   const logout = () => {
