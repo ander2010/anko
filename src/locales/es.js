@@ -895,5 +895,8 @@ export const es = {
         no_docs_title: "Contexto Requerido",
         select_project_first: "Selecciona un proyecto primero"
     },
-
+    auth_errors: {
+        email_exists: "Este correo electrónico ya está en uso. Puedes restablecer tu contraseña si la olvidaste.",
+        reset_password: "Restablecer contraseña"
+    }
 };

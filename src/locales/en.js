@@ -893,6 +893,9 @@ export const en = {
         missing_context: "Select a project and documents to start chatting",
         no_docs_title: "Context Required",
         select_project_first: "Select a project first"
+    },
+    auth_errors: {
+        email_exists: "This email is already in use. You can reset your password if you forgot it.",
+        reset_password: "Reset password"
     }
-
 };

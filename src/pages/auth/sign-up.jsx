@@ -81,7 +81,15 @@ export function SignUp() {
         navigate("/dashboard/home");
       }
     } catch (err) {
-      setError(err?.error || JSON.stringify(err));
+      console.error("Register Error:", err);
+      // Handle field-specific errors from DRF
+      if (err.email) {
+        setError({ type: 'email_exists', message: Array.isArray(err.email) ? err.email[0] : err.email });
+      } else if (err.username) {
+        setError(Array.isArray(err.username) ? err.username[0] : err.username);
+      } else {
+        setError(err?.error || err?.detail || JSON.stringify(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -248,9 +256,20 @@ export function SignUp() {
             </Button>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-100 mt-4">
-                <Typography variant="small" color="red" className="text-center font-medium text-xs">
-                  {typeof error === 'string' ? error : JSON.stringify(error)}
+              <div className="p-3 rounded-lg bg-red-50 border border-red-100 mt-4 text-center">
+                <Typography variant="small" color="red" className="font-medium text-xs">
+                  {error.type === 'email_exists' ? (
+                    <>
+                      {language === "es"
+                        ? "Este correo electrónico ya está en uso. "
+                        : "This email is already in use. "}
+                      <Link to="/auth/forgot-password" size="sm" className="text-indigo-600 font-bold hover:underline ml-1">
+                        {language === "es" ? "Puedes restablecer tu contraseña aquí." : "You can reset your password here."}
+                      </Link>
+                    </>
+                  ) : (
+                    typeof error === 'string' ? error : JSON.stringify(error)
+                  )}
                 </Typography>
               </div>
             )}
