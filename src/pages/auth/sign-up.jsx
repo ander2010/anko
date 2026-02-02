@@ -15,6 +15,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 
 export function SignUp() {
   const { language } = useLanguage();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +72,13 @@ export function SignUp() {
     setError(null);
     setLoading(true);
     try {
-      const res = await register({ username, email, password });
+      const res = await register({
+        username,
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName
+      });
       console.log("Register Res:", res);
 
       // Check if email verification was sent
@@ -86,7 +94,11 @@ export function SignUp() {
       if (err.email) {
         setError({ type: 'email_exists', message: Array.isArray(err.email) ? err.email[0] : err.email });
       } else if (err.password) {
-        setError({ type: 'password_weak', message: Array.isArray(err.password) ? err.password.join(" ") : err.password });
+        // If password error is array, it might contain multiple validation messages
+        setError({
+          type: 'password_weak',
+          message: Array.isArray(err.password) ? err.password : [err.password]
+        });
       } else if (err.username) {
         setError(Array.isArray(err.username) ? err.username[0] : err.username);
       } else {
@@ -197,6 +209,37 @@ export function SignUp() {
           </div> */}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Typography variant="small" className="font-bold text-zinc-700 ml-1">
+                  {language === "es" ? "Nombre" : "First Name"}
+                </Typography>
+                <Input
+                  size="lg"
+                  placeholder="John"
+                  className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  disabled={loading}
+                  labelProps={{ className: "hidden" }}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Typography variant="small" className="font-bold text-zinc-700 ml-1">
+                  {language === "es" ? "Apellido" : "Last Name"}
+                </Typography>
+                <Input
+                  size="lg"
+                  placeholder="Doe"
+                  className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  disabled={loading}
+                  labelProps={{ className: "hidden" }}
+                />
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <Typography variant="small" className="font-bold text-zinc-700 ml-1">
                 {language === "es" ? "Nombre de usuario" : "Username"}
@@ -279,9 +322,13 @@ export function SignUp() {
                           ? "Debe contener al menos 8 caracteres y no ser demasiado común."
                           : "It must contain at least 8 characters and not be too common."}
                       </span>
-                      <span className="text-[10px] mt-1 opacity-80 italic">
-                        {error.message}
-                      </span>
+                      <ul className="text-[10px] mt-1 opacity-80 italic list-disc pl-4 text-left">
+                        {Array.isArray(error.message) ? error.message.map((msg, i) => (
+                          <li key={i}>{msg}</li>
+                        )) : (
+                          <li>{error.message}</li>
+                        )}
+                      </ul>
                     </div>
                   ) : (
                     typeof error === 'string' ? error : JSON.stringify(error)

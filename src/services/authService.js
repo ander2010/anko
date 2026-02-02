@@ -17,11 +17,10 @@ const authService = {
     }
   },
 
-  async register({ username, email, password }) {
+  async register(data) {
     try {
-      const payload = { username, password };
-      if (email) payload.email = email;
-      const res = await api.post(`${BASE}register/`, payload);
+      // data should contain { username, email, password, first_name, last_name, ... }
+      const res = await api.post(`${BASE}register/`, data);
       const { token, user } = res.data;
       if (token) setAuthToken(token);
       return res.data;
