@@ -897,6 +897,8 @@ export const es = {
     },
     auth_errors: {
         email_exists: "Este correo electrónico ya está en uso. Puedes restablecer tu contraseña si la olvidaste.",
-        reset_password: "Restablecer contraseña"
+        reset_password: "Restablecer contraseña",
+        password_weak: "La contraseña es muy débil.",
+        password_requirements: "Debe tener al menos 8 caracteres, incluyendo letras y números."
     }
 };

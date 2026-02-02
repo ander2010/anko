@@ -85,6 +85,8 @@ export function SignUp() {
       // Handle field-specific errors from DRF
       if (err.email) {
         setError({ type: 'email_exists', message: Array.isArray(err.email) ? err.email[0] : err.email });
+      } else if (err.password) {
+        setError({ type: 'password_weak', message: Array.isArray(err.password) ? err.password.join(" ") : err.password });
       } else if (err.username) {
         setError(Array.isArray(err.username) ? err.username[0] : err.username);
       } else {
@@ -267,6 +269,20 @@ export function SignUp() {
                         {language === "es" ? "Puedes restablecer tu contraseña aquí." : "You can reset your password here."}
                       </Link>
                     </>
+                  ) : error.type === 'password_weak' ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-bold">
+                        {language === "es" ? "Contraseña muy débil." : "Password too weak."}
+                      </span>
+                      <span>
+                        {language === "es"
+                          ? "Debe contener al menos 8 caracteres y no ser demasiado común."
+                          : "It must contain at least 8 characters and not be too common."}
+                      </span>
+                      <span className="text-[10px] mt-1 opacity-80 italic">
+                        {error.message}
+                      </span>
+                    </div>
                   ) : (
                     typeof error === 'string' ? error : JSON.stringify(error)
                   )}
