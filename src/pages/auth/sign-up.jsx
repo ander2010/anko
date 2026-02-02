@@ -92,15 +92,24 @@ export function SignUp() {
       console.error("Register Error:", err);
       // Handle field-specific errors from DRF
       if (err.email) {
-        setError({ type: 'email_exists', message: Array.isArray(err.email) ? err.email[0] : err.email });
+        // Only treat as 'email_exists' if message actually indicates duplication
+        const msg = Array.isArray(err.email) ? err.email[0] : err.email;
+        if (msg.toLowerCase().includes("exists") || msg.toLowerCase().includes("already")) {
+          setError({ type: 'email_exists', message: msg });
+        } else {
+          setError(msg);
+        }
       } else if (err.password) {
-        // If password error is array, it might contain multiple validation messages
         setError({
           type: 'password_weak',
           message: Array.isArray(err.password) ? err.password : [err.password]
         });
       } else if (err.username) {
         setError(Array.isArray(err.username) ? err.username[0] : err.username);
+      } else if (err.first_name) {
+        setError(Array.isArray(err.first_name) ? err.first_name[0] : err.first_name);
+      } else if (err.last_name) {
+        setError(Array.isArray(err.last_name) ? err.last_name[0] : err.last_name);
       } else {
         setError(err?.error || err?.detail || JSON.stringify(err));
       }
@@ -212,7 +221,7 @@ export function SignUp() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                  {language === "es" ? "Nombre" : "First Name"}
+                  {language === "es" ? "Nombre" : "First Name"} <span className="text-red-500">*</span>
                 </Typography>
                 <Input
                   size="lg"
@@ -222,6 +231,7 @@ export function SignUp() {
                   onChange={(e) => setFirstName(e.target.value)}
                   disabled={loading}
                   labelProps={{ className: "hidden" }}
+                  required
                 />
               </div>
               <div className="space-y-1.5">
@@ -242,7 +252,7 @@ export function SignUp() {
 
             <div className="space-y-1.5">
               <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                {language === "es" ? "Nombre de usuario" : "Username"}
+                {language === "es" ? "Nombre de usuario" : "Username"} <span className="text-red-500">*</span>
               </Typography>
               <Input
                 size="lg"
@@ -252,11 +262,12 @@ export function SignUp() {
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
                 labelProps={{ className: "hidden" }}
+                required
               />
             </div>
             <div className="space-y-1.5">
               <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                {language === "es" ? "Correo electrónico" : "Email address"}
+                {language === "es" ? "Correo electrónico" : "Email address"} <span className="text-red-500">*</span>
               </Typography>
               <Input
                 size="lg"
@@ -266,11 +277,12 @@ export function SignUp() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 labelProps={{ className: "hidden" }}
+                required
               />
             </div>
             <div className="space-y-1.5">
               <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                {language === "es" ? "Contraseña" : "Password"}
+                {language === "es" ? "Contraseña" : "Password"} <span className="text-red-500">*</span>
               </Typography>
               <Input
                 type="password"
@@ -281,6 +293,7 @@ export function SignUp() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
                 labelProps={{ className: "hidden" }}
+                required
               />
             </div>
 
@@ -319,16 +332,9 @@ export function SignUp() {
                       </span>
                       <span>
                         {language === "es"
-                          ? "Debe contener al menos 8 caracteres y no ser demasiado común."
-                          : "It must contain at least 8 characters and not be too common."}
+                          ? "Debe contener al menos 8 caracteres, incluyendo letras, números y un carácter especial."
+                          : "It must contain at least 8 characters, including letters, numbers, and a special character."}
                       </span>
-                      <ul className="text-[10px] mt-1 opacity-80 italic list-disc pl-4 text-left">
-                        {Array.isArray(error.message) ? error.message.map((msg, i) => (
-                          <li key={i}>{msg}</li>
-                        )) : (
-                          <li>{error.message}</li>
-                        )}
-                      </ul>
                     </div>
                   ) : (
                     typeof error === 'string' ? error : JSON.stringify(error)
