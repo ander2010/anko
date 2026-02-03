@@ -25,6 +25,12 @@ import {
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
+const isMultiSelect = (type) => {
+  if (!type) return false;
+  const t = type.toLowerCase();
+  return t === "multiselect" || t === "multiple_choice" || t === "multiple" || t === "checkbox";
+};
+
 export function ExamSimulatorDialog({ open, handler, battery }) {
   const { t, language } = useLanguage();
   if (!battery) return null;
@@ -47,6 +53,12 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
   const questions = useMemo(() => battery?.questions || [], [battery]);
   const totalQuestions = questions.length;
   const currentQuestion = questions[activeStep];
+
+  // DEBUG: Inspect incoming question data
+  console.log("Current Question Data:", currentQuestion);
+  console.log("Question Type:", currentQuestion?.type);
+  console.log("isMultiSelect result:", isMultiSelect(currentQuestion?.type));
+
 
   // key estable por cada vez que se abre el dialog con esa batería
   const startKey = useMemo(() => {
@@ -128,7 +140,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
     if (showAnswer) return;
 
     setUserAnswers((prev) => {
-      if (type === "multiSelect") {
+      if (isMultiSelect(type)) {
         const currentSelected = Array.isArray(prev[questionId]) ? prev[questionId] : [];
         if (currentSelected.includes(optionId)) {
           return { ...prev, [questionId]: currentSelected.filter((id) => id !== optionId) };
@@ -142,7 +154,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
   const isOptionSelected = (qId, optId, type) => {
     const ans = userAnswers[qId];
     if (ans == null) return false;
-    if (type === "multiSelect") return Array.isArray(ans) && ans.includes(optId);
+    if (isMultiSelect(type)) return Array.isArray(ans) && ans.includes(optId);
     return ans === optId;
   };
 
@@ -158,7 +170,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
       const userAnswer = userAnswers[q.id];
       if (userAnswer == null) return;
 
-      if (q.type === "multiSelect") {
+      if (isMultiSelect(q.type)) {
         const correctOptionIds = (q.options || [])
           .filter((o) => o.correct)
           .map((o) => o.id)
@@ -367,7 +379,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full uppercase font-bold">
                 {currentQuestion.type === "trueFalse"
                   ? (language === "es" ? "Verdadero / Falso" : "True / False")
-                  : currentQuestion.type === "multiSelect"
+                  : isMultiSelect(currentQuestion.type)
                     ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
                     : (language === "es" ? "Opción Única" : "Single Choice")}
               </span>
@@ -407,7 +419,7 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
               >
                 <CardBody className="p-4 flex items-center gap-4">
                   <div className="pointer-events-none">
-                    {currentQuestion.type === "multiSelect" ? (
+                    {isMultiSelect(currentQuestion.type) ? (
                       <Checkbox checked={isSelected} containerProps={{ className: "p-0" }} readOnly />
                     ) : (
                       <Radio checked={isSelected} containerProps={{ className: "p-0" }} readOnly />
