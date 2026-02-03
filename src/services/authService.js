@@ -101,6 +101,15 @@ const authService = {
       throw err?.response?.data || { error: "Verification failed" };
     }
   },
+
+  async changePassword(data) {
+    try {
+      const res = await api.post(`${BASE}change-password/`, data);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Password change failed" };
+    }
+  },
 };
 
 export default authService;
