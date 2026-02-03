@@ -8,6 +8,7 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import authService from "../../services/authService";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
@@ -18,6 +19,7 @@ export function SignIn() {
   const { language } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -159,16 +161,30 @@ export function SignIn() {
                   {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
                 </Link>
               </div>
-              <Input
-                type="password"
-                size="lg"
-                placeholder="••••••••"
-                className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                labelProps={{ className: "hidden" }}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  size="lg"
+                  placeholder="••••••••"
+                  className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  labelProps={{ className: "hidden" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button
