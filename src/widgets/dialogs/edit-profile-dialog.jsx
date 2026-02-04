@@ -14,6 +14,7 @@ import {
     TabPanel,
 } from "@material-tailwind/react";
 import { UserCircleIcon, LockClosedIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import authService from "@/services/authService";
@@ -38,6 +39,9 @@ export function EditProfileDialog({ open, handler }) {
         new_password: "",
         confirm_password: "",
     });
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordLoading, setPasswordLoading] = useState(false);
     const [passwordError, setPasswordError] = useState("");
     const [passwordSuccess, setPasswordSuccess] = useState("");
@@ -214,7 +218,7 @@ export function EditProfileDialog({ open, handler }) {
                                             </Typography>
                                             <Input
                                                 size="lg"
-                                                placeholder="Doe"
+                                                placeholder=""
                                                 name="last_name"
                                                 value={profileData.last_name}
                                                 onChange={handleProfileChange}
@@ -277,54 +281,104 @@ export function EditProfileDialog({ open, handler }) {
                                         <Typography variant="small" className="font-bold text-zinc-700 ml-1">
                                             {language === 'es' ? 'Contraseña Actual' : 'Current Password'}
                                         </Typography>
-                                        <Input
-                                            size="lg"
-                                            placeholder="••••••••"
-                                            name="old_password"
-                                            type="password"
-                                            value={passwordData.old_password}
-                                            onChange={handlePasswordChange}
-                                            className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400"
-                                            labelProps={{
-                                                className: "hidden",
-                                            }}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                size="lg"
+                                                placeholder="••••••••"
+                                                name="old_password"
+                                                type={showOldPassword ? "text" : "password"}
+                                                value={passwordData.old_password}
+                                                onChange={handlePasswordChange}
+                                                className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10"
+                                                labelProps={{
+                                                    className: "hidden",
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOldPassword(!showOldPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showOldPassword ? (
+                                                    <EyeSlashIcon className="h-5 w-5" />
+                                                ) : (
+                                                    <EyeIcon className="h-5 w-5" />
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2">
                                         <Typography variant="small" className="font-bold text-zinc-700 ml-1">
                                             {language === 'es' ? 'Nueva Contraseña' : 'New Password'}
                                         </Typography>
-                                        <Input
-                                            size="lg"
-                                            placeholder="••••••••"
-                                            name="new_password"
-                                            type="password"
-                                            value={passwordData.new_password}
-                                            onChange={handlePasswordChange}
-                                            className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400"
-                                            labelProps={{
-                                                className: "hidden",
-                                            }}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                size="lg"
+                                                placeholder="••••••••"
+                                                name="new_password"
+                                                type={showNewPassword ? "text" : "password"}
+                                                value={passwordData.new_password}
+                                                onChange={handlePasswordChange}
+                                                className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10"
+                                                labelProps={{
+                                                    className: "hidden",
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showNewPassword ? (
+                                                    <EyeSlashIcon className="h-5 w-5" />
+                                                ) : (
+                                                    <EyeIcon className="h-5 w-5" />
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2">
                                         <Typography variant="small" className="font-bold text-zinc-700 ml-1">
                                             {language === 'es' ? 'Confirmar Nueva Contraseña' : 'Confirm New Password'}
                                         </Typography>
-                                        <Input
-                                            size="lg"
-                                            placeholder="••••••••"
-                                            name="confirm_password"
-                                            type="password"
-                                            value={passwordData.confirm_password}
-                                            onChange={handlePasswordChange}
-                                            className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400"
-                                            labelProps={{
-                                                className: "hidden",
-                                            }}
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                size="lg"
+                                                placeholder="••••••••"
+                                                name="confirm_password"
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                value={passwordData.confirm_password}
+                                                onChange={handlePasswordChange}
+                                                className={`!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10 ${passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password
+                                                        ? '!border-red-300 focus:!border-red-500'
+                                                        : ''
+                                                    }`}
+                                                labelProps={{
+                                                    className: "hidden",
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showConfirmPassword ? (
+                                                    <EyeSlashIcon className="h-5 w-5" />
+                                                ) : (
+                                                    <EyeIcon className="h-5 w-5" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        {passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password && (
+                                            <Typography variant="small" className="text-red-500 text-xs ml-1 mt-1">
+                                                {language === 'es' ? 'Las contraseñas deben ser iguales' : 'Passwords must match'}
+                                            </Typography>
+                                        )}
                                     </div>
 
                                     <Button
