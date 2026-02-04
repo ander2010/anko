@@ -23,11 +23,17 @@ export function ForgotPassword() {
         setSuccess(false);
         setLoading(true);
         try {
-            await authService.requestPasswordReset(email);
+            const response = await authService.requestPasswordReset(email);
+            console.log("Password reset response:", response);
             setSuccess(true);
         } catch (err) {
-            console.error(err);
-            setError(err?.error || err?.detail || (language === "es" ? "Error al solicitar restablecimiento" : "Failed to request reset"));
+            console.error("Password reset error:", err);
+            const errorMessage = err?.error || err?.detail || err?.message || (
+                language === "es"
+                    ? "No se pudo enviar el correo. Por favor verifica que tu dirección de correo sea correcta."
+                    : "Failed to send email. Please verify that your email address is correct."
+            );
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

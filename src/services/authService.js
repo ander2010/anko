@@ -71,7 +71,7 @@ const authService = {
       const res = await api.post(`${BASE}password-reset/`, { email });
       return res.data;
     } catch (err) {
-      throw err?.response?.data || { error: "Password reset request failed" };
+      throw err?.response?.data || err;
     }
   },
 
