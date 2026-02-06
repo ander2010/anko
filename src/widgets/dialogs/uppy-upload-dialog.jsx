@@ -11,14 +11,14 @@ import {
 } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-// Import styles
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 
 import projectService from "@/services/projectService";
 import { useJobs } from "@/context/job-context";
+import { useLanguage } from "@/context/language-context";
 
-// Helper to calculate SHA-256 hash of a file
+// -------------------- helpers --------------------
 async function calculateSHA256(file) {
     const buffer = await file.arrayBuffer();
     const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -26,22 +26,24 @@ async function calculateSHA256(file) {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Helper to sanitize filename (matches server logic)
 function sanitizeFilename(filename) {
     return filename
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9._-]/g, '')
-        .replace(/_{2,}/g, '_');
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9._-]/g, "")
+        .replace(/_{2,}/g, "_");
 }
 
-export function UppyUploadDialog({ open, onClose, project }) {
+// -------------------- component --------------------
+export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
+    const { t } = useLanguage();
     const { addJob } = useJobs();
+
     const [uppy] = useState(() => {
         const u = new Uppy({
             id: "uppy-uploader",
             autoProceed: false,
             restrictions: {
-                maxFileSize: 500 * 1024 * 1024, // 500MB
+                maxFileSize: 500 * 1024 * 1024,
                 maxNumberOfFiles: 20,
             },
         });
@@ -55,88 +57,93 @@ export function UppyUploadDialog({ open, onClose, project }) {
         return u;
     });
 
+    // ---------- meta ----------
     useEffect(() => {
-        if (project && project.id) {
+        if (project?.id) {
             const userId = project.owner?.id || project.owner_id;
-            console.log("[Uppy] Setting meta:", { project_id: project.id, user_id: userId });
             uppy.setMeta({
                 project_id: project.id,
-                user_id: userId
+                user_id: userId,
             });
         }
     }, [project, uppy]);
 
+    // ---------- sanitize filenames ----------
     useEffect(() => {
         const handleFileAdded = (file) => {
             const sanitized = sanitizeFilename(file.name);
-            console.log(`[Uppy] File added, sanitizing name: "${file.name}" -> "${sanitized}"`);
             uppy.setFileMeta(file.id, { name: sanitized });
         };
+
         uppy.on("file-added", handleFileAdded);
         return () => uppy.off("file-added", handleFileAdded);
     }, [uppy]);
 
+    // ---------- upload complete ----------
     useEffect(() => {
         const handleComplete = async (result) => {
-            console.log("Upload complete:", result.successful);
-            if (result.successful.length > 0) {
-                for (const file of result.successful) {
-                    try {
-                        const fileHash = await calculateSHA256(file.data);
-                        const userId = project.owner?.id || project.owner_id;
+            if (!result.successful?.length) return;
 
-                        // Extract the key from various possible locations in the result
-                        let fileKey = file.s3Multipart?.key || file.meta.key || file.meta.name;
+            for (const file of result.successful) {
+                try {
+                    const userId = project.owner?.id || project.owner_id;
+                    const fileHash = await calculateSHA256(file.data);
 
-                        if (!fileKey && file.uploadURL) {
-                            try {
-                                const url = new URL(file.uploadURL);
-                                fileKey = url.pathname.startsWith("/") ? url.pathname.substring(1) : url.pathname;
-                            } catch (e) {
-                                console.error("Error parsing uploadURL:", e);
-                            }
-                        }
+                    let fileKey =
+                        file.s3Multipart?.key ||
+                        file.meta?.key ||
+                        file.meta?.name;
 
-                        // Ensure the fileKey includes the documents/{userId}/ prefix
-                        if (fileKey && !fileKey.includes(`documents/${userId}/`)) {
-                            if (!fileKey.includes("/")) {
-                                fileKey = `documents/${userId}/${fileKey}`;
-                            }
-                        }
-
-                        const registrationData = {
-                            project_id: project.id,
-                            filename: file.name, // Original name for display
-                            file_key: fileKey || `documents/${userId}/${sanitizeFilename(file.name)}`,
-                            size: file.size,
-                            type: file.type === "application/pdf" ? "PDF" : "PDF",
-                            hash: fileHash
-                        };
-
-                        console.log("[Uppy] Registering document:", registrationData);
-                        const response = await projectService.registerDocument(registrationData);
-                        console.log("[Uppy] Document registered response:", response);
-
-                        if (response.ws_url && response.document?.id) {
-                            addJob({
-                                id: response.document.job_id || response.external?.job_id || `reg-${response.document.id}`,
-                                type: "document",
-                                projectId: project.id,
-                                docId: response.document.id,
-                                ws_url: response.ws_url
-                            });
-                        }
-                    } catch (err) {
-                        console.error("Error registering uploaded file:", file.name, err);
+                    if (!fileKey && file.uploadURL) {
+                        const url = new URL(file.uploadURL);
+                        fileKey = url.pathname.replace(/^\//, "");
                     }
+
+                    if (fileKey && !fileKey.includes(`documents/${userId}/`)) {
+                        fileKey = `documents/${userId}/${fileKey}`;
+                    }
+
+                    const payload = {
+                        project_id: project.id,
+                        filename: file.name,
+                        file_key:
+                            fileKey ||
+                            `documents/${userId}/${sanitizeFilename(file.name)}`,
+                        size: file.size,
+                        type: "PDF",
+                        hash: fileHash,
+                    };
+
+                    const response =
+                        await projectService.registerDocument(payload);
+
+                    if (response?.ws_url && response?.document?.id) {
+                        addJob({
+                            id:
+                                response.document.job_id ||
+                                response.external?.job_id ||
+                                `doc-${response.document.id}`,
+                            type: "document",
+                            projectId: project.id,
+                            docId: response.document.id,
+                            ws_url: response.ws_url,
+                        });
+                    }
+                } catch (err) {
+                    console.error("Register error:", err);
                 }
+            }
+
+            if (onUploadSuccess) {
+                setTimeout(onUploadSuccess, 800);
             }
         };
 
         uppy.on("complete", handleComplete);
         return () => uppy.off("complete", handleComplete);
-    }, [uppy, project, addJob]);
+    }, [uppy, project, addJob, onUploadSuccess]);
 
+    // -------------------- UI --------------------
     return (
         <Dialog
             open={open}
@@ -147,17 +154,19 @@ export function UppyUploadDialog({ open, onClose, project }) {
             <DialogHeader className="flex items-center justify-between border-b border-zinc-100 px-8 py-6">
                 <div>
                     <Typography variant="h4" className="text-zinc-900 font-black">
-                        Upload Documents (S3 Multipart)
+                        {t?.("project_detail.docs.btn_upload") ||
+                            "Upload Documents"}
                     </Typography>
                     <Typography className="text-zinc-500 font-medium text-sm">
-                        Powered by Uppy & AWS S3
+                        {t?.("project_detail.docs.upload_desc") ||
+                            "Upload files to your project"}
                     </Typography>
                 </div>
                 <IconButton
                     variant="text"
                     color="zinc"
                     onClick={onClose}
-                    className="rounded-full hover:bg-zinc-100 transition-colors"
+                    className="rounded-full hover:bg-zinc-100"
                 >
                     <XMarkIcon className="h-6 w-6" />
                 </IconButton>
@@ -169,9 +178,9 @@ export function UppyUploadDialog({ open, onClose, project }) {
                         uppy={uppy}
                         width="100%"
                         height="450px"
-                        inline={true}
+                        inline
                         proudlyDisplayPoweredByUppy={false}
-                        showProgressDetails={true}
+                        showProgressDetails
                         note="Files up to 500MB supported."
                         theme="light"
                     />

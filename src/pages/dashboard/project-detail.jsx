@@ -2153,6 +2153,10 @@ export function ProjectDetail() {
         open={uppyUploadDialogOpen}
         onClose={() => setUppyUploadDialogOpen(false)}
         project={project}
+        onUploadSuccess={() => {
+          fetchDocuments(Number(projectId));
+          setUppyUploadDialogOpen(false);
+        }}
       />
 
       <DocumentMetadataDialog
