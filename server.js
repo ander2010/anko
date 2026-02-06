@@ -34,7 +34,7 @@ const options = {
         host: process.env.COMPANION_DOMAIN || ('localhost:' + port),
         protocol: process.env.COMPANION_PROTOCOL || 'http',
     },
-    corsOrigins: true,
+    corsOrigins: process.env.COMPANION_CORS_ORIGINS ? process.env.COMPANION_CORS_ORIGINS.split(',') : true,
     uploadUrls: ['http://localhost:' + port],
     filePath: 'uploads',
     secret: 'uppy-anko-integrated',
@@ -56,8 +56,14 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'Companion is alive' });
 });
 
-const server = app.listen(port, '127.0.0.1', () => {
-    console.log(`Uppy Companion integrated running on http://127.0.0.1:${port}`);
-});
+// Export app for Vercel
+export default app;
 
-companion.socket(server);
+// Only listen if run directly (not imported as a module)
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const server = app.listen(port, '127.0.0.1', () => {
+        console.log(`Uppy Companion integrated running on http://127.0.0.1:${port}`);
+    });
+
+    companion.socket(server);
+}

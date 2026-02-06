@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/companion/(.*)",
+            "destination": "/api/companion.js"
+        },
+        {
             "source": "/(.*)",
             "destination": "/"
         }
