@@ -239,7 +239,7 @@ export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) 
             />
           </div>
 
-          {/* Docs with Uppy */}
+          {/* Docs with Uppy - Hidden as requested
           <div>
             <Typography variant="small" className="font-bold text-zinc-900 mb-2 ml-1 flex items-center justify-between">
               <span>{language === "es" ? "Documentos Iniciales" : "Initial Documents"}</span>
@@ -257,6 +257,7 @@ export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) 
               />
             </div>
           </div>
+          */}
 
         </DialogBody>
 

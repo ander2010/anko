@@ -1061,7 +1061,7 @@ export function ProjectDetail() {
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1">
-              <Typography variant="h5" className="font-bold text-zinc-900">
+              <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                 {t("project_detail.tabs.documents")}
               </Typography>
               <Typography className="text-zinc-500 text-sm font-medium">
@@ -1071,18 +1071,11 @@ export function ProjectDetail() {
 
             <div className="flex gap-2">
               <Button
-                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95"
-                onClick={() => setUploadDialogOpen(true)}
-              >
-                <DocumentArrowUpIcon className="h-5 w-5" />
-                {t("project_detail.docs.btn_upload")}
-              </Button>
-              <Button
-                className="flex items-center gap-2 bg-indigo-600 shadow-lg shadow-indigo-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-zinc-900 hover:shadow-zinc-500/20 active:scale-95 text-white"
+                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
                 onClick={() => setUppyUploadDialogOpen(true)}
               >
                 <DocumentArrowUpIcon className="h-5 w-5" />
-                Upload Document Front
+                {t("project_detail.docs.btn_upload")}
               </Button>
             </div>
           </div>
@@ -1248,7 +1241,7 @@ export function ProjectDetail() {
                   </table>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+                <div className="flex flex-col items-center justify-center min-h-[400px] py-12 text-center px-6">
                   <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
                     <DocumentTextIcon className="h-10 w-10" />
                   </div>
@@ -1261,105 +1254,102 @@ export function ProjectDetail() {
                   <div className="flex gap-4">
                     <Button
                       className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
-                      onClick={() => setUploadDialogOpen(true)}
-                    >
-                      <DocumentArrowUpIcon className="h-5 w-5" />
-                      {t("project_detail.docs.btn_upload")}
-                    </Button>
-                    <Button
-                      className="flex items-center gap-2 bg-indigo-600 shadow-lg shadow-indigo-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-zinc-900 hover:shadow-zinc-500/20 active:scale-95 text-white"
                       onClick={() => setUppyUploadDialogOpen(true)}
                     >
                       <DocumentArrowUpIcon className="h-5 w-5" />
-                      Upload Document Front
+                      {t("project_detail.docs.btn_upload")}
                     </Button>
                   </div>
                 </div>
               )}
             </CardBody>
-          </Card>
-        </div>
-      )}
+          </Card >
+        </div >
+      )
+      }
 
       {
         activeTab === "topics" && (
           <>
             {/* Header + Actions Row */}
-            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-              <div className="flex-1">
-                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
-                  {t("project_detail.topics.title")}
-                </Typography>
-                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
-                  {t("project_detail.topics.description_text")}
-                </Typography>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                {/* Search Topics */}
-                <div className="relative flex-1 min-w-[240px]">
-                  <input
-                    type="text"
-                    placeholder={language === "es" ? "Buscar temas..." : "Search topics..."}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
-                    value={topicsSearch}
-                    onChange={(e) => setTopicsSearch(e.target.value)}
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                  </div>
+            {/* Header + Actions Row */}
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                    {t("project_detail.topics.title")}
+                  </Typography>
+                  <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                    {t("project_detail.topics.description_text")}
+                  </Typography>
                 </div>
 
-                <Button
-                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                  onClick={() => setCreateTopicDialogOpen(true)}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.topics.btn_create")}
-                </Button>
-              </div>
-            </div>
-
-            {topics.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {topics
-                  .filter(t => t.name.toLowerCase().includes(topicsSearch.toLowerCase()))
-                  .map((topic) => (
-                    <TopicCard
-                      key={topic.id}
-                      topic={topic}
-                      allDocumentsWithSections={documentsWithSections}
-                      onEdit={handleEditTopic}
-                      onArchive={handleArchiveTopic}
-                      onDelete={handleDeleteTopic}
-                      onCreateDeck={handleCreateDeckFromTopic}
+                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                  {/* Search Topics */}
+                  <div className="relative flex-1 min-w-[240px]">
+                    <input
+                      type="text"
+                      placeholder={language === "es" ? "Buscar temas..." : "Search topics..."}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      value={topicsSearch}
+                      onChange={(e) => setTopicsSearch(e.target.value)}
                     />
-                  ))}
-              </div>
-            ) : (
-              <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
-                <CardBody className="flex flex-col items-center justify-center py-24 text-center px-6">
-                  <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
-                    <FolderIcon className="h-10 w-10" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                      </svg>
+                    </div>
                   </div>
-                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
-                    {t("project_detail.topics.empty.title")}
-                  </Typography>
-                  <Typography className="text-zinc-500 text-sm max-w-sm font-medium mb-8">
-                    {t("project_detail.topics.empty.desc")}
-                  </Typography>
+
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => setCreateTopicDialogOpen(true)}
                   >
                     <PlusIcon className="h-5 w-5" />
                     {t("project_detail.topics.btn_create")}
                   </Button>
-                </CardBody>
-              </Card>
-            )}
+                </div>
+              </div>
+
+              {topics.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {topics
+                    .filter(t => t.name.toLowerCase().includes(topicsSearch.toLowerCase()))
+                    .map((topic) => (
+                      <TopicCard
+                        key={topic.id}
+                        topic={topic}
+                        allDocumentsWithSections={documentsWithSections}
+                        onEdit={handleEditTopic}
+                        onArchive={handleArchiveTopic}
+                        onDelete={handleDeleteTopic}
+                        onCreateDeck={handleCreateDeckFromTopic}
+                      />
+                    ))}
+                </div>
+              ) : (
+                <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">
+                  <CardBody className="flex flex-col items-center justify-center text-center px-6 h-full">
+                    <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
+                      <FolderIcon className="h-10 w-10" />
+                    </div>
+                    <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                      {t("project_detail.topics.empty.title")}
+                    </Typography>
+                    <Typography className="text-zinc-500 text-sm max-w-sm font-medium mb-8">
+                      {t("project_detail.topics.empty.desc")}
+                    </Typography>
+                    <Button
+                      className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                      onClick={() => setCreateTopicDialogOpen(true)}
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      {t("project_detail.topics.btn_create")}
+                    </Button>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
 
             {/* Dialogs - Topics */}
             <CreateTopicDialog
@@ -1413,607 +1403,636 @@ export function ProjectDetail() {
         activeTab === "rules" && (
           <>
             {/* Header + Actions Row */}
-            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-              <div className="flex-1">
-                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
-                  {t("project_detail.rules.title")}
-                </Typography>
-                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
-                  {t("project_detail.rules.description_text")}
-                </Typography>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                {/* Search Rules */}
-                <div className="relative flex-1 min-w-[240px]">
-                  <input
-                    type="text"
-                    placeholder={language === "es" ? "Buscar reglas..." : "Search rules..."}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
-                    value={rulesSearch}
-                    onChange={(e) => setRulesSearch(e.target.value)}
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                  </div>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                    {t("project_detail.rules.title")}
+                  </Typography>
+                  <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                    {t("project_detail.rules.description_text")}
+                  </Typography>
                 </div>
 
-                <Button
-                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                  onClick={() => setShowCreateRule(true)}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.rules.btn_create")}
-                </Button>
-              </div>
-            </div>
+                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                  {/* Search Rules */}
+                  <div className="relative flex-1 min-w-[240px]">
+                    <input
+                      type="text"
+                      placeholder={language === "es" ? "Buscar reglas..." : "Search rules..."}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      value={rulesSearch}
+                      onChange={(e) => setRulesSearch(e.target.value)}
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                      </svg>
+                    </div>
+                  </div>
 
-            {showCreateRule && (
-              <Card className="mb-6 border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
-                <CardBody>
-                  <Typography variant="h6" className="font-bold text-zinc-900 mb-4">
+                  <Button
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    onClick={() => setShowCreateRule(true)}
+                  >
+                    <PlusIcon className="h-5 w-5" />
                     {t("project_detail.rules.btn_create")}
-                  </Typography>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">
-                        {language === "es" ? "Nombre" : "Name"}
-                      </Typography>
-                      <input
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.name}
-                        onChange={(e) => setRuleForm((p) => ({ ...p, name: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">Global Count</Typography>
-                      <input
-                        type="number"
-                        min="0"
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.global_count}
-                        onChange={(e) => setRuleForm((p) => ({ ...p, global_count: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">Time Limit (minutes)</Typography>
-                      <input
-                        type="number"
-                        min="1"
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.time_limit}
-                        onChange={(e) => setRuleForm((p) => ({ ...p, time_limit: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">Strategy</Typography>
-                      <select
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.distribution_strategy}
-                        onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
-                      >
-                        <option value="singleChoice">Single Choice</option>
-                        <option value="multiSelect">Multi Select</option>
-                        <option value="trueFalse">True False</option>
-                        <option value="mixed">Mixed</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">Difficulty</Typography>
-                      <select
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.difficulty}
-                        onChange={(e) => setRuleForm((p) => ({ ...p, difficulty: e.target.value }))}
-                      >
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <Typography variant="small" className="mb-1 text-blue-gray-600">Topic Scope (optional)</Typography>
-                      <select
-                        className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                        value={ruleForm.topic_scope || ""}
-                        onChange={(e) =>
-                          setRuleForm((p) => ({ ...p, topic_scope: e.target.value ? Number(e.target.value) : null }))
-                        }
-                      >
-                        <option value="">(Global)</option>
-                        {topics.map((t) => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2 mt-6">
-                    <Button variant="text" onClick={() => setShowCreateRule(false)}>
-                      {language === "es" ? "Cancelar" : "Cancel"}
-                    </Button>
-                    <Button color="blue-gray" onClick={handleCreateRule} disabled={!ruleForm.name}>
-                      {language === "es" ? "Guardar Regla" : "Save Rule"}
-                    </Button>
-                  </div>
-                </CardBody>
-              </Card>
-            )}
-
-            {loadingRules ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Spinner className="h-10 w-10 mb-4" />
-                <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
+                  </Button>
+                </div>
               </div>
-            ) : rules.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {rules
-                  .filter(r => r.name.toLowerCase().includes(rulesSearch.toLowerCase()))
-                  .map((rule) => (
-                    <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
-                      <CardBody>
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
-                            <Typography variant="small" className="text-blue-gray-500">
-                              {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
-                            </Typography>
+
+              {showCreateRule && (
+                <Card className="mb-6 border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem]">
+                  <CardBody>
+                    <Typography variant="h6" className="font-bold text-zinc-900 mb-4">
+                      {t("project_detail.rules.btn_create")}
+                    </Typography>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">
+                          {language === "es" ? "Nombre" : "Name"}
+                        </Typography>
+                        <input
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.name}
+                          onChange={(e) => setRuleForm((p) => ({ ...p, name: e.target.value }))}
+                        />
+                      </div>
+
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">Global Count</Typography>
+                        <input
+                          type="number"
+                          min="0"
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.global_count}
+                          onChange={(e) => setRuleForm((p) => ({ ...p, global_count: e.target.value }))}
+                        />
+                      </div>
+
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">Time Limit (minutes)</Typography>
+                        <input
+                          type="number"
+                          min="1"
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.time_limit}
+                          onChange={(e) => setRuleForm((p) => ({ ...p, time_limit: e.target.value }))}
+                        />
+                      </div>
+
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">Strategy</Typography>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.distribution_strategy}
+                          onChange={(e) => setRuleForm((p) => ({ ...p, distribution_strategy: e.target.value }))}
+                        >
+                          <option value="singleChoice">Single Choice</option>
+                          <option value="multiSelect">Multi Select</option>
+                          <option value="trueFalse">True False</option>
+                          <option value="mixed">Mixed</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">Difficulty</Typography>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.difficulty}
+                          onChange={(e) => setRuleForm((p) => ({ ...p, difficulty: e.target.value }))}
+                        >
+                          <option value="Easy">Easy</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Hard">Hard</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <Typography variant="small" className="mb-1 text-blue-gray-600">Topic Scope (optional)</Typography>
+                        <select
+                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                          value={ruleForm.topic_scope || ""}
+                          onChange={(e) =>
+                            setRuleForm((p) => ({ ...p, topic_scope: e.target.value ? Number(e.target.value) : null }))
+                          }
+                        >
+                          <option value="">(Global)</option>
+                          {topics.map((t) => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-6">
+                      <Button variant="text" onClick={() => setShowCreateRule(false)}>
+                        {language === "es" ? "Cancelar" : "Cancel"}
+                      </Button>
+                      <Button color="blue-gray" onClick={handleCreateRule} disabled={!ruleForm.name}>
+                        {language === "es" ? "Guardar Regla" : "Save Rule"}
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {loadingRules ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Spinner className="h-10 w-10 mb-4" />
+                  <Typography className="text-blue-gray-600">{t("global.rules.loading")}</Typography>
+                </div>
+              ) : rules.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {rules
+                    .filter(r => r.name.toLowerCase().includes(rulesSearch.toLowerCase()))
+                    .map((rule) => (
+                      <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
+                        <CardBody>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
+                              <Typography variant="small" className="text-blue-gray-500">
+                                {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
+                              </Typography>
+                            </div>
+
+                            {isOwner && (
+                              <IconButton
+                                size="sm"
+                                variant="text"
+                                color="red"
+                                onClick={async () => {
+                                  try {
+                                    setError(null);
+                                    await projectService.deleteRule(rule.id);
+                                    await fetchRules(Number(projectId));
+                                  } catch (err) {
+                                    setError(err?.error || err?.detail || "Failed to delete rule");
+                                  }
+                                }}
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </IconButton>
+                            )}
                           </div>
 
-                          {isOwner && (
-                            <IconButton
-                              size="sm"
-                              variant="text"
-                              color="red"
-                              onClick={async () => {
-                                try {
-                                  setError(null);
-                                  await projectService.deleteRule(rule.id);
-                                  await fetchRules(Number(projectId));
-                                } catch (err) {
-                                  setError(err?.error || err?.detail || "Failed to delete rule");
-                                }
-                              }}
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </IconButton>
-                          )}
-                        </div>
-
-                        <div className="space-y-1 text-sm text-blue-gray-600">
-                          <div className="flex justify-between">
-                            <span>{t("global.rules.table.questions")}</span>
-                            <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                          <div className="space-y-1 text-sm text-blue-gray-600">
+                            <div className="flex justify-between">
+                              <span>{t("global.rules.table.questions")}</span>
+                              <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
+                              <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t("global.rules.table.topic")}</span>
+                              <span className="font-medium text-blue-gray-900">
+                                {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope} ` : (language === "es" ? "Global" : "Global")}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
-                            <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>{t("global.rules.table.topic")}</span>
-                            <span className="font-medium text-blue-gray-900">
-                              {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope} ` : (language === "es" ? "Global" : "Global")}
-                            </span>
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-                <ClipboardDocumentListIcon className="h-16 w-16 mb-4" />
-                <Typography variant="h6" className="mb-2">{t("global.rules.no_rules")}</Typography>
-                <Typography>
-                  {language === "es"
-                    ? "Crea una regla para definir cómo se generan las baterías."
-                    : "Create a rule to define how batteries are generated."}
-                </Typography>
-              </div>
-            )}
+                        </CardBody>
+                      </Card>
+                    ))}
+                </div>
+              ) : (
+                <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">
+                  <CardBody className="flex flex-col items-center justify-center text-center px-6 h-full">
+                    <ClipboardDocumentListIcon className="h-16 w-16 mb-4 text-zinc-300" />
+                    <Typography variant="h6" className="mb-2 text-zinc-900">{t("global.rules.no_rules")}</Typography>
+                    <Typography className="text-zinc-500 mb-6">
+                      {language === "es"
+                        ? "Crea una regla para definir cómo se generan las baterías."
+                        : "Create a rule to define how batteries are generated."}
+                    </Typography>
+                    <div>
+                      <Button
+                        className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                        onClick={() => setShowCreateRule(true)}
+                      >
+                        <PlusIcon className="h-5 w-5" />
+                        {t("project_detail.rules.btn_create")}
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
           </>
         )
       } {
         activeTab === "batteries" && (
           <>
             {/* Header + Actions Row */}
-            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-              <div className="flex-1">
-                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
-                  {t("project_detail.batteries.title")}
-                </Typography>
-                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
-                  {t("project_detail.batteries.description_text")}
-                </Typography>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                {/* Search Batteries */}
-                <div className="relative flex-1 min-w-[240px]">
-                  <input
-                    type="text"
-                    placeholder={t("project_detail.batteries.search_placeholder")}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
-                    value={batteriesSearch}
-                    onChange={(e) => setBatteriesSearch(e.target.value)}
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                  </div>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                    {t("project_detail.batteries.title")}
+                  </Typography>
+                  <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                    {t("project_detail.batteries.description_text")}
+                  </Typography>
                 </div>
 
-                <Button
-                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                  onClick={() => {
-                    setBatteryErrors({});
-                    setShowGenerateBattery(true);
-                  }}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.batteries.btn_create")}
-                </Button>
-              </div>
-            </div>
-
-            {showGenerateBattery && (
-              <Card className="mb-6 border border-blue-gray-100 shadow-sm">
-                <CardBody>
-                  <Typography variant="h6" color="blue-gray" className="mb-4">
-                    {language === "es" ? "Generar Nueva Batería" : "Generate New Battery"}
-                  </Typography>
-
-                  <div className="space-y-4">
-                    {/* Query Text */}
-                    <div>
-                      <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                        {language === "es" ? "Sobre qué quieres las preguntas (opcional)" : "What do you want questions about? (optional)"}
-                      </label>
-                      <input
-                        type="text"
-                        className={`w-full px-3 py-2 border rounded-md transition-all ${batteryErrors.query_text ? "border-red-500 bg-red-50/10 focus:border-red-600 focus:ring-1 focus:ring-red-600" : "border-blue-gray-200 focus:border-indigo-500"} `}
-                        placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
-                        value={batteryForm.query_text}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setBatteryForm(prev => ({ ...prev, query_text: val }));
-
-                          // Real-time validation
-                          const trimmed = val.trim().toLowerCase() || (language === "es" ? "batería" : "battery");
-                          if (batteries.some(b => (b.name || "").toLowerCase() === trimmed)) {
-                            setBatteryErrors(prev => ({
-                              ...prev,
-                              query_text: language === "es"
-                                ? "Ya existe una batería con este nombre o información."
-                                : "A battery with this name or info already exists."
-                            }));
-                          } else {
-                            setBatteryErrors(prev => ({ ...prev, query_text: null }));
-                          }
-                        }}
-                      />
-                      {batteryErrors.query_text && (
-                        <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
-                          <span className="h-1 w-1 rounded-full bg-red-500" /> {batteryErrors.query_text}
-                        </Typography>
-                      )}
-                    </div>
-
-                    {/* Sections Selection */}
-                    <div>
-                      <label className={`block text-sm font-medium mb-2 ${(batteryErrors.sections || availableSections.length === 0) ? "text-red-500" : "text-blue-gray-700"} `}>
-                        {language === "es" ? "Secciones *" : "Sections *"}
-                      </label>
-
-                      {availableSections.length === 0 ? (
-                        <div className="p-4 text-center bg-red-50/50 rounded-xl border border-dashed border-red-200 animate-in fade-in zoom-in-95 duration-500">
-                          <div className="flex flex-col items-center gap-2">
-                            <ExclamationCircleIcon className="h-6 w-6 text-red-400 mb-1" />
-                            <Typography variant="small" className="text-red-900 font-bold leading-relaxed px-4">
-                              {language === "es"
-                                ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
-                                : "You don't have any sections available. You should upload a document so the system can process the content."}
-                            </Typography>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="mb-2">
-                            <input
-                              type="text"
-                              className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
-                              placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
-                              value={sectionSearch}
-                              onChange={(e) => setSectionSearch(e.target.value)}
-                            />
-                          </div>
-
-                          {batteryErrors.sections && (
-                            <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                              {batteryErrors.sections}
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {batteryForm.sections.map((sec) => (
-                              <Chip
-                                key={sec.id}
-                                value={`${sec.documentName}: ${sec.name} `}
-                                onClose={() => {
-                                  setBatteryForm(prev => ({
-                                    ...prev,
-                                    sections: prev.sections.filter((s) => s.id !== sec.id)
-                                  }));
-                                }}
-                                className="rounded-full bg-blue-50 text-blue-900"
-                              />
-                            ))}
-                          </div>
-                          <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
-                            {availableSections
-                              .filter(sec =>
-                                sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
-                                sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
-                              )
-                              .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
-                              .map((sec) => (
-                                <div
-                                  key={sec.id}
-                                  className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
-                                  onClick={() => {
-                                    setBatteryForm(prev => ({
-                                      ...prev,
-                                      sections: [...prev.sections, sec]
-                                    }));
-                                    setSectionSearch("");
-                                    if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
-                                  }}
-                                >
-                                  <span className="font-medium text-blue-gray-800">{sec.name}</span>
-                                  <span className="text-xs text-gray-500">{sec.documentName}</span>
-                                </div>
-                              ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Rule Selection (Optional) */}
-                      <div>
-                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                          {language === "es" ? "Regla (opcional)" : "Rule (optional)"}
-                        </label>
-                        <select
-                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                          value={batteryForm.rule}
-                          onChange={(e) => setBatteryForm(prev => ({ ...prev, rule: e.target.value }))}
-                        >
-                          <option value="">{language === "es" ? "Sin regla" : "No rule"}</option>
-                          {rules.map((r) => (
-                            <option key={r.id} value={r.id}>
-                              {r.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Quantity (conditional) */}
-                      {!batteryForm.rule && (
-                        <div>
-                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                            {language === "es" ? "Cantidad de Preguntas *" : "Number of Questions *"}
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="100"
-                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                            value={batteryForm.quantity}
-                            onChange={(e) => setBatteryForm(prev => ({ ...prev, quantity: e.target.value }))}
-                          />
-                        </div>
-                      )}
-
-                      {/* Difficulty */}
-                      <div>
-                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                          {language === "es" ? "Dificultad *" : "Difficulty *"}
-                        </label>
-                        <select
-                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                          value={batteryForm.difficulty}
-                          onChange={(e) => setBatteryForm(prev => ({ ...prev, difficulty: e.target.value }))}
-                        >
-                          <option value="easy">{language === "es" ? "Fácil" : "Easy"}</option>
-                          <option value="medium">{language === "es" ? "Medio" : "Medium"}</option>
-                          <option value="hard">{language === "es" ? "Difícil" : "Hard"}</option>
-                        </select>
-                      </div>
-
-                      {/* Question Format */}
-                      <div>
-                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                          {language === "es" ? "Formato de Pregunta *" : "Question Format *"}
-                        </label>
-                        <select
-                          className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                          value={batteryForm.question_format}
-                          onChange={(e) => setBatteryForm(prev => ({ ...prev, question_format: e.target.value }))}
-                        >
-                          <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
-                          <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
-                          <option value="multiple_choice">{language === "es" ? "Selección Múltiple" : "Multiple Choice"}</option>
-                          <option value="variety">{language === "es" ? "Variado" : "Variety"}</option>
-                        </select>
-                      </div>
-
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
-                        {language === "es" ? "Cancelar" : "Cancel"}
-                      </Button>
-                      <Button
-                        color="blue-gray"
-                        onClick={handleGenerateBattery}
-                        disabled={!!batteryErrors.query_text || availableSections.length === 0}
-                      >
-                        {language === "es" ? "Generar Batería" : "Generate Battery"}
-                      </Button>
+                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                  {/* Search Batteries */}
+                  <div className="relative flex-1 min-w-[240px]">
+                    <input
+                      type="text"
+                      placeholder={t("project_detail.batteries.search_placeholder")}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      value={batteriesSearch}
+                      onChange={(e) => setBatteriesSearch(e.target.value)}
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                      </svg>
                     </div>
                   </div>
-                </CardBody>
-              </Card>
-            )}
 
-            {batteries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {batteries
-                  .filter(b => b.name.toLowerCase().includes(batteriesSearch.toLowerCase()))
-                  .map((battery) => (
-                    <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
-                      <CardBody>
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-1">
-                            <Chip
-                              value={battery.status}
-                              color={battery.status === "Ready" ? "green" : "blue-gray"}
-                              size="sm"
-                              variant="ghost"
-                              className="rounded-full"
-                            />
-                            <Tooltip content="Simulate Exam">
-                              <IconButton
-                                size="sm"
-                                variant="text"
-                                color="green"
-                                onClick={() => setSimulationBattery(battery)}
-                              >
-                                <PlayIcon className="h-4 w-4" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
+                  <Button
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    onClick={() => {
+                      setBatteryErrors({});
+                      setShowGenerateBattery(true);
+                    }}
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                    {t("project_detail.batteries.btn_create")}
+                  </Button>
+                </div>
+              </div>
 
-                          {isOwner && (
-                            <Menu placement="bottom-end">
-                              <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray">
-                                  <EllipsisVerticalIcon className="h-5 w-5" />
-                                </IconButton>
-                              </MenuHandler>
-                              <MenuList>
+              {showGenerateBattery && (
+                <Card className="mb-6 border border-blue-gray-100 shadow-sm">
+                  <CardBody>
+                    <Typography variant="h6" color="blue-gray" className="mb-4">
+                      {language === "es" ? "Generar Nueva Batería" : "Generate New Battery"}
+                    </Typography>
 
-                                <MenuItem
-                                  onClick={async () => {
-                                    await projectService.deleteBattery(battery.id);
-                                    await fetchBatteries(Number(projectId));
-                                  }}
-                                  className="text-red-500"
-                                >
-                                  Delete
-                                </MenuItem>
-                              </MenuList>
-                            </Menu>
-                          )}
-                        </div>
+                    <div className="space-y-4">
+                      {/* Query Text */}
+                      <div>
+                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                          {language === "es" ? "Sobre qué quieres las preguntas (opcional)" : "What do you want questions about? (optional)"}
+                        </label>
+                        <input
+                          type="text"
+                          className={`w-full px-3 py-2 border rounded-md transition-all ${batteryErrors.query_text ? "border-red-500 bg-red-50/10 focus:border-red-600 focus:ring-1 focus:ring-red-600" : "border-blue-gray-200 focus:border-indigo-500"} `}
+                          placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
+                          value={batteryForm.query_text}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setBatteryForm(prev => ({ ...prev, query_text: val }));
 
-                        <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
-                          {battery.name}
-                        </Typography>
-
-                        <div className="flex gap-2 mb-4">
-                          <Chip
-                            value={battery.difficulty || "Medium"}
-                            size="sm"
-                            variant="outlined"
-                            className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
-                          />
-                          <Typography variant="small" className="text-blue-gray-500 text-xs">
-                            {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
-                            {formatDate(battery.created_at || battery.createdAt)}
+                            // Real-time validation
+                            const trimmed = val.trim().toLowerCase() || (language === "es" ? "batería" : "battery");
+                            if (batteries.some(b => (b.name || "").toLowerCase() === trimmed)) {
+                              setBatteryErrors(prev => ({
+                                ...prev,
+                                query_text: language === "es"
+                                  ? "Ya existe una batería con este nombre o información."
+                                  : "A battery with this name or info already exists."
+                              }));
+                            } else {
+                              setBatteryErrors(prev => ({ ...prev, query_text: null }));
+                            }
+                          }}
+                        />
+                        {batteryErrors.query_text && (
+                          <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
+                            <span className="h-1 w-1 rounded-full bg-red-500" /> {batteryErrors.query_text}
                           </Typography>
+                        )}
+                      </div>
+
+                      {/* Sections Selection */}
+                      <div>
+                        <label className={`block text-sm font-medium mb-2 ${(batteryErrors.sections || availableSections.length === 0) ? "text-red-500" : "text-blue-gray-700"} `}>
+                          {language === "es" ? "Secciones *" : "Sections *"}
+                        </label>
+
+                        {availableSections.length === 0 ? (
+                          <div className="p-4 text-center bg-red-50/50 rounded-xl border border-dashed border-red-200 animate-in fade-in zoom-in-95 duration-500">
+                            <div className="flex flex-col items-center gap-2">
+                              <ExclamationCircleIcon className="h-6 w-6 text-red-400 mb-1" />
+                              <Typography variant="small" className="text-red-900 font-bold leading-relaxed px-4">
+                                {language === "es"
+                                  ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                                  : "You don't have any sections available. You should upload a document so the system can process the content."}
+                              </Typography>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="mb-2">
+                              <input
+                                type="text"
+                                className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
+                                placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
+                                value={sectionSearch}
+                                onChange={(e) => setSectionSearch(e.target.value)}
+                              />
+                            </div>
+
+                            {batteryErrors.sections && (
+                              <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                {batteryErrors.sections}
+                              </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {batteryForm.sections.map((sec) => (
+                                <Chip
+                                  key={sec.id}
+                                  value={`${sec.documentName}: ${sec.name} `}
+                                  onClose={() => {
+                                    setBatteryForm(prev => ({
+                                      ...prev,
+                                      sections: prev.sections.filter((s) => s.id !== sec.id)
+                                    }));
+                                  }}
+                                  className="rounded-full bg-blue-50 text-blue-900"
+                                />
+                              ))}
+                            </div>
+                            <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
+                              {availableSections
+                                .filter(sec =>
+                                  sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
+                                  sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
+                                )
+                                .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
+                                .map((sec) => (
+                                  <div
+                                    key={sec.id}
+                                    className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
+                                    onClick={() => {
+                                      setBatteryForm(prev => ({
+                                        ...prev,
+                                        sections: [...prev.sections, sec]
+                                      }));
+                                      setSectionSearch("");
+                                      if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
+                                    }}
+                                  >
+                                    <span className="font-medium text-blue-gray-800">{sec.name}</span>
+                                    <span className="text-xs text-gray-500">{sec.documentName}</span>
+                                  </div>
+                                ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Rule Selection (Optional) */}
+                        <div>
+                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                            {language === "es" ? "Regla (opcional)" : "Rule (optional)"}
+                          </label>
+                          <select
+                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                            value={batteryForm.rule}
+                            onChange={(e) => setBatteryForm(prev => ({ ...prev, rule: e.target.value }))}
+                          >
+                            <option value="">{language === "es" ? "Sin regla" : "No rule"}</option>
+                            {rules.map((r) => (
+                              <option key={r.id} value={r.id}>
+                                {r.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
-                        {/* Generation Progress */}
-                        {batteryProgress[String(battery.id)] && (
-                          <div className="mt-4 pt-4 border-t border-blue-gray-50 group/batprog">
-                            <div className="flex justify-between items-center mb-1">
-                              <div className="flex items-center gap-2">
-                                <Typography variant="small" className="font-medium text-blue-600">
-                                  {batteryProgress[String(battery.id)].status}
-                                </Typography>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Typography variant="small" className="font-bold text-blue-600">
-                                  {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
-                                </Typography>
-                                <IconButton
-                                  size="sm"
-                                  variant="text"
-                                  color="blue-gray"
-                                  className="h-5 w-5 rounded-md opacity-0 group-hover/batprog:opacity-100 transition-opacity"
-                                  onClick={() => {
-                                    setBatteryProgress(prev => {
-                                      const ns = { ...prev };
-                                      delete ns[battery.id];
-                                      return ns;
-                                    });
-                                    removeJob(battery.id);
-                                  }}
-                                  title={language === "es" ? "Quitar" : "Dismiss"}
-                                >
-                                  <XMarkIcon className="h-3.5 w-3.5" />
-                                </IconButton>
-                              </div>
-                            </div>
-                            <Progress value={Math.round(batteryProgress[String(battery.id)].percent || 0)} size="sm" color="blue" />
+                        {/* Quantity (conditional) */}
+                        {!batteryForm.rule && (
+                          <div>
+                            <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                              {language === "es" ? "Cantidad de Preguntas *" : "Number of Questions *"}
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="100"
+                              className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                              value={batteryForm.quantity}
+                              onChange={(e) => setBatteryForm(prev => ({ ...prev, quantity: e.target.value }))}
+                            />
                           </div>
                         )}
 
-                        {/* Attempts summary */}
-                        <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
-                          {battery.attempts_count > 0 ? (
-                            <div className="flex items-center justify-between">
-                              <span className="text-blue-gray-700 font-semibold">
-                                {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
-                              </span>
-
-                              <span className="text-blue-gray-600">
-                                {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
-                          )}
+                        {/* Difficulty */}
+                        <div>
+                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                            {language === "es" ? "Dificultad *" : "Difficulty *"}
+                          </label>
+                          <select
+                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                            value={batteryForm.difficulty}
+                            onChange={(e) => setBatteryForm(prev => ({ ...prev, difficulty: e.target.value }))}
+                          >
+                            <option value="easy">{language === "es" ? "Fácil" : "Easy"}</option>
+                            <option value="medium">{language === "es" ? "Medio" : "Medium"}</option>
+                            <option value="hard">{language === "es" ? "Difícil" : "Hard"}</option>
+                          </select>
                         </div>
 
-                      </CardBody>
-                    </Card>
-                  ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-                <BoltIcon className="h-16 w-16 mb-4" />
-                <Typography variant="h6" className="mb-2">
-                  {t("global.batteries.no_batteries")}
-                </Typography>
-                <Typography>
-                  {language === "es"
-                    ? "Genera baterías a partir de tus reglas configuradas."
-                    : "Generate batteries from your configured rules."}
-                </Typography>
-              </div>
-            )}
+                        {/* Question Format */}
+                        <div>
+                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
+                            {language === "es" ? "Formato de Pregunta *" : "Question Format *"}
+                          </label>
+                          <select
+                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
+                            value={batteryForm.question_format}
+                            onChange={(e) => setBatteryForm(prev => ({ ...prev, question_format: e.target.value }))}
+                          >
+                            <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
+                            <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
+                            <option value="multiple_choice">{language === "es" ? "Selección Múltiple" : "Multiple Choice"}</option>
+                            <option value="variety">{language === "es" ? "Variado" : "Variety"}</option>
+                          </select>
+                        </div>
+
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
+                          {language === "es" ? "Cancelar" : "Cancel"}
+                        </Button>
+                        <Button
+                          color="blue-gray"
+                          onClick={handleGenerateBattery}
+                          disabled={!!batteryErrors.query_text || availableSections.length === 0}
+                        >
+                          {language === "es" ? "Generar Batería" : "Generate Battery"}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+
+              {batteries.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {batteries
+                    .filter(b => b.name.toLowerCase().includes(batteriesSearch.toLowerCase()))
+                    .map((battery) => (
+                      <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
+                        <CardBody>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-1">
+                              <Chip
+                                value={battery.status}
+                                color={battery.status === "Ready" ? "green" : "blue-gray"}
+                                size="sm"
+                                variant="ghost"
+                                className="rounded-full"
+                              />
+                              <Tooltip content="Simulate Exam">
+                                <IconButton
+                                  size="sm"
+                                  variant="text"
+                                  color="green"
+                                  onClick={() => setSimulationBattery(battery)}
+                                >
+                                  <PlayIcon className="h-4 w-4" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+
+                            {isOwner && (
+                              <Menu placement="bottom-end">
+                                <MenuHandler>
+                                  <IconButton size="sm" variant="text" color="blue-gray">
+                                    <EllipsisVerticalIcon className="h-5 w-5" />
+                                  </IconButton>
+                                </MenuHandler>
+                                <MenuList>
+
+                                  <MenuItem
+                                    onClick={async () => {
+                                      await projectService.deleteBattery(battery.id);
+                                      await fetchBatteries(Number(projectId));
+                                    }}
+                                    className="text-red-500"
+                                  >
+                                    Delete
+                                  </MenuItem>
+                                </MenuList>
+                              </Menu>
+                            )}
+                          </div>
+
+                          <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
+                            {battery.name}
+                          </Typography>
+
+                          <div className="flex gap-2 mb-4">
+                            <Chip
+                              value={battery.difficulty || "Medium"}
+                              size="sm"
+                              variant="outlined"
+                              className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
+                            />
+                            <Typography variant="small" className="text-blue-gray-500 text-xs">
+                              {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
+                              {formatDate(battery.created_at || battery.createdAt)}
+                            </Typography>
+                          </div>
+
+                          {/* Generation Progress */}
+                          {batteryProgress[String(battery.id)] && (
+                            <div className="mt-4 pt-4 border-t border-blue-gray-50 group/batprog">
+                              <div className="flex justify-between items-center mb-1">
+                                <div className="flex items-center gap-2">
+                                  <Typography variant="small" className="font-medium text-blue-600">
+                                    {batteryProgress[String(battery.id)].status}
+                                  </Typography>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Typography variant="small" className="font-bold text-blue-600">
+                                    {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
+                                  </Typography>
+                                  <IconButton
+                                    size="sm"
+                                    variant="text"
+                                    color="blue-gray"
+                                    className="h-5 w-5 rounded-md opacity-0 group-hover/batprog:opacity-100 transition-opacity"
+                                    onClick={() => {
+                                      setBatteryProgress(prev => {
+                                        const ns = { ...prev };
+                                        delete ns[battery.id];
+                                        return ns;
+                                      });
+                                      removeJob(battery.id);
+                                    }}
+                                    title={language === "es" ? "Quitar" : "Dismiss"}
+                                  >
+                                    <XMarkIcon className="h-3.5 w-3.5" />
+                                  </IconButton>
+                                </div>
+                              </div>
+                              <Progress value={Math.round(batteryProgress[String(battery.id)].percent || 0)} size="sm" color="blue" />
+                            </div>
+                          )}
+
+                          {/* Attempts summary */}
+                          <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
+                            {battery.attempts_count > 0 ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-blue-gray-700 font-semibold">
+                                  {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
+                                </span>
+
+                                <span className="text-blue-gray-600">
+                                  {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
+                            )}
+                          </div>
+
+                        </CardBody>
+                      </Card>
+                    ))}
+                </div>
+              ) : (
+                <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">
+                  <CardBody className="flex flex-col items-center justify-center text-center px-6 h-full">
+                    <BoltIcon className="h-16 w-16 mb-4 text-zinc-300" />
+                    <Typography variant="h6" className="mb-2 text-zinc-900">
+                      {t("global.batteries.no_batteries")}
+                    </Typography>
+                    <Typography className="text-zinc-500 mb-6">
+                      {language === "es"
+                        ? "Genera baterías a partir de tus reglas configuradas."
+                        : "Generate batteries from your configured rules."}
+                    </Typography>
+                    <div>
+                      <Button
+                        className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                        onClick={() => {
+                          setBatteryErrors({});
+                          setShowGenerateBattery(true);
+                        }}
+                      >
+                        <PlusIcon className="h-5 w-5" />
+                        {t("project_detail.batteries.btn_create")}
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
           </>
         )
       }
@@ -2022,82 +2041,36 @@ export function ProjectDetail() {
         activeTab === "decks" && (
           <>
             {/* Header + Actions Row */}
-            <div className="mb-8 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-              <div className="flex-1">
-                <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
-                  {t("project_detail.decks.title")}
-                </Typography>
-                <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
-                  {t("project_detail.decks.description_text")}
-                </Typography>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
-                {/* Search Decks */}
-                <div className="relative flex-1 min-w-[240px]">
-                  <input
-                    type="text"
-                    placeholder={t("project_detail.decks.search_placeholder")}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
-                    value={deckSearch}
-                    onChange={(e) => setDeckSearch(e.target.value)}
-                  />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                  </div>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+                    {t("project_detail.decks.title")}
+                  </Typography>
+                  <Typography className="text-zinc-500 text-sm font-medium max-w-2xl">
+                    {t("project_detail.decks.description_text")}
+                  </Typography>
                 </div>
 
-                <Button
-                  className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                  onClick={() => {
-                    setSelectedDeck(null);
-                    setCreateDeckDialogOpen(true);
-                  }}
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  {t("project_detail.decks.btn_create")}
-                </Button>
-              </div>
-            </div>
-
-            {loadingDecks ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Spinner className="h-10 w-10 mb-4" />
-                <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
-              </div>
-            ) : decks.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {decks
-                  .filter(deck => deck.title.toLowerCase().includes(deckSearch.toLowerCase()))
-                  .map((deck) => (
-                    <DeckCard
-                      key={deck.id}
-                      deck={deck}
-                      onEdit={handleEditDeck}
-                      onDelete={handleDeleteDeck}
-                      onStudy={handleStudyDeck}
-                      onLearn={handleLearnDeck}
-                      onAddCards={handleOpenAddCards}
-                      job={activeFlashcardJobs[String(deck.id)]}
-                      onJobComplete={(lastData) => handleFlashcardJobComplete(String(deck.id), activeFlashcardJobs[String(deck.id)]?.job_id, lastData)}
+                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                  {/* Search Decks */}
+                  <div className="relative flex-1 min-w-[240px]">
+                    <input
+                      type="text"
+                      placeholder={t("project_detail.decks.search_placeholder")}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      value={deckSearch}
+                      onChange={(e) => setDeckSearch(e.target.value)}
                     />
-                  ))}
-              </div>
-            ) : (
-              <Card className="border border-blue-gray-100 shadow-sm">
-                <CardBody className="flex flex-col items-center justify-center py-12">
-                  <Square2StackIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
-                  <Typography variant="h5" color="blue-gray" className="mb-2">
-                    {t("project_detail.decks.empty.title")}
-                  </Typography>
-                  <Typography className="text-blue-gray-600 mb-4 text-center">
-                    {t("project_detail.decks.empty.desc")}
-                  </Typography>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                      </svg>
+                    </div>
+                  </div>
+
                   <Button
-                    className="flex items-center gap-2"
-                    color="blue-gray"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => {
                       setSelectedDeck(null);
                       setCreateDeckDialogOpen(true);
@@ -2106,9 +2079,56 @@ export function ProjectDetail() {
                     <PlusIcon className="h-5 w-5" />
                     {t("project_detail.decks.btn_create")}
                   </Button>
-                </CardBody>
-              </Card>
-            )}
+                </div>
+              </div>
+
+              {loadingDecks ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Spinner className="h-10 w-10 mb-4" />
+                  <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
+                </div>
+              ) : decks.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {decks
+                    .filter(deck => deck.title.toLowerCase().includes(deckSearch.toLowerCase()))
+                    .map((deck) => (
+                      <DeckCard
+                        key={deck.id}
+                        deck={deck}
+                        onEdit={handleEditDeck}
+                        onDelete={handleDeleteDeck}
+                        onStudy={handleStudyDeck}
+                        onLearn={handleLearnDeck}
+                        onAddCards={handleOpenAddCards}
+                        job={activeFlashcardJobs[String(deck.id)]}
+                        onJobComplete={(lastData) => handleFlashcardJobComplete(String(deck.id), activeFlashcardJobs[String(deck.id)]?.job_id, lastData)}
+                      />
+                    ))}
+                </div>
+              ) : (
+                <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">
+                  <CardBody className="flex flex-col items-center justify-center text-center px-6 h-full">
+                    <Square2StackIcon className="h-16 w-16 text-zinc-300 mb-4" />
+                    <Typography variant="h5" color="blue-gray" className="mb-2 font-bold text-zinc-900">
+                      {t("project_detail.decks.empty.title")}
+                    </Typography>
+                    <Typography className="text-zinc-500 mb-4 text-center text-sm font-medium">
+                      {t("project_detail.decks.empty.desc")}
+                    </Typography>
+                    <Button
+                      className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                      onClick={() => {
+                        setSelectedDeck(null);
+                        setCreateDeckDialogOpen(true);
+                      }}
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      {t("project_detail.decks.btn_create")}
+                    </Button>
+                  </CardBody>
+                </Card>
+              )}
+            </div>
           </>
         )
       }
@@ -2180,29 +2200,33 @@ export function ProjectDetail() {
         deckTitle={selectedDeckForAdd?.title}
       />
 
-      {selectedDeck && (
-        <FlashcardViewDialog
-          open={flashcardViewDialogOpen}
-          onClose={() => {
-            setFlashcardViewDialogOpen(false);
-            setSelectedDeck(null);
-          }}
-          deckId={selectedDeck.id}
-          deckTitle={selectedDeck.title}
-        />
-      )}
+      {
+        selectedDeck && (
+          <FlashcardViewDialog
+            open={flashcardViewDialogOpen}
+            onClose={() => {
+              setFlashcardViewDialogOpen(false);
+              setSelectedDeck(null);
+            }}
+            deckId={selectedDeck.id}
+            deckTitle={selectedDeck.title}
+          />
+        )
+      }
 
-      {learnDeck && (
-        <FlashcardLearnDialog
-          open={learnDialogOpen}
-          onClose={() => {
-            setLearnDialogOpen(false);
-            setLearnDeck(null);
-          }}
-          deckId={learnDeck.id}
-          deckTitle={learnDeck.title}
-        />
-      )}
+      {
+        learnDeck && (
+          <FlashcardLearnDialog
+            open={learnDialogOpen}
+            onClose={() => {
+              setLearnDialogOpen(false);
+              setLearnDeck(null);
+            }}
+            deckId={learnDeck.id}
+            deckTitle={learnDeck.title}
+          />
+        )
+      }
 
       <ConfirmDialog
         open={confirmDeleteDeckDialogOpen}

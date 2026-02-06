@@ -379,7 +379,7 @@ export const en = {
             title: "Batteries",
             description_text: "Generate personalized exams and tests.",
             search_placeholder: "Search batteries...",
-            btn_create: "Generate Battery"
+            btn_create: "Create Battery"
         },
         decks: {
             title: "Decks",

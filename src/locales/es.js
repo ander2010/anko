@@ -379,7 +379,7 @@ export const es = {
             title: "Baterías",
             description_text: "Genera exámenes y tests personalizados.",
             search_placeholder: "Buscar baterías...",
-            btn_create: "Generar Batería"
+            btn_create: "Crear Batería"
         },
         decks: {
             title: "Mazos",
