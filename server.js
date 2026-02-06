@@ -31,8 +31,8 @@ const options = {
         }
     },
     server: {
-        host: 'localhost:' + port,
-        protocol: 'http',
+        host: process.env.COMPANION_DOMAIN || ('localhost:' + port),
+        protocol: process.env.COMPANION_PROTOCOL || 'http',
     },
     corsOrigins: true,
     uploadUrls: ['http://localhost:' + port],
