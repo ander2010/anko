@@ -47,7 +47,7 @@ export function UppyUploadDialog({ open, onClose, project }) {
         });
 
         u.use(AwsS3, {
-            endpoint: import.meta.env.VITE_COMPANION_URL || "/companion",
+            endpoint: "http://localhost:3020/companion",
             limit: 5,
             shouldUseMultipart: () => true,
         });

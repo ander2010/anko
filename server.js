@@ -36,7 +36,7 @@ const options = {
     },
     corsOrigins: process.env.COMPANION_CORS_ORIGINS ? process.env.COMPANION_CORS_ORIGINS.split(',') : true,
     uploadUrls: ['http://localhost:' + port],
-    filePath: 'uploads',
+    filePath: process.env.VERCEL ? '/tmp' : 'uploads',
     secret: 'uppy-anko-integrated',
     debug: true
 };
