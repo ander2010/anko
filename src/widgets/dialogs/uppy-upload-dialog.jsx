@@ -157,10 +157,7 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
                         {t?.("project_detail.docs.btn_upload") ||
                             "Upload Documents"}
                     </Typography>
-                    <Typography className="text-zinc-500 font-medium text-sm">
-                        {t?.("project_detail.docs.upload_desc") ||
-                            "Upload files to your project"}
-                    </Typography>
+                
                 </div>
                 <IconButton
                     variant="text"
