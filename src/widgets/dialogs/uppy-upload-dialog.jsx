@@ -49,7 +49,7 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
         });
 
         u.use(AwsS3, {
-            endpoint: "http://localhost:3020/companion",
+            endpoint: "/companion",
             limit: 5,
             shouldUseMultipart: () => true,
         });
@@ -157,7 +157,7 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
                         {t?.("project_detail.docs.btn_upload") ||
                             "Upload Documents"}
                     </Typography>
-                
+
                 </div>
                 <IconButton
                     variant="text"
