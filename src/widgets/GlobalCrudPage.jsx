@@ -123,7 +123,8 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
             fetchItems();
         } catch (error) {
             console.error("Failed to save item", error);
-            alert("Error saving item. Check console.");
+            const msg = error.detail || error.message || JSON.stringify(error);
+            alert(`Error saving item: ${msg}`);
         }
     };
 
@@ -249,7 +250,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                                                             }}
                                                         />
                                                         <label htmlFor={`${field.name}-${val}`} className="text-xs text-blue-gray-600 cursor-pointer">
-                                                            {opt[labelKey] || opt.title || opt.email || "Unknown"}
+                                                            {typeof labelKey === 'function' ? labelKey(opt) : (opt[labelKey] || opt.title || opt.email || "Unknown")}
                                                         </label>
                                                     </div>
                                                 );
@@ -275,7 +276,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                                     >
                                         {opts.map(opt => (
                                             <Option key={opt[valueKey]} value={String(opt[valueKey])}>
-                                                {opt[labelKey] || opt.title || opt.email || "Unknown"}
+                                                {typeof labelKey === 'function' ? labelKey(opt) : (opt[labelKey] || opt.title || opt.email || "Unknown")}
                                             </Option>
                                         ))}
                                     </Select>
