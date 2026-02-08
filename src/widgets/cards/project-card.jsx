@@ -202,6 +202,7 @@ export function ProjectCard({
         </div>
 
         {/* Real-time Progress for Jobs */}
+        {/* Real-time Progress for Jobs - Hidden by request
         {processingJobs.length > 0 && (
           <div className="mb-6 space-y-3">
             {processingJobs.map((job) => (
@@ -213,8 +214,10 @@ export function ProjectCard({
             ))}
           </div>
         )}
+        */}
 
         {/* Static Progress (legacy/backup) */}
+        {/* Static Progress (legacy/backup) - Hidden by request
         {documentCount > 0 && processingJobs.length === 0 && progress > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
@@ -233,6 +236,7 @@ export function ProjectCard({
             </div>
           </div>
         )}
+        */}
 
         {/* Last Activity */}
         <div className="flex items-center justify-between pt-5 border-t border-zinc-100">
