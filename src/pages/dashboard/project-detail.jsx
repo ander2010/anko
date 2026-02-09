@@ -66,6 +66,7 @@ import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
 import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 import { AddFlashcardsDialog } from "@/widgets/dialogs/add-flashcards-dialog";
 import { UpgradePromptDialog } from "@/widgets/dialogs/upgrade-prompt-dialog";
+import { GenerateBatteryDialog } from "@/widgets/dialogs/generate-battery-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -78,18 +79,7 @@ export function ProjectDetail() {
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || "documents");
 
   const [showGenerateBattery, setShowGenerateBattery] = useState(false);
-  const [batteryForm, setBatteryForm] = useState({
-    rule: "",
-    query_text: "",
-    sections: [],
-    quantity: 10,
-    difficulty: "medium",
-    question_format: "true_false"
-  });
-  const [sectionSearch, setSectionSearch] = useState("");
-  const [availableSections, setAvailableSections] = useState([]);
   const [batteryProgress, setBatteryProgress] = useState({});
-  const [batteryErrors, setBatteryErrors] = useState({});
 
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -204,99 +194,6 @@ export function ProjectDetail() {
     difficulty: "Medium",
     topic_scope: null, // o id
   });
-  const handleGenerateBattery = async () => {
-    try {
-      setError(null);
-      setBatteryErrors({});
-
-      // Case A: No sections available in the project
-      if (availableSections.length === 0) {
-        const msg = language === "es"
-          ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
-          : "You don't have any sections. You should upload a document so the system can process the content.";
-        setBatteryErrors({ sections: msg });
-        return;
-      }
-
-      // Case B: Sections exist but none were selected
-      if (batteryForm.sections.length === 0) {
-        const msg = language === "es"
-          ? "Usted debe seleccionar al menos una sección."
-          : "You must select at least one section.";
-        setBatteryErrors({ sections: msg });
-        return;
-      }
-
-      // query_text is now optional
-
-      const name = batteryForm.query_text.trim() || (language === "es" ? "Batería" : "Battery");
-
-      // Check for duplicates
-      if (batteries.some(b => (b.name || "").toLowerCase() === name.toLowerCase())) {
-        const msg = language === "es"
-          ? "Ya existe una batería con este nombre. Por favor, elige uno diferente."
-          : "A battery with this name already exists. Please choose a different one.";
-        setBatteryErrors({ query_text: msg });
-        return;
-      }
-
-      const payload = {
-        project: Number(projectId),
-        name: name,
-        query_text: batteryForm.query_text,
-        sections: batteryForm.sections.map(s => s.id),
-        quantity: Number(batteryForm.quantity),
-        difficulty: batteryForm.difficulty,
-        question_format: batteryForm.question_format,
-      };
-
-      // Add optional fields
-      if (batteryForm.rule) {
-        payload.rule = Number(batteryForm.rule);
-      }
-
-      const res = await projectService.startGenerateBattery(payload);
-
-
-      setShowGenerateBattery(false);
-
-      // Reset form
-      setBatteryForm({
-        rule: "",
-        query_text: "",
-        sections: [],
-        quantity: 10,
-        difficulty: "medium",
-        question_format: "true_false"
-      });
-      setSectionSearch("");
-
-      await fetchBatteries(Number(projectId));
-
-      // Init SSE for progress
-      const batteryId = res?.battery?.id;
-      if (batteryId) {
-        addJob({
-          id: String(batteryId),
-          type: 'battery',
-          projectId: String(projectId)
-        });
-        resumeBatterySSE(batteryId);
-      }
-    } catch (err) {
-      console.error("Battery generation error:", err);
-      const errorMessage = err?.error || err?.detail || "";
-      // Check for PLAN_LIMIT error_code OR "Plan limit" string
-      if (err?.error_code === "PLAN_LIMIT" || (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes("plan limit"))) {
-        setPlanLimitError(errorMessage || "Battery generation limit reached");
-        setError(null); // Clear global error if it's a plan limit
-      } else {
-        setError(errorMessage || "Failed to generate battery");
-        setPlanLimitError(null);
-      }
-    }
-  };
-
   const handleCreateRule = async () => {
     try {
       setError(null);
@@ -328,6 +225,62 @@ export function ProjectDetail() {
       await fetchRules(Number(projectId));
     } catch (err) {
       setError(err?.response?.data || err?.error || err?.detail || "Failed to create rule");
+    }
+  };
+
+  const handleGenerateBattery = async (batteryData) => {
+    try {
+      setError(null);
+      setPlanLimitError(null);
+
+      const name = batteryData.query_text.trim() || (language === "es" ? "Batería" : "Battery");
+
+      const payload = {
+        project: Number(projectId),
+        name: name,
+        query_text: batteryData.query_text,
+        sections: batteryData.sections.map(s => s.id),
+        quantity: Number(batteryData.quantity),
+        difficulty: batteryData.difficulty,
+        question_format: batteryData.question_format,
+      };
+
+      // Add optional fields
+      if (batteryData.rule) {
+        payload.rule = Number(batteryData.rule);
+      }
+
+      const res = await projectService.startGenerateBattery(payload);
+
+      setShowGenerateBattery(false);
+
+      await fetchBatteries(Number(projectId));
+
+      // Init SSE for progress
+      const batteryId = res?.battery?.id;
+      if (batteryId) {
+        addJob({
+          id: String(batteryId),
+          type: 'battery',
+          projectId: String(projectId)
+        });
+        resumeBatterySSE(batteryId);
+      }
+    } catch (err) {
+      console.error("Battery generation error:", err);
+      const errorMessage = err?.error || err?.detail || "";
+
+      // Close dialog even on error as requested by user
+      setShowGenerateBattery(false);
+
+      // Check for PLAN_LIMIT error_code OR "Plan limit" string
+      if (err?.error_code === "PLAN_LIMIT" || (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes("plan limit"))) {
+        setPlanLimitError(errorMessage || "Battery generation limit reached");
+        setError(null); // Clear global error if it's a plan limit
+      } else {
+        setError(errorMessage || "Failed to generate battery");
+        setPlanLimitError(null);
+      }
     }
   };
 
@@ -430,22 +383,6 @@ export function ProjectDetail() {
     }
   }, [projectId, documents.length]);
 
-  useEffect(() => {
-    const sections = [];
-    documentsWithSections.forEach(doc => {
-      if (doc.sections && Array.isArray(doc.sections)) {
-        doc.sections.forEach(sec => {
-          sections.push({
-            id: sec.id,
-            name: sec.title || sec.name || `Section ${sec.id} `,
-            documentName: doc.filename || doc.name || "Unknown Doc",
-            docId: doc.id
-          });
-        });
-      }
-    });
-    setAvailableSections(sections.sort((a, b) => a.name.localeCompare(b.name)));
-  }, [documentsWithSections]);
 
 
 
@@ -1738,7 +1675,6 @@ export function ProjectDetail() {
                   <Button
                     className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => {
-                      setBatteryErrors({});
                       setShowGenerateBattery(true);
                     }}
                   >
@@ -1768,217 +1704,7 @@ export function ProjectDetail() {
                 </Alert>
               )}
 
-              {showGenerateBattery && (
-                <Card className="mb-6 border border-blue-gray-100 shadow-sm">
-                  <CardBody>
-                    <Typography variant="h6" color="blue-gray" className="mb-4">
-                      {language === "es" ? "Generar Nueva Batería" : "Generate New Battery"}
-                    </Typography>
-
-                    <div className="space-y-4">
-                      {/* Query Text */}
-                      <div>
-                        <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                          {language === "es" ? "Sobre qué quieres las preguntas (opcional)" : "What do you want questions about? (optional)"}
-                        </label>
-                        <input
-                          type="text"
-                          className={`w-full px-3 py-2 border rounded-md transition-all ${batteryErrors.query_text ? "border-red-500 bg-red-50/10 focus:border-red-600 focus:ring-1 focus:ring-red-600" : "border-blue-gray-200 focus:border-indigo-500"} `}
-                          placeholder={language === "es" ? "Ej: Barca, Historia de España, etc." : "E.g: Barcelona, Spanish History, etc."}
-                          value={batteryForm.query_text}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setBatteryForm(prev => ({ ...prev, query_text: val }));
-
-                            // Real-time validation
-                            const trimmed = val.trim().toLowerCase() || (language === "es" ? "batería" : "battery");
-                            if (batteries.some(b => (b.name || "").toLowerCase() === trimmed)) {
-                              setBatteryErrors(prev => ({
-                                ...prev,
-                                query_text: language === "es"
-                                  ? "Ya existe una batería con este nombre o información."
-                                  : "A battery with this name or info already exists."
-                              }));
-                            } else {
-                              setBatteryErrors(prev => ({ ...prev, query_text: null }));
-                            }
-                          }}
-                        />
-                        {batteryErrors.query_text && (
-                          <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
-                            <span className="h-1 w-1 rounded-full bg-red-500" /> {batteryErrors.query_text}
-                          </Typography>
-                        )}
-                      </div>
-
-                      {/* Sections Selection */}
-                      <div>
-                        <label className={`block text-sm font-medium mb-2 ${(batteryErrors.sections || availableSections.length === 0) ? "text-red-500" : "text-blue-gray-700"} `}>
-                          {language === "es" ? "Secciones *" : "Sections *"}
-                        </label>
-
-                        {availableSections.length === 0 ? (
-                          <div className="p-4 text-center bg-red-50/50 rounded-xl border border-dashed border-red-200 animate-in fade-in zoom-in-95 duration-500">
-                            <div className="flex flex-col items-center gap-2">
-                              <ExclamationCircleIcon className="h-6 w-6 text-red-400 mb-1" />
-                              <Typography variant="small" className="text-red-900 font-bold leading-relaxed px-4">
-                                {language === "es"
-                                  ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
-                                  : "You don't have any sections available. You should upload a document so the system can process the content."}
-                              </Typography>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="mb-2">
-                              <input
-                                type="text"
-                                className={`w-full px-3 py-2 border rounded-md transition-colors ${batteryErrors.sections ? "border-red-500 bg-red-50/10" : "border-blue-gray-200 focus:border-indigo-500"} `}
-                                placeholder={language === "es" ? "Buscar secciones..." : "Search sections..."}
-                                value={sectionSearch}
-                                onChange={(e) => setSectionSearch(e.target.value)}
-                              />
-                            </div>
-
-                            {batteryErrors.sections && (
-                              <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                {batteryErrors.sections}
-                              </div>
-                            )}
-
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {batteryForm.sections.map((sec) => (
-                                <Chip
-                                  key={sec.id}
-                                  value={`${sec.documentName}: ${sec.name} `}
-                                  onClose={() => {
-                                    setBatteryForm(prev => ({
-                                      ...prev,
-                                      sections: prev.sections.filter((s) => s.id !== sec.id)
-                                    }));
-                                  }}
-                                  className="rounded-full bg-blue-50 text-blue-900"
-                                />
-                              ))}
-                            </div>
-                            <div className={`max-h-32 overflow-y-auto border rounded-md transition-colors ${batteryErrors.sections ? "border-red-200" : "border-blue-gray-100"} `}>
-                              {availableSections
-                                .filter(sec =>
-                                  sec.name.toLowerCase().includes(sectionSearch.toLowerCase()) ||
-                                  sec.documentName.toLowerCase().includes(sectionSearch.toLowerCase())
-                                )
-                                .filter(sec => !batteryForm.sections.some(s => s.id === sec.id))
-                                .map((sec) => (
-                                  <div
-                                    key={sec.id}
-                                    className="px-3 py-2 hover:bg-blue-gray-50 cursor-pointer text-sm flex flex-col items-start"
-                                    onClick={() => {
-                                      setBatteryForm(prev => ({
-                                        ...prev,
-                                        sections: [...prev.sections, sec]
-                                      }));
-                                      setSectionSearch("");
-                                      if (batteryErrors.sections) setBatteryErrors(prev => ({ ...prev, sections: null }));
-                                    }}
-                                  >
-                                    <span className="font-medium text-blue-gray-800">{sec.name}</span>
-                                    <span className="text-xs text-gray-500">{sec.documentName}</span>
-                                  </div>
-                                ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Rule Selection (Optional) */}
-                        <div>
-                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                            {language === "es" ? "Regla (opcional)" : "Rule (optional)"}
-                          </label>
-                          <select
-                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                            value={batteryForm.rule}
-                            onChange={(e) => setBatteryForm(prev => ({ ...prev, rule: e.target.value }))}
-                          >
-                            <option value="">{language === "es" ? "Sin regla" : "No rule"}</option>
-                            {rules.map((r) => (
-                              <option key={r.id} value={r.id}>
-                                {r.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Quantity (conditional) */}
-                        {!batteryForm.rule && (
-                          <div>
-                            <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                              {language === "es" ? "Cantidad de Preguntas *" : "Number of Questions *"}
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              max="100"
-                              className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                              value={batteryForm.quantity}
-                              onChange={(e) => setBatteryForm(prev => ({ ...prev, quantity: e.target.value }))}
-                            />
-                          </div>
-                        )}
-
-                        {/* Difficulty */}
-                        <div>
-                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                            {language === "es" ? "Dificultad *" : "Difficulty *"}
-                          </label>
-                          <select
-                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                            value={batteryForm.difficulty}
-                            onChange={(e) => setBatteryForm(prev => ({ ...prev, difficulty: e.target.value }))}
-                          >
-                            <option value="easy">{language === "es" ? "Fácil" : "Easy"}</option>
-                            <option value="medium">{language === "es" ? "Medio" : "Medium"}</option>
-                            <option value="hard">{language === "es" ? "Difícil" : "Hard"}</option>
-                          </select>
-                        </div>
-
-                        {/* Question Format */}
-                        <div>
-                          <label className="block text-sm font-medium text-blue-gray-700 mb-2">
-                            {language === "es" ? "Formato de Pregunta *" : "Question Format *"}
-                          </label>
-                          <select
-                            className="w-full px-3 py-2 border border-blue-gray-200 rounded-md"
-                            value={batteryForm.question_format}
-                            onChange={(e) => setBatteryForm(prev => ({ ...prev, question_format: e.target.value }))}
-                          >
-                            <option value="true_false">{language === "es" ? "Verdadero/Falso" : "True/False"}</option>
-                            <option value="single_choice">{language === "es" ? "Opción Única" : "Single Choice"}</option>
-                            <option value="multiple_choice">{language === "es" ? "Selección Múltiple" : "Multiple Choice"}</option>
-                            <option value="variety">{language === "es" ? "Variado" : "Variety"}</option>
-                          </select>
-                        </div>
-
-                      </div>
-
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button variant="text" onClick={() => setShowGenerateBattery(false)}>
-                          {language === "es" ? "Cancelar" : "Cancel"}
-                        </Button>
-                        <Button
-                          color="blue-gray"
-                          onClick={handleGenerateBattery}
-                          disabled={!!batteryErrors.query_text || availableSections.length === 0}
-                        >
-                          {language === "es" ? "Generar Batería" : "Generate Battery"}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardBody>
-                </Card>
-              )}
+              {/* Se eliminó el formulario inline para usar GenerateBatteryDialog */}
 
               {batteries.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2121,7 +1847,6 @@ export function ProjectDetail() {
                       <Button
                         className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
                         onClick={() => {
-                          setBatteryErrors({});
                           setShowGenerateBattery(true);
                         }}
                       >
@@ -2293,6 +2018,15 @@ export function ProjectDetail() {
         message={t("project_detail.dialogs.delete_message", { name: selectedDocument?.filename || "this document" })}
         confirmText={t("project_detail.docs.actions.delete")}
         variant="danger"
+      />
+
+      <GenerateBatteryDialog
+        open={showGenerateBattery}
+        onClose={() => setShowGenerateBattery(false)}
+        onGenerate={handleGenerateBattery}
+        projectId={projectId}
+        existingBatteries={batteries}
+        rules={rules}
       />
 
       <ExamSimulatorDialog
