@@ -109,7 +109,7 @@ export function ProjectDetail() {
   const [uppyUploadDialogOpen, setUppyUploadDialogOpen] = useState(false);
   const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
   const [membership, setMembership] = useState(null);
-  const [uploadLimitError, setUploadLimitError] = useState(null);
+  const [planLimitError, setPlanLimitError] = useState(null);
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -284,7 +284,16 @@ export function ProjectDetail() {
         resumeBatterySSE(batteryId);
       }
     } catch (err) {
-      setError(err?.error || err?.detail || "Failed to generate battery");
+      console.error("Battery generation error:", err);
+      const errorMessage = err?.error || err?.detail || "";
+      // Check for PLAN_LIMIT error_code OR "Plan limit" string
+      if (err?.error_code === "PLAN_LIMIT" || (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes("plan limit"))) {
+        setPlanLimitError(errorMessage || "Battery generation limit reached");
+        setError(null); // Clear global error if it's a plan limit
+      } else {
+        setError(errorMessage || "Failed to generate battery");
+        setPlanLimitError(null);
+      }
     }
   };
 
@@ -346,16 +355,23 @@ export function ProjectDetail() {
 
   }, [projectId, globalActiveJobs]);
 
-  // Auto-dismiss upload limit error after 4 seconds
+  // Auto-dismiss plan limit error after 4 seconds
   useEffect(() => {
-    if (uploadLimitError) {
-      const timer = setTimeout(() => {
-        setUploadLimitError(null);
+    let timer;
+    if (planLimitError) {
+      console.log("[ProjectDetail] Plan limit error detected, starting 4s timer:", planLimitError);
+      timer = setTimeout(() => {
+        console.log("[ProjectDetail] Auto-dismissing plan limit error");
+        setPlanLimitError(null);
       }, 4000);
-
-      return () => clearTimeout(timer);
     }
-  }, [uploadLimitError]);
+    return () => {
+      if (timer) {
+        console.log("[ProjectDetail] Cleaning up plan limit error timer");
+        clearTimeout(timer);
+      }
+    };
+  }, [planLimitError]);
 
   const resumeBatterySSE = (batteryId) => {
     // Use API_BASE to construct absolute URL for production support.
@@ -1124,21 +1140,21 @@ export function ProjectDetail() {
             </div>
           </div>
 
-          {/* Upload Limit Error Alert */}
-          {uploadLimitError && (
+          {/* Plan Limit Error Alert */}
+          {planLimitError && (
             <Alert
-              color="amber"
-              className="rounded-2xl border-2 border-amber-200 bg-amber-50 shadow-lg"
+              color="yellow"
+              className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 shadow-lg"
               icon={
-                <ExclamationCircleIcon className="h-6 w-6 text-amber-600" />
+                <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
               }
             >
               <div>
-                <Typography className="font-bold text-amber-900 mb-1">
+                <Typography className="font-bold text-yellow-900 mb-1">
                   {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
                 </Typography>
-                <Typography className="text-sm text-amber-800">
-                  {uploadLimitError}
+                <Typography className="text-sm text-yellow-800">
+                  {planLimitError}
                 </Typography>
               </div>
             </Alert>
@@ -1732,6 +1748,26 @@ export function ProjectDetail() {
                 </div>
               </div>
 
+              {/* Plan Limit Error Alert */}
+              {planLimitError && (
+                <Alert
+                  color="yellow"
+                  className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 shadow-lg"
+                  icon={
+                    <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
+                  }
+                >
+                  <div>
+                    <Typography className="font-bold text-yellow-900 mb-1">
+                      {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
+                    </Typography>
+                    <Typography className="text-sm text-yellow-800">
+                      {planLimitError}
+                    </Typography>
+                  </div>
+                </Alert>
+              )}
+
               {showGenerateBattery && (
                 <Card className="mb-6 border border-blue-gray-100 shadow-sm">
                   <CardBody>
@@ -2224,12 +2260,14 @@ export function ProjectDetail() {
           console.log("Upload success!");
           fetchDocuments(Number(projectId));
           setUppyUploadDialogOpen(false);
-          setUploadLimitError(null); // Clear any previous errors
+          setPlanLimitError(null); // Clear any previous errors
+          setError(null);
         }}
         onUploadError={(errorMessage) => {
           console.log("🔴 onUploadError called with message:", errorMessage);
-          setUploadLimitError(errorMessage);
-          console.log("🔴 uploadLimitError state set to:", errorMessage);
+          setPlanLimitError(errorMessage);
+          setError(null); // Clear top red error if we have a plan limit
+          console.log("🔴 planLimitError state set to:", errorMessage);
         }}
       />
 

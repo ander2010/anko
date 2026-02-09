@@ -264,32 +264,47 @@ export function EditProfileDialog({ open, handler }) {
                                     </div>
 
                                     {/* Membership Section */}
-                                    <div className="flex flex-col gap-2 p-4 rounded-xl bg-indigo-50 border border-indigo-100">
-                                        <Typography variant="small" className="font-bold text-indigo-900">
-                                            {language === 'es' ? 'Membresía Actual' : 'Current Membership'}
-                                        </Typography>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex flex-col">
-                                                <Typography variant="h6" className="font-black text-indigo-600 uppercase">
-                                                    {membership?.tier || "Free"}
+                                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 p-6 shadow-xl">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
+
+                                        <div className="relative z-10 flex flex-col gap-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                                    </svg>
+                                                </div>
+                                                <Typography variant="small" className="font-black text-white uppercase tracking-wide">
+                                                    {language === 'es' ? 'Membresía Actual' : 'Current Membership'}
                                                 </Typography>
-                                                {membership?.remaining_days && (
-                                                    <Typography variant="small" className="text-indigo-400 text-xs">
-                                                        {membership.remaining_days} {language === 'es' ? 'días restantes' : 'days remaining'}
+                                            </div>
+
+                                            <div className="flex items-end justify-between">
+                                                <div className="flex flex-col gap-1">
+                                                    <Typography variant="h4" className="font-black text-white uppercase tracking-tight">
+                                                        {membership?.tier || "Free"}
                                                     </Typography>
+                                                    {membership?.remaining_days && (
+                                                        <Typography variant="small" className="text-white/80 text-xs font-bold">
+                                                            {membership.remaining_days} {language === 'es' ? 'días restantes' : 'days remaining'}
+                                                        </Typography>
+                                                    )}
+                                                </div>
+
+                                                {(membership?.tier === "Free" || !membership?.tier) && (
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-white text-orange-600 hover:bg-white/90 normal-case font-black shadow-lg rounded-xl px-4 py-2 flex items-center gap-2"
+                                                        onClick={() => window.location.href = '/dashboard/billing'}
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                        </svg>
+                                                        {language === 'es' ? 'Mejorar' : 'Upgrade'}
+                                                    </Button>
                                                 )}
                                             </div>
-                                            {(membership?.tier === "Free" || !membership?.tier) && (
-                                                <Button
-                                                    size="sm"
-                                                    color="indigo"
-                                                    variant="text"
-                                                    className="normal-case font-bold"
-                                                    onClick={() => window.location.href = '/dashboard/memberships'}
-                                                >
-                                                    {language === 'es' ? 'Mejorar Plan' : 'Upgrade Plan'}
-                                                </Button>
-                                            )}
                                         </div>
                                     </div>
 

@@ -136,11 +136,11 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess, onUp
                     console.log("Error details - error_code:", err?.error_code, "detail:", err?.detail);
 
                     // projectService.registerDocument throws err.response.data directly
-                    // So check err.error_code directly
-                    if (err?.error_code === "PLAN_LIMIT") {
+                    const detail = err?.detail || err?.error || "";
+                    if (err?.error_code === "PLAN_LIMIT" || (typeof detail === 'string' && detail.toLowerCase().includes("plan limit"))) {
                         hasRegistrationError = true;
-                        const errorDetail = err?.detail || "Upload limit reached";
-                        console.log("✅ PLAN_LIMIT detected! Calling onUploadError with:", errorDetail);
+                        const errorDetail = detail || "Upload limit reached";
+                        console.log("✅ Plan limit detected! Calling onUploadError with:", errorDetail);
                         if (onUploadError) {
                             onUploadError(errorDetail);
                         }
@@ -149,7 +149,7 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess, onUp
                             setTimeout(onClose, 500);
                         }
                     } else {
-                        console.warn("Not a PLAN_LIMIT error, error_code:", err?.error_code);
+                        console.warn("Not a plan limit error, details:", err);
                     }
                 }
             }

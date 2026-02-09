@@ -17,7 +17,7 @@ export function UpgradePromptDialog({ open, onClose, featureName, currentCount, 
     const navigate = useNavigate();
 
     const handleUpgrade = () => {
-        navigate("/dashboard/memberships");
+        navigate("/dashboard/billing");
         onClose();
     };
 
