@@ -34,7 +34,7 @@ function sanitizeFilename(filename) {
 }
 
 // -------------------- component --------------------
-export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
+export function UppyUploadDialog({ open, onClose, project, onUploadSuccess, onUploadError }) {
     const { t } = useLanguage();
     const { addJob } = useJobs();
 
@@ -84,6 +84,8 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
         const handleComplete = async (result) => {
             if (!result.successful?.length) return;
 
+            let hasRegistrationError = false;
+
             for (const file of result.successful) {
                 try {
                     const userId = project.owner?.id || project.owner_id;
@@ -131,17 +133,36 @@ export function UppyUploadDialog({ open, onClose, project, onUploadSuccess }) {
                     }
                 } catch (err) {
                     console.error("Register error:", err);
+                    console.log("Error details - error_code:", err?.error_code, "detail:", err?.detail);
+
+                    // projectService.registerDocument throws err.response.data directly
+                    // So check err.error_code directly
+                    if (err?.error_code === "PLAN_LIMIT") {
+                        hasRegistrationError = true;
+                        const errorDetail = err?.detail || "Upload limit reached";
+                        console.log("✅ PLAN_LIMIT detected! Calling onUploadError with:", errorDetail);
+                        if (onUploadError) {
+                            onUploadError(errorDetail);
+                        }
+                        // Close dialog on error
+                        if (onClose) {
+                            setTimeout(onClose, 500);
+                        }
+                    } else {
+                        console.warn("Not a PLAN_LIMIT error, error_code:", err?.error_code);
+                    }
                 }
             }
 
-            if (onUploadSuccess) {
+            // Only call success callback if there were no registration errors
+            if (!hasRegistrationError && onUploadSuccess) {
                 setTimeout(onUploadSuccess, 800);
             }
         };
 
         uppy.on("complete", handleComplete);
         return () => uppy.off("complete", handleComplete);
-    }, [uppy, project, addJob, onUploadSuccess]);
+    }, [uppy, project, addJob, onUploadSuccess, onUploadError, onClose]);
 
     // -------------------- UI --------------------
     return (

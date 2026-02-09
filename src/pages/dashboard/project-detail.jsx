@@ -18,6 +18,7 @@ import {
   TabsHeader,
   Tab,
   Progress,
+  Alert,
 } from "@material-tailwind/react";
 import {
   ArrowLeftIcon,
@@ -64,6 +65,7 @@ import { FlashcardLearnDialog } from "@/widgets/dialogs/flashcard-learn-dialog";
 import { DocumentViewerDialog } from "@/widgets/dialogs/document-viewer-dialog";
 import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 import { AddFlashcardsDialog } from "@/widgets/dialogs/add-flashcards-dialog";
+import { UpgradePromptDialog } from "@/widgets/dialogs/upgrade-prompt-dialog";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -105,6 +107,9 @@ export function ProjectDetail() {
   // dialogs
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uppyUploadDialogOpen, setUppyUploadDialogOpen] = useState(false);
+  const [upgradePromptOpen, setUpgradePromptOpen] = useState(false);
+  const [membership, setMembership] = useState(null);
+  const [uploadLimitError, setUploadLimitError] = useState(null);
   const [metadataDialogOpen, setMetadataDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -340,6 +345,17 @@ export function ProjectDetail() {
     });
 
   }, [projectId, globalActiveJobs]);
+
+  // Auto-dismiss upload limit error after 4 seconds
+  useEffect(() => {
+    if (uploadLimitError) {
+      const timer = setTimeout(() => {
+        setUploadLimitError(null);
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [uploadLimitError]);
 
   const resumeBatterySSE = (batteryId) => {
     // Use API_BASE to construct absolute URL for production support.
@@ -800,6 +816,34 @@ export function ProjectDetail() {
     }
   }, [projectId, fetchDocuments]);
 
+  // Check membership before allowing upload
+  const handleOpenUploadDialog = async () => {
+    try {
+      // Fetch membership status
+      const membershipData = await projectService.getMembershipStatus();
+      setMembership(membershipData);
+
+      // Check if user is on Free tier and has reached limit
+      if (membershipData?.tier === "Free") {
+        const documentCount = documents.length;
+        const limit = membershipData?.limit || 2;
+
+        if (documentCount >= limit) {
+          // Show upgrade prompt instead of upload dialog
+          setUpgradePromptOpen(true);
+          return;
+        }
+      }
+
+      // If not Free or under limit, open upload dialog
+      setUppyUploadDialogOpen(true);
+    } catch (err) {
+      console.error("Failed to check membership", err);
+      // On error, allow upload (graceful degradation)
+      setUppyUploadDialogOpen(true);
+    }
+  };
+
   const handleJobComplete = useCallback(async (docId, jobId) => {
     try {
       console.log("[ProjectDetail] Job complete:", { docId, jobId });
@@ -1072,13 +1116,33 @@ export function ProjectDetail() {
             <div className="flex gap-2">
               <Button
                 className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
-                onClick={() => setUppyUploadDialogOpen(true)}
+                onClick={handleOpenUploadDialog}
               >
                 <DocumentArrowUpIcon className="h-5 w-5" />
                 {t("project_detail.docs.btn_upload")}
               </Button>
             </div>
           </div>
+
+          {/* Upload Limit Error Alert */}
+          {uploadLimitError && (
+            <Alert
+              color="amber"
+              className="rounded-2xl border-2 border-amber-200 bg-amber-50 shadow-lg"
+              icon={
+                <ExclamationCircleIcon className="h-6 w-6 text-amber-600" />
+              }
+            >
+              <div>
+                <Typography className="font-bold text-amber-900 mb-1">
+                  {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
+                </Typography>
+                <Typography className="text-sm text-amber-800">
+                  {uploadLimitError}
+                </Typography>
+              </div>
+            </Alert>
+          )}
 
           <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] overflow-hidden">
             <CardBody className="p-0">
@@ -1254,7 +1318,7 @@ export function ProjectDetail() {
                   <div className="flex gap-4">
                     <Button
                       className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-8 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
-                      onClick={() => setUppyUploadDialogOpen(true)}
+                      onClick={handleOpenUploadDialog}
                     >
                       <DocumentArrowUpIcon className="h-5 w-5" />
                       {t("project_detail.docs.btn_upload")}
@@ -2151,12 +2215,30 @@ export function ProjectDetail() {
 
       <UppyUploadDialog
         open={uppyUploadDialogOpen}
-        onClose={() => setUppyUploadDialogOpen(false)}
-        project={project}
-        onUploadSuccess={() => {
-          fetchDocuments(Number(projectId));
+        onClose={() => {
+          console.log("UppyUploadDialog closing");
           setUppyUploadDialogOpen(false);
         }}
+        project={project}
+        onUploadSuccess={() => {
+          console.log("Upload success!");
+          fetchDocuments(Number(projectId));
+          setUppyUploadDialogOpen(false);
+          setUploadLimitError(null); // Clear any previous errors
+        }}
+        onUploadError={(errorMessage) => {
+          console.log("🔴 onUploadError called with message:", errorMessage);
+          setUploadLimitError(errorMessage);
+          console.log("🔴 uploadLimitError state set to:", errorMessage);
+        }}
+      />
+
+      <UpgradePromptDialog
+        open={upgradePromptOpen}
+        onClose={() => setUpgradePromptOpen(false)}
+        featureName={language === 'es' ? 'documentos' : 'documents'}
+        currentCount={documents.length}
+        limit={membership?.limit || 2}
       />
 
       <DocumentMetadataDialog

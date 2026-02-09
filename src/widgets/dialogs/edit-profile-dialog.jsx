@@ -18,11 +18,13 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import authService from "@/services/authService";
+import projectService from "@/services/projectService";
 
 export function EditProfileDialog({ open, handler }) {
     const { user, updateUser } = useAuth();
     const { t, language } = useLanguage();
     const [activeTab, setActiveTab] = useState("profile");
+    const [membership, setMembership] = useState(null);
 
     // Profile form state
     const [profileData, setProfileData] = useState({
@@ -62,6 +64,17 @@ export function EditProfileDialog({ open, handler }) {
             setPasswordError("");
             setPasswordSuccess("");
             setActiveTab("profile");
+
+            // Fetch membership
+            const fetchMembership = async () => {
+                try {
+                    const data = await projectService.getMembershipStatus();
+                    setMembership(data);
+                } catch (error) {
+                    console.error("Failed to fetch membership", error);
+                }
+            };
+            fetchMembership();
         }
     }, [user, open]);
 
@@ -250,6 +263,36 @@ export function EditProfileDialog({ open, handler }) {
                                         </Typography>
                                     </div>
 
+                                    {/* Membership Section */}
+                                    <div className="flex flex-col gap-2 p-4 rounded-xl bg-indigo-50 border border-indigo-100">
+                                        <Typography variant="small" className="font-bold text-indigo-900">
+                                            {language === 'es' ? 'Membresía Actual' : 'Current Membership'}
+                                        </Typography>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <Typography variant="h6" className="font-black text-indigo-600 uppercase">
+                                                    {membership?.tier || "Free"}
+                                                </Typography>
+                                                {membership?.remaining_days && (
+                                                    <Typography variant="small" className="text-indigo-400 text-xs">
+                                                        {membership.remaining_days} {language === 'es' ? 'días restantes' : 'days remaining'}
+                                                    </Typography>
+                                                )}
+                                            </div>
+                                            {(membership?.tier === "Free" || !membership?.tier) && (
+                                                <Button
+                                                    size="sm"
+                                                    color="indigo"
+                                                    variant="text"
+                                                    className="normal-case font-bold"
+                                                    onClick={() => window.location.href = '/dashboard/memberships'}
+                                                >
+                                                    {language === 'es' ? 'Mejorar Plan' : 'Upgrade Plan'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <Button
                                         variant="gradient"
                                         color="indigo"
@@ -354,8 +397,8 @@ export function EditProfileDialog({ open, handler }) {
                                                 value={passwordData.confirm_password}
                                                 onChange={handlePasswordChange}
                                                 className={`!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10 ${passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password
-                                                        ? '!border-red-300 focus:!border-red-500'
-                                                        : ''
+                                                    ? '!border-red-300 focus:!border-red-500'
+                                                    : ''
                                                     }`}
                                                 labelProps={{
                                                     className: "hidden",

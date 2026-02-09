@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -17,12 +18,30 @@ import {
   ChatBubbleLeftEllipsisIcon,
   Cog6ToothIcon,
   PencilIcon,
+  ArrowUpCircleIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 import { ProfileInfoCard, MessageCard } from "@/widgets/cards/index";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
+import projectService from "@/services/projectService";
+import { useAuth } from "@/context/auth-context";
 
 export function Profile() {
+  const { user } = useAuth();
+  const [membership, setMembership] = useState(null);
+
+  useEffect(() => {
+    async function fetchMembership() {
+      try {
+        const data = await projectService.getMembershipStatus();
+        setMembership(data);
+      } catch (err) {
+        console.error("Failed to fetch membership", err);
+      }
+    }
+    fetchMembership();
+  }, []);
+
   return (
     <>
       <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover	bg-center">
@@ -33,7 +52,7 @@ export function Profile() {
           <div className="mb-10 flex items-center justify-between flex-wrap gap-6">
             <div className="flex items-center gap-6">
               <Avatar
-                src="/img/bruce-mars.jpeg"
+                src={user?.avatar || "/img/bruce-mars.jpeg"}
                 alt="bruce-mars"
                 size="xl"
                 variant="rounded"
@@ -41,13 +60,13 @@ export function Profile() {
               />
               <div>
                 <Typography variant="h5" color="blue-gray" className="mb-1">
-                  Richard Davis
+                  {user?.name || user?.username || "Richard Davis"}
                 </Typography>
                 <Typography
                   variant="small"
                   className="font-normal text-blue-gray-600"
                 >
-                  CEO / Co-Founder
+                  {user?.email || "CEO / Co-Founder"}
                 </Typography>
               </div>
             </div>
@@ -102,15 +121,34 @@ export function Profile() {
               title="Profile Information"
               description="Hi, I'm Alec Thompson, Decisions: If you can't decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
               details={{
-                "first name": "Alec M. Thompson",
-                mobile: "(44) 123 1234 123",
-                email: "alecthompson@mail.com",
-                location: "USA",
+                "first name": user?.name || "Alec M. Thompson",
+                mobile: user?.phone || "(44) 123 1234 123",
+                email: user?.email || "alecthompson@mail.com",
+                location: user?.location || "USA",
                 social: (
                   <div className="flex items-center gap-4">
                     <i className="fa-brands fa-facebook text-blue-700" />
                     <i className="fa-brands fa-twitter text-blue-400" />
                     <i className="fa-brands fa-instagram text-purple-500" />
+                  </div>
+                ),
+                membership: (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-blue-gray-700">
+                      {membership?.tier || "Free"}
+                    </span>
+                    {membership?.tier === "Free" && (
+                      <Link to="/dashboard/memberships">
+                        <Button
+                          size="sm"
+                          color="amber"
+                          className="flex items-center gap-2 py-1 px-2 capitalize"
+                        >
+                          <ArrowUpCircleIcon className="h-4 w-4" />
+                          Upgrade
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 ),
               }}

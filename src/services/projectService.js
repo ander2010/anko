@@ -263,9 +263,23 @@ const projectService = {
   async getAllRules() {
     const res = await api.get("/rules/");
     return res.data;
-  }
+  },
 
-  ,
+  async getMembershipStatus() {
+    try {
+      const res = await api.get("/subscriptions/me/");
+      return res.data;
+    } catch (err) {
+      // Fallback if endpoint not ready
+      console.warn("Membership endpoint not available, returning default Free tier");
+      return {
+        tier: "Free",
+        limit: 2,
+        usage: 0,
+        remaining_days: 5
+      };
+    }
+  },
 
   async getAllBatteries() {
     const res = await api.get("/batteries/");
