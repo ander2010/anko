@@ -46,7 +46,7 @@ export function Dashboard() {
         </IconButton>
       </div>
       <div
-        className={`p-4 min-h-screen transition-all duration-300 ${openSidenav ? "xl:ml-80" : ""}`}
+        className={`p-4 min-h-screen flex flex-col transition-all duration-300 ${openSidenav ? "xl:ml-80" : ""}`}
         onClick={() => openSidenav && setOpenSidenav(dispatch, false)}
       >
         <DashboardNavbar />
@@ -60,35 +60,37 @@ export function Dashboard() {
         >
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
         </IconButton>
-        <Routes>
-          {routes.map(({ layout, pages }) =>
-            layout === "dashboard" &&
-            pages.map((page) => {
-              // RBAC Check for page
-              if (page.key && !isAdmin && !allowedRoutes.includes(page.key)) {
-                return null;
-              }
+        <div className="flex-grow">
+          <Routes>
+            {routes.map(({ layout, pages }) =>
+              layout === "dashboard" &&
+              pages.map((page) => {
+                // RBAC Check for page
+                if (page.key && !isAdmin && !allowedRoutes.includes(page.key)) {
+                  return null;
+                }
 
-              if (page.children) {
-                return page.children.map(({ path, element, key }) => {
-                  // RBAC Check for child
-                  if (key && !isAdmin && !allowedRoutes.includes(key)) {
-                    return null;
-                  }
-                  return <Route exact path={path} element={element} key={path} />;
-                });
-              }
-              return <Route exact path={page.path} element={page.element} key={page.path} />;
-            })
-          )}
-          {/* Dynamic routes for project detail and topics - usually open to everyone who can see dashboard */}
-          <Route path="/project/:projectId" element={<ProjectDetail />} />
-          <Route path="/project/:projectId/topics" element={<ProjectTopics />} />
+                if (page.children) {
+                  return page.children.map(({ path, element, key }) => {
+                    // RBAC Check for child
+                    if (key && !isAdmin && !allowedRoutes.includes(key)) {
+                      return null;
+                    }
+                    return <Route exact path={path} element={element} key={path} />;
+                  });
+                }
+                return <Route exact path={page.path} element={page.element} key={page.path} />;
+              })
+            )}
+            {/* Dynamic routes for project detail and topics - usually open to everyone who can see dashboard */}
+            <Route path="/project/:projectId" element={<ProjectDetail />} />
+            <Route path="/project/:projectId/topics" element={<ProjectTopics />} />
 
-          {/* Fallback for unauthorized/not found dashboard routes */}
-          <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
-        </Routes>
-        <div className="text-blue-gray-600">
+            {/* Fallback for unauthorized/not found dashboard routes */}
+            <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
+          </Routes>
+        </div>
+        <div className="text-blue-gray-600 mt-auto">
           <Footer />
         </div>
       </div>

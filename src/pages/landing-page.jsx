@@ -110,10 +110,10 @@ export function LandingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-blue-gray-50/50">
+        <div className="min-h-screen flex flex-col bg-blue-gray-50/50">
             <LandingNavbar />
 
-            <main className="container mx-auto px-4 pb-20 pt-10">
+            <main className="flex-grow container mx-auto px-4 pb-20 pt-10">
                 {/* HERO */}
                 <section className="relative overflow-hidden rounded-3xl border border-blue-gray-100 bg-white shadow-sm mb-20">
                     <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
@@ -372,9 +372,12 @@ export function LandingPage() {
                         </Button>
                     </Link>
                 </section>
-
-                <Footer />
             </main>
+            <div className="bg-white/50 py-6 border-t border-blue-gray-100">
+                <div className="container mx-auto px-4">
+                    <Footer />
+                </div>
+            </div>
         </div >
     );
 }

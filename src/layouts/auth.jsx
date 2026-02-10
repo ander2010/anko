@@ -33,16 +33,21 @@ export function Auth() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full">
-      <Routes>
-        {routes.map(
-          ({ layout, pages }) =>
-            layout === "auth" &&
-            pages.map(({ path, element }) => (
-              <Route exact path={path} element={element} />
-            ))
-        )}
-      </Routes>
+    <div className="relative min-h-screen flex flex-col w-full">
+      <div className="flex-grow">
+        <Routes>
+          {routes.map(
+            ({ layout, pages }) =>
+              layout === "auth" &&
+              pages.map(({ path, element }) => (
+                <Route exact path={path} element={element} key={path} />
+              ))
+          )}
+        </Routes>
+      </div>
+      <div className="container mx-auto p-4 transition-all">
+        <Footer />
+      </div>
     </div>
   );
 }
