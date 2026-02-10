@@ -10,7 +10,13 @@ import { MagnifyingGlassIcon, Square2StackIcon } from "@heroicons/react/24/outli
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
 import { DeckCard } from "@/widgets/cards/index";
-import { FlashcardViewDialog } from "@/widgets/dialogs/index";
+import {
+    FlashcardViewDialog,
+    FlashcardLearnDialog,
+    AddFlashcardsDialog
+} from "@/widgets/dialogs/index";
+import { Alert } from "@material-tailwind/react";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 export function MyDecks() {
     const { t, language } = useLanguage();
@@ -20,9 +26,26 @@ export function MyDecks() {
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
 
+    // Add missing states for Learn and Add Flashcards
+    const [learnDeck, setLearnDeck] = useState(null);
+    const [learnDialogOpen, setLearnDialogOpen] = useState(false);
+    const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
+    const [selectedDeckForAdd, setSelectedDeckForAdd] = useState(null);
+    const [planLimitError, setPlanLimitError] = useState(null);
+
     useEffect(() => {
         fetchDecks();
     }, []);
+
+    // Auto-dismiss planLimitError after 4 seconds
+    useEffect(() => {
+        if (planLimitError) {
+            const timer = setTimeout(() => {
+                setPlanLimitError(null);
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [planLimitError]);
 
     const fetchDecks = async () => {
         try {
@@ -42,6 +65,16 @@ export function MyDecks() {
     const handleStudyDeck = (deck) => {
         setSelectedDeck(deck);
         setFlashcardViewDialogOpen(true);
+    };
+
+    const handleLearnDeck = (deck) => {
+        setLearnDeck(deck);
+        setLearnDialogOpen(true);
+    };
+
+    const handleOpenAddCards = (deck) => {
+        setSelectedDeckForAdd(deck);
+        setAddFlashcardsOpen(true);
     };
 
     const filteredDecks = decks.filter((deck) =>
@@ -74,6 +107,26 @@ export function MyDecks() {
                 </div>
             </div>
 
+            {/* Plan Limit Error Alert */}
+            {planLimitError && (
+                <Alert
+                    color="yellow"
+                    className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 shadow-lg"
+                    icon={
+                        <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
+                    }
+                >
+                    <div>
+                        <Typography className="font-bold text-yellow-900 mb-1">
+                            {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
+                        </Typography>
+                        <Typography className="text-sm text-yellow-800">
+                            {planLimitError}
+                        </Typography>
+                    </div>
+                </Alert>
+            )}
+
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <Spinner className="h-8 w-8 text-indigo-500" />
@@ -87,6 +140,8 @@ export function MyDecks() {
                             onEdit={() => { }} // Disabled for now
                             onDelete={() => { }} // Disabled for now
                             onStudy={() => handleStudyDeck(deck)}
+                            onLearn={handleLearnDeck}
+                            onAddCards={handleOpenAddCards}
                         />
                     ))}
                 </div>
@@ -115,6 +170,27 @@ export function MyDecks() {
                 }}
                 deckId={selectedDeck?.id}
                 deckTitle={selectedDeck?.title}
+            />
+
+            <AddFlashcardsDialog
+                open={addFlashcardsOpen}
+                onClose={() => {
+                    setAddFlashcardsOpen(false);
+                    setSelectedDeckForAdd(null);
+                }}
+                onSuccess={fetchDecks}
+                deckId={selectedDeckForAdd?.id}
+                deckTitle={selectedDeckForAdd?.title}
+            />
+
+            <FlashcardLearnDialog
+                open={learnDialogOpen}
+                onClose={() => {
+                    setLearnDialogOpen(false);
+                    setLearnDeck(null);
+                }}
+                deckId={learnDeck?.id}
+                deckTitle={learnDeck?.title}
             />
         </div>
     );
