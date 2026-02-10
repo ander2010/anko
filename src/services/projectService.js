@@ -589,22 +589,33 @@ const projectService = {
   },
 
   async createDeck(projectId, payload) {
-    const res = await api.post("/decks/", {
-      project: projectId,
-      ...payload,
-    });
-    return res.data;
+    try {
+      const res = await api.post("/decks/", {
+        project: projectId,
+        ...payload,
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to create deck" };
+    }
   },
 
   async createDeckWithCards(payload) {
-    const res = await api.post("/decks/create-with-cards/", payload);
-    return res.data;
+    try {
+      const res = await api.post("/decks/create-with-cards/", payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to create deck with cards" };
+    }
   },
 
   async createDeckManual(payload) {
-    const res = await api.post("/decks/create-with-flashcards/", payload);
-
-    return res.data;
+    try {
+      const res = await api.post("/decks/create-with-flashcards/", payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to create deck manually" };
+    }
   },
 
   async getDeckFlashcards(deckId, jobId = null) {
@@ -675,13 +686,21 @@ const projectService = {
   },
 
   async updateDeck(deckId, payload) {
-    const res = await api.patch(`/decks/${deckId}/`, payload);
-    return res.data;
+    try {
+      const res = await api.patch(`/decks/${deckId}/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to update deck" };
+    }
   },
 
   async deleteDeck(deckId) {
-    const res = await api.delete(`/decks/${deckId}/`);
-    return res.data;
+    try {
+      const res = await api.delete(`/decks/${deckId}/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to delete deck" };
+    }
   },
 
   async wsPullCard({ deckId, jobId, lastSeq = 0 }) {

@@ -172,7 +172,9 @@ export function ChatPanel() {
 
             setMessages((prev) => [...prev, { role: "ai", text: aiText }]);
         } catch (err) {
-            setMessages((prev) => [...prev, { role: "ai", text: t("chat.conn_error") }]);
+            console.error("Chat error:", err);
+            const errorMessage = err?.detail || err?.error || t("chat.conn_error");
+            setMessages((prev) => [...prev, { role: "ai", text: errorMessage }]);
         } finally {
             setLoading(false);
         }

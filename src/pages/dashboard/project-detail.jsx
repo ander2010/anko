@@ -273,8 +273,16 @@ export function ProjectDetail() {
       // Close dialog even on error as requested by user
       setShowGenerateBattery(false);
 
-      // Check for PLAN_LIMIT error_code OR "Plan limit" string
-      if (err?.error_code === "PLAN_LIMIT" || (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes("plan limit"))) {
+      // Robust check for Plan/Tier limits
+      const isPlanLimit =
+        err?.error_code === "PLAN_LIMIT" ||
+        (typeof errorMessage === 'string' && (
+          errorMessage.toLowerCase().includes("plan limit") ||
+          errorMessage.toLowerCase().includes("premium") ||
+          errorMessage.toLowerCase().includes("ultra")
+        ));
+
+      if (isPlanLimit) {
         setPlanLimitError(errorMessage || "Battery generation limit reached");
         setError(null); // Clear global error if it's a plan limit
       } else {
@@ -692,7 +700,29 @@ export function ProjectDetail() {
       setCreateDeckDialogOpen(false);
       setSelectedDeck(null);
     } catch (err) {
-      setError(err?.error || err?.detail || "Failed to save deck");
+      console.error("Deck creation error:", err);
+      const errorMessage = err?.error || err?.detail || "";
+
+      // Close dialog even on error as requested by user
+      setCreateDeckDialogOpen(false);
+      setSelectedDeck(null);
+
+      // Robust check for Plan/Tier limits
+      const isPlanLimit =
+        err?.error_code === "PLAN_LIMIT" ||
+        (typeof errorMessage === 'string' && (
+          errorMessage.toLowerCase().includes("plan limit") ||
+          errorMessage.toLowerCase().includes("premium") ||
+          errorMessage.toLowerCase().includes("ultra")
+        ));
+
+      if (isPlanLimit) {
+        setPlanLimitError(errorMessage || "Deck creation limit reached");
+        setError(null); // Clear global error if it's a plan limit
+      } else {
+        setError(errorMessage || "Failed to save deck");
+        setPlanLimitError(null);
+      }
     }
   };
 
@@ -1906,6 +1936,26 @@ export function ProjectDetail() {
                   </Button>
                 </div>
               </div>
+
+              {/* Plan Limit Error Alert */}
+              {planLimitError && (
+                <Alert
+                  color="yellow"
+                  className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 shadow-lg"
+                  icon={
+                    <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
+                  }
+                >
+                  <div>
+                    <Typography className="font-bold text-yellow-900 mb-1">
+                      {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
+                    </Typography>
+                    <Typography className="text-sm text-yellow-800">
+                      {planLimitError}
+                    </Typography>
+                  </div>
+                </Alert>
+              )}
 
               {loadingDecks ? (
                 <div className="flex flex-col items-center justify-center py-12">
