@@ -34,11 +34,8 @@ export function DeckCard({
     onLearn,
     onAddCards,
     onUpdateVisibility,
-    onRequestAccess,
     job,
     onJobComplete,
-    isPublicCatalog = false,
-    isRequestPending = false
 }) {
     const { t, language } = useLanguage();
     const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
@@ -92,10 +89,10 @@ export function DeckCard({
                         <div className="flex items-center gap-2 flex-wrap">
                             <div className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter">
-                                    {(isPublicCatalog || onUpdateVisibility) ? (language === "es" ? "Visibilidad:" : "Visibility:") : "Status:"}
+                                    {language === "es" ? "Visibilidad:" : "Visibility:"}
                                 </span>
 
-                                {onUpdateVisibility && !isPublicCatalog ? (
+                                {onUpdateVisibility ? (
                                     <Menu placement="bottom-start">
                                         <MenuHandler>
                                             <div className="cursor-pointer transition-all hover:scale-105">
@@ -125,7 +122,7 @@ export function DeckCard({
                                     </Menu>
                                 ) : (
                                     <Chip
-                                        value={isPublicCatalog ? deck.visibility : t(`project_detail.decks.visibility.${deck.visibility}`)}
+                                        value={t(`project_detail.decks.visibility.${deck.visibility}`)}
                                         size="sm"
                                         color={getVisibilityColor(deck.visibility)}
                                         variant="ghost"
@@ -138,48 +135,44 @@ export function DeckCard({
                                 <Typography className="text-[10px] font-bold text-zinc-600">
                                     {deck.flashcards_count || deck.cardsCount || deck.flashcards?.length || deck.card_count || 0}
                                 </Typography>
-                                {!isPublicCatalog && (
-                                    <IconButton
-                                        variant="text"
-                                        size="sm"
-                                        className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
-                                        onClick={() => onAddCards && onAddCards(deck)}
-                                        title={language === "es" ? "Más fichas" : "More flashcards"}
-                                    >
-                                        <PlusIcon className="h-3 w-3" strokeWidth={3} />
-                                    </IconButton>
-                                )}
+                                <IconButton
+                                    variant="text"
+                                    size="sm"
+                                    className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
+                                    onClick={() => onAddCards && onAddCards(deck)}
+                                    title={language === "es" ? "Más fichas" : "More flashcards"}
+                                >
+                                    <PlusIcon className="h-3 w-3" strokeWidth={3} />
+                                </IconButton>
                             </div>
                         </div>
                     </div>
 
-                    {!isPublicCatalog && (
-                        <Menu placement="bottom-end">
-                            <MenuHandler>
-                                <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
-                                    <EllipsisVerticalIcon className="h-5 w-5" />
-                                </IconButton>
-                            </MenuHandler>
-                            <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
-                                <MenuItem onClick={() => onEdit && onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
-                                    <PencilIcon className="h-4 w-4" />
-                                    {t("global.action.edit")}
-                                </MenuItem>
-                                <MenuItem onClick={() => onAddCards && onAddCards(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
-                                    <PlusIcon className="h-4 w-4" />
-                                    {language === "es" ? "Añadir Fichas" : "Add Flashcards"}
-                                </MenuItem>
-                                <hr className="my-1 border-zinc-100" />
-                                <MenuItem
-                                    onClick={() => onDelete && onDelete(deck)}
-                                    className="flex items-center gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm py-2"
-                                >
-                                    <TrashIcon className="h-4 w-4" />
-                                    {t("global.action.delete")}
-                                </MenuItem>
-                            </MenuList>
-                        </Menu>
-                    )}
+                    <Menu placement="bottom-end">
+                        <MenuHandler>
+                            <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
+                                <EllipsisVerticalIcon className="h-5 w-5" />
+                            </IconButton>
+                        </MenuHandler>
+                        <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
+                            <MenuItem onClick={() => onEdit && onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
+                                <PencilIcon className="h-4 w-4" />
+                                {t("global.action.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => onAddCards && onAddCards(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
+                                <PlusIcon className="h-4 w-4" />
+                                {language === "es" ? "Añadir Fichas" : "Add Flashcards"}
+                            </MenuItem>
+                            <hr className="my-1 border-zinc-100" />
+                            <MenuItem
+                                onClick={() => onDelete && onDelete(deck)}
+                                className="flex items-center gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm py-2"
+                            >
+                                <TrashIcon className="h-4 w-4" />
+                                {t("global.action.delete")}
+                            </MenuItem>
+                        </MenuList>
+                    </Menu>
                 </div>
 
                 {job && !isCompleted && (
@@ -209,51 +202,26 @@ export function DeckCard({
                 )}
 
                 <div className="flex items-center gap-2 mt-auto">
-                    {isShared && isPublicCatalog ? (
-                        <Button
-                            variant={isRequestPending ? "filled" : "outlined"}
-                            size="sm"
-                            color={isRequestPending ? "green" : "blue"}
-                            disabled={isRequestPending}
-                            className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg font-bold hover:bg-blue-50 transition-all border-blue-100 disabled:opacity-70 flex-1 justify-center"
-                            onClick={() => onRequestAccess && onRequestAccess(deck)}
-                        >
-                            {isRequestPending ? (
-                                <>
-                                    <CheckBadgeIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                    <span className="text-xs">{t("global.action.request_sent")}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <PlusIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                    <span className="text-xs">{t("global.action.request_access")}</span>
-                                </>
-                            )}
-                        </Button>
-                    ) : (
-                        <>
-                            <Button
-                                variant="outlined"
-                                size="sm"
-                                color="indigo"
-                                className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
-                                onClick={() => onLearn && onLearn(deck)}
-                            >
-                                <BookOpenIcon className="h-3.5 w-3.5" />
-                                <span className="text-xs font-bold">{t("global.action.learn")}</span>
-                            </Button>
-                            <Button
-                                variant="gradient"
-                                size="sm"
-                                color="indigo"
-                                className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all"
-                                onClick={() => onStudy && onStudy(deck)}
-                            >
-                                <BookOpenIcon className="h-3.5 w-3.5" />
-                                <span className="text-xs font-bold">{t("global.action.study")}</span>
-                            </Button>
-                        </>
-                    )}
+                    <Button
+                        variant="outlined"
+                        size="sm"
+                        color="indigo"
+                        className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
+                        onClick={() => onLearn && onLearn(deck)}
+                    >
+                        <BookOpenIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-bold">{t("global.action.learn")}</span>
+                    </Button>
+                    <Button
+                        variant="gradient"
+                        size="sm"
+                        color="indigo"
+                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold"
+                        onClick={() => onStudy && onStudy(deck)}
+                    >
+                        <BookOpenIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-bold">{t("global.action.study")}</span>
+                    </Button>
                 </div>
             </CardBody>
         </Card >
@@ -274,14 +242,12 @@ DeckCard.propTypes = {
     onStudy: PropTypes.func,
     onLearn: PropTypes.func,
     onAddCards: PropTypes.func,
-    onRequestAccess: PropTypes.func,
+    onUpdateVisibility: PropTypes.func,
     job: PropTypes.shape({
         job_id: PropTypes.string,
         ws_progress: PropTypes.string,
     }),
     onJobComplete: PropTypes.func,
-    isPublicCatalog: PropTypes.bool,
-    isRequestPending: PropTypes.bool,
 };
 
 export default DeckCard;

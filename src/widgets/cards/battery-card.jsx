@@ -32,11 +32,8 @@ export function BatteryCard({
     onSimulate,
     onUpdateVisibility,
     onDelete,
-    onRequestAccess,
     progress,
     onDismissProgress,
-    isPublicCatalog = false,
-    isRequestPending = false
 }) {
     const { t, language } = useLanguage();
 
@@ -68,12 +65,6 @@ export function BatteryCard({
         }
     };
 
-    // UI Logic: 
-    // - Public: Simulate button visible.
-    // - Shared: Request Access button visible, Simulate hidden.
-    const isPublic = battery.visibility === "public";
-    const isShared = battery.visibility === "shared";
-
     return (
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 bg-white group hover:-translate-y-1">
             <CardBody className="p-5 flex flex-col h-full">
@@ -82,65 +73,63 @@ export function BatteryCard({
                         {/* Status Label */}
                         <div className="flex items-center gap-1.5">
                             <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter">
-                                {isPublicCatalog ? (language === "es" ? "Visibilidad:" : "Visibility:") : "Status:"}
+                                {(language === "es" ? "Visibilidad:" : "Visibility:")}
                             </span>
-                            <Chip
-                                value={isPublicCatalog ? (battery.visibility || "shared") : (battery.status || "Ready")}
-                                color={isPublicCatalog ? getVisibilityColor(battery.visibility) : (battery.status === "Ready" ? "green" : "blue-gray")}
-                                size="sm"
-                                variant="ghost"
-                                className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
-                            />
+                            {onUpdateVisibility ? (
+                                <Menu placement="bottom-start">
+                                    <MenuHandler>
+                                        <div className="cursor-pointer transition-all hover:scale-105">
+                                            <Chip
+                                                value={battery.visibility || "private"}
+                                                color={getVisibilityColor(battery.visibility)}
+                                                size="sm"
+                                                variant="filled"
+                                                icon={getVisibilityIcon(battery.visibility)}
+                                                className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                                            />
+                                        </div>
+                                    </MenuHandler>
+                                    <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
+                                        <MenuItem
+                                            onClick={() => onUpdateVisibility(battery, "private")}
+                                            className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2"
+                                        >
+                                            <LockClosedIcon className="h-4 w-4" />
+                                            {language === "es" ? "Privado" : "Private"}
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => onUpdateVisibility(battery, "shared")}
+                                            className="flex items-center gap-3 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-sm py-2"
+                                        >
+                                            <UserGroupIcon className="h-4 w-4" />
+                                            {language === "es" ? "Compartido" : "Shared"}
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => onUpdateVisibility(battery, "public")}
+                                            className="flex items-center gap-3 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 font-medium text-sm py-2"
+                                        >
+                                            <GlobeAmericasIcon className="h-4 w-4" />
+                                            {language === "es" ? "Público" : "Public"}
+                                        </MenuItem>
+                                    </MenuList>
+                                </Menu>
+                            ) : (
+                                <Chip
+                                    value={battery.visibility || "private"}
+                                    color={getVisibilityColor(battery.visibility)}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
+                                />
+                            )}
                         </div>
-
-                        {onUpdateVisibility && (
-                            <Menu placement="bottom-start">
-                                <MenuHandler>
-                                    <div className="cursor-pointer transition-all hover:scale-105">
-                                        <Chip
-                                            value={battery.visibility || "private"}
-                                            color={getVisibilityColor(battery.visibility)}
-                                            size="sm"
-                                            variant="filled"
-                                            icon={getVisibilityIcon(battery.visibility)}
-                                            className="rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-                                        />
-                                    </div>
-                                </MenuHandler>
-                                <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
-                                    <MenuItem
-                                        onClick={() => onUpdateVisibility(battery, "private")}
-                                        className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2"
-                                    >
-                                        <LockClosedIcon className="h-4 w-4" />
-                                        {language === "es" ? "Privado" : "Private"}
-                                    </MenuItem>
-                                    <MenuItem
-                                        onClick={() => onUpdateVisibility(battery, "shared")}
-                                        className="flex items-center gap-3 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-sm py-2"
-                                    >
-                                        <UserGroupIcon className="h-4 w-4" />
-                                        {language === "es" ? "Compartido" : "Shared"}
-                                    </MenuItem>
-                                    <MenuItem
-                                        onClick={() => onUpdateVisibility(battery, "public")}
-                                        className="flex items-center gap-3 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 font-medium text-sm py-2"
-                                    >
-                                        <GlobeAmericasIcon className="h-4 w-4" />
-                                        {language === "es" ? "Público" : "Public"}
-                                    </MenuItem>
-                                </MenuList>
-                            </Menu>
-                        )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {!isPublicCatalog && (
-                            <div className="bg-zinc-50 px-2 py-1 rounded-md">
-                                <Typography variant="small" className="text-zinc-500 text-[10px] font-bold">
-                                    {formatDate(battery.created_at)}
-                                </Typography>
-                            </div>
-                        )}
+                        <div className="bg-zinc-50 px-2 py-1 rounded-md">
+                            <Typography variant="small" className="text-zinc-500 text-[10px] font-bold">
+                                {formatDate(battery.created_at)}
+                            </Typography>
+                        </div>
                         {onDelete && (
                             <Menu placement="bottom-end">
                                 <MenuHandler>
@@ -214,18 +203,11 @@ export function BatteryCard({
 
                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
                     <div className="text-[11px] font-medium text-zinc-500">
-                        {!isPublicCatalog && battery.attempts_count > 0 ? (
+                        {battery.attempts_count > 0 ? (
                             <span className="flex items-center gap-1">
                                 <span className="text-zinc-400">{language === "es" ? "Último" : "Last"}:</span>
                                 <span className={Number(battery.last_attempt?.percent || 0) >= 70 ? "text-green-600 font-bold" : "text-zinc-900 font-bold"}>
                                     {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
-                                </span>
-                            </span>
-                        ) : battery.owner_email ? (
-                            <span className="flex items-center gap-1">
-                                <span className="text-zinc-400">{language === "es" ? "Por" : "By"}:</span>
-                                <span className="text-zinc-900 font-bold truncate max-w-[100px]">
-                                    {battery.owner_email.split('@')[0]}
                                 </span>
                             </span>
                         ) : (
@@ -233,39 +215,16 @@ export function BatteryCard({
                         )}
                     </div>
 
-                    {isShared ? (
-                        <Button
-                            variant={isRequestPending ? "filled" : "outlined"}
-                            size="sm"
-                            color={isRequestPending ? "green" : "blue"}
-                            disabled={isRequestPending}
-                            className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg font-bold hover:bg-blue-50 transition-all border-blue-100 disabled:opacity-70"
-                            onClick={() => onRequestAccess && onRequestAccess(battery)}
-                        >
-                            {isRequestPending ? (
-                                <>
-                                    <CheckBadgeIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                    <span className="text-xs">{t("global.action.request_sent")}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <UserGroupIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                    <span className="text-xs">{t("global.action.request_access")}</span>
-                                </>
-                            )}
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="gradient"
-                            size="sm"
-                            color="indigo"
-                            className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold"
-                            onClick={() => onSimulate(battery)}
-                        >
-                            <PlayIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                            <span className="text-xs">{language === "es" ? "Simular" : "Simulate"}</span>
-                        </Button>
-                    )}
+                    <Button
+                        variant="gradient"
+                        size="sm"
+                        color="indigo"
+                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold"
+                        onClick={() => onSimulate(battery)}
+                    >
+                        <PlayIcon className="h-3.5 w-3.5" strokeWidth={2.5} stroke="currentColor" fill="none" />
+                        <span className="text-xs">{language === "es" ? "Simular" : "Simulate"}</span>
+                    </Button>
                 </div>
             </CardBody>
         </Card>
@@ -277,11 +236,8 @@ BatteryCard.propTypes = {
     onSimulate: PropTypes.func.isRequired,
     onUpdateVisibility: PropTypes.func,
     onDelete: PropTypes.func,
-    onRequestAccess: PropTypes.func,
     progress: PropTypes.object,
     onDismissProgress: PropTypes.func,
-    isPublicCatalog: PropTypes.bool,
-    isRequestPending: PropTypes.bool,
 };
 
 export default BatteryCard;

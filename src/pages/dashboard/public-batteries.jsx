@@ -12,7 +12,7 @@ import { MagnifyingGlassIcon, BoltIcon, PlayIcon } from "@heroicons/react/24/out
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
 import { ExamSimulatorDialog, AccessRequestSuccessDialog } from "@/widgets/dialogs/index";
-import { BatteryCard } from "@/widgets/cards";
+import { CatalogBatteryCard } from "@/widgets/cards";
 
 export function PublicBatteries() {
     const { t, language } = useLanguage();
@@ -94,12 +94,11 @@ export function PublicBatteries() {
             ) : filteredBatteries.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                     {filteredBatteries.map((battery) => (
-                        <BatteryCard
+                        <CatalogBatteryCard
                             key={battery.id}
                             battery={battery}
                             onSimulate={setSimulationBattery}
                             onRequestAccess={handleRequestAccess}
-                            isPublicCatalog={true}
                             isRequestPending={requestedBatteries.has(battery.id) || battery.request_status === "pending"}
                         />
                     ))}

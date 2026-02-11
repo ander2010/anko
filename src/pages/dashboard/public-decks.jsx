@@ -9,7 +9,7 @@ import {
 import { MagnifyingGlassIcon, Square2StackIcon } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
-import { DeckCard } from "@/widgets/cards/index";
+import { CatalogDeckCard } from "@/widgets/cards/index";
 import {
     FlashcardViewDialog,
     FlashcardLearnDialog,
@@ -118,14 +118,12 @@ export function PublicDecks() {
             ) : filteredDecks.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                     {filteredDecks.map((deck) => (
-                        <DeckCard
+                        <CatalogDeckCard
                             key={deck.id}
                             deck={deck}
                             onStudy={() => handleStudyDeck(deck)}
                             onLearn={handleLearnDeck}
-                            onAddCards={handleOpenAddCards}
                             onRequestAccess={handleRequestAccess}
-                            isPublicCatalog={true}
                             isRequestPending={requestedDecks.has(deck.id) || deck.request_status === "pending"}
                         />
                     ))}
