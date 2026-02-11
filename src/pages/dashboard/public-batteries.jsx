@@ -11,50 +11,32 @@ import {
 import { MagnifyingGlassIcon, BoltIcon, PlayIcon } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
-import { ExamSimulatorDialog } from "@/widgets/dialogs/index";
+import { ExamSimulatorDialog, AccessRequestSuccessDialog } from "@/widgets/dialogs/index";
 import { BatteryCard } from "@/widgets/cards";
 
-export function MyBatteries() {
+export function PublicBatteries() {
     const { t, language } = useLanguage();
     const [batteries, setBatteries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [simulationBattery, setSimulationBattery] = useState(null);
+    const [requestedBatteries, setRequestedBatteries] = useState(new Set());
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
     useEffect(() => {
-        fetchBatteries();
+        fetchPublicBatteries();
     }, []);
 
-    const fetchBatteries = async () => {
+    const fetchPublicBatteries = async () => {
         try {
             setLoading(true);
-            const data = await projectService.getUserBatteries();
+            const data = await projectService.getPublicBatteries();
             setBatteries(Array.isArray(data) ? data : data?.results || []);
         } catch (err) {
-            console.error("Error fetching user batteries:", err);
+            console.error("Error fetching public batteries:", err);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleUpdateVisibility = async (battery, visibility) => {
-        try {
-            await projectService.updateBattery(battery.id, { visibility });
-            // Local update or refetch
-            setBatteries(prev => prev.map(b => b.id === battery.id ? { ...b, visibility } : b));
-        } catch (err) {
-            console.error("Error updating battery visibility:", err);
-        }
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return "—";
-        const date = new Date(dateString);
-        return date.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
     };
 
     const filteredBatteries = batteries.filter((b) =>
@@ -62,16 +44,33 @@ export function MyBatteries() {
         (b.status || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    return (
+    const handleRequestAccess = async (battery) => {
+        try {
+            await projectService.requestBatteryAccess(battery.id);
+            setRequestedBatteries(prev => new Set([...prev, battery.id]));
+            setShowSuccessDialog(true);
+        } catch (err) {
+            console.error("Error requesting access:", err);
+            // If already pending, just mark it and show success to be friendly
+            if (err?.detail?.includes("pending")) {
+                setRequestedBatteries(prev => new Set([...prev, battery.id]));
+                setShowSuccessDialog(true);
+            } else {
+                alert(err?.error || err?.detail || (language === "es" ? "Error al enviar la solicitud" : "Failed to send request"));
+            }
+        }
+    };
 
+    return (
         <div className="mt-8 mb-8 flex flex-col gap-8 max-w-7xl mx-auto px-4">
+            {/* ... header ... */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
-                        {t("project_detail.decks.my_batteries")}
+                        {language === "es" ? "Baterías Públicas" : "Public Batteries"}
                     </Typography>
                     <Typography className="font-medium text-zinc-500 max-w-2xl">
-                        {language === "es" ? "Pon a prueba tus conocimientos con tus baterías generadas. Reta tu mente." : "Test your knowledge with your generated batteries. Challenge your mind."}
+                        {language === "es" ? "Practica con los exámenes compartidos por otros usuarios de la comunidad." : "Practice with exams shared by other community users."}
                     </Typography>
                 </div>
                 <div className="w-full md:w-80">
@@ -99,22 +98,25 @@ export function MyBatteries() {
                             key={battery.id}
                             battery={battery}
                             onSimulate={setSimulationBattery}
-                            onUpdateVisibility={handleUpdateVisibility}
+                            onRequestAccess={handleRequestAccess}
+                            isPublicCatalog={true}
+                            isRequestPending={requestedBatteries.has(battery.id) || battery.request_status === "pending"}
                         />
                     ))}
                 </div>
             ) : (
+                /* ... empty state ... */
                 <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-zinc-200 text-center">
                     <div className="h-16 w-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-zinc-50/50">
                         <BoltIcon className="h-8 w-8 text-zinc-400" />
                     </div>
                     <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
-                        {searchTerm ? (language === "es" ? "No se encontraron baterías" : "No batteries found") : t("global.batteries.no_batteries") || "No batteries yet"}
+                        {searchTerm ? (language === "es" ? "No se encontraron baterías" : "No batteries found") : (language === "es" ? "No hay baterías públicas" : "No public batteries yet")}
                     </Typography>
                     <Typography className="text-zinc-500 max-w-sm mb-6">
                         {searchTerm
                             ? (language === "es" ? "Intenta ajustar tus términos de búsqueda." : "Try adjusting your search terms.")
-                            : (language === "es" ? "Genera tu primera batería de ejercicios desde un proyecto." : "Generate your first battery of exercises from a project.")
+                            : (language === "es" ? "Pronto habrá baterías de examen compartidas por la comunidad." : "Community shared batteries will appear here soon.")
                         }
                     </Typography>
                 </div>
@@ -125,8 +127,13 @@ export function MyBatteries() {
                 handler={() => setSimulationBattery(null)}
                 battery={simulationBattery}
             />
+
+            <AccessRequestSuccessDialog
+                open={showSuccessDialog}
+                handler={() => setShowSuccessDialog(false)}
+            />
         </div>
     );
 }
 
-export default MyBatteries;
+export default PublicBatteries;

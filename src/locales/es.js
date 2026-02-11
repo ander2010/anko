@@ -39,6 +39,8 @@ export const es = {
         "global-projects": "Proyectos Generales",
         "my-decks": "Mis Mazos",
         "my-batteries": "Mis Baterías",
+        "public-decks": "Decks Públicos",
+        "public-batteries": "Baterías Públicas",
         "support-requests": "Mensajes de Soporte"
     },
     navbar: {
@@ -77,6 +79,8 @@ export const es = {
         "global-projects": "Proyectos Generales",
         "my-decks": "Mis Mazos",
         "my-batteries": "Mis Baterías",
+        "public-decks": "Decks Públicos",
+        "public-batteries": "Baterías Públicas",
         orders: "Órdenes",
         "global-sections": "Secciones Globales",
         "support-requests": "Mensajes de Soporte"
@@ -485,7 +489,13 @@ export const es = {
             front: "Frente",
             back: "Reverso",
             explanation: "Explicación",
-            learn: "Aprender"
+            learn: "Aprender",
+            request_access: "Pedir Acceso",
+            request_sent: "Solicitud Enviada",
+            access_request_success: {
+                title: "Solicitud Enviada",
+                description: "Se ha solicitado el acceso. El propietario debe aceptarlo; si es aceptado, recibirás una notificación y el recurso aparecerá en tu sección correspondiente."
+            }
         },
         actions: {
             edit: "Editar",

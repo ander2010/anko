@@ -588,6 +588,64 @@ const projectService = {
     }
   },
 
+  async getPublicDecks() {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/public/decks/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch public decks" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch public decks" };
+    }
+  },
+
+  async getPublicBatteries() {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/public/batteries/`;
+
+      const { ok, data } = await apiFetch(url, { token });
+
+      if (!ok) {
+        throw data || { error: "Failed to fetch public batteries" };
+      }
+
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch public batteries" };
+    }
+  },
+
+  async requestBatteryAccess(batteryId) {
+    try {
+      const res = await api.post(`/access-requests/`, {
+        battery_id: batteryId,
+        requested_access: "view"
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to request access" };
+    }
+  },
+
+  async requestDeckAccess(deckId) {
+    try {
+      const res = await api.post(`/access-requests/`, {
+        deck_id: deckId,
+        requested_access: "view"
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to request access" };
+    }
+  },
+
   async createDeck(projectId, payload) {
     try {
       const res = await api.post("/decks/", {

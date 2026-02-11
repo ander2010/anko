@@ -13,52 +13,56 @@ import { DeckCard } from "@/widgets/cards/index";
 import {
     FlashcardViewDialog,
     FlashcardLearnDialog,
-    AddFlashcardsDialog
+    AddFlashcardsDialog,
+    AccessRequestSuccessDialog
 } from "@/widgets/dialogs/index";
-import { Alert } from "@material-tailwind/react";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
-export function MyDecks() {
+export function PublicDecks() {
     const { t, language } = useLanguage();
     const [decks, setDecks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
+    const [requestedDecks, setRequestedDecks] = useState(new Set());
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-    // Add missing states for Learn and Add Flashcards
+    // States for Learn and Add Flashcards (if applicable for public decks)
     const [learnDeck, setLearnDeck] = useState(null);
     const [learnDialogOpen, setLearnDialogOpen] = useState(false);
     const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
     const [selectedDeckForAdd, setSelectedDeckForAdd] = useState(null);
-    const [planLimitError, setPlanLimitError] = useState(null);
 
     useEffect(() => {
-        fetchDecks();
+        fetchPublicDecks();
     }, []);
 
-    // Auto-dismiss planLimitError after 4 seconds
-    useEffect(() => {
-        if (planLimitError) {
-            const timer = setTimeout(() => {
-                setPlanLimitError(null);
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [planLimitError]);
-
-    const fetchDecks = async () => {
+    const fetchPublicDecks = async () => {
         try {
             setLoading(true);
-            const data = await projectService.getUserDecks();
+            const data = await projectService.getPublicDecks();
             const rawDecks = Array.isArray(data) ? data : data?.results || [];
-
-            // Backend already provides flashcards_count, no need to loop
             setDecks(rawDecks);
         } catch (err) {
-            console.error("Error fetching user decks:", err);
+            console.error("Error fetching public decks:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRequestAccess = async (deck) => {
+        try {
+            await projectService.requestDeckAccess(deck.id);
+            setRequestedDecks(prev => new Set([...prev, deck.id]));
+            setShowSuccessDialog(true);
+        } catch (err) {
+            console.error("Error requesting access:", err);
+            if (err?.detail?.includes("pending")) {
+                setRequestedDecks(prev => new Set([...prev, deck.id]));
+                setShowSuccessDialog(true);
+            } else {
+                alert(err?.error || err?.detail || (language === "es" ? "Error al enviar la solicitud" : "Failed to send request"));
+            }
         }
     };
 
@@ -70,30 +74,6 @@ export function MyDecks() {
     const handleLearnDeck = (deck) => {
         setLearnDeck(deck);
         setLearnDialogOpen(true);
-    };
-
-    const handleUpdateVisibility = async (deckId, visibility) => {
-        try {
-            await projectService.updateDeck(deckId, { visibility });
-            setDecks(decks.map(d => d.id === deckId ? { ...d, visibility } : d));
-        } catch (err) {
-            console.error("Error updating deck visibility:", err);
-            alert(err?.detail || (language === "es" ? "Error al actualizar visibilidad" : "Failed to update visibility"));
-        }
-    };
-
-    const handleDeleteDeck = async (deck) => {
-        if (!window.confirm(language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${deck.title}"?` : `Are you sure you want to delete the deck "${deck.title}"?`)) {
-            return;
-        }
-
-        try {
-            await projectService.deleteDeck(deck.id);
-            setDecks(decks.filter(d => d.id !== deck.id));
-        } catch (err) {
-            console.error("Error deleting deck:", err);
-            alert(err?.detail || (language === "es" ? "Error al eliminar el mazo" : "Failed to delete deck"));
-        }
     };
 
     const handleOpenAddCards = (deck) => {
@@ -111,10 +91,10 @@ export function MyDecks() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
-                        {t("project_detail.decks.my_decks")}
+                        {language === "es" ? "Decks Públicos" : "Public Decks"}
                     </Typography>
                     <Typography className="font-medium text-zinc-500 max-w-2xl">
-                        {language === "es" ? "Todos tus mazos de estudio en un solo lugar. Crea, estudia y mejora tu aprendizaje." : "All your study decks in one place. Create, study, and improve your learning."}
+                        {language === "es" ? "Explora y aprende de los mazos compartidos por la comunidad." : "Explore and learn from decks shared by the community."}
                     </Typography>
                 </div>
                 <div className="w-full md:w-80">
@@ -131,26 +111,6 @@ export function MyDecks() {
                 </div>
             </div>
 
-            {/* Plan Limit Error Alert */}
-            {planLimitError && (
-                <Alert
-                    color="yellow"
-                    className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 shadow-lg"
-                    icon={
-                        <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
-                    }
-                >
-                    <div>
-                        <Typography className="font-bold text-yellow-900 mb-1">
-                            {language === 'es' ? 'Límite de Plan Alcanzado' : 'Plan Limit Reached'}
-                        </Typography>
-                        <Typography className="text-sm text-yellow-800">
-                            {planLimitError}
-                        </Typography>
-                    </div>
-                </Alert>
-            )}
-
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <Spinner className="h-8 w-8 text-indigo-500" />
@@ -161,12 +121,12 @@ export function MyDecks() {
                         <DeckCard
                             key={deck.id}
                             deck={deck}
-                            onEdit={() => { }} // Still disabled if no edit dialog yet
-                            onDelete={handleDeleteDeck}
-                            onUpdateVisibility={handleUpdateVisibility}
                             onStudy={() => handleStudyDeck(deck)}
                             onLearn={handleLearnDeck}
                             onAddCards={handleOpenAddCards}
+                            onRequestAccess={handleRequestAccess}
+                            isPublicCatalog={true}
+                            isRequestPending={requestedDecks.has(deck.id) || deck.request_status === "pending"}
                         />
                     ))}
                 </div>
@@ -176,12 +136,12 @@ export function MyDecks() {
                         <Square2StackIcon className="h-8 w-8 text-zinc-400" />
                     </div>
                     <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
-                        {searchTerm ? (language === "es" ? "No se encontraron mazos" : "No decks found") : t("project_detail.decks.empty.title") || "No decks yet"}
+                        {searchTerm ? (language === "es" ? "No se encontraron mazos" : "No decks found") : (language === "es" ? "No hay mazos públicos" : "No public decks yet")}
                     </Typography>
                     <Typography className="text-zinc-500 max-w-sm mb-6">
                         {searchTerm
                             ? (language === "es" ? "Intenta ajustar tus términos de búsqueda." : "Try adjusting your search terms.")
-                            : (language === "es" ? "Comienza creando tu primer mazo o genera uno desde tus documentos." : "Start by creating your first deck or generate one from your documents.")
+                            : (language === "es" ? "Pronto habrá mazos compartidos por la comunidad." : "Community shared decks will appear here soon.")
                         }
                     </Typography>
                 </div>
@@ -203,7 +163,7 @@ export function MyDecks() {
                     setAddFlashcardsOpen(false);
                     setSelectedDeckForAdd(null);
                 }}
-                onSuccess={fetchDecks}
+                onSuccess={fetchPublicDecks}
                 deckId={selectedDeckForAdd?.id}
                 deckTitle={selectedDeckForAdd?.title}
             />
@@ -217,8 +177,13 @@ export function MyDecks() {
                 deckId={learnDeck?.id}
                 deckTitle={learnDeck?.title}
             />
+
+            <AccessRequestSuccessDialog
+                open={showSuccessDialog}
+                handler={() => setShowSuccessDialog(false)}
+            />
         </div>
     );
 }
 
-export default MyDecks;
+export default PublicDecks;

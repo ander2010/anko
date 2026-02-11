@@ -13,3 +13,4 @@ export * from "@/widgets/dialogs/upload-documents-dialog";
 export * from "@/widgets/dialogs/document-viewer-dialog";
 export * from "@/widgets/dialogs/upgrade-prompt-dialog";
 export * from "@/widgets/dialogs/generate-battery-dialog";
+export * from "@/widgets/dialogs/access-request-success-dialog";

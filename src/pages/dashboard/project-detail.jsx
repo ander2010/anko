@@ -57,7 +57,7 @@ import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
 import { CreateTopicDialog } from "@/widgets/dialogs/create-topic-dialog";
 import { EditTopicDialog } from "@/widgets/dialogs/edit-topic-dialog";
 import { TopicCard } from "@/widgets/cards/topic-card";
-import { DeckCard } from "@/widgets/cards/deck-card";
+import { DeckCard, BatteryCard } from "@/widgets/cards";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
@@ -498,6 +498,34 @@ export function ProjectDetail() {
   const handleCloseSimulator = async () => {
     setSimulationBattery(null);
     await fetchBatteries(Number(projectId)); // <-- refresca para ver intentos/last_attempt
+  };
+
+  const handleUpdateBatteryVisibility = async (battery, visibility) => {
+    try {
+      await projectService.updateBattery(battery.id, { visibility });
+      setBatteries(prev => prev.map(b => b.id === battery.id ? { ...b, visibility } : b));
+    } catch (err) {
+      console.error("Error updating battery visibility:", err);
+    }
+  };
+
+  const handleUpdateDeckVisibility = async (deckId, visibility) => {
+    try {
+      await projectService.updateDeck(deckId, { visibility });
+      setDecks(prev => prev.map(d => d.id === deckId ? { ...d, visibility } : d));
+    } catch (err) {
+      console.error("Error updating deck visibility:", err);
+      // alert etc
+    }
+  };
+
+  const handleDeleteBattery = async (battery) => {
+    try {
+      await projectService.deleteBattery(battery.id);
+      await fetchBatteries(Number(projectId));
+    } catch (err) {
+      console.error("Error deleting battery:", err);
+    }
   };
 
   const fetchAll = async (id) => {
@@ -1741,124 +1769,22 @@ export function ProjectDetail() {
                   {batteries
                     .filter(b => b.name.toLowerCase().includes(batteriesSearch.toLowerCase()))
                     .map((battery) => (
-                      <Card key={battery.id} className="border border-blue-gray-100 shadow-sm">
-                        <CardBody>
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-1">
-                              <Chip
-                                value={battery.status}
-                                color={battery.status === "Ready" ? "green" : "blue-gray"}
-                                size="sm"
-                                variant="ghost"
-                                className="rounded-full"
-                              />
-                              <Tooltip content="Simulate Exam">
-                                <IconButton
-                                  size="sm"
-                                  variant="text"
-                                  color="green"
-                                  onClick={() => setSimulationBattery(battery)}
-                                >
-                                  <PlayIcon className="h-4 w-4" />
-                                </IconButton>
-                              </Tooltip>
-                            </div>
-
-                            {isOwner && (
-                              <Menu placement="bottom-end">
-                                <MenuHandler>
-                                  <IconButton size="sm" variant="text" color="blue-gray">
-                                    <EllipsisVerticalIcon className="h-5 w-5" />
-                                  </IconButton>
-                                </MenuHandler>
-                                <MenuList>
-
-                                  <MenuItem
-                                    onClick={async () => {
-                                      await projectService.deleteBattery(battery.id);
-                                      await fetchBatteries(Number(projectId));
-                                    }}
-                                    className="text-red-500"
-                                  >
-                                    Delete
-                                  </MenuItem>
-                                </MenuList>
-                              </Menu>
-                            )}
-                          </div>
-
-                          <Typography variant="h6" color="blue-gray" className="mb-1 truncate">
-                            {battery.name}
-                          </Typography>
-
-                          <div className="flex gap-2 mb-4">
-                            <Chip
-                              value={battery.difficulty || "Medium"}
-                              size="sm"
-                              variant="outlined"
-                              className="rounded-full text-[10px] py-0 px-2 border-blue-gray-200 text-blue-gray-500"
-                            />
-                            <Typography variant="small" className="text-blue-gray-500 text-xs">
-                              {(battery.questions?.length || 0)} {language === "es" ? "preguntas" : "questions"} •{" "}
-                              {formatDate(battery.created_at || battery.createdAt)}
-                            </Typography>
-                          </div>
-
-                          {/* Generation Progress */}
-                          {batteryProgress[String(battery.id)] && (
-                            <div className="mt-4 pt-4 border-t border-blue-gray-50 group/batprog">
-                              <div className="flex justify-between items-center mb-1">
-                                <div className="flex items-center gap-2">
-                                  <Typography variant="small" className="font-medium text-blue-600">
-                                    {batteryProgress[String(battery.id)].status}
-                                  </Typography>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Typography variant="small" className="font-bold text-blue-600">
-                                    {Math.round(batteryProgress[String(battery.id)].percent || 0)}%
-                                  </Typography>
-                                  <IconButton
-                                    size="sm"
-                                    variant="text"
-                                    color="blue-gray"
-                                    className="h-5 w-5 rounded-md opacity-0 group-hover/batprog:opacity-100 transition-opacity"
-                                    onClick={() => {
-                                      setBatteryProgress(prev => {
-                                        const ns = { ...prev };
-                                        delete ns[battery.id];
-                                        return ns;
-                                      });
-                                      removeJob(battery.id);
-                                    }}
-                                    title={language === "es" ? "Quitar" : "Dismiss"}
-                                  >
-                                    <XMarkIcon className="h-3.5 w-3.5" />
-                                  </IconButton>
-                                </div>
-                              </div>
-                              <Progress value={Math.round(batteryProgress[String(battery.id)].percent || 0)} size="sm" color="blue" />
-                            </div>
-                          )}
-
-                          {/* Attempts summary */}
-                          <div className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs">
-                            {battery.attempts_count > 0 ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-blue-gray-700 font-semibold">
-                                  {language === "es" ? "Intentos" : "Attempts"}: {battery.attempts_count}
-                                </span>
-
-                                <span className="text-blue-gray-600">
-                                  {language === "es" ? "Último" : "Last"}: {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-blue-gray-400">{language === "es" ? "Sin intentos aún" : "No attempts yet"}</span>
-                            )}
-                          </div>
-
-                        </CardBody>
-                      </Card>
+                      <BatteryCard
+                        key={battery.id}
+                        battery={battery}
+                        onSimulate={setSimulationBattery}
+                        onUpdateVisibility={isOwner ? handleUpdateBatteryVisibility : null}
+                        onDelete={isOwner ? handleDeleteBattery : null}
+                        progress={batteryProgress[String(battery.id)]}
+                        onDismissProgress={(id) => {
+                          setBatteryProgress(prev => {
+                            const ns = { ...prev };
+                            delete ns[id];
+                            return ns;
+                          });
+                          removeJob(id);
+                        }}
+                      />
                     ))}
                 </div>
               ) : (
@@ -1887,7 +1813,7 @@ export function ProjectDetail() {
                   </CardBody>
                 </Card>
               )}
-            </div>
+            </div >
           </>
         )
       }
@@ -1972,6 +1898,7 @@ export function ProjectDetail() {
                         deck={deck}
                         onEdit={handleEditDeck}
                         onDelete={handleDeleteDeck}
+                        onUpdateVisibility={handleUpdateDeckVisibility}
                         onStudy={handleStudyDeck}
                         onLearn={handleLearnDeck}
                         onAddCards={handleOpenAddCards}

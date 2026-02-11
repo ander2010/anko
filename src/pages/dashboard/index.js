@@ -32,4 +32,6 @@ export * from "@/pages/dashboard/global-projects";
 export * from "@/pages/dashboard/global-support-requests";
 export * from "@/pages/dashboard/my-decks";
 export * from "@/pages/dashboard/my-batteries";
+export * from "@/pages/dashboard/public-decks";
+export * from "@/pages/dashboard/public-batteries";
 

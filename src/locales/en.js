@@ -39,6 +39,8 @@ export const en = {
         "global-projects": "Global Projects",
         "my-decks": "My Decks",
         "my-batteries": "My Batteries",
+        "public-decks": "Public Decks",
+        "public-batteries": "Public Batteries",
         "support-requests": "Support Messages"
     },
     navbar: {
@@ -77,6 +79,8 @@ export const en = {
         "global-projects": "Global Projects",
         "my-decks": "My Decks",
         "my-batteries": "My Batteries",
+        "public-decks": "Public Decks",
+        "public-batteries": "Public Batteries",
         orders: "Orders",
         "global-sections": "Global Sections",
         "support-requests": "Support Messages"
@@ -485,7 +489,13 @@ export const en = {
             front: "Front",
             back: "Back",
             explanation: "Explanation",
-            learn: "Learn"
+            learn: "Learn",
+            request_access: "Request Access",
+            request_sent: "Request Sent",
+            access_request_success: {
+                title: "Request Sent",
+                description: "Access has been requested. The owner must accept it; if accepted, you will receive a notification and the resource will appear in your corresponding section."
+            }
         },
         actions: {
             edit: "Edit",
