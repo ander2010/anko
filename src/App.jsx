@@ -3,6 +3,7 @@ import { Dashboard, Auth } from "@/layouts";
 import { LandingPage } from "@/pages/landing-page";
 import RequireAuth from "@/components/RequireAuth";
 import { ForgotPassword, ResetPassword, EmailVerification } from "@/pages/auth";
+import { AccessAction } from "@/pages/dashboard";
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
@@ -15,6 +16,7 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
       <Route path="/verify-email" element={<EmailVerification />} />
+      <Route path="/access/:action" element={<RequireAuth><AccessAction /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

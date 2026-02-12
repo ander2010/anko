@@ -18,6 +18,7 @@ import {
   PowerIcon,
   PencilSquareIcon,
   ChevronDownIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
@@ -28,6 +29,7 @@ import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { useProjects } from "@/context/projects-context";
 import { EditProfileDialog } from "@/widgets/dialogs/edit-profile-dialog";
+import { UserStatisticsDialog } from "@/widgets/dialogs/user-statistics-dialog";
 import { useState } from "react";
 
 export function DashboardNavbar() {
@@ -37,6 +39,7 @@ export function DashboardNavbar() {
   const { user, logout } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
+  const [openStatsDialog, setOpenStatsDialog] = useState(false);
   // Using useProjects hook instead
   const { projects: allProjects } = useProjects();
 
@@ -163,6 +166,15 @@ export function DashboardNavbar() {
                   </Typography>
                 </MenuItem>
                 <MenuItem
+                  className="flex items-center gap-3 py-2 rounded-lg text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                  onClick={() => setOpenStatsDialog(true)}
+                >
+                  <ChartBarIcon className="h-4 w-4" />
+                  <Typography variant="small" className="font-medium">
+                    {language === "es" ? "Estadística" : "Statistics"}
+                  </Typography>
+                </MenuItem>
+                <MenuItem
                   className="flex items-center gap-3 py-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700"
                   onClick={logout}
                 >
@@ -190,6 +202,12 @@ export function DashboardNavbar() {
           <EditProfileDialog
             open={openProfileDialog}
             handler={() => setOpenProfileDialog(false)}
+          />
+
+          <UserStatisticsDialog
+            open={openStatsDialog}
+            handler={() => setOpenStatsDialog(false)}
+            userId={user?.id}
           />
         </div>
       </div>

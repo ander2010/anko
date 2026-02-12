@@ -34,4 +34,5 @@ export * from "@/pages/dashboard/my-decks";
 export * from "@/pages/dashboard/my-batteries";
 export * from "@/pages/dashboard/public-decks";
 export * from "@/pages/dashboard/public-batteries";
+export * from "@/pages/dashboard/access-action";
 

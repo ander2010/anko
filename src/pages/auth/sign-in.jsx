@@ -13,6 +13,7 @@ import authService from "../../services/authService";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useLocation } from "react-router-dom";
 
 
 export function SignIn() {
@@ -23,6 +24,7 @@ export function SignIn() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, socialLogin } = useAuth(); // hook
 
   const loginWithGoogle = useGoogleLogin({
@@ -34,7 +36,8 @@ export function SignIn() {
 
         await socialLogin("google", tokenResponse.access_token);
 
-        navigate("/dashboard/home", { replace: true });
+        const from = location.state?.from?.pathname || "/dashboard/home";
+        navigate(from, { replace: true });
       } catch (err) {
         console.error("Social login catch block error:", err);
         setError(err?.error || "Google login failed");
@@ -73,7 +76,8 @@ export function SignIn() {
     setLoading(true);
     try {
       await login({ username, password });
-      navigate("/dashboard/home", { replace: true });
+      const from = location.state?.from?.pathname || "/dashboard/home";
+      navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
       setError(err?.error || "Login failed");

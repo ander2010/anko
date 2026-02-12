@@ -340,7 +340,7 @@ const projectService = {
   async getUserBatteries() {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/batteries/`;
+      const url = `${API_BASE}/batteries/my/`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -643,6 +643,34 @@ const projectService = {
       return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Failed to request access" };
+    }
+  },
+
+  async approveAccessRequest(id) {
+    try {
+      const res = await api.post(`/access-requests/${id}/approve/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to approve access request" };
+    }
+  },
+
+  async rejectAccessRequest(id) {
+    try {
+      const res = await api.post(`/access-requests/${id}/reject/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to reject access request" };
+    }
+  },
+
+  async getUserStatistics(userId) {
+    try {
+      const params = userId ? { user_id: userId } : {};
+      const res = await api.get("/statistics/", { params });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch statistics" };
     }
   },
 

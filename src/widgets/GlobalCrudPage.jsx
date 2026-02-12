@@ -20,7 +20,7 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
-export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {} }) {
+export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null }) {
     const languageContext = useLanguage();
 
     if (!languageContext) {
@@ -196,6 +196,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                                                 <IconButton variant="text" color="blue-gray" onClick={() => handleOpenDialog(item)}>
                                                     <PencilIcon className="h-4 w-4" />
                                                 </IconButton>
+                                                {extraActions && extraActions(item)}
                                                 <IconButton variant="text" color="red" onClick={() => { setCurrentItem(item); setOpenDeleteDialog(true); }}>
                                                     <TrashIcon className="h-4 w-4" />
                                                 </IconButton>
