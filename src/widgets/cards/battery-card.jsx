@@ -26,6 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Progress } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
+import { useAuth } from "@/context/auth-context";
 
 export function BatteryCard({
     battery,
@@ -36,6 +37,8 @@ export function BatteryCard({
     onDismissProgress,
 }) {
     const { t, language } = useLanguage();
+    const { user } = useAuth();
+    const isOwner = user?.id === battery.owner_id;
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -75,7 +78,7 @@ export function BatteryCard({
                             <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter">
                                 {(language === "es" ? "Visibilidad:" : "Visibility:")}
                             </span>
-                            {onUpdateVisibility ? (
+                            {onUpdateVisibility && isOwner ? (
                                 <Menu placement="bottom-start">
                                     <MenuHandler>
                                         <div className="cursor-pointer transition-all hover:scale-105">
@@ -130,7 +133,7 @@ export function BatteryCard({
                                 {formatDate(battery.created_at)}
                             </Typography>
                         </div>
-                        {onDelete && (
+                        {onDelete && isOwner && (
                             <Menu placement="bottom-end">
                                 <MenuHandler>
                                     <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100">

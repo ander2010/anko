@@ -269,23 +269,25 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
             }
         }
 
-        if (activeTab === "manual") {
-            if (formData.cards.length === 0) {
-                newErrors.general = language === "es" ? "Debes agregar al menos una ficha." : "You must add at least one card.";
-            }
-        } else {
-            // AI Generation mode
-            // Case A: No documents/sections available to process
-            if (scannedDocuments.length === 0) {
-                newErrors.general = language === "es"
-                    ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
-                    : "You don't have any sections available. You should upload a document so the system can process the content.";
-            }
-            // Case B: Sections exist but none selected
-            else if (formData.section_ids.length === 0 && !newErrors.title) {
-                newErrors.general = language === "es"
-                    ? "Usted debe seleccionar al menos una sección para generar las fichas."
-                    : "You must select at least one section to generate the cards.";
+        if (!deck) {
+            if (activeTab === "manual") {
+                if (formData.cards.length === 0) {
+                    newErrors.general = language === "es" ? "Debes agregar al menos una ficha." : "You must add at least one card.";
+                }
+            } else {
+                // AI Generation mode
+                // Case A: No documents/sections available to process
+                if (scannedDocuments.length === 0) {
+                    newErrors.general = language === "es"
+                        ? "Usted no tiene secciones disponibles. Debe subir un documento para que el sistema procese el contenido."
+                        : "You don't have any sections available. You should upload a document so the system can process the content.";
+                }
+                // Case B: Sections exist but none selected
+                else if (formData.section_ids.length === 0 && !newErrors.title) {
+                    newErrors.general = language === "es"
+                        ? "Usted debe seleccionar al menos una sección para generar las fichas."
+                        : "You must select at least one section to generate the cards.";
+                }
             }
         }
 
@@ -295,7 +297,9 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log("[CreateDeckDialog] handleSubmit called. deck:", deck, "activeTab:", activeTab);
         if (validate()) {
+            console.log("[CreateDeckDialog] Validation passed. Calling onCreate with:", formData);
             // Include activeTab in onCreate so parent knows which service method to use
             onCreate({ ...formData, mode: activeTab });
             // Don't close immediately here because parent handles logic and loading/errors
@@ -306,6 +310,8 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
             // But looking at existing code: `onCreate(formData); onClose();`
             // So we'll keep onClose here.
             onClose();
+        } else {
+            console.warn("[CreateDeckDialog] Validation failed:", errors);
         }
     };
 
@@ -403,7 +409,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         </>
                     ) : (
                         /* AI Mode: Standard Layout */
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className={`grid grid-cols-1 ${!deck ? "md:grid-cols-2" : ""} gap-6`}>
                             <div>
                                 <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
                                     {language === "es" ? "Título" : "Title"} <span className="text-red-500">*</span>
@@ -423,19 +429,21 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     </Typography>
                                 )}
                             </div>
-                            <div>
-                                <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
-                                    {t("project_detail.decks.cards_count")}
-                                </Typography>
-                                <Input
-                                    type="number"
-                                    className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
-                                    name="cards_count"
-                                    value={formData.cards_count}
-                                    onChange={handleChange}
-                                    labelProps={{ className: "hidden" }}
-                                />
-                            </div>
+                            {!deck && (
+                                <div>
+                                    <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+                                        {t("project_detail.decks.cards_count")}
+                                    </Typography>
+                                    <Input
+                                        type="number"
+                                        className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
+                                        name="cards_count"
+                                        value={formData.cards_count}
+                                        onChange={handleChange}
+                                        labelProps={{ className: "hidden" }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -480,7 +488,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     )}
 
                     {/* AI SECTIONS SELECTION */}
-                    {activeTab === "ai" && (
+                    {!deck && activeTab === "ai" && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="flex items-center justify-between mb-4">
                                 <Typography variant="h6" className="font-black text-zinc-900">
@@ -596,7 +604,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                     )}
 
                     {/* MANUAL CARDS ENTRY */}
-                    {activeTab === "manual" && (
+                    {!deck && activeTab === "manual" && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Input Form Area */}
                             <div className="p-5 bg-zinc-50/80 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">

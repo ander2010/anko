@@ -13,7 +13,8 @@ import { DeckCard } from "@/widgets/cards/index";
 import {
     FlashcardViewDialog,
     FlashcardLearnDialog,
-    AddFlashcardsDialog
+    AddFlashcardsDialog,
+    CreateDeckDialog
 } from "@/widgets/dialogs/index";
 import { Alert } from "@material-tailwind/react";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
@@ -31,6 +32,8 @@ export function MyDecks() {
     const [learnDialogOpen, setLearnDialogOpen] = useState(false);
     const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
     const [selectedDeckForAdd, setSelectedDeckForAdd] = useState(null);
+    const [editDeckDialogOpen, setEditDeckDialogOpen] = useState(false);
+    const [selectedDeckForEdit, setSelectedDeckForEdit] = useState(null);
     const [planLimitError, setPlanLimitError] = useState(null);
 
     useEffect(() => {
@@ -97,8 +100,26 @@ export function MyDecks() {
     };
 
     const handleOpenAddCards = (deck) => {
+        console.log("[MyDecks] Opening Add Flashcards for deck:", deck);
         setSelectedDeckForAdd(deck);
         setAddFlashcardsOpen(true);
+    };
+
+    const handleEditDeck = (deck) => {
+        console.log("[MyDecks] Opening Edit for deck:", deck);
+        setSelectedDeckForEdit(deck);
+        setEditDeckDialogOpen(true);
+    };
+
+    const handleSaveEditDeck = async (deckData) => {
+        if (!selectedDeckForEdit) return;
+        try {
+            await projectService.updateDeck(selectedDeckForEdit.id, deckData);
+            fetchDecks();
+        } catch (err) {
+            console.error("Error updating deck:", err);
+            alert(err?.detail || (language === "es" ? "Error al actualizar el mazo" : "Failed to update deck"));
+        }
     };
 
     const filteredDecks = decks.filter((deck) =>
@@ -161,7 +182,7 @@ export function MyDecks() {
                         <DeckCard
                             key={deck.id}
                             deck={deck}
-                            onEdit={() => { }} // Still disabled if no edit dialog yet
+                            onEdit={handleEditDeck}
                             onDelete={handleDeleteDeck}
                             onUpdateVisibility={handleUpdateVisibility}
                             onStudy={() => handleStudyDeck(deck)}
@@ -216,6 +237,18 @@ export function MyDecks() {
                 }}
                 deckId={learnDeck?.id}
                 deckTitle={learnDeck?.title}
+            />
+
+            <CreateDeckDialog
+                open={editDeckDialogOpen}
+                onClose={() => {
+                    setEditDeckDialogOpen(false);
+                    setSelectedDeckForEdit(null);
+                }}
+                onCreate={handleSaveEditDeck}
+                projectId={selectedDeckForEdit?.project}
+                deck={selectedDeckForEdit}
+                existingDecks={decks}
             />
         </div>
     );

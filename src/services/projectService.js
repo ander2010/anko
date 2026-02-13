@@ -574,7 +574,7 @@ const projectService = {
   async getUserDecks() {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/decks/`;
+      const url = `${API_BASE}/decks/my/`;
 
       const { ok, data } = await apiFetch(url, { token });
 

@@ -25,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
+import { useAuth } from "@/context/auth-context";
 
 export function DeckCard({
     deck,
@@ -38,6 +39,7 @@ export function DeckCard({
     onJobComplete,
 }) {
     const { t, language } = useLanguage();
+    const { user } = useAuth();
     const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
     const hasNotifiedComplete = useRef(false);
 
@@ -77,6 +79,7 @@ export function DeckCard({
     };
 
     const isShared = deck.visibility === "shared";
+    const isOwner = user?.id === deck.ownerId;
 
     return (
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
@@ -92,7 +95,7 @@ export function DeckCard({
                                     {language === "es" ? "Visibilidad:" : "Visibility:"}
                                 </span>
 
-                                {onUpdateVisibility ? (
+                                {onUpdateVisibility && isOwner ? (
                                     <Menu placement="bottom-start">
                                         <MenuHandler>
                                             <div className="cursor-pointer transition-all hover:scale-105">
@@ -135,44 +138,48 @@ export function DeckCard({
                                 <Typography className="text-[10px] font-bold text-zinc-600">
                                     {deck.flashcards_count || deck.cardsCount || deck.flashcards?.length || deck.card_count || 0}
                                 </Typography>
-                                <IconButton
-                                    variant="text"
-                                    size="sm"
-                                    className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
-                                    onClick={() => onAddCards && onAddCards(deck)}
-                                    title={language === "es" ? "Más fichas" : "More flashcards"}
-                                >
-                                    <PlusIcon className="h-3 w-3" strokeWidth={3} />
-                                </IconButton>
+                                {onAddCards && isOwner && (
+                                    <IconButton
+                                        variant="text"
+                                        size="sm"
+                                        className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
+                                        onClick={() => onAddCards && onAddCards(deck)}
+                                        title={language === "es" ? "Más fichas" : "More flashcards"}
+                                    >
+                                        <PlusIcon className="h-3 w-3" strokeWidth={3} />
+                                    </IconButton>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    <Menu placement="bottom-end">
-                        <MenuHandler>
-                            <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
-                                <EllipsisVerticalIcon className="h-5 w-5" />
-                            </IconButton>
-                        </MenuHandler>
-                        <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
-                            <MenuItem onClick={() => onEdit && onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
-                                <PencilIcon className="h-4 w-4" />
-                                {t("global.action.edit")}
-                            </MenuItem>
-                            <MenuItem onClick={() => onAddCards && onAddCards(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
-                                <PlusIcon className="h-4 w-4" />
-                                {language === "es" ? "Añadir Fichas" : "Add Flashcards"}
-                            </MenuItem>
-                            <hr className="my-1 border-zinc-100" />
-                            <MenuItem
-                                onClick={() => onDelete && onDelete(deck)}
-                                className="flex items-center gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm py-2"
-                            >
-                                <TrashIcon className="h-4 w-4" />
-                                {t("global.action.delete")}
-                            </MenuItem>
-                        </MenuList>
-                    </Menu>
+                    {isOwner && (
+                        <Menu placement="bottom-end">
+                            <MenuHandler>
+                                <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
+                                    <EllipsisVerticalIcon className="h-5 w-5" />
+                                </IconButton>
+                            </MenuHandler>
+                            <MenuList className="border border-zinc-200 shadow-xl rounded-xl p-2 min-w-[140px]">
+                                <MenuItem onClick={() => onEdit && onEdit(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
+                                    <PencilIcon className="h-4 w-4" />
+                                    {t("global.action.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => onAddCards && onAddCards(deck)} className="flex items-center gap-3 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 font-medium text-sm py-2">
+                                    <PlusIcon className="h-4 w-4" />
+                                    {language === "es" ? "Añadir Fichas" : "Add Flashcards"}
+                                </MenuItem>
+                                <hr className="my-1 border-zinc-100" />
+                                <MenuItem
+                                    onClick={() => onDelete && onDelete(deck)}
+                                    className="flex items-center gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 font-medium text-sm py-2"
+                                >
+                                    <TrashIcon className="h-4 w-4" />
+                                    {t("global.action.delete")}
+                                </MenuItem>
+                            </MenuList>
+                        </Menu>
+                    )}
                 </div>
 
                 {job && !isCompleted && (
