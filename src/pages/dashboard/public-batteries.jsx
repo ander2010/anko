@@ -8,32 +8,43 @@ import {
     Chip,
     Button,
 } from "@material-tailwind/react";
-import { MagnifyingGlassIcon, BoltIcon, PlayIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, BoltIcon, PlayIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
 import { ExamSimulatorDialog, AccessRequestSuccessDialog } from "@/widgets/dialogs/index";
 import { CatalogBatteryCard } from "@/widgets/cards";
+import { usePaginationParams } from "@/hooks/usePaginationParams";
+import { AppPagination } from "@/components/AppPagination";
 
 export function PublicBatteries() {
     const { t, language } = useLanguage();
     const [batteries, setBatteries] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [simulationBattery, setSimulationBattery] = useState(null);
     const [requestedBatteries, setRequestedBatteries] = useState(new Set());
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
+
     useEffect(() => {
         fetchPublicBatteries();
-    }, []);
+    }, [page, pageSize]);
 
     const fetchPublicBatteries = async () => {
         try {
             setLoading(true);
-            const data = await projectService.getPublicBatteries();
-            setBatteries(Array.isArray(data) ? data : data?.results || []);
+            setError(null);
+            const data = await projectService.getPublicBatteries(page, pageSize);
+            const results = data.results || (Array.isArray(data) ? data : []);
+            const count = data.count || (Array.isArray(data) ? data.length : 0);
+            setBatteries(results);
+            setTotalCount(count);
         } catch (err) {
             console.error("Error fetching public batteries:", err);
+            setError(language === "es" ? "Error al cargar las baterías públicas" : "Failed to load public batteries");
         } finally {
             setLoading(false);
         }
@@ -62,7 +73,7 @@ export function PublicBatteries() {
     };
 
     return (
-        <div className="mt-8 mb-8 flex flex-col gap-8 max-w-7xl mx-auto px-4">
+        <div className="mt-8 flex flex-col flex-grow gap-8 max-w-7xl mx-auto px-4 pb-6 w-full">
             {/* ... header ... */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
@@ -90,6 +101,21 @@ export function PublicBatteries() {
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <Spinner className="h-8 w-8 text-indigo-500" />
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-red-200 text-center">
+                    <ExclamationCircleIcon className="h-10 w-10 text-red-500 mb-4" />
+                    <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
+                        {error}
+                    </Typography>
+                    <Button
+                        variant="text"
+                        color="indigo"
+                        onClick={fetchPublicBatteries}
+                        className="mt-4"
+                    >
+                        {language === "es" ? "Reintentar" : "Retry"}
+                    </Button>
                 </div>
             ) : filteredBatteries.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -121,6 +147,9 @@ export function PublicBatteries() {
                 </div>
             )}
 
+
+
+
             <ExamSimulatorDialog
                 open={!!simulationBattery}
                 handler={() => setSimulationBattery(null)}
@@ -131,6 +160,18 @@ export function PublicBatteries() {
                 open={showSuccessDialog}
                 handler={() => setShowSuccessDialog(false)}
             />
+
+            <div className="mt-auto">
+                {!loading && totalCount > 0 && (
+                    <AppPagination
+                        page={page}
+                        pageSize={pageSize}
+                        totalCount={totalCount}
+                        onPageChange={setPage}
+                        onPageSizeChange={setPageSize}
+                    />
+                )}
+            </div>
         </div>
     );
 }

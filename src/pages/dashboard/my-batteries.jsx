@@ -13,25 +13,39 @@ import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
 import { ExamSimulatorDialog } from "@/widgets/dialogs/index";
 import { BatteryCard } from "@/widgets/cards";
+import { usePaginationParams } from "@/hooks/usePaginationParams";
+import { AppPagination } from "@/components/AppPagination";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+
 
 export function MyBatteries() {
     const { t, language } = useLanguage();
     const [batteries, setBatteries] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [simulationBattery, setSimulationBattery] = useState(null);
 
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
+
     useEffect(() => {
         fetchBatteries();
-    }, []);
+    }, [page, pageSize]);
 
     const fetchBatteries = async () => {
         try {
             setLoading(true);
-            const data = await projectService.getUserBatteries();
-            setBatteries(Array.isArray(data) ? data : data?.results || []);
+            setError(null);
+            const data = await projectService.getUserBatteries(page, pageSize);
+            const results = data.results || (Array.isArray(data) ? data : []);
+            const count = data.count || (Array.isArray(data) ? data.length : 0);
+
+            setBatteries(results);
+            setTotalCount(count);
         } catch (err) {
             console.error("Error fetching user batteries:", err);
+            setError(language === "es" ? "Error al cargar las baterías" : "Failed to load batteries");
         } finally {
             setLoading(false);
         }
@@ -64,7 +78,7 @@ export function MyBatteries() {
 
     return (
 
-        <div className="mt-8 mb-8 flex flex-col gap-8 max-w-7xl mx-auto px-4">
+        <div className="mt-8 flex flex-col flex-grow gap-8 max-w-7xl mx-auto px-4 pb-6 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
@@ -91,6 +105,21 @@ export function MyBatteries() {
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <Spinner className="h-8 w-8 text-indigo-500" />
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-red-200 text-center">
+                    <ExclamationCircleIcon className="h-10 w-10 text-red-500 mb-4" />
+                    <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
+                        {error}
+                    </Typography>
+                    <Button
+                        variant="text"
+                        color="indigo"
+                        onClick={fetchBatteries}
+                        className="mt-4"
+                    >
+                        {language === "es" ? "Reintentar" : "Retry"}
+                    </Button>
                 </div>
             ) : filteredBatteries.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -120,11 +149,26 @@ export function MyBatteries() {
                 </div>
             )}
 
+
+
+
             <ExamSimulatorDialog
                 open={!!simulationBattery}
                 handler={() => setSimulationBattery(null)}
                 battery={simulationBattery}
             />
+
+            <div className="mt-auto">
+                {!loading && totalCount > 0 && (
+                    <AppPagination
+                        page={page}
+                        pageSize={pageSize}
+                        totalCount={totalCount}
+                        onPageChange={setPage}
+                        onPageSizeChange={setPageSize}
+                    />
+                )}
+            </div>
         </div>
     );
 }

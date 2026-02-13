@@ -6,26 +6,34 @@ import {
     Input,
     Spinner,
 } from "@material-tailwind/react";
-import { MagnifyingGlassIcon, Square2StackIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, Square2StackIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { Button } from "@material-tailwind/react";
+
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
 import { CatalogDeckCard } from "@/widgets/cards/index";
 import {
-    FlashcardViewDialog,
-    FlashcardLearnDialog,
     AddFlashcardsDialog,
-    AccessRequestSuccessDialog
+    AccessRequestSuccessDialog,
+    FlashcardViewDialog,
+    FlashcardLearnDialog
 } from "@/widgets/dialogs/index";
+import { usePaginationParams } from "@/hooks/usePaginationParams";
+import { AppPagination } from "@/components/AppPagination";
 
 export function PublicDecks() {
     const { t, language } = useLanguage();
     const [decks, setDecks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [flashcardViewDialogOpen, setFlashcardViewDialogOpen] = useState(false);
     const [requestedDecks, setRequestedDecks] = useState(new Set());
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
 
     // States for Learn and Add Flashcards (if applicable for public decks)
     const [learnDeck, setLearnDeck] = useState(null);
@@ -35,16 +43,21 @@ export function PublicDecks() {
 
     useEffect(() => {
         fetchPublicDecks();
-    }, []);
+    }, [page, pageSize]);
 
     const fetchPublicDecks = async () => {
         try {
             setLoading(true);
-            const data = await projectService.getPublicDecks();
-            const rawDecks = Array.isArray(data) ? data : data?.results || [];
-            setDecks(rawDecks);
+            setError(null);
+            const data = await projectService.getPublicDecks(page, pageSize);
+            // DRF returns { count, results } or just results if pagination is disabled
+            const results = data.results || (Array.isArray(data) ? data : []);
+            const count = data.count || (Array.isArray(data) ? data.length : 0);
+            setDecks(results);
+            setTotalCount(count);
         } catch (err) {
             console.error("Error fetching public decks:", err);
+            setError(language === "es" ? "Error al cargar los mazos públicos" : "Failed to load public decks");
         } finally {
             setLoading(false);
         }
@@ -87,7 +100,7 @@ export function PublicDecks() {
     );
 
     return (
-        <div className="mt-8 mb-8 flex flex-col gap-8 max-w-7xl mx-auto px-4">
+        <div className="mt-8 flex flex-col flex-grow gap-8 max-w-7xl mx-auto px-4 pb-6 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
@@ -114,6 +127,21 @@ export function PublicDecks() {
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <Spinner className="h-8 w-8 text-indigo-500" />
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-red-200 text-center">
+                    <ExclamationCircleIcon className="h-10 w-10 text-red-500 mb-4" />
+                    <Typography variant="h6" className="text-zinc-900 font-bold mb-1">
+                        {error}
+                    </Typography>
+                    <Button
+                        variant="text"
+                        color="indigo"
+                        onClick={fetchPublicDecks}
+                        className="mt-4"
+                    >
+                        {language === "es" ? "Reintentar" : "Retry"}
+                    </Button>
                 </div>
             ) : filteredDecks.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -144,6 +172,9 @@ export function PublicDecks() {
                     </Typography>
                 </div>
             )}
+
+
+
 
             <FlashcardViewDialog
                 open={flashcardViewDialogOpen}
@@ -180,6 +211,18 @@ export function PublicDecks() {
                 open={showSuccessDialog}
                 handler={() => setShowSuccessDialog(false)}
             />
+
+            <div className="mt-auto">
+                {!loading && totalCount > 0 && (
+                    <AppPagination
+                        page={page}
+                        pageSize={pageSize}
+                        totalCount={totalCount}
+                        onPageChange={setPage}
+                        onPageSizeChange={setPageSize}
+                    />
+                )}
+            </div>
         </div>
     );
 }

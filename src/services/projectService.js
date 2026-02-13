@@ -337,10 +337,10 @@ const projectService = {
     }
   },
 
-  async getUserBatteries() {
+  async getUserBatteries(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/batteries/my/`;
+      const url = `${API_BASE}/batteries/my/?page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -571,10 +571,10 @@ const projectService = {
     }
   },
 
-  async getUserDecks() {
+  async getUserDecks(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/decks/my/`;
+      const url = `${API_BASE}/decks/my/?page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -588,10 +588,10 @@ const projectService = {
     }
   },
 
-  async getPublicDecks() {
+  async getPublicDecks(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/public/decks/`;
+      const url = `${API_BASE}/public/decks/?page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -605,10 +605,10 @@ const projectService = {
     }
   },
 
-  async getPublicBatteries() {
+  async getPublicBatteries(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/public/batteries/`;
+      const url = `${API_BASE}/public/batteries/?page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 

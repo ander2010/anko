@@ -60,7 +60,7 @@ export function Dashboard() {
         >
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
         </IconButton>
-        <div className="flex-grow">
+        <div className="flex-grow flex flex-col">
           <Routes>
             {routes.map(({ layout, pages }) =>
               layout === "dashboard" &&
