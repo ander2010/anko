@@ -40,7 +40,8 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
         try {
             setLoading(true);
             const data = await projectService.getDeckFlashcards(deckId);
-            setFlashcards(data || []);
+            const cards = Array.isArray(data) ? data : data?.results || [];
+            setFlashcards(cards);
             setCurrentIndex(0);
             setIsFlipped(false);
             setShowNotes(false);
@@ -122,7 +123,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                         </div>
                                     </div>
                                     <Typography variant="h3" className="text-zinc-800 font-bold leading-tight break-words overflow-y-auto max-h-full">
-                                        {currentCard.front || currentCard.question}
+                                        {currentCard?.front || currentCard?.question || ""}
                                     </Typography>
                                     <div className="absolute bottom-6 text-zinc-400 flex items-center gap-2 animate-bounce-slow">
                                         <ArrowPathIcon className="h-4 w-4" />
@@ -143,10 +144,10 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                         </div>
                                     </div>
                                     <Typography variant="h4" className="text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-6">
-                                        {currentCard.back || currentCard.answer}
+                                        {currentCard?.back || currentCard?.answer || ""}
                                     </Typography>
 
-                                    {currentCard.explanation && (
+                                    {currentCard?.explanation && (
                                         <div className="mt-2 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-50/50 w-full overflow-y-auto max-h-[120px] shadow-sm">
                                             <div className="flex items-center gap-2 mb-2 justify-center text-amber-500">
                                                 <LightBulbIcon className="h-4 w-4" />
@@ -155,7 +156,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                                 </Typography>
                                             </div>
                                             <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed">
-                                                {currentCard.explanation}
+                                                {currentCard?.explanation}
                                             </Typography>
                                         </div>
                                     )}

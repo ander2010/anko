@@ -20,9 +20,9 @@ import {
     LockClosedIcon,
     GlobeAmericasIcon,
     UserGroupIcon,
-    TrashIcon,
-    XMarkIcon,
     CheckBadgeIcon,
+    HandThumbUpIcon,
+    HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { Progress } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
@@ -38,7 +38,7 @@ export function BatteryCard({
 }) {
     const { t, language } = useLanguage();
     const { user } = useAuth();
-    const isOwner = user?.id === battery.owner_id;
+    const isOwner = user?.id && battery.owner_id && String(user.id) === String(battery.owner_id);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -125,6 +125,22 @@ export function BatteryCard({
                                     className="rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider"
                                 />
                             )}
+                            {battery.visibility === "shared" && (
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                        <HandThumbUpIcon className="h-3 w-3 text-green-500" />
+                                        <Typography className="text-[10px] font-bold text-green-600">
+                                            {battery.approved_count || 0}
+                                        </Typography>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <HandThumbDownIcon className="h-3 w-3 text-red-500" />
+                                        <Typography className="text-[10px] font-bold text-red-600">
+                                            {battery.rejected_count || 0}
+                                        </Typography>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -206,15 +222,13 @@ export function BatteryCard({
 
                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
                     <div className="text-[11px] font-medium text-zinc-500">
-                        {battery.attempts_count > 0 ? (
+                        {battery.attempts_count > 0 && (
                             <span className="flex items-center gap-1">
                                 <span className="text-zinc-400">{language === "es" ? "Último" : "Last"}:</span>
                                 <span className={Number(battery.last_attempt?.percent || 0) >= 70 ? "text-green-600 font-bold" : "text-zinc-900 font-bold"}>
                                     {Number(battery.last_attempt?.percent || 0).toFixed(0)}%
                                 </span>
                             </span>
-                        ) : (
-                            <span className="opacity-50 italic">{language === "es" ? "Sin intentos" : "No attempts"}</span>
                         )}
                     </div>
 

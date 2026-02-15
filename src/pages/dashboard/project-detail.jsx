@@ -67,6 +67,8 @@ import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 import { AddFlashcardsDialog } from "@/widgets/dialogs/add-flashcards-dialog";
 import { UpgradePromptDialog } from "@/widgets/dialogs/upgrade-prompt-dialog";
 import { GenerateBatteryDialog } from "@/widgets/dialogs/generate-battery-dialog";
+import { usePaginationParams } from "@/hooks/usePaginationParams";
+import { AppPagination } from "@/components/AppPagination";
 
 export function ProjectDetail() {
   const { projectId } = useParams();
@@ -123,6 +125,19 @@ export function ProjectDetail() {
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
   const [simulationBattery, setSimulationBattery] = useState(null);
+
+  // Pagination hooks
+  const { page: topicsPage, pageSize: topicsPageSize, setPage: setTopicsPage, setPageSize: setTopicsPageSize } = usePaginationParams(10, "topics");
+  const { page: rulesPage, pageSize: rulesPageSize, setPage: setRulesPage, setPageSize: setRulesPageSize } = usePaginationParams(10, "rules");
+  const { page: batteriesPage, pageSize: batteriesPageSize, setPage: setBatteriesPage, setPageSize: setBatteriesPageSize } = usePaginationParams(10, "batteries");
+  const { page: decksPage, pageSize: decksPageSize, setPage: setDecksPage, setPageSize: setDecksPageSize } = usePaginationParams(10, "decks");
+  const { page: docsPage, pageSize: docsPageSize, setPage: setDocsPage, setPageSize: setDocsPageSize } = usePaginationParams(10, "documents");
+
+  const [topicsTotal, setTopicsTotal] = useState(0);
+  const [rulesTotal, setRulesTotal] = useState(0);
+  const [batteriesTotal, setBatteriesTotal] = useState(0);
+  const [decksTotal, setDecksTotal] = useState(0);
+  const [docsTotal, setDocsTotal] = useState(0);
 
   const activeJobs = useMemo(() => {
     const jobs = {};
@@ -297,9 +312,28 @@ export function ProjectDetail() {
   useEffect(() => {
     const id = Number(projectId);
     if (!id) return;
-    fetchAll(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchProject(id);
   }, [projectId]);
+
+  useEffect(() => {
+    if (projectId) fetchDocuments(Number(projectId));
+  }, [projectId, docsPage, docsPageSize]);
+
+  useEffect(() => {
+    if (projectId) fetchTopics(Number(projectId));
+  }, [projectId, topicsPage, topicsPageSize]);
+
+  useEffect(() => {
+    if (projectId) fetchRules(Number(projectId));
+  }, [projectId, rulesPage, rulesPageSize]);
+
+  useEffect(() => {
+    if (projectId) fetchBatteries(Number(projectId));
+  }, [projectId, batteriesPage, batteriesPageSize]);
+
+  useEffect(() => {
+    if (projectId) fetchDecks(Number(projectId));
+  }, [projectId, decksPage, decksPageSize]);
 
   // Resume persistent battery jobs on mount/projectId change
   useEffect(() => {
@@ -396,8 +430,15 @@ export function ProjectDetail() {
 
 
   const fetchTopics = async (id) => {
-    const data = await projectService.getProjectTopics(id);
-    setTopics(Array.isArray(data) ? data : data?.results || []);
+    try {
+      const data = await projectService.getProjectTopics(id, topicsPage, topicsPageSize);
+      setTopics(Array.isArray(data) ? data : data?.results || []);
+      setTopicsTotal(data?.count || (Array.isArray(data) ? data.length : 0));
+    } catch (err) {
+      console.error("Error fetching topics:", err);
+      setTopics([]);
+      setTopicsTotal(0);
+    }
   };
 
 
@@ -424,10 +465,12 @@ export function ProjectDetail() {
   const fetchRules = async (id) => {
     try {
       setLoadingRules(true);
-      const data = await projectService.getProjectRules(id);
+      const data = await projectService.getProjectRules(id, rulesPage, rulesPageSize);
       setRules(Array.isArray(data) ? data : data?.results || []);
+      setRulesTotal(data?.count || (Array.isArray(data) ? data.length : 0));
     } catch (err) {
       setRules([]);
+      setRulesTotal(0);
       setError(err?.error || err?.detail || "Failed to load rules");
     } finally {
       setLoadingRules(false);
@@ -555,10 +598,12 @@ export function ProjectDetail() {
   const fetchBatteries = async (id) => {
     try {
       setLoadingBatteries(true);
-      const data = await projectService.getProjectBatteries(id);
+      const data = await projectService.getProjectBatteries(id, batteriesPage, batteriesPageSize);
       setBatteries(Array.isArray(data) ? data : data?.results || []);
+      setBatteriesTotal(data?.count || (Array.isArray(data) ? data.length : 0));
     } catch (err) {
       setBatteries([]);
+      setBatteriesTotal(0);
       setError(err?.error || err?.detail || "Failed to load batteries");
     } finally {
       setLoadingBatteries(false);
@@ -568,13 +613,13 @@ export function ProjectDetail() {
   const fetchDecks = async (id) => {
     try {
       setLoadingDecks(true);
-      const data = await projectService.getProjectDecks(id);
+      const data = await projectService.getProjectDecks(id, decksPage, decksPageSize);
       const rawDecks = Array.isArray(data) ? data : data?.results || [];
-
-      // Backend already provides flashcards_count, no need to loop
       setDecks(rawDecks);
+      setDecksTotal(data?.count || (Array.isArray(data) ? data.length : 0));
     } catch (err) {
       setDecks([]);
+      setDecksTotal(0);
       setError(err?.error || err?.detail || "Failed to load decks");
     } finally {
       setLoadingDecks(false);
@@ -584,11 +629,12 @@ export function ProjectDetail() {
   const fetchDocuments = async (id) => {
     try {
       setLoadingDocs(true);
-      // Necesitas tener este método (te lo dejo abajo)
-      const data = await projectService.getProjectDocuments(id);
+      const data = await projectService.getProjectDocuments(id, docsPage, docsPageSize);
       setDocuments(Array.isArray(data) ? data : data?.results || []);
+      setDocsTotal(data?.count || (Array.isArray(data) ? data.length : 0));
     } catch (err) {
       setDocuments([]);
+      setDocsTotal(0);
       setError(err?.error || "Failed to load documents");
     } finally {
       setLoadingDocs(false);
@@ -1087,11 +1133,11 @@ export function ProjectDetail() {
       <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
         <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-2">
           {[
-            { id: "documents", label: t("project_detail.tabs.documents"), count: documents.length, icon: DocumentTextIcon },
-            { id: "topics", label: t("project_detail.tabs.topics"), count: topics.length, icon: FolderIcon },
-            { id: "rules", label: t("project_detail.tabs.rules"), count: rules.length, icon: ClipboardDocumentListIcon },
-            { id: "batteries", label: t("project_detail.tabs.batteries"), count: batteries.length, icon: BoltIcon },
-            { id: "decks", label: t("project_detail.tabs.decks"), count: decks.length, icon: Square2StackIcon }
+            { id: "documents", label: t("project_detail.tabs.documents"), count: docsTotal, icon: DocumentTextIcon },
+            { id: "topics", label: t("project_detail.tabs.topics"), count: topicsTotal, icon: FolderIcon },
+            { id: "rules", label: t("project_detail.tabs.rules"), count: rulesTotal, icon: ClipboardDocumentListIcon },
+            { id: "batteries", label: t("project_detail.tabs.batteries"), count: batteriesTotal, icon: BoltIcon },
+            { id: "decks", label: t("project_detail.tabs.decks"), count: decksTotal, icon: Square2StackIcon }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1339,6 +1385,13 @@ export function ProjectDetail() {
               )}
             </CardBody>
           </Card >
+          <AppPagination
+            page={docsPage}
+            pageSize={docsPageSize}
+            totalCount={docsTotal}
+            onPageChange={setDocsPage}
+            onPageSizeChange={(e) => setDocsPageSize(e.target.value)}
+          />
         </div >
       )
       }
@@ -1346,7 +1399,6 @@ export function ProjectDetail() {
       {
         activeTab === "topics" && (
           <>
-            {/* Header + Actions Row */}
             {/* Header + Actions Row */}
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1425,6 +1477,13 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
+            <AppPagination
+              page={topicsPage}
+              pageSize={topicsPageSize}
+              totalCount={topicsTotal}
+              onPageChange={setTopicsPage}
+              onPageSizeChange={(e) => setTopicsPageSize(e.target.value)}
+            />
 
             {/* Dialogs - Topics */}
             <CreateTopicDialog
@@ -1696,6 +1755,13 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
+            <AppPagination
+              page={rulesPage}
+              pageSize={rulesPageSize}
+              totalCount={rulesTotal}
+              onPageChange={setRulesPage}
+              onPageSizeChange={(e) => setRulesPageSize(e.target.value)}
+            />
           </>
         )
       } {
@@ -1814,6 +1880,13 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div >
+            <AppPagination
+              page={batteriesPage}
+              pageSize={batteriesPageSize}
+              totalCount={batteriesTotal}
+              onPageChange={setBatteriesPage}
+              onPageSizeChange={(e) => setBatteriesPageSize(e.target.value)}
+            />
           </>
         )
       }
@@ -1931,6 +2004,13 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
+            <AppPagination
+              page={decksPage}
+              pageSize={decksPageSize}
+              totalCount={decksTotal}
+              onPageChange={setDecksPage}
+              onPageSizeChange={(e) => setDecksPageSize(e.target.value)}
+            />
           </>
         )
       }

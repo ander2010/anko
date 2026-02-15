@@ -22,6 +22,8 @@ import {
     BookOpenIcon,
     PlusIcon,
     CheckBadgeIcon,
+    HandThumbUpIcon,
+    HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
@@ -79,7 +81,7 @@ export function DeckCard({
     };
 
     const isShared = deck.visibility === "shared";
-    const isOwner = user?.id === deck.ownerId;
+    const isOwner = user?.id && deck.ownerId && String(user.id) === String(deck.ownerId);
 
     return (
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
@@ -131,6 +133,23 @@ export function DeckCard({
                                         variant="ghost"
                                         className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
                                     />
+                                )}
+
+                                {deck.visibility === "shared" && (
+                                    <div className="flex items-center gap-2 ml-2">
+                                        <div className="flex items-center gap-1">
+                                            <HandThumbUpIcon className="h-3 w-3 text-green-500" />
+                                            <Typography className="text-[10px] font-bold text-green-600">
+                                                {deck.approved_count || 0}
+                                            </Typography>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <HandThumbDownIcon className="h-3 w-3 text-red-500" />
+                                            <Typography className="text-[10px] font-bold text-red-600">
+                                                {deck.rejected_count || 0}
+                                            </Typography>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                             <div className="flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md bg-zinc-50 border border-zinc-100">
@@ -209,16 +228,18 @@ export function DeckCard({
                 )}
 
                 <div className="flex items-center gap-2 mt-auto">
-                    <Button
-                        variant="outlined"
-                        size="sm"
-                        color="indigo"
-                        className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
-                        onClick={() => onLearn && onLearn(deck)}
-                    >
-                        <BookOpenIcon className="h-3.5 w-3.5" />
-                        <span className="text-xs font-bold">{t("global.action.learn")}</span>
-                    </Button>
+                    {isOwner && onLearn && (
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            color="indigo"
+                            className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
+                            onClick={() => onLearn && onLearn(deck)}
+                        >
+                            <BookOpenIcon className="h-3.5 w-3.5" />
+                            <span className="text-xs font-bold">{t("global.action.learn")}</span>
+                        </Button>
+                    )}
                     <Button
                         variant="gradient"
                         size="sm"

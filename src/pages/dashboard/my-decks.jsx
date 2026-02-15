@@ -5,6 +5,7 @@ import {
     Typography,
     Input,
     Spinner,
+    Button,
 } from "@material-tailwind/react";
 import { MagnifyingGlassIcon, Square2StackIcon } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
@@ -40,7 +41,7 @@ export function MyDecks() {
     const [selectedDeckForEdit, setSelectedDeckForEdit] = useState(null);
     const [planLimitError, setPlanLimitError] = useState(null);
 
-    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams(10);
 
     useEffect(() => {
         fetchDecks();
@@ -68,6 +69,10 @@ export function MyDecks() {
             setTotalCount(count);
         } catch (err) {
             console.error("Error fetching user decks:", err);
+            if (page > 1 && err.status === 404) {
+                setPage(1);
+                return;
+            }
             setError(language === "es" ? "Error al cargar tus mazos" : "Failed to load your decks");
         } finally {
             setLoading(false);
@@ -279,7 +284,7 @@ export function MyDecks() {
             />
 
             <div className="mt-auto">
-                {!loading && totalCount > 0 && (
+                {!loading && totalCount > pageSize && (
                     <AppPagination
                         page={page}
                         pageSize={pageSize}

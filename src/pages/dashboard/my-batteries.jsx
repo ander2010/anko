@@ -27,7 +27,7 @@ export function MyBatteries() {
     const [searchTerm, setSearchTerm] = useState("");
     const [simulationBattery, setSimulationBattery] = useState(null);
 
-    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams(10);
 
     useEffect(() => {
         fetchBatteries();
@@ -45,6 +45,10 @@ export function MyBatteries() {
             setTotalCount(count);
         } catch (err) {
             console.error("Error fetching user batteries:", err);
+            if (page > 1 && err.status === 404) {
+                setPage(1);
+                return;
+            }
             setError(language === "es" ? "Error al cargar las baterías" : "Failed to load batteries");
         } finally {
             setLoading(false);
@@ -159,7 +163,7 @@ export function MyBatteries() {
             />
 
             <div className="mt-auto">
-                {!loading && totalCount > 0 && (
+                {!loading && totalCount > pageSize && (
                     <AppPagination
                         page={page}
                         pageSize={pageSize}

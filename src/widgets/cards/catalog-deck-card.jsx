@@ -14,6 +14,7 @@ import {
     CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
+import { useAuth } from "@/context/auth-context";
 
 export function CatalogDeckCard({
     deck,
@@ -23,6 +24,8 @@ export function CatalogDeckCard({
     isRequestPending = false
 }) {
     const { t, language } = useLanguage();
+    const { user } = useAuth();
+    const isOwner = user?.id && deck.ownerId && String(user.id) === String(deck.ownerId);
 
     const getVisibilityColor = (visibility) => {
         switch (visibility) {
@@ -95,16 +98,18 @@ export function CatalogDeckCard({
                         </Button>
                     ) : (
                         <>
-                            <Button
-                                variant="outlined"
-                                size="sm"
-                                color="indigo"
-                                className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
-                                onClick={() => onLearn && onLearn(deck)}
-                            >
-                                <BookOpenIcon className="h-3.5 w-3.5" />
-                                <span className="text-xs font-bold">{t("global.action.learn")}</span>
-                            </Button>
+                            {((deck.visibility === "public") || (isOwner && (deck.visibility === "private" || !deck.visibility))) && (
+                                <Button
+                                    variant="outlined"
+                                    size="sm"
+                                    color="indigo"
+                                    className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
+                                    onClick={() => onLearn && onLearn(deck)}
+                                >
+                                    <BookOpenIcon className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-bold">{t("global.action.learn")}</span>
+                                </Button>
+                            )}
                             <Button
                                 variant="gradient"
                                 size="sm"

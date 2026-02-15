@@ -102,10 +102,10 @@ const projectService = {
       throw err?.response?.data || err || { error: "Failed to fetch counts" };
     }
   },
-  async getProjectDocuments(projectId) {
+  async getProjectDocuments(projectId, page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/projects/${projectId}/documents/`;
+      const url = `${API_BASE}/projects/${projectId}/documents/?page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -233,9 +233,13 @@ const projectService = {
   },
 
   // -------- TOPICS --------
-  async getProjectTopics(projectId) {
+  async getProjectTopics(projectId, page = 1, pageSize = 1) {
     const res = await api.get("/topics/", {
-      params: { project: projectId },
+      params: {
+        project: projectId,
+        page: page,
+        page_size: pageSize
+      },
     });
     return res.data;
   },
@@ -294,8 +298,14 @@ const projectService = {
     return res.data;
   },
 
-  async getProjectRules(projectId) {
-    const res = await api.get(`/rules/?project=${projectId}`);
+  async getProjectRules(projectId, page = 1, pageSize = 1) {
+    const res = await api.get(`/rules/`, {
+      params: {
+        project: projectId,
+        page: page,
+        page_size: pageSize
+      }
+    });
     return res.data;
   },
 
@@ -320,10 +330,10 @@ const projectService = {
 
 
   // -------- BATTERIES --------
-  async getProjectBatteries(projectId) {
+  async getProjectBatteries(projectId, page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/batteries/?project=${projectId}`;
+      const url = `${API_BASE}/batteries/?project=${projectId}&page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -337,7 +347,7 @@ const projectService = {
     }
   },
 
-  async getUserBatteries(page = 1, pageSize = 10) {
+  async getUserBatteries(page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/batteries/my/?page=${page}&page_size=${pageSize}`;
@@ -345,7 +355,7 @@ const projectService = {
       const { ok, data } = await apiFetch(url, { token });
 
       if (!ok) {
-        throw data || { error: "Failed to fetch user batteries" };
+        throw { ...(typeof data === 'object' ? data : { error: data }), status };
       }
 
       return data;
@@ -554,10 +564,10 @@ const projectService = {
   },
 
   // -------- DECKS --------
-  async getProjectDecks(projectId) {
+  async getProjectDecks(projectId, page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/decks/?project=${projectId}`;
+      const url = `${API_BASE}/decks/?project=${projectId}&page=${page}&page_size=${pageSize}`;
 
       const { ok, data } = await apiFetch(url, { token });
 
@@ -571,7 +581,7 @@ const projectService = {
     }
   },
 
-  async getUserDecks(page = 1, pageSize = 10) {
+  async getUserDecks(page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/decks/my/?page=${page}&page_size=${pageSize}`;
@@ -579,7 +589,7 @@ const projectService = {
       const { ok, data } = await apiFetch(url, { token });
 
       if (!ok) {
-        throw data || { error: "Failed to fetch user decks" };
+        throw { ...(typeof data === 'object' ? data : { error: data }), status };
       }
 
       return data;
@@ -588,7 +598,7 @@ const projectService = {
     }
   },
 
-  async getPublicDecks(page = 1, pageSize = 10) {
+  async getPublicDecks(page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/public/decks/?page=${page}&page_size=${pageSize}`;
@@ -605,7 +615,7 @@ const projectService = {
     }
   },
 
-  async getPublicBatteries(page = 1, pageSize = 10) {
+  async getPublicBatteries(page = 1, pageSize = 1) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/public/batteries/?page=${page}&page_size=${pageSize}`;
