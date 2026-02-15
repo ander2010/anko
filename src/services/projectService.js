@@ -527,6 +527,15 @@ const projectService = {
     }
   },
 
+  async answerBatteryQuestion(batteryId, payload) {
+    try {
+      const res = await api.post(`/batteries/${batteryId}/answer/`, payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to save answer" };
+    }
+  },
+
   // -------- SECTIONS (GLOBAL) --------
   async getAllSections() {
     // Ajusta el endpoint según tu backend. Por defecto asumimos /sections/

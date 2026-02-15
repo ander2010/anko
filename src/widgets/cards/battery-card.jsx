@@ -20,6 +20,8 @@ import {
     LockClosedIcon,
     GlobeAmericasIcon,
     UserGroupIcon,
+    TrashIcon,
+    XMarkIcon,
     CheckBadgeIcon,
     HandThumbUpIcon,
     HandThumbDownIcon,

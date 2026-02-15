@@ -136,19 +136,44 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
     }
   };
 
-  const handleOptionSelect = (questionId, optionId, type) => {
+  const handleOptionSelect = async (questionId, optionId, type) => {
     if (showAnswer) return;
+    if (!attempt?.id) return;
 
-    setUserAnswers((prev) => {
-      if (isMultiSelect(type)) {
-        const currentSelected = Array.isArray(prev[questionId]) ? prev[questionId] : [];
-        if (currentSelected.includes(optionId)) {
-          return { ...prev, [questionId]: currentSelected.filter((id) => id !== optionId) };
-        }
-        return { ...prev, [questionId]: [...currentSelected, optionId] };
+    let newVal;
+    const currentVal = userAnswers[questionId];
+
+    if (isMultiSelect(type)) {
+      const currentSelected = Array.isArray(currentVal) ? currentVal : [];
+      if (currentSelected.includes(optionId)) {
+        newVal = currentSelected.filter((id) => id !== optionId);
+      } else {
+        newVal = [...currentSelected, optionId];
       }
-      return { ...prev, [questionId]: optionId };
-    });
+    } else {
+      newVal = optionId;
+    }
+
+    // Update local state
+    setUserAnswers((prev) => ({ ...prev, [questionId]: newVal }));
+
+    // Update backend in real-time
+    try {
+      const payload = {
+        attempt_id: attempt.id,
+        question_id: questionId,
+      };
+
+      if (isMultiSelect(type)) {
+        payload.selected_option_ids = newVal;
+      } else {
+        payload.selected_option_id = newVal;
+      }
+
+      await projectService.answerBatteryQuestion(battery.id, payload);
+    } catch (err) {
+      console.error("Error saving answer in real-time:", err);
+    }
   };
 
   const isOptionSelected = (qId, optId, type) => {

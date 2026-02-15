@@ -65,6 +65,18 @@ export function MyBatteries() {
         }
     };
 
+    const handleDeleteBattery = async (battery) => {
+        if (!window.confirm(language === "es" ? "¿Estás seguro de que quieres eliminar esta batería?" : "Are you sure you want to delete this battery?")) return;
+
+        try {
+            await projectService.deleteBattery(battery.id);
+            setBatteries(prev => prev.filter(b => b.id !== battery.id));
+            setTotalCount(prev => prev - 1);
+        } catch (err) {
+            console.error("Error deleting battery:", err);
+        }
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return "—";
         const date = new Date(dateString);
@@ -133,6 +145,7 @@ export function MyBatteries() {
                             battery={battery}
                             onSimulate={setSimulationBattery}
                             onUpdateVisibility={handleUpdateVisibility}
+                            onDelete={handleDeleteBattery}
                         />
                     ))}
                 </div>
