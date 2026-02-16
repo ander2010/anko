@@ -50,14 +50,15 @@ export function DeckCard({
         if (!isCompleted) {
             hasNotifiedComplete.current = false;
         }
-    }, [isCompleted]);
+    }, [isCompleted, job?.job_id]);
 
     useEffect(() => {
         if (isCompleted && onJobComplete && !hasNotifiedComplete.current) {
+            console.log("[DeckCard] Job completed, notifying parent. Job:", job?.job_id);
             hasNotifiedComplete.current = true;
             onJobComplete(lastData);
         }
-    }, [isCompleted, onJobComplete, lastData]);
+    }, [isCompleted, onJobComplete, lastData, job?.job_id]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -161,7 +162,8 @@ export function DeckCard({
                                     <IconButton
                                         variant="text"
                                         size="sm"
-                                        className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1"
+                                        disabled={job && !isCompleted}
+                                        className="h-5 w-5 rounded-md hover:bg-zinc-200 text-indigo-600 ml-1 disabled:opacity-30"
                                         onClick={() => onAddCards && onAddCards(deck)}
                                         title={language === "es" ? "Más fichas" : "More flashcards"}
                                     >
@@ -175,7 +177,12 @@ export function DeckCard({
                     {isOwner && (
                         <Menu placement="bottom-end">
                             <MenuHandler>
-                                <IconButton variant="text" size="sm" className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1">
+                                <IconButton
+                                    variant="text"
+                                    size="sm"
+                                    disabled={job && !isCompleted}
+                                    className="rounded-full text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 -mt-1 -mr-1 disabled:opacity-30"
+                                >
                                     <EllipsisVerticalIcon className="h-5 w-5" />
                                 </IconButton>
                             </MenuHandler>
@@ -233,7 +240,8 @@ export function DeckCard({
                             variant="outlined"
                             size="sm"
                             color="indigo"
-                            className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all"
+                            disabled={job && !isCompleted}
+                            className="flex items-center gap-2 px-3 py-2 normal-case rounded-lg hover:bg-indigo-50 border-indigo-200 text-indigo-600 transition-all disabled:opacity-50"
                             onClick={() => onLearn && onLearn(deck)}
                         >
                             <BookOpenIcon className="h-3.5 w-3.5" />
@@ -244,7 +252,8 @@ export function DeckCard({
                         variant="gradient"
                         size="sm"
                         color="indigo"
-                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold"
+                        disabled={job && !isCompleted}
+                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold disabled:grayscale disabled:opacity-70"
                         onClick={() => onStudy && onStudy(deck)}
                     >
                         <BookOpenIcon className="h-3.5 w-3.5" />

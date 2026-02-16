@@ -50,12 +50,14 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
     const [openAccordion, setOpenAccordion] = useState(0);
     const [scannedDocuments, setScannedDocuments] = useState([]);
     const [loadingSections, setLoadingSections] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (open) {
             // Reset state for a clean start
             setErrors({});
+            setSubmitting(false);
             setOpenAccordion(0);
             setCurrentCard({ front: "", back: "", notes: "" });
 
@@ -299,6 +301,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         e.preventDefault();
         console.log("[CreateDeckDialog] handleSubmit called. deck:", deck, "activeTab:", activeTab);
         if (validate()) {
+            setSubmitting(true);
             console.log("[CreateDeckDialog] Validation passed. Calling onCreate with:", formData);
             // Include activeTab in onCreate so parent knows which service method to use
             onCreate({ ...formData, mode: activeTab });
@@ -718,10 +721,10 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         type="submit"
                         variant="gradient"
                         color="indigo"
-                        disabled={loadingSections && activeTab === 'ai'}
+                        disabled={submitting || (loadingSections && activeTab === 'ai')}
                         className="normal-case font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
                     >
-                        {deck && deck.id ? t("global.actions.save") : t("projects.dialogs.create")}
+                        {submitting ? <Spinner className="h-4 w-4" /> : (deck && deck.id ? t("global.actions.save") : t("projects.dialogs.create"))}
                     </Button>
                 </DialogFooter>
             </form>

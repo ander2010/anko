@@ -33,6 +33,7 @@ export function GenerateBatteryDialog({
 }) {
     const { t, language } = useLanguage();
     const [loadingSections, setLoadingSections] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [availableSections, setAvailableSections] = useState([]);
     const [sectionSearch, setSectionSearch] = useState("");
     const [errors, setErrors] = useState({});
@@ -48,6 +49,7 @@ export function GenerateBatteryDialog({
     useEffect(() => {
         if (open) {
             setErrors({});
+            setSubmitting(false);
             setSectionSearch("");
             setFormData({
                 rule: "",
@@ -154,6 +156,7 @@ export function GenerateBatteryDialog({
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
+            setSubmitting(true);
             onGenerate(formData);
         }
     };
@@ -390,10 +393,10 @@ export function GenerateBatteryDialog({
                         type="submit"
                         variant="gradient"
                         color="indigo"
-                        disabled={loadingSections || (availableSections.length === 0)}
+                        disabled={submitting || loadingSections || (availableSections.length === 0)}
                         className="normal-case font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
                     >
-                        {language === "es" ? "Generar Batería" : "Generate Battery"}
+                        {submitting ? <Spinner className="h-4 w-4" /> : (language === "es" ? "Generar Batería" : "Generate Battery")}
                     </Button>
                 </DialogFooter>
             </form>
