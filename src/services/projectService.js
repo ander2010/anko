@@ -298,6 +298,18 @@ const projectService = {
     return res.data;
   },
 
+  async getBattery(batteryId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/${batteryId}/`;
+      const { ok, data } = await apiFetch(url, { token });
+      if (!ok) throw data || { error: "Failed to fetch battery" };
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch battery" };
+    }
+  },
+
   async getProjectRules(projectId, page = 1, pageSize = 1) {
     const res = await api.get(`/rules/`, {
       params: {

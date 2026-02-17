@@ -13,6 +13,7 @@ import {
   Progress,
   IconButton,
   Alert,
+  Spinner,
 } from "@material-tailwind/react";
 import {
   CheckCircleIcon,
@@ -31,13 +32,15 @@ const isMultiSelect = (type) => {
   return t === "multiselect" || t === "multiple_choice" || t === "multiple" || t === "checkbox";
 };
 
-export function ExamSimulatorDialog({ open, handler, battery }) {
+export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) {
   const { t, language } = useLanguage();
-  if (!battery) return null;
+  if (!initialBattery) return null;
 
   // -------------------- Attempt state --------------------
   const [attempt, setAttempt] = useState(null);
   const [savingAttempt, setSavingAttempt] = useState(false);
+  const [battery, setBattery] = useState(initialBattery);
+  const [loadingBattery, setLoadingBattery] = useState(false);
 
   // guards contra doble llamada (StrictMode / re-render)
   const startKeyRef = useRef(null);
@@ -64,8 +67,32 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
   const startKey = useMemo(() => {
     if (!open || !battery?.id) return null;
     // 1 attempt por "apertura" del dialog
-    return `${battery.id}-opened`;
+    return `${battery?.id}-opened`;
   }, [open, battery?.id]);
+
+  // -------------------- Cargar Batería Completa si faltan preguntas --------------------
+  useEffect(() => {
+    if (open && initialBattery) {
+      // Si la batería inicial no tiene preguntas (o está vacía), cargamos la completa
+      if (!initialBattery.questions || initialBattery.questions.length === 0) {
+        setLoadingBattery(true);
+        console.log("Fetching full battery details for:", initialBattery.id);
+        projectService.getBattery(initialBattery.id)
+          .then(fullData => {
+            setBattery(fullData);
+          })
+          .catch(err => {
+            console.error("Failed to load full battery:", err);
+            // Podríamos mostrar un error aquí, pero por ahora dejamos la inicial
+            setBattery(initialBattery);
+          })
+          .finally(() => setLoadingBattery(false));
+      } else {
+        // Si ya tiene preguntas, usamos la inicial
+        setBattery(initialBattery);
+      }
+    }
+  }, [open, initialBattery]);
 
   // -------------------- Reset cuando se cierra --------------------
   useEffect(() => {
@@ -289,6 +316,19 @@ export function ExamSimulatorDialog({ open, handler, battery }) {
   };
 
   // -------------------- Guardrail si no hay preguntas --------------------
+  if (loadingBattery) {
+    return (
+      <Dialog open={open} handler={handler} size="lg">
+        <DialogBody className="flex flex-col items-center justify-center py-20">
+          <Spinner className="h-10 w-10 text-indigo-500 mb-4" />
+          <Typography color="blue-gray" className="font-medium">
+            {language === "es" ? "Cargando examen..." : "Loading exam..."}
+          </Typography>
+        </DialogBody>
+      </Dialog>
+    );
+  }
+
   if (!currentQuestion) {
     return (
       <Dialog open={open} handler={handler} size="lg">

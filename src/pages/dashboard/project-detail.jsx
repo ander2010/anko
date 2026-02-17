@@ -772,7 +772,7 @@ export function ProjectDetail() {
 
                   // Update deck count
                   setDecks(prevDecks => prevDecks.map(d =>
-                    d.id === deckId ? { ...d, flashcards_count: updatedCards.length } : d
+                    String(d.id) === String(deckId) ? { ...d, flashcards_count: updatedCards.length } : d
                   ));
 
                   // Remove job from queue
@@ -1194,7 +1194,7 @@ export function ProjectDetail() {
   }
 
   return (
-    <div className="mt-12">
+    <div className="mt-12 flex flex-col flex-grow h-full">
       {/* Error Display */}
       {error && (
         <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
@@ -1275,7 +1275,7 @@ export function ProjectDetail() {
 
       {/* Documents tab */}
       {activeTab === "documents" && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-grow">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1">
               <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
@@ -1317,7 +1317,7 @@ export function ProjectDetail() {
             </Alert>
           )}
 
-          <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] overflow-hidden">
+          <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] overflow-hidden flex-1 flex flex-col">
             <CardBody className="p-0">
               {loadingDocs ? (
                 <div className="flex flex-col items-center justify-center py-20">
@@ -1501,20 +1501,22 @@ export function ProjectDetail() {
               )}
             </CardBody>
           </Card >
-          <AppPagination
-            page={docsPage}
-            pageSize={docsPageSize}
-            totalCount={docsTotal}
-            onPageChange={setDocsPage}
-            onPageSizeChange={(e) => setDocsPageSize(e.target.value)}
-          />
+          <div className="mt-auto">
+            <AppPagination
+              page={docsPage}
+              pageSize={docsPageSize}
+              totalCount={docsTotal}
+              onPageChange={setDocsPage}
+              onPageSizeChange={setDocsPageSize}
+            />
+          </div>
         </div >
       )
       }
 
       {
         activeTab === "topics" && (
-          <>
+          <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1593,13 +1595,15 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <AppPagination
-              page={topicsPage}
-              pageSize={topicsPageSize}
-              totalCount={topicsTotal}
-              onPageChange={setTopicsPage}
-              onPageSizeChange={(e) => setTopicsPageSize(e.target.value)}
-            />
+            <div className="mt-auto">
+              <AppPagination
+                page={topicsPage}
+                pageSize={topicsPageSize}
+                totalCount={topicsTotal}
+                onPageChange={setTopicsPage}
+                onPageSizeChange={setTopicsPageSize}
+              />
+            </div>
 
             {/* Dialogs - Topics */}
             <CreateTopicDialog
@@ -1645,13 +1649,13 @@ export function ProjectDetail() {
               confirmText="Delete"
               variant="danger"
             />
-          </>
+          </div>
         )
       }
 
       {
         activeTab === "rules" && (
-          <>
+          <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1871,18 +1875,20 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <AppPagination
-              page={rulesPage}
-              pageSize={rulesPageSize}
-              totalCount={rulesTotal}
-              onPageChange={setRulesPage}
-              onPageSizeChange={(e) => setRulesPageSize(e.target.value)}
-            />
-          </>
+            <div className="mt-auto">
+              <AppPagination
+                page={rulesPage}
+                pageSize={rulesPageSize}
+                totalCount={rulesTotal}
+                onPageChange={setRulesPage}
+                onPageSizeChange={setRulesPageSize}
+              />
+            </div>
+          </div>
         )
       } {
         activeTab === "batteries" && (
-          <>
+          <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1996,20 +2002,22 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div >
-            <AppPagination
-              page={batteriesPage}
-              pageSize={batteriesPageSize}
-              totalCount={batteriesTotal}
-              onPageChange={setBatteriesPage}
-              onPageSizeChange={(e) => setBatteriesPageSize(e.target.value)}
-            />
-          </>
+            <div className="mt-auto">
+              <AppPagination
+                page={batteriesPage}
+                pageSize={batteriesPageSize}
+                totalCount={batteriesTotal}
+                onPageChange={setBatteriesPage}
+                onPageSizeChange={setBatteriesPageSize}
+              />
+            </div>
+          </div>
         )
       }
 
       {
         activeTab === "decks" && (
-          <>
+          <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -2120,14 +2128,16 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <AppPagination
-              page={decksPage}
-              pageSize={decksPageSize}
-              totalCount={decksTotal}
-              onPageChange={setDecksPage}
-              onPageSizeChange={(e) => setDecksPageSize(e.target.value)}
-            />
-          </>
+            <div className="mt-auto">
+              <AppPagination
+                page={decksPage}
+                pageSize={decksPageSize}
+                totalCount={decksTotal}
+                onPageChange={setDecksPage}
+                onPageSizeChange={setDecksPageSize}
+              />
+            </div>
+          </div>
         )
       }
 
