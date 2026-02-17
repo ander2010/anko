@@ -176,7 +176,7 @@ export function MyBatteries() {
             />
 
             <div className="mt-auto">
-                {!loading && totalCount > pageSize && (
+                {!loading && totalCount > 0 && (
                     <AppPagination
                         page={page}
                         pageSize={pageSize}
