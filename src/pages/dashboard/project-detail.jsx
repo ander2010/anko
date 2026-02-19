@@ -112,7 +112,7 @@ export function ProjectDetail() {
   // Topics dialogs
   const [createTopicDialogOpen, setCreateTopicDialogOpen] = useState(false);
   const [editTopicDialogOpen, setEditTopicDialogOpen] = useState(false);
-  const [confirmTopicDialogOpen, setConfirmTopicDialogOpen] = useState(false);
+
 
   const [confirmDeleteTopicDialogOpen, setConfirmDeleteTopicDialogOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -523,23 +523,7 @@ export function ProjectDetail() {
 
 
 
-  const handleArchiveTopic = (topic) => {
-    setSelectedTopic(topic);
-    setConfirmTopicDialogOpen(true);
-  };
 
-  const handleConfirmArchiveTopic = async () => {
-    if (!selectedTopic) return;
-    try {
-      setError(null);
-      await projectService.archiveTopic(selectedTopic.id);
-      setConfirmTopicDialogOpen(false);
-      setSelectedTopic(null);
-      await fetchTopics(Number(projectId));
-    } catch (err) {
-      setError(err?.error || err?.detail || "Failed to archive topic");
-    }
-  };
 
   const handleDeleteTopic = (topic) => {
     setSelectedTopic(topic);
@@ -1566,7 +1550,6 @@ export function ProjectDetail() {
                         topic={topic}
                         allDocumentsWithSections={documentsWithSections}
                         onEdit={handleEditTopic}
-                        onArchive={handleArchiveTopic}
                         onDelete={handleDeleteTopic}
                         onCreateDeck={handleCreateDeckFromTopic}
                       />
@@ -1621,24 +1604,7 @@ export function ProjectDetail() {
               availableDocuments={readyDocuments}
             />
 
-            <ConfirmDialog
-              open={confirmTopicDialogOpen}
-              onClose={() => setConfirmTopicDialogOpen(false)}
-              onConfirm={handleConfirmArchiveTopic}
-              title="Archive Topic"
-              message={`Are you sure you want to archive "${selectedTopic?.name}" ? You can restore it later.`}
-              confirmText="Archive"
-              variant="info"
-            />
-            <ConfirmDialog
-              open={confirmTopicDialogOpen}
-              onClose={() => setConfirmTopicDialogOpen(false)}
-              onConfirm={handleConfirmArchiveTopic}
-              title="Archive Topic"
-              message={`Are you sure you want to archive "${selectedTopic?.name}" ? You can restore it later.`}
-              confirmText="Archive"
-              variant="info"
-            />
+
 
             <ConfirmDialog
               open={confirmDeleteTopicDialogOpen}

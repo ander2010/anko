@@ -18,7 +18,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        questionsCount: 10,
+        question_count_target: 10,
         assignedDocuments: [],
     });
     const [errors, setErrors] = useState({});
@@ -28,7 +28,7 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
             setFormData({
                 name: topic.name || "",
                 description: topic.description || "",
-                questionsCount: topic.questionsCount || 10,
+                question_count_target: topic.question_count_target || topic.questionsCount || 10,
                 assignedDocuments: topic.assignedDocuments || [],
             });
         }
@@ -36,7 +36,8 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const finalValue = name === "question_count_target" ? parseInt(value, 10) || 0 : value;
+        setFormData((prev) => ({ ...prev, [name]: finalValue }));
         if (errors[name]) {
             setErrors((prev) => ({ ...prev, [name]: "" }));
         }
@@ -56,8 +57,8 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
         if (!formData.name.trim()) {
             newErrors.name = language === "es" ? "El nombre del tema es obligatorio" : "Topic name is required";
         }
-        if (formData.questionsCount < 1 || formData.questionsCount > 100) {
-            newErrors.questionsCount = language === "es" ? "La cantidad de preguntas debe estar entre 1 y 100" : "Questions count must be between 1 and 100";
+        if (formData.question_count_target < 1 || formData.question_count_target > 100) {
+            newErrors.question_count_target = language === "es" ? "La cantidad de preguntas debe estar entre 1 y 100" : "Questions count must be between 1 and 100";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -116,16 +117,16 @@ export function EditTopicDialog({ open, onClose, onSave, topic, availableDocumen
                         <Input
                             type="number"
                             label={`${language === "es" ? "Cantidad de Preguntas" : "Questions Count"} *`}
-                            name="questionsCount"
-                            value={formData.questionsCount}
+                            name="question_count_target"
+                            value={formData.question_count_target}
                             onChange={handleChange}
-                            error={!!errors.questionsCount}
+                            error={!!errors.question_count_target}
                             min="1"
                             max="100"
                         />
-                        {errors.questionsCount && (
+                        {errors.question_count_target && (
                             <Typography variant="small" color="red" className="mt-1">
-                                {errors.questionsCount}
+                                {errors.question_count_target}
                             </Typography>
                         )}
                         <Typography variant="small" className="text-blue-gray-500 mt-1">
@@ -180,7 +181,7 @@ EditTopicDialog.propTypes = {
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         description: PropTypes.string,
-        questionsCount: PropTypes.number,
+        question_count_target: PropTypes.number,
         assignedDocuments: PropTypes.arrayOf(PropTypes.string),
     }),
     availableDocuments: PropTypes.arrayOf(

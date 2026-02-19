@@ -14,7 +14,6 @@ import {
 import {
     EllipsisVerticalIcon,
     PencilIcon,
-    ArchiveBoxIcon,
     DocumentTextIcon,
     QuestionMarkCircleIcon,
     Squares2X2Icon,
@@ -75,10 +74,6 @@ export function TopicCard({ topic, allDocumentsWithSections, onEdit, onArchive, 
                             <MenuItem onClick={() => onCreateDeck(topic)} className="flex items-center gap-2">
                                 <PlusIcon className="h-4 w-4" />
                                 {t("project_detail.decks.btn_create")}
-                            </MenuItem>
-                            <MenuItem onClick={() => onArchive(topic)} className="flex items-center gap-2">
-                                <ArchiveBoxIcon className="h-4 w-4" />
-                                {t("project_detail.topics.dialogs.archive_confirm")}
                             </MenuItem>
                             <hr className="my-1" />
                             <MenuItem onClick={() => onDelete(topic)} className="flex items-center gap-2 text-red-500 hover:bg-red-50">
