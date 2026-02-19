@@ -4,11 +4,9 @@ import {
     DialogHeader,
     DialogBody,
     Card,
-    CardBody,
     Typography,
     IconButton,
     Spinner,
-    Progress,
 } from "@material-tailwind/react";
 import {
     XMarkIcon,
@@ -17,9 +15,8 @@ import {
     FolderIcon,
     TrophyIcon,
     ArrowTrendingUpIcon,
-    CheckCircleIcon,
-    UserCircleIcon,
-    RectangleGroupIcon,
+    SparklesIcon,
+    ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import Chart from "react-apexcharts";
 import projectService from "@/services/projectService";
@@ -53,22 +50,29 @@ export function UserStatisticsDialog({ open, handler, userId }) {
 
     if (!open) return null;
 
-    // --- Chart Options ---
+    // --- Compact & Professional Chart Configurations ---
     const accuracyDonutOptions = {
-        chart: { type: "donut" },
-        labels: [language === "es" ? "Correctas" : "Correct", language === "es" ? "Incorrectas" : "Incorrect"],
-        colors: ["#4f46e5", "#e2e8f0"],
+        chart: { type: "donut", fontFamily: "Inter, system-ui, sans-serif" },
+        labels: [language === "es" ? "Correct" : "Correct", language === "es" ? "Incorrect" : "Incorrect"],
+        colors: ["#6366f1", "#f1f5f9"],
         plotOptions: {
             pie: {
                 donut: {
-                    size: "75%",
+                    size: "82%",
                     labels: {
                         show: true,
-                        name: { show: true, fontSize: "12px", fontWeight: 600, color: "#64748b" },
-                        value: { show: true, fontSize: "24px", fontWeight: 800, color: "#1e293b", formatter: (val) => `${val}%` },
+                        name: { show: false },
+                        value: {
+                            show: true,
+                            fontSize: "22px",
+                            fontWeight: 800,
+                            color: "#1e293b",
+                            offsetY: 8,
+                            formatter: (val) => `${val}%`
+                        },
                         total: {
                             show: true,
-                            label: language === "es" ? "Precisión" : "Accuracy",
+                            label: "",
                             formatter: () => `${stats?.question_level?.accuracy || 0}%`,
                         },
                     },
@@ -78,36 +82,51 @@ export function UserStatisticsDialog({ open, handler, userId }) {
         dataLabels: { enabled: false },
         legend: { show: false },
         stroke: { width: 0 },
-        tooltip: { enabled: false },
+        tooltip: { enabled: true, theme: "light" },
+        states: { hover: { filter: { type: "none" } } }
     };
 
     const projectBarOptions = {
-        chart: { type: "bar", toolbar: { show: false } },
+        chart: {
+            type: "bar",
+            toolbar: { show: false },
+            fontFamily: "Inter, system-ui, sans-serif"
+        },
         plotOptions: {
             bar: {
-                borderRadius: 8,
+                borderRadius: 3,
                 horizontal: true,
                 distributed: true,
-                barHeight: "60%",
+                barHeight: "35%",
+                dataLabels: { position: "top" }
             },
         },
-        colors: ["#6366f1", "#8b5cf6", "#ec4899", "#f43f5e", "#f59e0b"],
+        colors: ["#6366f1", "#818cf8", "#94a3b8", "#cbd5e1", "#e2e8f0"],
         dataLabels: {
             enabled: true,
             formatter: (val) => `${val}%`,
-            style: { fontSize: "12px", fontWeight: 700 },
+            offsetX: 28,
+            style: { fontSize: "10px", fontWeight: 700, colors: ["#64748b"] },
         },
         xaxis: {
-            categories: stats?.project_level?.map(p => p.project_name) || [],
-            labels: { style: { colors: "#64748b", fontWeight: 600 } },
-            max: 100,
+            categories: stats?.project_level?.map(p => p.project_name.length > 18 ? p.project_name.substring(0, 18) + "..." : p.project_name) || [],
+            labels: { show: false },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            max: 110,
         },
-        grid: { borderColor: "#f1f5f9" },
+        yaxis: {
+            labels: {
+                style: { colors: "#94a3b8", fontSize: "10px", fontWeight: 600 }
+            }
+        },
+        grid: { show: false },
         legend: { show: false },
+        tooltip: { theme: "light", y: { formatter: (val) => `${val}% Accuracy` } }
     };
 
     const projectBarSeries = [{
-        name: language === "es" ? "Rendimiento" : "Performance",
+        name: language === "es" ? "Precisión" : "Accuracy",
         data: stats?.project_level?.map(p => p.percent) || [],
     }];
 
@@ -116,103 +135,111 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             open={open}
             handler={handler}
             size="xl"
-            className="bg-zinc-50/95 backdrop-blur-md border border-white/20 shadow-premium rounded-[2.5rem] overflow-hidden outline-none"
+            className="bg-white border border-zinc-200 shadow-xl rounded-2xl overflow-hidden outline-none"
         >
-            <DialogHeader className="flex items-center justify-between px-10 py-8 border-b border-zinc-200/50 bg-white/50">
+            {/* Header: Compact & Clean */}
+            <DialogHeader className="flex items-center justify-between px-8 py-5 bg-zinc-50 border-b border-zinc-100">
                 <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                        <ChartBarIcon className="h-7 w-7 text-white" />
+                    <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                        <ChartBarIcon className="h-6 w-6" />
                     </div>
                     <div>
-                        <Typography variant="h4" className="font-black text-zinc-900 tracking-tight leading-none">
-                            {language === "es" ? "Dashboard de Logros" : "Achievement Dashboard"}
+                        <Typography variant="h5" className="font-bold text-zinc-900 tracking-tight leading-none mb-0.5">
+                            {language === "es" ? "Estadísticas del Usuario" : "User Statistics"}
                         </Typography>
-                        <div className="flex items-center gap-2 mt-1">
-                            <UserCircleIcon className="h-4 w-4 text-zinc-400" />
-                            <Typography className="text-sm font-bold text-zinc-500">
-                                ID: {stats?.user_id || userId}
-                            </Typography>
-                        </div>
+                        {/* <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                            ID: {stats?.user_id || userId}
+                        </Typography> */}
                     </div>
                 </div>
                 <IconButton
                     variant="text"
                     color="blue-gray"
                     onClick={handler}
-                    className="rounded-full hover:bg-zinc-100 transition-colors"
+                    className="rounded-lg border border-zinc-200 hover:bg-white transition-colors h-8 w-8"
                 >
-                    <XMarkIcon className="h-6 w-6" strokeWidth={2.5} />
+                    <XMarkIcon className="h-4 w-4" strokeWidth={2.5} />
                 </IconButton>
             </DialogHeader>
 
-            <DialogBody className="px-10 py-10 overflow-y-auto max-h-[75vh] custom-scrollbar bg-gradient-to-b from-white/30 to-zinc-50/30">
+            <DialogBody className="px-8 py-5 overflow-y-auto max-h-[75vh] custom-scrollbar">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-32">
-                        <div className="relative">
-                            <Spinner className="h-16 w-16 text-indigo-500" />
-                            <div className="absolute inset-0 m-auto h-8 w-8 bg-white rounded-full flex items-center justify-center">
-                                <div className="h-4 w-4 bg-indigo-500 rounded-full animate-pulse" />
-                            </div>
-                        </div>
-                        <Typography className="mt-6 font-black text-zinc-400 uppercase tracking-widest text-xs">
-                            {language === "es" ? "Sincronizando datos..." : "Syncing data..."}
+                        <Spinner className="h-8 w-8 text-indigo-500 mb-3" />
+                        <Typography className="font-bold text-zinc-400 uppercase tracking-widest text-[9px]">
+                            {language === "es" ? "Procesando Datos..." : "Processing Data..."}
                         </Typography>
                     </div>
                 ) : error ? (
-                    <div className="text-center py-32">
-                        <Typography color="red" className="font-black text-lg">
+                    <div className="text-center py-24 bg-red-50/20 rounded-xl border border-red-100/50">
+                        <ExclamationCircleIcon className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                        <Typography color="red" className="text-sm font-bold">
                             {error}
                         </Typography>
                     </div>
                 ) : (
-                    <div className="space-y-10">
-                        {/* Top Section: Overview Cards & Global Accuracy */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card className="border-0 shadow-premium-sm bg-white overflow-hidden relative group">
-                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <RectangleGroupIcon className="h-20 w-20 text-indigo-500" />
-                                    </div>
-                                    <CardBody className="p-8">
-                                        <Typography variant="small" className="font-black text-zinc-400 uppercase tracking-widest mb-1">
-                                            {language === "es" ? "Preguntas Totales" : "Total Questions"}
+                    <div className="space-y-8">
+                        {/* Section 01: Top Stats Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                {/* Total Questions Card */}
+                                <Card className="p-6 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                            {language === "es" ? "Total Preguntas" : "Total Questions"}
                                         </Typography>
-                                        <Typography variant="h1" className="text-zinc-900 font-black">
+                                        <SparklesIcon className="h-4 w-4 text-indigo-200" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2">
+                                        <Typography className="text-3xl font-extrabold text-zinc-900 leading-none">
                                             {stats.question_level.total_questions}
                                         </Typography>
-                                        <div className="mt-4 flex items-center gap-2">
-                                            <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
-                                            </div>
+                                        <Typography className="text-[10px] font-bold text-zinc-400 uppercase">Items</Typography>
+                                    </div>
+                                    <div className="mt-6 pt-4 border-t border-zinc-50">
+                                        <div className="h-1 w-full bg-zinc-50 rounded-full">
+                                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
                                         </div>
-                                    </CardBody>
+                                    </div>
                                 </Card>
 
-                                <Card className="border-0 shadow-premium-sm bg-white overflow-hidden relative group">
-                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <CheckCircleIcon className="h-20 w-20 text-green-500" />
-                                    </div>
-                                    <CardBody className="p-8">
-                                        <Typography variant="small" className="font-black text-zinc-400 uppercase tracking-widest mb-1">
-                                            {language === "es" ? "Respuestas Correctas" : "Correct Answers"}
+                                {/* Correct Answers Card */}
+                                <Card className="p-6 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                            {language === "es" ? "Correctas" : "Correct"}
                                         </Typography>
-                                        <Typography variant="h1" className="text-zinc-900 font-black">
+                                        <TrophyIcon className="h-4 w-4 text-emerald-200" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2">
+                                        <Typography className="text-3xl font-extrabold text-zinc-900 leading-none">
                                             {stats.question_level.correct_count}
                                         </Typography>
-                                        <div className="mt-4 flex items-center gap-2">
-                                            <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-green-500 rounded-full"
-                                                    style={{ width: `${(stats.question_level.correct_count / stats.question_level.total_questions) * 100 || 0}%` }}
-                                                />
-                                            </div>
+                                        <div className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded uppercase">
+                                            Verified
                                         </div>
-                                    </CardBody>
+                                    </div>
+                                    <div className="mt-6 space-y-2">
+                                        <div className="flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase">
+                                            <span>{language === "es" ? "Precisión" : "Accuracy"}</span>
+                                            <span className="text-zinc-600">{stats.question_level.accuracy || 0}%</span>
+                                        </div>
+                                        <div className="h-1 w-full bg-zinc-50 rounded-full">
+                                            <div
+                                                className="h-full bg-emerald-500 rounded-full"
+                                                style={{ width: `${stats.question_level.accuracy || 0}%` }}
+                                            />
+                                        </div>
+                                    </div>
                                 </Card>
                             </div>
 
-                            <Card className="lg:col-span-4 border-0 shadow-premium-sm bg-white flex items-center justify-center p-6">
-                                <div className="w-full max-w-[200px]">
+                            {/* Center Donut */}
+                            <Card className="lg:col-span-4 p-5 border border-zinc-100 bg-white shadow-sm flex flex-col items-center justify-center rounded-xl">
+                                <Typography className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">
+                                    {language === "es" ? "Rendimiento Global" : "Global Score"}
+                                </Typography>
+                                <div className="w-full max-w-[140px]">
                                     <Chart
                                         options={accuracyDonutOptions}
                                         series={[stats.question_level.accuracy || 0, 100 - (stats.question_level.accuracy || 0)]}
@@ -222,142 +249,101 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                             </Card>
                         </div>
 
-                        {/* Middle Section: Project Performance */}
-                        <div>
-                            <div className="flex items-center gap-3 mb-6 ml-2">
-                                <FolderIcon className="h-6 w-6 text-indigo-600" />
-                                <Typography variant="h5" className="font-black text-zinc-900 tracking-tight">
-                                    {language === "es" ? "Rendimiento por Proyecto" : "Project Performance"}
+                        {/* Section 02: Analysis Grid */}
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
+                            {/* Project Breakdown */}
+                            <div className="bg-white p-6 rounded-xl border border-zinc-100 shadow-sm">
+                                <Typography className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest flex items-center gap-2 mb-6">
+                                    <FolderIcon className="h-3.5 w-3.5 text-indigo-500" />
+                                    {language === "es" ? "Proyectos Activos" : "Project Breakdown"}
                                 </Typography>
+                                <Chart
+                                    options={projectBarOptions}
+                                    series={projectBarSeries}
+                                    type="bar"
+                                    height={240}
+                                />
                             </div>
 
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                                <Card className="border-0 shadow-premium-sm bg-white p-8">
-                                    <Chart
-                                        options={projectBarOptions}
-                                        series={projectBarSeries}
-                                        type="bar"
-                                        height={300}
-                                    />
-                                </Card>
-
-                                <div className="space-y-4">
-                                    {stats.project_level.map((proj) => (
-                                        <Card key={proj.project_id} className="border-0 shadow-premium-sm bg-white hover:bg-zinc-50 transition-colors">
-                                            <CardBody className="p-5 flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 font-black text-sm">
-                                                        #{proj.project_id}
-                                                    </div>
-                                                    <div>
-                                                        <Typography variant="h6" className="font-black text-zinc-800 leading-tight">
-                                                            {proj.project_name}
-                                                        </Typography>
-                                                        <Typography className="text-xs font-bold text-zinc-400 uppercase">
-                                                            {proj.documents_count} {language === "es" ? "documentos" : "documents"} • {proj.project_total_tags} tags
-                                                        </Typography>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="text-right">
-                                                        <Typography className={`text-xl font-black ${proj.percent > 70 ? 'text-green-500' : 'text-zinc-600'}`}>
-                                                            {proj.percent}%
-                                                        </Typography>
-                                                        <Typography className="text-[10px] font-black text-zinc-300 uppercase leading-none">
-                                                            SCORE
-                                                        </Typography>
-                                                    </div>
-                                                </div>
-                                            </CardBody>
-                                        </Card>
-                                    ))}
-                                </div>
+                            {/* Project List (Higher Density) */}
+                            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-thin">
+                                {stats.project_level.map((proj) => (
+                                    <div
+                                        key={proj.project_id}
+                                        className="p-3.5 rounded-lg bg-white border border-zinc-50 shadow-sm flex items-center justify-between hover:border-indigo-100 transition-all group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 flex items-center justify-center rounded bg-zinc-50 text-zinc-400 font-bold text-[10px] border border-zinc-100">
+                                                ID {proj.project_id}
+                                            </div>
+                                            <div>
+                                                <Typography className="text-xs font-bold text-zinc-800 leading-tight">
+                                                    {proj.project_name}
+                                                </Typography>
+                                                <Typography className="text-[9px] text-zinc-400 font-medium">
+                                                    {proj.documents_count} Docs • {proj.project_total_tags} Tags
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Typography className="text-sm font-extrabold text-zinc-700">
+                                                {proj.percent}%
+                                            </Typography>
+                                            <div className={`h-1.5 w-1.5 rounded-full ${proj.percent > 70 ? 'bg-indigo-500' : 'bg-zinc-200'}`} />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Bottom Section: Document Breakdown */}
-                        <div>
-                            <div className="flex items-center gap-3 mb-6 ml-2">
-                                <DocumentTextIcon className="h-6 w-6 text-indigo-600" />
-                                <Typography variant="h5" className="font-black text-zinc-900 tracking-tight">
-                                    {language === "es" ? "Análisis de Documentos" : "Document Analysis"}
-                                </Typography>
-                            </div>
+                        {/* Section 03: Dense Document Analysis */}
+                        <div className="pt-2">
+                            <Typography className="text-[10px] font-bold text-zinc-900 uppercase tracking-widest mb-5 flex items-center gap-2">
+                                <DocumentTextIcon className="h-3.5 w-3.5 text-indigo-500" />
+                                {language === "es" ? "Análisis por Documento" : "Document Analysis"}
+                            </Typography>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
                                 {stats.document_level.map((doc) => (
-                                    <Card key={doc.document_id} className="border-0 shadow-premium-sm bg-white overflow-hidden relative">
-                                        <div className="h-1.5 w-full bg-zinc-100">
-                                            <div
-                                                className={`h-full ${doc.final_percent > 70 ? 'bg-green-500' : 'bg-indigo-500'}`}
-                                                style={{ width: `${doc.final_percent}%` }}
-                                            />
+                                    <div
+                                        key={doc.document_id}
+                                        className="bg-white border border-zinc-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <Typography className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter truncate max-w-[100px]">
+                                                {doc.project_name}
+                                            </Typography>
+                                            <Typography className="text-xs font-extrabold text-zinc-900">{doc.final_percent}%</Typography>
                                         </div>
-                                        <CardBody className="p-6">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="max-w-[70%]">
-                                                    <Typography className="text-xs font-black text-indigo-500 uppercase tracking-widest leading-none mb-2">
-                                                        {doc.project_name}
-                                                    </Typography>
-                                                    <Typography variant="h6" className="font-black text-zinc-800 leading-tight line-clamp-2 min-h-[40px]">
-                                                        {doc.document_name}
-                                                    </Typography>
-                                                </div>
-                                                <div className="text-right">
-                                                    <Typography className="text-2xl font-black text-zinc-900 leading-none">
-                                                        {doc.final_percent}%
-                                                    </Typography>
-                                                    <Typography className="text-[10px] font-black text-zinc-400 uppercase">
-                                                        FINAL
-                                                    </Typography>
-                                                </div>
-                                            </div>
 
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <Typography className="text-[10px] font-black text-zinc-400 uppercase">
-                                                            {language === "es" ? "Cobertura" : "Coverage"}
-                                                        </Typography>
-                                                        <Typography className="text-[10px] font-black text-indigo-600">
-                                                            {doc.coverage_percent}%
-                                                        </Typography>
-                                                    </div>
-                                                    <Progress value={doc.coverage_percent} size="sm" color="indigo" className="bg-zinc-100" />
-                                                </div>
-                                                <div>
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <Typography className="text-[10px] font-black text-zinc-400 uppercase">
-                                                            {language === "es" ? "Precisión" : "Accuracy"}
-                                                        </Typography>
-                                                        <Typography className="text-[10px] font-black text-green-600">
-                                                            {doc.accuracy}%
-                                                        </Typography>
-                                                    </div>
-                                                    <Progress value={doc.accuracy} size="sm" color="green" className="bg-zinc-100" />
-                                                </div>
-                                            </div>
+                                        <Typography className="text-[11px] font-bold text-zinc-800 leading-tight mb-4 truncate" title={doc.document_name}>
+                                            {doc.document_name}
+                                        </Typography>
 
-                                            <div className="mt-6 pt-4 border-t border-zinc-100 grid grid-cols-2 gap-2">
-                                                <div className="text-center">
-                                                    <Typography className="text-[10px] font-black text-zinc-300 uppercase leading-none mb-1">
-                                                        {language === "es" ? "Correctas" : "Correct"}
-                                                    </Typography>
-                                                    <Typography className="text-sm font-black text-zinc-600">
-                                                        {doc.correct_count} / {doc.total_questions}
-                                                    </Typography>
+                                        <div className="space-y-3 mb-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="h-1 w-full bg-zinc-50 rounded-full mr-2">
+                                                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${doc.coverage_percent}%` }} />
                                                 </div>
-                                                <div className="text-center border-l border-zinc-100">
-                                                    <Typography className="text-[10px] font-black text-zinc-300 uppercase leading-none mb-1">
-                                                        Tags
-                                                    </Typography>
-                                                    <Typography className="text-sm font-black text-zinc-600">
-                                                        {doc.doc_distinct_tags} / {doc.project_total_tags}
-                                                    </Typography>
-                                                </div>
+                                                <Typography className="text-[9px] font-bold text-zinc-400">{doc.coverage_percent}%</Typography>
                                             </div>
-                                        </CardBody>
-                                    </Card>
+                                            <div className="flex items-center justify-between">
+                                                <div className="h-1 w-full bg-zinc-50 rounded-full mr-2">
+                                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${doc.accuracy}%` }} />
+                                                </div>
+                                                <Typography className="text-[9px] font-bold text-emerald-600">{doc.accuracy}%</Typography>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-3 border-t border-zinc-50">
+                                            <Typography className="text-[9px] font-medium text-zinc-400 uppercase">
+                                                {doc.correct_count}/{doc.total_questions}
+                                            </Typography>
+                                            <Typography className="text-[9px] font-medium text-zinc-400 uppercase">
+                                                {doc.doc_distinct_tags} Tags
+                                            </Typography>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -365,16 +351,12 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                 )}
             </DialogBody>
 
-            <div className="px-10 py-8 bg-zinc-50/50 border-t border-zinc-200/50 flex justify-between items-center">
-                <Typography className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                    Ankard Analysis Engine • v2.1
-                </Typography>
-                <div className="flex items-center gap-1">
-                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <Typography className="text-[10px] font-black text-zinc-400 uppercase">
-                        Live Data Matrix
-                    </Typography>
-                </div>
+            <div className="px-8 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                <span>Ankard Engine v3.04</span>
+                <span className="flex items-center gap-1.5 text-zinc-500">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    System Active
+                </span>
             </div>
         </Dialog>
     );
