@@ -31,7 +31,7 @@ export function Dashboard() {
       <div
         className={`fixed left-0 z-50 transition-all duration-300 ${openSidenav ? "invisible opacity-0 -translate-x-full" : "visible opacity-100 translate-x-0"
           }`}
-        style={{ position: "fixed", top: "50px" }}
+        style={{ position: "fixed", top: "55px" }}
       >
         <IconButton
           size="lg"
