@@ -73,7 +73,7 @@ export function PublicBatteries() {
     };
 
     return (
-        <div className="mt-8 flex flex-col flex-grow gap-8 max-w-7xl mx-auto px-4 pb-6 w-full">
+        <div className="mt-8 flex flex-col flex-grow gap-8 pb-12 w-full">
             {/* ... header ... */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>

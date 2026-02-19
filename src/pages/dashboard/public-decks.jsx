@@ -33,7 +33,7 @@ export function PublicDecks() {
     const [requestedDecks, setRequestedDecks] = useState(new Set());
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-    const { page, pageSize, setPage, setPageSize } = usePaginationParams();
+    const { page, pageSize, setPage, setPageSize } = usePaginationParams(10);
 
     // States for Learn and Add Flashcards (if applicable for public decks)
     const [learnDeck, setLearnDeck] = useState(null);
@@ -100,7 +100,7 @@ export function PublicDecks() {
     );
 
     return (
-        <div className="mt-8 flex flex-col flex-grow gap-8 max-w-7xl mx-auto px-4 pb-6 w-full">
+        <div className="mt-8 flex flex-col flex-grow gap-8 pb-12 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">

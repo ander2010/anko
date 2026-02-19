@@ -6,7 +6,7 @@ import { useMemo, useCallback } from "react";
  * @param {number} defaultPageSize - Default number of items per page.
  * @param {string} prefix - Optional prefix for parameter names (e.g. 'topics' -> 'topicsPage')
  */
-export function usePaginationParams(defaultPageSize = 1, prefix = "") {
+export function usePaginationParams(defaultPageSize = 10, prefix = "") {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const pageKey = prefix ? `${prefix}Page` : "page";
