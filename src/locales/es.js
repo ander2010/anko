@@ -409,6 +409,8 @@ export const es = {
         }
     },
     global: {
+        ai_generated: "✨ Generado por IA",
+        summary_not_available: "Resumen no disponible aún.",
         topics: {
             title: "Lista Global de Temas",
             loading: "Cargando temas...",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -29,6 +29,7 @@ import {
 import { Progress } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
 import { useAuth } from "@/context/auth-context";
+import projectService from "@/services/projectService";
 
 export function BatteryCard({
     battery,
@@ -41,6 +42,35 @@ export function BatteryCard({
     const { t, language } = useLanguage();
     const { user } = useAuth();
     const isOwner = user?.id && battery.owner_id && String(user.id) === String(battery.owner_id);
+
+    const [summary, setSummary] = useState(null);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchSummary = async () => {
+            if (!battery?.id) return;
+            setLoadingSummary(true);
+            try {
+                const data = await projectService.getBatterySummary(battery.id);
+                if (isMounted && data?.summary) {
+                    setSummary(data.summary);
+                }
+            } catch (error) {
+                // Ignore 404s as they just mean no summary exists yet
+                console.debug(`No summary found for battery ${battery.id}`);
+            } finally {
+                if (isMounted) setLoadingSummary(false);
+            }
+        };
+
+        fetchSummary();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [battery?.id]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -187,6 +217,20 @@ export function BatteryCard({
                         </Typography>
                     </div>
                 </div>
+
+                {/* AI Summary Section */}
+                {summary && (
+                    <div className="mb-5 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
+                        <div className="flex items-center gap-1.5 mb-2">
+                            <Typography variant="small" className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">
+                                {t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated")}
+                            </Typography>
+                        </div>
+                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                            "{summary}"
+                        </Typography>
+                    </div>
+                )}
 
                 {progress && (
                     <div className="mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50 group/batprog">

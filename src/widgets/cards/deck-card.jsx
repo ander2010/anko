@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -28,6 +28,7 @@ import {
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
 import { useAuth } from "@/context/auth-context";
+import projectService from "@/services/projectService";
 
 export function DeckCard({
     deck,
@@ -44,6 +45,36 @@ export function DeckCard({
     const { user } = useAuth();
     const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
     const hasNotifiedComplete = useRef(false);
+
+    const [summary, setSummary] = useState(null);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+    const [showAiSummary, setShowAiSummary] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchSummary = async () => {
+            if (!deck?.id) return;
+            setLoadingSummary(true);
+            try {
+                const data = await projectService.getDeckSummary(deck.id);
+                if (isMounted && data?.summary) {
+                    setSummary(data.summary);
+                }
+            } catch (error) {
+                // Ignore 404s as they just mean no summary exists yet
+                console.debug(`No summary found for deck ${deck.id}`);
+            } finally {
+                if (isMounted) setLoadingSummary(false);
+            }
+        };
+
+        fetchSummary();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [deck?.id]);
 
     // Reset notification guard if job changes or resets
     useEffect(() => {
@@ -228,10 +259,46 @@ export function DeckCard({
                     </div>
                 )}
 
-                {deck.description && (
-                    <Typography variant="small" className="text-zinc-500 line-clamp-2 mb-4 text-sm leading-relaxed">
-                        {deck.description}
-                    </Typography>
+                {(deck.description || summary) && (
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <Typography variant="small" className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
+                                {showAiSummary ? t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated") : language === "es" ? "Descripción Personal" : "Personal Description"}
+                            </Typography>
+
+                            {summary && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowAiSummary(!showAiSummary); }}
+                                    className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border font-bold uppercase tracking-wider ${showAiSummary
+                                            ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
+                                            : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                                        }`}
+                                >
+                                    {showAiSummary ? (language === "es" ? "Ver Personal" : "View Personal") : (language === "es" ? "✨ Ver IA" : "✨ View AI")}
+                                </button>
+                            )}
+                        </div>
+
+                        {!showAiSummary && deck.description && (
+                            <Typography variant="small" className="text-zinc-500 line-clamp-2 text-sm leading-relaxed">
+                                {deck.description}
+                            </Typography>
+                        )}
+
+                        {showAiSummary && summary && (
+                            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
+                                <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                                    "{summary}"
+                                </Typography>
+                            </div>
+                        )}
+
+                        {!showAiSummary && !deck.description && summary && (
+                            <Typography variant="small" className="text-zinc-400 italic text-sm leading-relaxed">
+                                {language === "es" ? "No se proporcionó descripción." : "No description provided."}
+                            </Typography>
+                        )}
+                    </div>
                 )}
 
                 <div className="flex items-center gap-2 mt-auto">

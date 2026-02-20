@@ -409,6 +409,8 @@ export const en = {
         }
     },
     global: {
+        ai_generated: "✨ AI Generated",
+        summary_not_available: "Summary not available yet.",
         topics: {
             title: "Global Topics List",
             loading: "Loading topics...",

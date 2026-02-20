@@ -210,10 +210,28 @@ const projectService = {
       const blob = await response.blob();
       return window.URL.createObjectURL(blob);
     } catch (err) {
-      console.error("fetchDocumentWithAuth error:", err);
-      throw err;
+      throw err?.response?.data || { error: "Failed to download document" };
     }
   },
+
+  async getBatterySummary(batteryId) {
+    try {
+      const res = await api.get(`/summary-jobs/by-battery/${batteryId}/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch battery summary" };
+    }
+  },
+
+  async getDeckSummary(deckId) {
+    try {
+      const res = await api.get(`/summary-jobs/by-deck/${deckId}/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch deck summary" };
+    }
+  },
+
 
   async updateProject(id, projectData) {
     try {
