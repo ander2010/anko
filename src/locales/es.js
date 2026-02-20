@@ -352,6 +352,8 @@ export const es = {
             actions: {
                 download: "Descargar",
                 metadata: "Ver Metadatos",
+                related: "Ver Relacionados",
+                related_title: "Elementos relacionados al documento",
                 delete: "Eliminar",
                 view: "Ver"
             },

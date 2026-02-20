@@ -40,6 +40,7 @@ import {
   ViewColumnsIcon,
   Square2StackIcon,
   XMarkIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 
 import projectService from "@/services/projectService";
@@ -56,8 +57,7 @@ import { useJobs } from "@/context/job-context";
 import { ExamSimulatorDialog } from "@/widgets/dialogs/exam-simulator-dialog";
 import { CreateTopicDialog } from "@/widgets/dialogs/create-topic-dialog";
 import { EditTopicDialog } from "@/widgets/dialogs/edit-topic-dialog";
-import { TopicCard } from "@/widgets/cards/topic-card";
-import { DeckCard, BatteryCard } from "@/widgets/cards";
+import { TopicCard, RuleCard, DeckCard, BatteryCard } from "@/widgets/cards";
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
 import { CreateDeckDialog } from "@/widgets/dialogs/create-deck-dialog";
 import FlashcardViewDialog from "@/widgets/dialogs/flashcard-view-dialog";
@@ -67,6 +67,7 @@ import { CookingLoader } from "@/widgets/loaders/cooking-loader";
 import { AddFlashcardsDialog } from "@/widgets/dialogs/add-flashcards-dialog";
 import { UpgradePromptDialog } from "@/widgets/dialogs/upgrade-prompt-dialog";
 import { GenerateBatteryDialog } from "@/widgets/dialogs/generate-battery-dialog";
+import { DocumentRelatedDialog } from "@/widgets/dialogs/document-related-dialog";
 import { usePaginationParams } from "@/hooks/usePaginationParams";
 import { AppPagination } from "@/components/AppPagination";
 
@@ -117,6 +118,10 @@ export function ProjectDetail() {
   const [confirmDeleteTopicDialogOpen, setConfirmDeleteTopicDialogOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [viewingDocument, setViewingDocument] = useState(null);
+
+  // Document Related Dialog state
+  const [isDocumentRelatedOpen, setIsDocumentRelatedOpen] = useState(false);
+  const [relatedDocumentId, setRelatedDocumentId] = useState(null);
 
   // topics/rules/batteries state
   const [topics, setTopics] = useState([]);
@@ -1072,6 +1077,16 @@ export function ProjectDetail() {
     setMetadataDialogOpen(true);
   };
 
+  const handleOpenDocumentRelated = (doc) => {
+    setRelatedDocumentId(doc.id);
+    setIsDocumentRelatedOpen(true);
+  };
+
+  const handleCloseDocumentRelated = () => {
+    setIsDocumentRelatedOpen(false);
+    setRelatedDocumentId(null);
+  };
+
   const getStatusBadge = (doc) => {
     if (!doc) return "—";
 
@@ -1440,6 +1455,14 @@ export function ProjectDetail() {
                                     {t("project_detail.docs.actions.metadata")}
                                   </MenuItem>
 
+                                  <MenuItem
+                                    onClick={() => handleOpenDocumentRelated(doc)}
+                                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900 transition-all"
+                                  >
+                                    <LinkIcon className="h-4 w-4 text-zinc-400" />
+                                    {t("project_detail.docs.actions.related") || (language === "es" ? "Ver Relacionados" : "View Related")}
+                                  </MenuItem>
+
                                   {isOwner && (
                                     <>
                                       <div className="my-2 border-t border-zinc-100" />
@@ -1768,54 +1791,20 @@ export function ProjectDetail() {
                   {rules
                     .filter(r => r.name.toLowerCase().includes(rulesSearch.toLowerCase()))
                     .map((rule) => (
-                      <Card key={rule.id} className="border border-blue-gray-100 shadow-sm">
-                        <CardBody>
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <Typography variant="h6" color="blue-gray">{rule.name}</Typography>
-                              <Typography variant="small" className="text-blue-gray-500">
-                                {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
-                              </Typography>
-                            </div>
-
-                            {isOwner && (
-                              <IconButton
-                                size="sm"
-                                variant="text"
-                                color="red"
-                                onClick={async () => {
-                                  try {
-                                    setError(null);
-                                    await projectService.deleteRule(rule.id);
-                                    await fetchRules(Number(projectId));
-                                  } catch (err) {
-                                    setError(err?.error || err?.detail || "Failed to delete rule");
-                                  }
-                                }}
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </IconButton>
-                            )}
-                          </div>
-
-                          <div className="space-y-1 text-sm text-blue-gray-600">
-                            <div className="flex justify-between">
-                              <span>{t("global.rules.table.questions")}</span>
-                              <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
-                              <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>{t("global.rules.table.topic")}</span>
-                              <span className="font-medium text-blue-gray-900">
-                                {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope} ` : (language === "es" ? "Global" : "Global")}
-                              </span>
-                            </div>
-                          </div>
-                        </CardBody>
-                      </Card>
+                      <RuleCard
+                        key={rule.id}
+                        rule={rule}
+                        isOwner={isOwner}
+                        onDelete={async (deletedRule) => {
+                          try {
+                            setError(null);
+                            await projectService.deleteRule(deletedRule.id);
+                            await fetchRules(Number(projectId));
+                          } catch (err) {
+                            setError(err?.error || err?.detail || "Failed to delete rule");
+                          }
+                        }}
+                      />
                     ))}
                 </div>
               ) : (
@@ -2250,7 +2239,35 @@ export function ProjectDetail() {
         onClose={() => setViewingDocument(null)}
         document={viewingDocument}
       />
-    </div >
+
+      <DocumentRelatedDialog
+        open={isDocumentRelatedOpen}
+        onClose={handleCloseDocumentRelated}
+        documentId={relatedDocumentId}
+        isOwner={isOwner}
+        onSimulateBattery={(battery) => {
+          handleCloseDocumentRelated();
+          setActiveTab("batteries");
+          setSimulationBattery(battery);
+        }}
+        onStudyDeck={(deck) => {
+          handleCloseDocumentRelated();
+          setActiveTab("decks");
+          handleStudyDeck(deck);
+        }}
+        onLearnDeck={(deck) => {
+          handleCloseDocumentRelated();
+          setActiveTab("decks");
+          handleLearnDeck(deck);
+        }}
+        onDeleteBattery={handleDeleteBattery}
+        onUpdateBatteryVisibility={handleUpdateBatteryVisibility}
+        onEditDeck={handleEditDeck}
+        onDeleteDeck={handleDeleteDeck}
+        onUpdateDeckVisibility={handleUpdateDeckVisibility}
+        onAddCardsToDeck={handleOpenAddCards}
+      />
+    </div>
   );
 }
 

@@ -185,6 +185,15 @@ const projectService = {
     }
   },
 
+  async getDocumentRelatedLearning(documentId) {
+    try {
+      const res = await api.get(`/documents/${documentId}/related-learning/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to fetch document related entries" };
+    }
+  },
+
   async getDocumentDownloadUrl(documentId, mode = 'view') {
     try {
       // mode can be 'view' or 'download'

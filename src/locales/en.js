@@ -352,6 +352,8 @@ export const en = {
             actions: {
                 download: "Download",
                 metadata: "View Metadata",
+                related: "View Related",
+                related_title: "Items related to document",
                 delete: "Delete",
                 view: "View"
             },
