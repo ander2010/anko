@@ -41,14 +41,11 @@ export function useFlashcardProgress(wsUrl) {
                 host = window.location.host;
             }
 
-            // If it's already absolute (start with ws/wss), strip it to path to re-apply host
+            // If it's already absolute (start with ws/wss), leave it alone.
+            // This is crucial because the backend (e.g. Django) might return the absolute URL
+            // of a separate microservice (like localhost:8080) that handles the WebSocket.
             if (finalWsUrl.match(/^wss?:\/\//)) {
-                // Remove protocol and host, keep path
-                const parts = finalWsUrl.split("/");
-                // parts[0] = protocol, parts[1] = "", parts[2] = host, parts[3...] = path
-                const path = "/" + parts.slice(3).join("/");
-                finalWsUrl = `${protocol}//${host}${path}`;
-                console.log("[useFlashcardProgress] Rewrote absolute URL:", wsUrl, "->", finalWsUrl);
+                console.log("[useFlashcardProgress] Using absolute URL directly:", finalWsUrl);
             } else if (finalWsUrl.startsWith("/")) {
                 finalWsUrl = `${protocol}//${host}${finalWsUrl}`;
                 console.log("[useFlashcardProgress] Normalized relative URL:", wsUrl, "->", finalWsUrl);
