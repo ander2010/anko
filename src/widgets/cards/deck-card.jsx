@@ -270,8 +270,8 @@ export function DeckCard({
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setShowAiSummary(!showAiSummary); }}
                                     className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border font-bold uppercase tracking-wider ${showAiSummary
-                                            ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
-                                            : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                                        ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
+                                        : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
                                         }`}
                                 >
                                     {showAiSummary ? (language === "es" ? "Ver Personal" : "View Personal") : (language === "es" ? "✨ Ver IA" : "✨ View AI")}
@@ -287,7 +287,7 @@ export function DeckCard({
 
                         {showAiSummary && summary && (
                             <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
-                                <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                                <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
                                     "{summary}"
                                 </Typography>
                             </div>

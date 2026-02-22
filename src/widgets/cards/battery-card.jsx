@@ -226,7 +226,7 @@ export function BatteryCard({
                                 {t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated")}
                             </Typography>
                         </div>
-                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
                             "{summary}"
                         </Typography>
                     </div>
