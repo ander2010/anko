@@ -194,6 +194,10 @@ export function ProjectDetail() {
   const [learnDialogOpen, setLearnDialogOpen] = useState(false);
   const [learnDeck, setLearnDeck] = useState(null);
   const [confirmDeleteDeckDialogOpen, setConfirmDeleteDeckDialogOpen] = useState(false);
+
+  // --- Batteries ---
+  const [selectedBattery, setSelectedBattery] = useState(null);
+  const [confirmDeleteBatteryDialogOpen, setConfirmDeleteBatteryDialogOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
 
   const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
@@ -582,12 +586,24 @@ export function ProjectDetail() {
     }
   };
 
-  const handleDeleteBattery = async (battery) => {
+  const handleDeleteBattery = (battery) => {
+    setSelectedBattery(battery);
+    setConfirmDeleteBatteryDialogOpen(true);
+  };
+
+  const handleConfirmDeleteBattery = async () => {
+    if (!selectedBattery) return;
     try {
-      await projectService.deleteBattery(battery.id);
-      await fetchBatteries(Number(projectId));
+      await projectService.deleteBattery(selectedBattery.id);
+
+      // Update state locally to immediately remove the battery without full refresh
+      setBatteries(prev => prev.filter(b => b.id !== selectedBattery.id));
+
+      setConfirmDeleteBatteryDialogOpen(false);
+      setSelectedBattery(null);
     } catch (err) {
       console.error("Error deleting battery:", err);
+      // Optional: setError(err?.error || "Failed to delete battery") if you want a global alert
     }
   };
 
@@ -2230,6 +2246,16 @@ export function ProjectDetail() {
         onConfirm={handleConfirmDeleteDeck}
         title={language === "es" ? "Eliminar Mazo" : "Delete Deck"}
         message={language === "es" ? `¿Estás seguro de que quieres eliminar el mazo "${selectedDeck?.title}" ? ` : `Are you sure you want to delete deck "${selectedDeck?.title}" ? `}
+        confirmText={t("global.actions.delete")}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteBatteryDialogOpen}
+        onClose={() => setConfirmDeleteBatteryDialogOpen(false)}
+        onConfirm={handleConfirmDeleteBattery}
+        title={language === "es" ? "Eliminar Batería" : "Delete Battery"}
+        message={language === "es" ? `¿Estás seguro de que quieres eliminar la batería "${selectedBattery?.title || selectedBattery?.name || ''}" ? ` : `Are you sure you want to delete battery "${selectedBattery?.title || selectedBattery?.name || ''}" ? `}
         confirmText={t("global.actions.delete")}
         variant="danger"
       />
