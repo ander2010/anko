@@ -20,7 +20,7 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
-export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null }) {
+export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null, editTitle, createTitle }) {
     const languageContext = useLanguage();
 
     if (!languageContext) {
@@ -90,7 +90,16 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
     const handleOpenDialog = (item = null) => {
         setCurrentItem(item);
         if (item) {
-            setFormData({ ...item });
+            const initialData = { ...item };
+            // Normalize multi-select fields (convert objects to IDs)
+            fields.forEach(f => {
+                if (f.type === "select-resource" && f.multiple && Array.isArray(initialData[f.name])) {
+                    initialData[f.name] = initialData[f.name].map(val =>
+                        (typeof val === 'object' && val !== null) ? val[f.valueAccessor || 'id'] : val
+                    );
+                }
+            });
+            setFormData(initialData);
         } else {
             const initial = {};
             fields.forEach((f) => {
@@ -123,7 +132,10 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
             fetchItems();
         } catch (error) {
             console.error("Failed to save item", error);
-            const msg = error.detail || error.message || JSON.stringify(error);
+            let msg = error.detail || error.message || JSON.stringify(error);
+            if (error.response && error.response.data) {
+                msg = JSON.stringify(error.response.data);
+            }
             alert(`Error saving item: ${msg}`);
         }
     };
@@ -218,7 +230,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
             </Card>
 
             <Dialog open={openDialog} handler={() => setOpenDialog(!openDialog)}>
-                <DialogHeader>{currentItem ? t("global.crud.edit_item") : t("global.crud.create_item")}</DialogHeader>
+                <DialogHeader>{currentItem ? (editTitle || t("global.crud.edit_item")) : (createTitle || t("global.crud.create_item"))}</DialogHeader>
                 <DialogBody divider className="flex flex-col gap-4">
                     {fields.map((field) => {
                         if (field.type === "select-resource") {

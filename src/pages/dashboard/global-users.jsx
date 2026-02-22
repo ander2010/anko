@@ -6,7 +6,7 @@ import { UserStatisticsDialog } from "@/widgets/dialogs/user-statistics-dialog";
 import { useState } from "react";
 
 export function GlobalUsers() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [selectedUser, setSelectedUser] = useState(null);
     const [openStats, setOpenStats] = useState(false);
 
@@ -14,6 +14,8 @@ export function GlobalUsers() {
         <>
             <GlobalCrudPage
                 title={t("global.pages.users.title")}
+                editTitle={language === "es" ? "Editar Usuario" : "Edit User"}
+                createTitle={language === "es" ? "Crear Usuario" : "Create User"}
                 resource="users"
                 columns={[
                     { header: t("global.pages.users.columns.username"), accessor: "username" },
