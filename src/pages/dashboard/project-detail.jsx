@@ -599,15 +599,11 @@ export function ProjectDetail() {
     if (!selectedBattery) return;
     try {
       await projectService.deleteBattery(selectedBattery.id);
-
-      // Update state locally to immediately remove the battery without full refresh
-      setBatteries(prev => prev.filter(b => b.id !== selectedBattery.id));
-
       setConfirmDeleteBatteryDialogOpen(false);
       setSelectedBattery(null);
+      await fetchBatteries(Number(projectId));
     } catch (err) {
       console.error("Error deleting battery:", err);
-      // Optional: setError(err?.error || "Failed to delete battery") if you want a global alert
     }
   };
 
@@ -985,12 +981,9 @@ export function ProjectDetail() {
     try {
       setError(null);
       await projectService.deleteDeck(selectedDeck.id);
-
-      // Update state locally to avoid global loading spinner
-      setDecks(prev => prev.filter(d => d.id !== selectedDeck.id));
-
       setConfirmDeleteDeckDialogOpen(false);
       setSelectedDeck(null);
+      await fetchDecks(Number(projectId));
     } catch (err) {
       setError(err?.error || err?.detail || "Failed to delete deck");
     }
