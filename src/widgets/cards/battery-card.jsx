@@ -36,6 +36,7 @@ export function BatteryCard({
     onUpdateVisibility,
     onDelete,
     progress,
+    isGenerating,
     onDismissProgress,
 }) {
     const { t, language } = useLanguage();
@@ -64,12 +65,16 @@ export function BatteryCard({
             }
         };
 
-        fetchSummary();
+        // Wait to fetch summary until isGenerating is false
+        // (meaning no active job exists in globalActiveJobs for this battery)
+        if (!isGenerating) {
+            fetchSummary();
+        }
 
         return () => {
             isMounted = false;
         };
-    }, [battery?.id]);
+    }, [battery?.id, isGenerating]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";

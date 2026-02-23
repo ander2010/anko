@@ -289,12 +289,9 @@ export function ProjectDetail() {
       }
 
       const res = await projectService.startGenerateBattery(payload);
-
       setShowGenerateBattery(false);
 
-      await fetchBatteries(Number(projectId));
-
-      // Init SSE for progress
+      // Init SSE for progress and add Job FIRST to prevent premature UI fetch!
       const batteryId = res?.battery?.id;
       if (batteryId) {
         addJob({
@@ -304,6 +301,8 @@ export function ProjectDetail() {
         });
         resumeBatterySSE(batteryId);
       }
+
+      await fetchBatteries(Number(projectId));
     } catch (err) {
       console.error("Battery generation error:", err);
       const errorMessage = err?.error || err?.detail || "";
@@ -1939,25 +1938,28 @@ export function ProjectDetail() {
               {batteries.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {batteries
-                    .filter(b => b.name.toLowerCase().includes(batteriesSearch.toLowerCase()))
-                    .map((battery) => (
-                      <BatteryCard
-                        key={battery.id}
-                        battery={battery}
-                        onSimulate={setSimulationBattery}
-                        onUpdateVisibility={isOwner ? handleUpdateBatteryVisibility : null}
-                        onDelete={isOwner ? handleDeleteBattery : null}
-                        progress={batteryProgress[String(battery.id)]}
-                        onDismissProgress={(id) => {
-                          setBatteryProgress(prev => {
-                            const ns = { ...prev };
-                            delete ns[id];
-                            return ns;
-                          });
-                          removeJob(id);
-                        }}
-                      />
-                    ))}
+                    .map((battery) => {
+                      const isGenerating = globalActiveJobs.some(j => j.type === 'battery' && j.id === String(battery.id));
+                      return (
+                        <BatteryCard
+                          key={battery.id}
+                          battery={battery}
+                          onSimulate={setSimulationBattery}
+                          onUpdateVisibility={isOwner ? handleUpdateBatteryVisibility : null}
+                          onDelete={isOwner ? handleDeleteBattery : null}
+                          progress={batteryProgress[String(battery.id)]}
+                          isGenerating={isGenerating}
+                          onDismissProgress={(id) => {
+                            setBatteryProgress(prev => {
+                              const ns = { ...prev };
+                              delete ns[id];
+                              return ns;
+                            });
+                            removeJob(id);
+                          }}
+                        />
+                      )
+                    })}
                 </div>
               ) : (
                 <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">

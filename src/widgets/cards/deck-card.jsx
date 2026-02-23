@@ -68,12 +68,16 @@ export function DeckCard({
             }
         };
 
-        fetchSummary();
+        // Don't fetch if there is an ongoing flashcard generation job.
+        // Wait until `isCompleted` is true or `job` doesn't exist
+        if (!job || isCompleted) {
+            fetchSummary();
+        }
 
         return () => {
             isMounted = false;
         };
-    }, [deck?.id]);
+    }, [deck?.id, job, isCompleted]);
 
     // Reset notification guard if job changes or resets
     useEffect(() => {
