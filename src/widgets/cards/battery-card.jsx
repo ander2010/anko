@@ -24,7 +24,6 @@ import {
     XMarkIcon,
     CheckBadgeIcon,
     HandThumbUpIcon,
-    HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { Progress } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
@@ -163,12 +162,6 @@ export function BatteryCard({
                                         <HandThumbUpIcon className="h-3 w-3 text-green-500" />
                                         <Typography className="text-[10px] font-bold text-green-600">
                                             {battery.approved_count || 0}
-                                        </Typography>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <HandThumbDownIcon className="h-3 w-3 text-red-500" />
-                                        <Typography className="text-[10px] font-bold text-red-600">
-                                            {battery.rejected_count || 0}
                                         </Typography>
                                     </div>
                                 </div>

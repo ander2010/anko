@@ -23,7 +23,6 @@ import {
     PlusIcon,
     CheckBadgeIcon,
     HandThumbUpIcon,
-    HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
@@ -173,12 +172,6 @@ export function DeckCard({
                                             <HandThumbUpIcon className="h-3 w-3 text-green-500" />
                                             <Typography className="text-[10px] font-bold text-green-600">
                                                 {deck.approved_count || 0}
-                                            </Typography>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <HandThumbDownIcon className="h-3 w-3 text-red-500" />
-                                            <Typography className="text-[10px] font-bold text-red-600">
-                                                {deck.rejected_count || 0}
                                             </Typography>
                                         </div>
                                     </div>

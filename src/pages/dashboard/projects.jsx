@@ -281,7 +281,7 @@ export function Projects() {
                     </Typography>
                 </div>
                 <div className="flex items-center gap-3">
-                    {globalActiveJobs.length > 0 && (
+                    {/* {globalActiveJobs.length > 0 && (
                         <Button
                             variant="text"
                             color="red"
@@ -290,7 +290,7 @@ export function Projects() {
                         >
                             {language === "es" ? "Limpiar Todo" : "Clear All"}
                         </Button>
-                    )}
+                    )} */}
                     <Button
                         className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 px-6 py-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5"
                         onClick={() => setCreateDialogOpen(true)}

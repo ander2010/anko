@@ -198,6 +198,10 @@ export function ProjectDetail() {
   // --- Batteries ---
   const [selectedBattery, setSelectedBattery] = useState(null);
   const [confirmDeleteBatteryDialogOpen, setConfirmDeleteBatteryDialogOpen] = useState(false);
+
+  // --- Rules ---
+  const [selectedRule, setSelectedRule] = useState(null);
+  const [confirmDeleteRuleDialogOpen, setConfirmDeleteRuleDialogOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState(null);
 
   const [addFlashcardsOpen, setAddFlashcardsOpen] = useState(false);
@@ -604,6 +608,24 @@ export function ProjectDetail() {
     } catch (err) {
       console.error("Error deleting battery:", err);
       // Optional: setError(err?.error || "Failed to delete battery") if you want a global alert
+    }
+  };
+
+  const handleDeleteRule = (rule) => {
+    setSelectedRule(rule);
+    setConfirmDeleteRuleDialogOpen(true);
+  };
+
+  const handleConfirmDeleteRule = async () => {
+    if (!selectedRule) return;
+    try {
+      setError(null);
+      await projectService.deleteRule(selectedRule.id);
+      setConfirmDeleteRuleDialogOpen(false);
+      setSelectedRule(null);
+      await fetchRules(Number(projectId));
+    } catch (err) {
+      setError(err?.error || err?.detail || "Failed to delete rule");
     }
   };
 
@@ -1524,15 +1546,17 @@ export function ProjectDetail() {
               )}
             </CardBody>
           </Card >
-          <div className="mt-auto">
-            <AppPagination
-              page={docsPage}
-              pageSize={docsPageSize}
-              totalCount={docsTotal}
-              onPageChange={setDocsPage}
-              onPageSizeChange={setDocsPageSize}
-            />
-          </div>
+          {docsTotal > 0 && (
+            <div className="mt-auto">
+              <AppPagination
+                page={docsPage}
+                pageSize={docsPageSize}
+                totalCount={docsTotal}
+                onPageChange={setDocsPage}
+                onPageSizeChange={setDocsPageSize}
+              />
+            </div>
+          )}
         </div >
       )
       }
@@ -1617,15 +1641,17 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <div className="mt-auto">
-              <AppPagination
-                page={topicsPage}
-                pageSize={topicsPageSize}
-                totalCount={topicsTotal}
-                onPageChange={setTopicsPage}
-                onPageSizeChange={setTopicsPageSize}
-              />
-            </div>
+            {topicsTotal > 0 && (
+              <div className="mt-auto">
+                <AppPagination
+                  page={topicsPage}
+                  pageSize={topicsPageSize}
+                  totalCount={topicsTotal}
+                  onPageChange={setTopicsPage}
+                  onPageSizeChange={setTopicsPageSize}
+                />
+              </div>
+            )}
 
             {/* Dialogs - Topics */}
             <CreateTopicDialog
@@ -1811,15 +1837,7 @@ export function ProjectDetail() {
                         key={rule.id}
                         rule={rule}
                         isOwner={isOwner}
-                        onDelete={async (deletedRule) => {
-                          try {
-                            setError(null);
-                            await projectService.deleteRule(deletedRule.id);
-                            await fetchRules(Number(projectId));
-                          } catch (err) {
-                            setError(err?.error || err?.detail || "Failed to delete rule");
-                          }
-                        }}
+                        onDelete={handleDeleteRule}
                       />
                     ))}
                 </div>
@@ -1846,15 +1864,17 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <div className="mt-auto">
-              <AppPagination
-                page={rulesPage}
-                pageSize={rulesPageSize}
-                totalCount={rulesTotal}
-                onPageChange={setRulesPage}
-                onPageSizeChange={setRulesPageSize}
-              />
-            </div>
+            {rulesTotal > 0 && (
+              <div className="mt-auto">
+                <AppPagination
+                  page={rulesPage}
+                  pageSize={rulesPageSize}
+                  totalCount={rulesTotal}
+                  onPageChange={setRulesPage}
+                  onPageSizeChange={setRulesPageSize}
+                />
+              </div>
+            )}
           </div>
         )
       } {
@@ -1973,15 +1993,17 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div >
-            <div className="mt-auto">
-              <AppPagination
-                page={batteriesPage}
-                pageSize={batteriesPageSize}
-                totalCount={batteriesTotal}
-                onPageChange={setBatteriesPage}
-                onPageSizeChange={setBatteriesPageSize}
-              />
-            </div>
+            {batteriesTotal > 0 && (
+              <div className="mt-auto">
+                <AppPagination
+                  page={batteriesPage}
+                  pageSize={batteriesPageSize}
+                  totalCount={batteriesTotal}
+                  onPageChange={setBatteriesPage}
+                  onPageSizeChange={setBatteriesPageSize}
+                />
+              </div>
+            )}
           </div>
         )
       }
@@ -2099,15 +2121,17 @@ export function ProjectDetail() {
                 </Card>
               )}
             </div>
-            <div className="mt-auto">
-              <AppPagination
-                page={decksPage}
-                pageSize={decksPageSize}
-                totalCount={decksTotal}
-                onPageChange={setDecksPage}
-                onPageSizeChange={setDecksPageSize}
-              />
-            </div>
+            {decksTotal > 0 && (
+              <div className="mt-auto">
+                <AppPagination
+                  page={decksPage}
+                  pageSize={decksPageSize}
+                  totalCount={decksTotal}
+                  onPageChange={setDecksPage}
+                  onPageSizeChange={setDecksPageSize}
+                />
+              </div>
+            )}
           </div>
         )
       }
@@ -2256,6 +2280,16 @@ export function ProjectDetail() {
         onConfirm={handleConfirmDeleteBattery}
         title={language === "es" ? "Eliminar Batería" : "Delete Battery"}
         message={language === "es" ? `¿Estás seguro de que quieres eliminar la batería "${selectedBattery?.title || selectedBattery?.name || ''}" ? ` : `Are you sure you want to delete battery "${selectedBattery?.title || selectedBattery?.name || ''}" ? `}
+        confirmText={t("global.actions.delete")}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteRuleDialogOpen}
+        onClose={() => setConfirmDeleteRuleDialogOpen(false)}
+        onConfirm={handleConfirmDeleteRule}
+        title={language === "es" ? "Eliminar Regla" : "Delete Rule"}
+        message={language === "es" ? `¿Estás seguro de que quieres eliminar la regla "${selectedRule?.name || ''}" ? ` : `Are you sure you want to delete rule "${selectedRule?.name || ''}" ? `}
         confirmText={t("global.actions.delete")}
         variant="danger"
       />
