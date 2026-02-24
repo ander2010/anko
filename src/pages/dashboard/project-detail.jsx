@@ -768,7 +768,7 @@ export function ProjectDetail() {
       processingTriggerRef.current = true;
       setSaving(true);
       setError(null);
-      if (selectedDeck) {
+      if (selectedDeck && selectedDeck.id) {
         // Edit mode (assuming manual edits for now or just metadata)
         await projectService.updateDeck(selectedDeck.id, deckData);
         // Refresh to get updates
@@ -1027,12 +1027,25 @@ export function ProjectDetail() {
   };
 
   const handleCreateDeckFromTopic = (topic) => {
+    // Infer document IDs from the sections related to the topic
+    const sectionIds = topic.related_sections || [];
+    const involvedDocIds = new Set();
+
+    if (documentsWithSections && sectionIds.length > 0) {
+      documentsWithSections.forEach(doc => {
+        const hasSection = doc.sections && doc.sections.some(s => sectionIds.includes(s.id));
+        if (hasSection) {
+          involvedDocIds.add(Number(doc.id));
+        }
+      });
+    }
+
     setSelectedDeck({
       title: topic.name,
       description: topic.description,
-      section_ids: topic.related_sections || [],
-      // topic doesn't have document_ids explicitly but we could infer them if needed
-      // however, related_sections is the main thing the user wants
+      section_ids: sectionIds.map(Number),
+      document_ids: Array.from(involvedDocIds),
+      cards_count: topic.question_count_target || 3,
     });
     setCreateDeckDialogOpen(true);
   };
