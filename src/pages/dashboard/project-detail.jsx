@@ -87,6 +87,7 @@ export function ProjectDetail() {
 
   const [showGenerateBattery, setShowGenerateBattery] = useState(false);
   const [batteryProgress, setBatteryProgress] = useState({});
+  const [deckProgress, setDeckProgress] = useState({});
 
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -366,10 +367,23 @@ export function ProjectDetail() {
 
     const projectJobs = globalActiveJobs.filter(j => j && String(j.projectId) === String(projectId));
 
-    // Resume battery jobs (re-trigger SSE logic) if not active
-    projectJobs.filter(j => j && j.type === 'battery').forEach(j => {
-      if (!batteryProgress[j.id]) {
-        resumeBatterySSE(j.id);
+    // Resume battery or deck jobs (re-trigger SSE logic) if not active
+    projectJobs.forEach(j => {
+      if (!j) return;
+
+      const targetId = j.deckId || j.batteryId || (j.id?.includes('-') ? null : j.id);
+      if (!targetId) return;
+
+      if (j.type === 'battery') {
+        if (!activeSseConnections.current[targetId]) {
+          console.log("[ProjectDetail] Connection candidate found (battery):", targetId);
+          resumeBatterySSE(targetId);
+        }
+      } else if (j.type === 'flashcard') {
+        if (!activeSseConnections.current[targetId]) {
+          console.log("[ProjectDetail] Connection candidate found (deck):", targetId);
+          resumeDeckSSE(targetId);
+        }
       }
     });
 
@@ -400,9 +414,16 @@ export function ProjectDetail() {
       return;
     }
 
+    // Find the jobId from globalActiveJobs for robustness (the backend can use it as fallback)
+    const activeJob = globalActiveJobs.find(j => j.type === 'battery' && String(j.batteryId) === String(batteryId));
+    const jobId = activeJob?.jobId;
+
     // Use API_BASE to construct absolute URL for production support.
     const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
-    const sseUrl = `${base}/batteries/${batteryId}/progress-stream-bat/`;
+    let sseUrl = `${base}/batteries/progress-stream-bat/?battery_id=${batteryId}`;
+    if (jobId) {
+      sseUrl += `&job_id=${jobId}`;
+    }
     console.log("[ProjectDetail] Resuming battery SSE:", sseUrl);
 
     const es = new EventSource(sseUrl);
@@ -439,7 +460,51 @@ export function ProjectDetail() {
       es.close();
       delete activeSseConnections.current[batteryId];
       // Optional: don't removeJob yet so it can retry next refresh?
-      // Or remove if it's a permanent error.
+    });
+  };
+
+  const resumeDeckSSE = (deckId) => {
+    const sId = String(deckId);
+    if (activeSseConnections.current[sId]) return;
+
+    // Find the jobId from globalActiveJobs
+    const activeJob = globalActiveJobs.find(j => j.type === 'flashcard' && String(j.deckId) === sId);
+    const jobId = activeJob?.jobId || activeJob?.job_id;
+
+    const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
+    let sseUrl = `${base}/decks/progress-stream-deck/?deck_id=${sId}`;
+    if (jobId) {
+      sseUrl += `&job_id=${jobId}`;
+    }
+    console.log("[ProjectDetail] Resuming deck SSE:", sseUrl);
+
+    const es = new EventSource(sseUrl);
+    activeSseConnections.current[sId] = es;
+
+    es.addEventListener("progress", (e) => {
+      const data = JSON.parse(e.data);
+      setDeckProgress(prev => ({ ...prev, [sId]: data }));
+    });
+
+    es.addEventListener("end", async (e) => {
+      console.log("[ProjectDetail] SSE 'end' event for deck:", sId);
+      es.close();
+      delete activeSseConnections.current[sId];
+
+      const jobId = activeFlashcardJobs[sId]?.job_id;
+      await handleFlashcardJobComplete(sId, jobId, {});
+
+      setDeckProgress(prev => {
+        const newState = { ...prev };
+        delete newState[sId];
+        return newState;
+      });
+    });
+
+    es.addEventListener("error", (e) => {
+      console.error("[ProjectDetail] SSE error for deck:", sId, e);
+      es.close();
+      delete activeSseConnections.current[sId];
     });
   };
 
@@ -872,8 +937,6 @@ export function ProjectDetail() {
     }
     processedDecks.current[jobId] = true;
 
-    if (jobId) removeJob(jobId);
-
     // Initial check: DO WE ALREADY HAVE CARDS?
     // If the backend Job already saved them, calling sync might duplicate them.
     let initialCards = [];
@@ -949,9 +1012,13 @@ export function ProjectDetail() {
 
     setDecks(prevDecks => prevDecks.map(d => {
       const isMatch = String(d.id) === String(deckId);
-      if (isMatch) console.log("[ProjectDetail] Updating deck state", d.id, "to final count", count);
       return isMatch ? { ...d, flashcards_count: count } : d;
     }));
+
+    // FINAL STEP: Remove from persistence and jobs list
+    // This will trigger a re-render where isGenerating becomes false,
+    // allowing DeckCard to finally fetch the summary.
+    if (jobId) removeJob(jobId);
   }, [projectId, removeJob]);
 
   const handleEditDeck = (deck) => {
@@ -2077,20 +2144,27 @@ export function ProjectDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {decks
                     .filter(deck => deck.title.toLowerCase().includes(deckSearch.toLowerCase()))
-                    .map((deck) => (
-                      <DeckCard
-                        key={deck.id}
-                        deck={deck}
-                        onEdit={handleEditDeck}
-                        onDelete={handleDeleteDeck}
-                        onUpdateVisibility={handleUpdateDeckVisibility}
-                        onStudy={handleStudyDeck}
-                        onLearn={handleLearnDeck}
-                        onAddCards={handleOpenAddCards}
-                        job={activeFlashcardJobs[String(deck.id)]}
-                        onJobComplete={(lastData) => handleFlashcardJobComplete(String(deck.id), activeFlashcardJobs[String(deck.id)]?.job_id, lastData)}
-                      />
-                    ))}
+                    .map((deck) => {
+                      const jobId = activeFlashcardJobs[String(deck.id)];
+                      return (
+                        <DeckCard
+                          key={deck.id}
+                          deck={deck}
+                          onEdit={handleEditDeck}
+                          onDelete={handleDeleteDeck}
+                          onUpdateVisibility={handleUpdateDeckVisibility}
+                          onStudy={handleStudyDeck}
+                          onLearn={handleLearnDeck}
+                          onAddCards={handleOpenAddCards}
+                          job={jobId}
+                          onJobComplete={() => {
+                            console.log("[ProjectDetail] Job complete for deck:", deck.id);
+                            fetchDecks(Number(projectId));
+                            if (jobId?.job_id) removeJob(jobId.job_id);
+                          }}
+                        />
+                      )
+                    })}
                 </div>
               ) : (
                 <Card className="border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium rounded-[2rem] min-h-[400px]">

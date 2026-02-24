@@ -54,18 +54,41 @@ export function DeckCard({
 
         const fetchSummary = async () => {
             if (!deck?.id) return;
+
             setLoadingSummary(true);
-            try {
-                const data = await projectService.getDeckSummary(deck.id);
-                if (isMounted && data?.summary) {
-                    setSummary(data.summary);
+
+            // Polling helper to retry fetching the summary
+            const poll = async (attempts = 0, maxAttempts = 5) => {
+                if (!isMounted) return;
+                try {
+                    console.log(`[DeckCard] Fetching summary for deck ${deck.id}, attempt ${attempts + 1}`);
+                    const data = await projectService.getDeckSummary(deck.id);
+                    if (isMounted && data?.summary) {
+                        setSummary(data.summary);
+                        setLoadingSummary(false);
+                        return true;
+                    }
+                } catch (error) {
+                    console.debug(`[DeckCard] Summary not ready for deck ${deck.id} (attempt ${attempts + 1})`);
                 }
-            } catch (error) {
-                // Ignore 404s as they just mean no summary exists yet
-                console.debug(`No summary found for deck ${deck.id}`);
-            } finally {
+
+                if (attempts < maxAttempts - 1) {
+                    // Wait 3s between retries (total ~15s ceiling)
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    return poll(attempts + 1, maxAttempts);
+                }
+
                 if (isMounted) setLoadingSummary(false);
+                return false;
+            };
+
+            // If the job just completed, wait a bit then start polling
+            if (isCompleted) {
+                console.log(`[DeckCard] Job completed for deck ${deck.id}. Waiting 3s before starting summary polling...`);
+                await new Promise(resolve => setTimeout(resolve, 3000));
             }
+
+            await poll();
         };
 
         // Don't fetch if there is an ongoing flashcard generation job.
