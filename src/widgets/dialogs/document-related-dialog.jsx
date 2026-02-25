@@ -13,10 +13,10 @@ import {
     Spinner,
     IconButton
 } from "@material-tailwind/react";
-import { XMarkIcon, RectangleGroupIcon, ScaleIcon, BoltIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, RectangleGroupIcon, BoltIcon, Square3Stack3DIcon } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import projectService from "@/services/projectService";
-import { TopicCard, RuleCard, BatteryCard, DeckCard } from "@/widgets/cards";
+import { TopicCard, BatteryCard, DeckCard } from "@/widgets/cards";
 
 export function DocumentRelatedDialog({
     open,
@@ -77,13 +77,6 @@ export function DocumentRelatedDialog({
             icon: RectangleGroupIcon,
             count: data?.counts?.topics || 0,
             items: data?.topics || []
-        },
-        {
-            label: language === "es" ? "Reglas" : "Rules",
-            value: "rules",
-            icon: ScaleIcon,
-            count: data?.counts?.rules || 0,
-            items: data?.rules || []
         },
         {
             label: language === "es" ? "Baterías" : "Batteries",
@@ -175,15 +168,6 @@ export function DocumentRelatedDialog({
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {value === "topics" && items.map(topic => (
                                             <TopicCard key={topic.id} topic={topic} />
-                                        ))}
-                                        {value === "rules" && items.map(rule => (
-                                            <RuleCard
-                                                key={rule.id}
-                                                rule={rule}
-                                                isOwner={isOwner}
-                                            // onDelete is omitted here to prevent complex rule deletion logic inside the dialog, 
-                                            // or could be added if passed
-                                            />
                                         ))}
                                         {value === "batteries" && items.map(battery => (
                                             <BatteryCard
