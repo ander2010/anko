@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useAuth } from "@/context/auth-context";
+import projectService from "@/services/projectService";
 
 export function CatalogDeckCard({
     deck,
@@ -26,6 +27,17 @@ export function CatalogDeckCard({
     const { t, language } = useLanguage();
     const { user } = useAuth();
     const isOwner = user?.id && deck.ownerId && String(user.id) === String(deck.ownerId);
+
+    const [summary, setSummary] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (!deck?.id) return;
+        projectService.getDeckSummary(deck.id)
+            .then(data => { if (isMounted && data?.summary) setSummary(data.summary); })
+            .catch(() => { });
+        return () => { isMounted = false; };
+    }, [deck?.id]);
 
     const getVisibilityColor = (visibility) => {
         switch (visibility) {
@@ -72,6 +84,17 @@ export function CatalogDeckCard({
                     <Typography variant="small" className="text-zinc-500 line-clamp-2 mb-4 text-sm leading-relaxed">
                         {deck.description}
                     </Typography>
+                )}
+
+                {summary && (
+                    <div className="mb-4 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 rounded-lg border border-indigo-100/50">
+                        <Typography variant="small" className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1.5">
+                            {language === "es" ? "✨ Resumen IA" : "✨ AI Summary"}
+                        </Typography>
+                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                            "{summary}"
+                        </Typography>
+                    </div>
                 )}
 
                 <div className="flex items-center gap-2 mt-auto">

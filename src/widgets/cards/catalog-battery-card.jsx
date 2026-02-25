@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -15,6 +15,7 @@ import {
     CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
+import projectService from "@/services/projectService";
 
 export function CatalogBatteryCard({
     battery,
@@ -23,6 +24,17 @@ export function CatalogBatteryCard({
     isRequestPending = false
 }) {
     const { language, t } = useLanguage();
+
+    const [summary, setSummary] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (!battery?.id) return;
+        projectService.getBatterySummary(battery.id)
+            .then(data => { if (isMounted && data?.summary) setSummary(data.summary); })
+            .catch(() => { });
+        return () => { isMounted = false; };
+    }, [battery?.id]);
 
     const getVisibilityColor = (visibility) => {
         switch (visibility) {
@@ -70,6 +82,17 @@ export function CatalogBatteryCard({
                         </Typography>
                     </div>
                 </div>
+
+                {summary && (
+                    <div className="mb-5 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
+                        <Typography variant="small" className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1.5">
+                            {language === "es" ? "✨ Resumen IA" : "✨ AI Summary"}
+                        </Typography>
+                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3">
+                            "{summary}"
+                        </Typography>
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
                     <div className="text-[11px] font-medium text-zinc-500">
