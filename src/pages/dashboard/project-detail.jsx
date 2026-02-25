@@ -2170,6 +2170,7 @@ export function ProjectDetail() {
                           onLearn={handleLearnDeck}
                           onAddCards={handleOpenAddCards}
                           job={jobId}
+                          currentProgress={deckProgress[String(deck.id)]}
                           onJobComplete={() => {
                             console.log("[ProjectDetail] Job complete for deck:", deck.id);
                             fetchDecks(Number(projectId));

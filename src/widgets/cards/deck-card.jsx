@@ -25,7 +25,6 @@ import {
     HandThumbUpIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
-import { useFlashcardProgress } from "@/hooks/use-flashcard-progress";
 import { useAuth } from "@/context/auth-context";
 import projectService from "@/services/projectService";
 
@@ -39,11 +38,17 @@ export function DeckCard({
     onUpdateVisibility,
     job,
     onJobComplete,
+    currentProgress,
 }) {
     const { t, language } = useLanguage();
     const { user } = useAuth();
-    const { progress, status, isCompleted, lastData } = useFlashcardProgress(job?.ws_progress);
     const hasNotifiedComplete = useRef(false);
+
+    // Derive progress data from the SSE-fed currentProgress prop
+    const progress = parseFloat(currentProgress?.progress ?? 0);
+    const status = currentProgress?.status ?? "queued";
+    const isCompleted = !job || (parseFloat(currentProgress?.progress ?? 0) >= 100) ||
+        ["completed", "done", "finished", "success"].includes(String(currentProgress?.status ?? "").toLowerCase());
 
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
@@ -92,7 +97,7 @@ export function DeckCard({
         };
 
         // Don't fetch if there is an ongoing flashcard generation job.
-        // Wait until `isCompleted` is true or `job` doesn't exist
+        // Wait until the SSE tells us the job is completed (job disappears or progress reaches 100)
         if (!job || isCompleted) {
             fetchSummary();
         }
@@ -102,20 +107,20 @@ export function DeckCard({
         };
     }, [deck?.id, job, isCompleted]);
 
-    // Reset notification guard if job changes or resets
+    // Reset notification guard when job changes
     useEffect(() => {
-        if (!isCompleted) {
+        if (!job) {
             hasNotifiedComplete.current = false;
         }
-    }, [isCompleted, job?.job_id]);
+    }, [job]);
 
     useEffect(() => {
-        if (isCompleted && onJobComplete && !hasNotifiedComplete.current) {
-            console.log("[DeckCard] Job completed, notifying parent. Job:", job?.job_id);
+        if (job && isCompleted && onJobComplete && !hasNotifiedComplete.current) {
+            console.log("[DeckCard] Job completed via SSE, notifying parent. Job:", job?.job_id);
             hasNotifiedComplete.current = true;
-            onJobComplete(lastData);
+            onJobComplete(currentProgress);
         }
-    }, [isCompleted, onJobComplete, lastData, job?.job_id]);
+    }, [job, isCompleted, onJobComplete, currentProgress]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -263,7 +268,10 @@ export function DeckCard({
                     <div className="mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
                         <div className="flex items-center justify-between mb-2">
                             <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
-                                {status.toLowerCase()}...
+                                {currentProgress?.current_step
+                                    ? currentProgress.current_step.replace(/_/g, " ")
+                                    : status.toLowerCase()}
+                                ...
                             </Typography>
                             <Typography variant="small" className="text-indigo-900 font-bold text-xs">
                                 {Math.round(progress)}%
@@ -276,6 +284,11 @@ export function DeckCard({
                             className="h-1.5 bg-indigo-100"
                             barProps={{ className: "bg-indigo-500" }}
                         />
+                        {currentProgress?.generated !== undefined && (
+                            <Typography variant="small" className="text-indigo-400 font-medium text-[10px] mt-1">
+                                {currentProgress.generated} / {currentProgress.total} {language === "es" ? "fichas" : "cards"}
+                            </Typography>
+                        )}
                     </div>
                 )}
 
