@@ -235,12 +235,14 @@ export function BatteryCard({
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2 text-blue-600">
                                 <Typography variant="small" className="font-bold flex items-center gap-1 text-[10px]">
-                                    {progress.status}...
+                                    {progress.current_step
+                                        ? progress.current_step.replace(/_/g, " ")
+                                        : (progress.status || "generating")}...
                                 </Typography>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Typography variant="small" className="text-blue-900 font-bold text-[10px]">
-                                    {Math.round(progress.percent || 0)}%
+                                    {Math.round(progress.progress || 0)}%
                                 </Typography>
                                 {onDismissProgress && (
                                     <IconButton
@@ -255,12 +257,17 @@ export function BatteryCard({
                             </div>
                         </div>
                         <Progress
-                            value={Math.round(progress.percent || 0)}
+                            value={Math.round(progress.progress || 0)}
                             size="sm"
                             color="blue"
                             className="h-1 bg-blue-100"
                             barProps={{ className: "bg-blue-500" }}
                         />
+                        {progress.generated !== undefined && (
+                            <Typography variant="small" className="text-blue-400 font-medium text-[10px] mt-1">
+                                {progress.generated} / {progress.total} {language === "es" ? "preguntas" : "questions"}
+                            </Typography>
+                        )}
                     </div>
                 )}
 
