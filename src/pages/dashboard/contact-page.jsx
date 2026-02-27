@@ -43,9 +43,19 @@ export function ContactPage() {
             });
             setFormData({ name: "", email: "", phone: "", message: "" });
         } catch (err) {
+            // err may be an array of JSON-encoded bilingual strings, e.g.
+            // ["{\"es\":\"Mensaje\",\"en\":\"Message\"}"]
+            let errorMsg = t("contact_page.error_message");
+            try {
+                const raw = Array.isArray(err) ? err[0] : (err?.message?.[0] ?? err?.non_field_errors?.[0] ?? null);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    errorMsg = parsed[language] ?? parsed.en ?? errorMsg;
+                }
+            } catch (_) { }
             setStatus({
                 type: "error",
-                message: t("contact_page.error_message"),
+                message: errorMsg,
             });
         } finally {
             setLoading(false);
