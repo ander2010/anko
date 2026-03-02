@@ -235,13 +235,13 @@ export function BatteryCard({
                 {progress && (
                     <div className="mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50 group/batprog">
                         <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2 text-blue-600">
+                            {/* <div className="flex items-center gap-2 text-blue-600">
                                 <Typography variant="small" className="font-bold flex items-center gap-1 text-[10px]">
                                     {progress.current_step
                                         ? progress.current_step.replace(/_/g, " ")
                                         : (progress.status || "generating")}...
                                 </Typography>
-                            </div>
+                            </div> */}
                             <div className="flex items-center gap-2">
                                 <Typography variant="small" className="text-blue-900 font-bold text-[10px]">
                                     {Math.round(progress.progress || 0)}%
