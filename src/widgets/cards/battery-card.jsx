@@ -65,16 +65,18 @@ export function BatteryCard({
             }
         };
 
-        // Wait to fetch summary until isGenerating is false
-        // (meaning no active job exists in globalActiveJobs for this battery)
-        if (!isGenerating) {
+        // Only fetch summary when:
+        // 1. No active generation job (isGenerating = false)
+        // 2. Battery status is "Ready" — Django sets this only after questions are saved
+        // This prevents fetching before the generation WebSocket sends status: COMPLETED
+        if (!isGenerating && battery?.status === "Ready") {
             fetchSummary();
         }
 
         return () => {
             isMounted = false;
         };
-    }, [battery?.id, isGenerating]);
+    }, [battery?.id, battery?.status, isGenerating]);
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
