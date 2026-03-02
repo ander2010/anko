@@ -1,7 +1,11 @@
 import axios from "axios";
 
-// const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
-export const API_BASE = import.meta.env.VITE_API_BASE || "https://italk2.me/api";
+export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
+// SSE_BASE targets the dedicated progress service (port 3020)
+export const SSE_BASE = import.meta.env.VITE_SSE_URL || (API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1') ? "http://localhost:3020" : "/companion");
+// export const API_BASE = import.meta.env.VITE_API_BASE || "https://italk2.me/api";
+
+
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -9,6 +13,10 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+
+
+
 
 export function setAuthToken(token) {
   if (token) {
