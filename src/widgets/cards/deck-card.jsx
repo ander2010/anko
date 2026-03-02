@@ -267,12 +267,12 @@ export function DeckCard({
                 {job && !isCompleted && (
                     <div className="mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
                         <div className="flex items-center justify-between mb-2">
-                            <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
+                            {/* <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
                                 {currentProgress?.current_step
                                     ? currentProgress.current_step.replace(/_/g, " ")
                                     : status.toLowerCase()}
                                 ...
-                            </Typography>
+                            </Typography> */}
                             <Typography variant="small" className="text-indigo-900 font-bold text-xs">
                                 {Math.round(progress)}%
                             </Typography>
