@@ -290,17 +290,22 @@ export function ProjectDetail() {
       }
 
       const res = await projectService.startGenerateBattery(payload);
+      console.log("[ProjectDetail] startGenerateBattery response:", res);
       setShowGenerateBattery(false);
 
-      // Init SSE for progress and add Job FIRST to prevent premature UI fetch!
-      const batteryId = res?.battery?.id;
+      const batteryId = res?.battery?.id ?? res?.id ?? null;
+      const jobId = res?.job_id || res?.battery?.external_job_id || null;
+      console.log("[ProjectDetail] batteryId:", batteryId, "jobId:", jobId);
+
       if (batteryId) {
         addJob({
           id: String(batteryId),
+          batteryId: String(batteryId),
+          jobId: jobId ? String(jobId) : undefined,
           type: 'battery',
           projectId: String(projectId)
         });
-        resumeBatterySSE(batteryId);
+        resumeBatterySSE(batteryId, jobId);
       }
 
       await fetchBatteries(Number(projectId));
@@ -377,7 +382,7 @@ export function ProjectDetail() {
       if (j.type === 'battery') {
         if (!activeSseConnections.current[targetId]) {
           console.log("[ProjectDetail] Connection candidate found (battery):", targetId);
-          resumeBatterySSE(targetId);
+          resumeBatterySSE(targetId, j.jobId || null);
         }
       } else if (j.type === 'flashcard') {
         if (!activeSseConnections.current[targetId]) {
@@ -407,60 +412,80 @@ export function ProjectDetail() {
     };
   }, [planLimitError]);
 
-  const resumeBatterySSE = (batteryId) => {
-    // PREVENT DUPLICATE CONNECTIONS
-    if (activeSseConnections.current[batteryId]) {
-      console.log("[ProjectDetail] SSE already active for battery:", batteryId);
+  const resumeBatterySSE = (batteryId, directJobId = null) => {
+    const bid = String(batteryId);
+
+    if (activeSseConnections.current[bid]) {
+      console.log("[ProjectDetail] SSE already active for battery:", bid);
       return;
     }
 
-    // Find the jobId from globalActiveJobs for robustness (the backend can use it as fallback)
-    const activeJob = globalActiveJobs.find(j => j.type === 'battery' && String(j.batteryId) === String(batteryId));
-    const jobId = activeJob?.jobId;
+    // directJobId comes from handleGenerateBattery; fallback to stored job for page-reload case
+    const activeJob = globalActiveJobs.find(j => j.type === 'battery' && String(j.batteryId) === bid);
+    const jobId = directJobId || activeJob?.jobId;
 
-    // Use API_BASE to construct absolute URL for production support.
     const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
-    let sseUrl = `${base}/batteries/progress-stream-bat/?battery_id=${batteryId}`;
-    if (jobId) {
-      sseUrl += `&job_id=${jobId}`;
-    }
-    console.log("[ProjectDetail] Resuming battery SSE:", sseUrl);
+    let sseUrl = `${base}/batteries/progress-stream-bat/?battery_id=${bid}`;
+    if (jobId) sseUrl += `&job_id=${jobId}`;
+    console.log("[ProjectDetail] Starting battery SSE:", sseUrl);
 
     const es = new EventSource(sseUrl);
-    activeSseConnections.current[batteryId] = es;
+    activeSseConnections.current[bid] = es;
+
+    es.addEventListener("init", (e) => {
+      console.log("[ProjectDetail] SSE init for battery:", bid, e.data);
+    });
 
     es.addEventListener("progress", (e) => {
-      const data = JSON.parse(e.data);
-      setBatteryProgress(prev => ({ ...prev, [batteryId]: data }));
+      try {
+        const data = JSON.parse(e.data);
+        setBatteryProgress(prev => ({ ...prev, [bid]: data }));
+      } catch (_) {}
     });
 
     es.addEventListener("end", async (e) => {
-      console.log("[ProjectDetail] SSE 'end' event for battery:", batteryId);
+      const data = e.data ? JSON.parse(e.data) : {};
+      console.log("[ProjectDetail] SSE end for battery:", bid, "final_status:", data.final_status);
       es.close();
-      delete activeSseConnections.current[batteryId];
+      delete activeSseConnections.current[bid];
+
+      // Keep progress bar visible while saving
+      setBatteryProgress(prev => ({
+        ...prev,
+        [bid]: prev[bid] || { progress: 100, current_step: "saving_questions", status: "DONE" },
+      }));
 
       try {
-        // Sync results to database
-        await projectService.saveQuestionsFromQa(batteryId);
+        await projectService.saveQuestionsFromQa(bid);
+        console.log("[ProjectDetail] Questions saved for battery:", bid);
       } catch (err) {
-        console.error("[ProjectDetail] Error saving questions after SSE end:", err);
+        console.error("[ProjectDetail] saveQuestionsFromQa failed:", err);
       }
 
-      fetchBatteries(Number(projectId));
+      // Refresh THEN clear — so the card renders with questions before bar disappears
+      await fetchBatteries(Number(projectId));
       setBatteryProgress(prev => {
-        const newState = { ...prev };
-        delete newState[batteryId];
-        return newState;
+        const ns = { ...prev };
+        delete ns[bid];
+        return ns;
       });
-      removeJob(batteryId); // Clear from persistence
+      removeJob(bid);
     });
 
     es.addEventListener("error", (e) => {
-      console.error("[ProjectDetail] SSE error for battery:", batteryId, e);
+      let data = {};
+      try { data = e.data ? JSON.parse(e.data) : {}; } catch (_) {}
+      console.error("[ProjectDetail] SSE backend error for battery:", bid, data);
       es.close();
-      delete activeSseConnections.current[batteryId];
-      // Optional: don't removeJob yet so it can retry next refresh?
+      delete activeSseConnections.current[bid];
+      if (data.error === "not_found") removeJob(bid);
     });
+
+    es.onerror = () => {
+      console.error("[ProjectDetail] SSE connection error for battery:", bid);
+      es.close();
+      delete activeSseConnections.current[bid];
+    };
   };
 
   const resumeDeckSSE = (deckId) => {
