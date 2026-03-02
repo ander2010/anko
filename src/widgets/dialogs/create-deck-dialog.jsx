@@ -521,7 +521,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     </div>
                                 </div>
                             ) : (
-                                <div className={`border rounded-2xl overflow-hidden bg-white shadow-sm transition-colors ${errors.general ? "border-red-500 bg-red-50/5" : "border-zinc-200"} `}>
+                                <div className={`border rounded-2xl overflow-y-auto max-h-72 bg-white shadow-sm transition-colors ${errors.general ? "border-red-500 bg-red-50/5" : "border-zinc-200"} `}>
                                     {scannedDocuments.map((doc, index) => {
                                         const docId = Number(doc.id);
                                         const docSections = doc.sections || [];
