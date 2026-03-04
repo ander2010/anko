@@ -250,21 +250,27 @@ export function DashboardNavbar() {
                 )}
 
                 {!notifLoading && notifications.map((notif) => {
-                  const title = notif.notification?.title || notif.title || "";
-                  const body  = notif.notification?.body  || notif.body  || notif.message || "";
-                  const level = (notif.notification?.level || notif.level || "info").toLowerCase().trim();
-                  const date  = notif.created_at || notif.notification?.created_at;
-                  const { dot } = getLevelStyle(level);
+                  const title  = notif.notification?.title || notif.title || "";
+                  const body   = notif.notification?.body  || notif.body  || notif.message || "";
+                  const level  = (notif.notification?.level || notif.level || "info").toLowerCase().trim();
+                  const date   = notif.created_at || notif.notification?.created_at;
+                  // API uses read_at (null = unread), fallback to is_read boolean
+                  const isRead = notif.is_read !== undefined ? notif.is_read : notif.read_at !== null;
+                  // Inline color bypasses Tailwind purge
+                  const dotColor = level === "success" ? "#10b981"
+                                 : level === "error"   ? "#ef4444"
+                                 : level === "warning" ? "#f59e0b"
+                                 :                       "#6366f1";
                   return (
                     <div
                       key={notif.id}
-                      className={`group flex items-start gap-3 px-3 py-3 rounded-xl mb-1 cursor-pointer transition-colors ${!notif.is_read ? "bg-indigo-50/70" : "hover:bg-zinc-50"}`}
-                      onClick={() => { if (!notif.is_read) markRead(notif.id); }}
+                      className={`group flex items-start gap-3 px-3 py-3 rounded-xl mb-1 cursor-pointer transition-colors ${!isRead ? "bg-indigo-50/70" : "hover:bg-zinc-50"}`}
+                      onClick={() => { if (!isRead) markRead(notif.id); }}
                     >
-                      <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${dot}`} />
+                      <span className="mt-1.5 h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
                       <div className="flex-1 min-w-0">
                         {title && (
-                          <p className={`text-[11px] font-semibold leading-tight ${!notif.is_read ? "text-zinc-900" : "text-zinc-500"}`}>
+                          <p className={`text-[11px] font-semibold leading-tight ${!isRead ? "text-zinc-900" : "text-zinc-500"}`}>
                             {title}
                           </p>
                         )}
