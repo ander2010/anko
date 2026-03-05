@@ -32,4 +32,11 @@ export function setAuthToken(token) {
 const savedToken = localStorage.getItem("token");
 if (savedToken) setAuthToken(savedToken);
 
+// Attach Accept-Language from localStorage on every request
+api.interceptors.request.use((config) => {
+  const lang = localStorage.getItem("language") || "en";
+  config.headers["Accept-Language"] = lang;
+  return config;
+});
+
 export default api;
