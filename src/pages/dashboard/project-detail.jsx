@@ -440,7 +440,7 @@ export function ProjectDetail() {
       try {
         const data = JSON.parse(e.data);
         setBatteryProgress(prev => ({ ...prev, [bid]: data }));
-      } catch (_) {}
+      } catch (_) { }
     });
 
     es.addEventListener("end", async (e) => {
@@ -474,7 +474,7 @@ export function ProjectDetail() {
 
     es.addEventListener("error", (e) => {
       let data = {};
-      try { data = e.data ? JSON.parse(e.data) : {}; } catch (_) {}
+      try { data = e.data ? JSON.parse(e.data) : {}; } catch (_) { }
       console.error("[ProjectDetail] SSE backend error for battery:", bid, data);
       es.close();
       delete activeSseConnections.current[bid];
@@ -2345,7 +2345,7 @@ export function ProjectDetail() {
       />
 
       {
-        selectedDeck && (
+        selectedDeck && flashcardViewDialogOpen && (
           <FlashcardViewDialog
             open={flashcardViewDialogOpen}
             onClose={() => {
@@ -2359,7 +2359,7 @@ export function ProjectDetail() {
       }
 
       {
-        learnDeck && (
+        learnDeck && learnDialogOpen && (
           <FlashcardLearnDialog
             open={learnDialogOpen}
             onClose={() => {

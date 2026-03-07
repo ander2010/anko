@@ -3,7 +3,7 @@ import axios from "axios";
 // export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
 // // SSE_BASE targets the dedicated progress service (port 3020)
 // export const SSE_BASE = import.meta.env.VITE_SSE_URL || (API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1') ? "http://localhost:3020" : "/companion");
-export const API_BASE = import.meta.env.VITE_API_BASE || "https://italk2.me/api";
+ export const API_BASE = import.meta.env.VITE_API_BASE || "https://italk2.me/api";
 
 
 
@@ -33,9 +33,10 @@ const savedToken = localStorage.getItem("token");
 if (savedToken) setAuthToken(savedToken);
 
 // Attach Accept-Language from localStorage on every request
+// RBAC always uses "en" — route keys are code identifiers, not UI strings
 api.interceptors.request.use((config) => {
   const lang = localStorage.getItem("language") || "en";
-  config.headers["Accept-Language"] = lang;
+  config.headers["Accept-Language"] = config.url?.includes("/rbac/") ? "en" : lang;
   return config;
 });
 
