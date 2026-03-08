@@ -84,9 +84,12 @@ export function DashboardNavbar() {
     }
   };
 
-  // Fetch al login para el badge
+  // Fetch al login para el badge + polling de respaldo cada 30 s
   useEffect(() => {
-    if (user) fetchNotifications();
+    if (!user) return;
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(interval);
   }, [user]);
 
   // Socket persistente — se abre al login, se cierra al logout
