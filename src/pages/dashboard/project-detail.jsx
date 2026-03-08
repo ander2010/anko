@@ -84,6 +84,8 @@ export function ProjectDetail() {
   const activeSseConnections = useRef({}); // Tracks active EventSource pointers by batteryId
   const processingTriggerRef = useRef(false); // Prevents double submission in handlers
   const processedDecks = useRef({}); // Tracks completed deck jobs to prevent double-sync
+  const batteryProgressQueue = useRef({}); // Buffers progress events for animation
+  const deckProgressQueue = useRef({}); // Buffers deck progress events for animation
 
   const [showGenerateBattery, setShowGenerateBattery] = useState(false);
   const [batteryProgress, setBatteryProgress] = useState({});
@@ -297,7 +299,12 @@ export function ProjectDetail() {
       const jobId = res?.job_id || res?.battery?.external_job_id || null;
       console.log("[ProjectDetail] batteryId:", batteryId, "jobId:", jobId);
 
+      // Fetch batteries first so the card exists in the DOM before SSE events arrive
+      await fetchBatteries(Number(projectId));
+
       if (batteryId) {
+        // Show progress bar at 0 immediately, before SSE connects
+        setBatteryProgress(prev => ({ ...prev, [String(batteryId)]: { progress: 0, status: "STARTING", current_step: "init" } }));
         addJob({
           id: String(batteryId),
           batteryId: String(batteryId),
@@ -307,8 +314,6 @@ export function ProjectDetail() {
         });
         resumeBatterySSE(batteryId, jobId);
       }
-
-      await fetchBatteries(Number(projectId));
     } catch (err) {
       console.error("Battery generation error:", err);
       const errorMessage = err?.error || err?.detail || "";
@@ -436,9 +441,14 @@ export function ProjectDetail() {
       console.log("[ProjectDetail] SSE init for battery:", bid, e.data);
     });
 
+    batteryProgressQueue.current[bid] = [];
+
     es.addEventListener("progress", (e) => {
       try {
         const data = JSON.parse(e.data);
+        batteryProgressQueue.current[bid] = batteryProgressQueue.current[bid] || [];
+        batteryProgressQueue.current[bid].push(data);
+        // Also show immediately for live (non-buffered) scenarios
         setBatteryProgress(prev => ({ ...prev, [bid]: data }));
       } catch (_) { }
     });
@@ -449,10 +459,21 @@ export function ProjectDetail() {
       es.close();
       delete activeSseConnections.current[bid];
 
+      // Animate through buffered progress events (all arrived in same tick)
+      const queue = batteryProgressQueue.current[bid] || [];
+      delete batteryProgressQueue.current[bid];
+      if (queue.length > 1) {
+        // Events were buffered — animate them sequentially
+        for (const item of queue) {
+          setBatteryProgress(prev => ({ ...prev, [bid]: item }));
+          await new Promise(r => setTimeout(r, 350));
+        }
+      }
+
       // Keep progress bar visible while saving
       setBatteryProgress(prev => ({
         ...prev,
-        [bid]: prev[bid] || { progress: 100, current_step: "saving_questions", status: "DONE" },
+        [bid]: { progress: 100, current_step: "saving_questions", status: "DONE" },
       }));
 
       try {
@@ -488,13 +509,13 @@ export function ProjectDetail() {
     };
   };
 
-  const resumeDeckSSE = (deckId) => {
+  const resumeDeckSSE = (deckId, directJobId = null) => {
     const sId = String(deckId);
     if (activeSseConnections.current[sId]) return;
 
-    // Find the jobId from globalActiveJobs
+    // directJobId comes from handleCreateDeck; fallback to stored job for page-reload case
     const activeJob = globalActiveJobs.find(j => j.type === 'flashcard' && String(j.deckId) === sId);
-    const jobId = activeJob?.jobId || activeJob?.job_id;
+    const jobId = directJobId || activeJob?.id || activeJob?.jobId || activeJob?.job_id;
 
     const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
     let sseUrl = `${base}/decks/progress-stream-deck/?deck_id=${sId}`;
@@ -505,16 +526,32 @@ export function ProjectDetail() {
 
     const es = new EventSource(sseUrl);
     activeSseConnections.current[sId] = es;
+    deckProgressQueue.current[sId] = [];
 
     es.addEventListener("progress", (e) => {
-      const data = JSON.parse(e.data);
-      setDeckProgress(prev => ({ ...prev, [sId]: data }));
+      try {
+        const data = JSON.parse(e.data);
+        deckProgressQueue.current[sId] = deckProgressQueue.current[sId] || [];
+        deckProgressQueue.current[sId].push(data);
+        // Also show immediately for live (non-buffered) scenarios
+        setDeckProgress(prev => ({ ...prev, [sId]: data }));
+      } catch (_) { }
     });
 
     es.addEventListener("end", async (e) => {
       console.log("[ProjectDetail] SSE 'end' event for deck:", sId);
       es.close();
       delete activeSseConnections.current[sId];
+
+      // Animate through buffered progress events (all arrived in same tick)
+      const queue = deckProgressQueue.current[sId] || [];
+      delete deckProgressQueue.current[sId];
+      if (queue.length > 1) {
+        for (const item of queue) {
+          setDeckProgress(prev => ({ ...prev, [sId]: item }));
+          await new Promise(r => setTimeout(r, 350));
+        }
+      }
 
       const jobId = activeFlashcardJobs[sId]?.job_id;
       await handleFlashcardJobComplete(sId, jobId, {});
@@ -854,9 +891,11 @@ export function ProjectDetail() {
               ws_url: wsUrl
             });
 
-            // CRITICAL: Call sync immediately to ensure flashcards appear
-            // This handles cases where WebSocket completes too fast or fails
-            console.log("[ProjectDetail] Starting immediate sync for deck:", deckId, "job:", res.job_id);
+            // Start SSE progress stream immediately (passes jobId directly to avoid race with state update)
+            resumeDeckSSE(deckId, String(jobId));
+
+            // Poll for completion as a fallback (handles cases where SSE fails or job completes very fast)
+            console.log("[ProjectDetail] Starting fallback sync for deck:", deckId, "job:", jobId);
 
             // Poll for completion with exponential backoff
             const pollForCompletion = async (attempts = 0, maxAttempts = 20) => {
