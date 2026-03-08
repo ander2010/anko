@@ -31,7 +31,7 @@ export function MyBatteries() {
 
     useEffect(() => {
         fetchBatteries();
-    }, [page, pageSize]);
+    }, [page, pageSize, language]);
 
     const fetchBatteries = async () => {
         try {

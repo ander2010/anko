@@ -31,10 +31,9 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
 
     useEffect(() => {
         if (open && deckId) {
-            // Fetch flashcards whenever the dialog opens or deck changes
             fetchFlashcards();
         }
-    }, [open, deckId]);
+    }, [open, deckId, language]);
 
     const fetchFlashcards = async () => {
         try {

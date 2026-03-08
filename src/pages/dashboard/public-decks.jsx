@@ -43,7 +43,7 @@ export function PublicDecks() {
 
     useEffect(() => {
         fetchPublicDecks();
-    }, [page, pageSize]);
+    }, [page, pageSize, language]);
 
     const fetchPublicDecks = async () => {
         try {

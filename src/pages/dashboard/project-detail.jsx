@@ -360,11 +360,11 @@ export function ProjectDetail() {
 
   useEffect(() => {
     if (projectId) fetchBatteries(Number(projectId));
-  }, [projectId, batteriesPage, batteriesPageSize]);
+  }, [projectId, batteriesPage, batteriesPageSize, language]);
 
   useEffect(() => {
     if (projectId) fetchDecks(Number(projectId));
-  }, [projectId, decksPage, decksPageSize]);
+  }, [projectId, decksPage, decksPageSize, language]);
 
   // Resume persistent battery jobs on mount/projectId change
   useEffect(() => {

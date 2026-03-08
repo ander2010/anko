@@ -31,7 +31,7 @@ export function PublicBatteries() {
 
     useEffect(() => {
         fetchPublicBatteries();
-    }, [page, pageSize]);
+    }, [page, pageSize, language]);
 
     const fetchPublicBatteries = async () => {
         try {

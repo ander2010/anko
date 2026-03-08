@@ -70,29 +70,16 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
     return `${battery?.id}-opened`;
   }, [open, battery?.id]);
 
-  // -------------------- Cargar Batería Completa si faltan preguntas --------------------
+  // -------------------- Cargar Batería Completa (siempre del API para respetar idioma) --------------------
   useEffect(() => {
     if (open && initialBattery) {
-      // Si la batería inicial no tiene preguntas (o está vacía), cargamos la completa
-      if (!initialBattery.questions || initialBattery.questions.length === 0) {
-        setLoadingBattery(true);
-        console.log("Fetching full battery details for:", initialBattery.id);
-        projectService.getBattery(initialBattery.id)
-          .then(fullData => {
-            setBattery(fullData);
-          })
-          .catch(err => {
-            console.error("Failed to load full battery:", err);
-            // Podríamos mostrar un error aquí, pero por ahora dejamos la inicial
-            setBattery(initialBattery);
-          })
-          .finally(() => setLoadingBattery(false));
-      } else {
-        // Si ya tiene preguntas, usamos la inicial
-        setBattery(initialBattery);
-      }
+      setLoadingBattery(true);
+      projectService.getBattery(initialBattery.id)
+        .then(fullData => setBattery(fullData))
+        .catch(() => setBattery(initialBattery))
+        .finally(() => setLoadingBattery(false));
     }
-  }, [open, initialBattery]);
+  }, [open, initialBattery, language]);
 
   // -------------------- Reset cuando se cierra --------------------
   useEffect(() => {

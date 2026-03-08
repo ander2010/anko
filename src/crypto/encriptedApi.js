@@ -56,6 +56,8 @@ export async function apiFetch(url, { token, ...options } = {}) {
     if (!headers.has("Content-Type") && options.body && !(options.body instanceof FormData)) {
         headers.set("Content-Type", "application/json");
     }
+    const lang = localStorage.getItem("language") || "en";
+    headers.set("Accept-Language", lang);
 
     const res = await fetch(url, { ...options, headers });
 

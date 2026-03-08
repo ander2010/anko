@@ -41,7 +41,7 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
             setJobId(null);
             loadNextCard(0);
         }
-    }, [open, deckId]);
+    }, [open, deckId, language]);
 
     const loadNextCard = async (lastSeq) => {
         try {

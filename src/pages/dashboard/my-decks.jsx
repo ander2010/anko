@@ -45,7 +45,7 @@ export function MyDecks() {
 
     useEffect(() => {
         fetchDecks();
-    }, [page, pageSize]);
+    }, [page, pageSize, language]);
 
     // Auto-dismiss planLimitError after 4 seconds
     useEffect(() => {
