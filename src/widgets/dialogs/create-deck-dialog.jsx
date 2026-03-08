@@ -130,7 +130,8 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const clamped = name === "cards_count" ? Math.min(15, Math.max(1, Number(value))) : value;
+        setFormData((prev) => ({ ...prev, [name]: name === "cards_count" ? clamped : value }));
 
         // Real-time validation for duplicate titles
         if (name === "title") {
@@ -439,12 +440,17 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                                     </Typography>
                                     <Input
                                         type="number"
+                                        min="1"
+                                        max="15"
                                         className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900"
                                         name="cards_count"
                                         value={formData.cards_count}
                                         onChange={handleChange}
                                         labelProps={{ className: "hidden" }}
                                     />
+                                    <Typography variant="small" className="mt-1 ml-1 text-zinc-400 text-[11px]">
+                                        {language === "es" ? "Máximo 15 tarjetas por mazo." : "Maximum 15 cards per deck."}
+                                    </Typography>
                                 </div>
                             )}
                         </div>

@@ -91,7 +91,8 @@ export function GenerateBatteryDialog({
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const clamped = name === "quantity" ? Math.min(15, Math.max(1, Number(value))) : value;
+        setFormData((prev) => ({ ...prev, [name]: name === "quantity" ? clamped : value }));
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
 
         if (name === "query_text") {
@@ -388,13 +389,16 @@ export function GenerateBatteryDialog({
                                 <Input
                                     type="number"
                                     min="1"
-                                    max="100"
+                                    max="15"
                                     className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl"
                                     name="quantity"
                                     value={formData.quantity}
                                     onChange={handleInputChange}
                                     labelProps={{ className: "hidden" }}
                                 />
+                                <Typography variant="small" className="mt-1 ml-1 text-zinc-400 text-[11px]">
+                                    {language === "es" ? "Máximo 15 preguntas por batería." : "Maximum 15 questions per battery."}
+                                </Typography>
                             </div>
                         )}
 
