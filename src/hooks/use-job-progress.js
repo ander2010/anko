@@ -40,9 +40,11 @@ export function useJobProgress(jobId) {
             try {
                 const data = JSON.parse(event.data);
 
-                if (data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat") {
+                if (event.type === "end" || data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat" || data.final_status) {
                     const currentProgress = parseFloat(data.progress || progress);
-                    setProgress(currentProgress);
+                    if (!isNaN(currentProgress)) {
+                        setProgress(currentProgress);
+                    }
 
                     if (data.status) setStatus(data.status);
                     if (data.current_step) setCurrentStep(data.current_step);
@@ -50,8 +52,11 @@ export function useJobProgress(jobId) {
                     setError(null);
                     setRetryCount(0); // Reset retry count on successful message
 
-                    if (currentProgress >= 100) {
+                    const isDoneStatus = ["COMPLETED", "DONE", "FINISHED", "SUCCESS"].includes(data.final_status) || ["COMPLETED", "DONE", "FINISHED"].includes(data.status);
+
+                    if (currentProgress >= 100 || isDoneStatus || event.type === "end") {
                         setIsCompleted(true);
+                        if (currentProgress < 100) setProgress(100);
                         eventSource.onerror = null; // Prevent reconnection if server drops connection after completion
                         eventSource.close();
                     }
@@ -76,7 +81,9 @@ export function useJobProgress(jobId) {
             }
         };
 
-        eventSource.onmessage = handleMessage;
+        eventSource.addEventListener("progress", handleMessage);
+        eventSource.addEventListener("init", handleMessage);
+        eventSource.addEventListener("end", handleMessage);
         eventSource.onerror = handleError;
         eventSource.addEventListener("ping", () => {
             setRetryCount(0); // Reset on ping too
