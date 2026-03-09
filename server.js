@@ -24,8 +24,9 @@ const options = {
         getKey: (req, filename, metadata) => {
             const meta = metadata || {};
             const userId = meta.user_id || 'unknown';
+            const projectId = meta.project_id || 'unknown';
             const safe = sanitizeFilename(filename);
-            const key = `documents/${userId}/${safe}`;
+            const key = `documents/${userId}/${projectId}/${safe}`;
             console.log(`[Companion] S3 Key: ${key}`);
             return key;
         }
