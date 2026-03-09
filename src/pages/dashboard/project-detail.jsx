@@ -580,8 +580,10 @@ export function ProjectDetail() {
       setDocumentsWithSections(data.documents || []);
 
       const counts = {};
+      console.log("[ProjectDetail] fetchSectionsCounts data:", data);
       data.documents?.forEach(doc => {
         counts[doc.id] = doc.sections ? doc.sections.length : 0;
+        console.log(`[ProjectDetail] Doc ${doc.id} sections array length:`, doc.sections?.length, doc.sections);
       });
       setSectionsCounts(counts);
     } catch (err) {
@@ -1193,9 +1195,10 @@ export function ProjectDetail() {
       if (jobId) removeJob(jobId);
       await fetchDocuments(Number(projectId));
 
+      // Allow the backend more time to persist sections before fetching them
       setTimeout(() => {
         fetchSectionsCounts();
-      }, 1000);
+      }, 4000);
     } catch (err) {
       console.error("Error handling job completion:", err);
     }
