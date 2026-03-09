@@ -41,15 +41,18 @@ export function useJobProgress(jobId) {
                 const data = JSON.parse(event.data);
 
                 if (data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat") {
-                    setProgress(parseFloat(data.progress || progress));
+                    const currentProgress = parseFloat(data.progress || progress);
+                    setProgress(currentProgress);
+
                     if (data.status) setStatus(data.status);
                     if (data.current_step) setCurrentStep(data.current_step);
                     if (data.doc_id) setDocId(data.doc_id);
                     setError(null);
                     setRetryCount(0); // Reset retry count on successful message
 
-                    if (parseFloat(data.progress) >= 100) {
+                    if (currentProgress >= 100) {
                         setIsCompleted(true);
+                        eventSource.onerror = null; // Prevent reconnection if server drops connection after completion
                         eventSource.close();
                     }
                 }

@@ -1184,7 +1184,11 @@ export function ProjectDetail() {
     try {
       console.log("[ProjectDetail] Job complete:", { docId, jobId });
       if (docId) {
-        await projectService.getDocumentTags(docId);
+        try {
+          await projectService.getDocumentTags(docId);
+        } catch (tagErr) {
+          console.warn("[ProjectDetail] Failed to get document tags, continuing completion anyway:", tagErr);
+        }
       }
       if (jobId) removeJob(jobId);
       await fetchDocuments(Number(projectId));
