@@ -22,7 +22,7 @@ export function Footer({ brandName, brandLink, routes }) {
           </Link>{" "}
           {t("footer.for_better_web")}
         </Typography>
-        <ul className="flex items-center gap-4">
+        <ul className="flex items-center gap-4 pr-12 md:pr-20">
           {routes.map(({ name, path }) => (
             <li key={name}>
               <Link to={path}>
