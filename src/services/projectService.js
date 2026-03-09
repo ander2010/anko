@@ -134,19 +134,72 @@ const projectService = {
     }
   },
 
-  async getDocumentsWithSections(projectId) {
+  async getDocumentsWithSections(projectId, documentId = null) {
     try {
       const token = localStorage.getItem("token");
-      const url = `${API_BASE}/projects/${projectId}/documents-with-sections/`;
 
-      const { ok, data } = await apiFetch(url, { token });
+      // Helper: extracts a document object from whatever shape the API returns
+      const extractDocument = (data, targetId = null) => {
+        // New format: { document: {...} }
+        if (data?.document && typeof data.document === "object") return data.document;
+        // Paginated format: { count, results: [...], projectId }
+        if (Array.isArray(data?.results)) {
+          const found = targetId ? data.results.find(d => String(d.id) === String(targetId)) : data.results[0];
+          return found || null;
+        }
+        // Old/compat format: { documents: [...] }
+        if (Array.isArray(data?.documents)) {
+          const found = targetId ? data.documents.find(d => String(d.id) === String(targetId)) : data.documents[0];
+          return found || null;
+        }
+        // Raw document: { id, sections, ... }
+        if (data?.id && Array.isArray(data?.sections)) return data;
+        // Array directly (no wrapper): [{id, sections}, ...]
+        if (Array.isArray(data)) {
+          const found = targetId ? data.find(d => String(d.id) === String(targetId)) : data[0];
+          return found || null;
+        }
+        console.warn("[getDocumentsWithSections] extractDocument: unrecognized shape", data);
+        return null;
+      };
 
-      if (!ok) {
-        throw data || { error: "Failed to fetch document sections" };
+      if (documentId) {
+        const url = `${API_BASE}/projects/${projectId}/documents-with-sections/?document_id=${documentId}`;
+        const { ok, data, status } = await apiFetch(url, { token });
+        console.log(`[getDocumentsWithSections] single doc response ok=${ok} status=${status}`, data);
+        if (!ok) throw data || { error: "Failed to fetch document sections" };
+        const doc = extractDocument(data, documentId);
+        console.log("[getDocumentsWithSections] extracted doc:", doc);
+        return { projectId, document: doc };
       }
 
-      return data; // Expected: { projectId: ..., documents: [...] }
+      // No documentId: first get all docs for the project, then fetch sections per-doc
+      const docsData = await this.getProjectDocuments(projectId, 1, 200);
+      console.log("[getDocumentsWithSections] docsData from getProjectDocuments:", docsData);
+      const docs = Array.isArray(docsData) ? docsData : docsData?.results || [];
+      console.log("[getDocumentsWithSections] docs to iterate:", docs.length, docs.map(d => d.id));
+
+      const documentsWithSections = await Promise.all(
+        docs.map(async (doc) => {
+          try {
+            const url = `${API_BASE}/projects/${projectId}/documents-with-sections/?document_id=${doc.id}`;
+            const { ok, data, status } = await apiFetch(url, { token });
+            console.log(`[getDocumentsWithSections] doc ${doc.id} ok=${ok} status=${status}`, data);
+            if (!ok) return null;
+            return extractDocument(data, doc.id);
+          } catch (e) {
+            console.error(`[getDocumentsWithSections] doc ${doc.id} threw:`, e);
+            return null;
+          }
+        })
+      );
+
+      return {
+        projectId,
+        documents: documentsWithSections.filter(Boolean),
+      };
     } catch (err) {
+      console.error("[getDocumentsWithSections] outer catch:", err);
       throw err?.response?.data || err || { error: "Failed to fetch document sections" };
     }
   },
@@ -155,7 +208,34 @@ const projectService = {
     try {
       await api.delete(`/documents/${documentId}/`);
     } catch (err) {
+      if (err?.response?.status === 502) {
+        throw { error: "Storage error: could not delete the file from storage. Please try again.", status: 502 };
+      }
       throw err?.response?.data || { error: "Failed to delete document" };
+    }
+  },
+
+  async getDeckCards(deckId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/decks/${deckId}/cards/`;
+      const { ok, data } = await apiFetch(url, { token });
+      if (!ok) throw data || { error: "Failed to fetch deck cards" };
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch deck cards" };
+    }
+  },
+
+  async getBatteryQuestions(batteryId) {
+    try {
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/batteries/${batteryId}/questions/`;
+      const { ok, data } = await apiFetch(url, { token });
+      if (!ok) throw data || { error: "Failed to fetch battery questions" };
+      return data;
+    } catch (err) {
+      throw err?.response?.data || err || { error: "Failed to fetch battery questions" };
     }
   },
   async registerDocument(data) {

@@ -213,7 +213,7 @@ export function BatteryCard({
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-100">
                         <Typography className="text-[10px] font-bold text-zinc-600">
-                            {(battery.questions?.length || battery.question_count || 0)} {language === "es" ? "PREGUNTAS" : "QUESTIONS"}
+                            {(battery.questionsCount ?? battery.questions_count ?? battery.questions?.length ?? battery.question_count ?? 0)} {language === "es" ? "PREGUNTAS" : "QUESTIONS"}
                         </Typography>
                     </div>
                 </div>

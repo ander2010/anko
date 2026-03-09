@@ -52,11 +52,10 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
         setLoadingSections(true);
         setErrorSections(null);
         try {
-            // The API returns { projectId, documents: [ { id, sections: [...] }, ... ] }
-            const data = await projectService.getDocumentsWithSections(projectId);
+            // The API now returns { projectId, document: { id, sections: [...] } } for a specific doc
+            const data = await projectService.getDocumentsWithSections(projectId, document.id);
 
-            // Find our specific document
-            const docData = data.documents?.find(d => d.id === document.id);
+            const docData = data.document;
 
             if (docData && docData.sections) {
                 setSections(docData.sections);

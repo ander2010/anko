@@ -208,9 +208,9 @@ export function GlobalBatteries() {
   const getBatteryStatus = (b) => b?.status ?? "Draft";
   const getBatteryDifficulty = (b) => b?.difficulty ?? "Medium";
   const getBatteryQuestionsCount = (b) => {
-    if (Array.isArray(b?.questions)) return b.questions.length;
+    if (typeof b?.questionsCount === "number") return b.questionsCount;
     if (typeof b?.questions_count === "number") return b.questions_count;
-    // backend te manda questions embebidas en BatterySerializer:
+    if (Array.isArray(b?.questions)) return b.questions.length;
     if (Array.isArray(b?.questions_rel)) return b.questions_rel.length;
     return 0;
   };
