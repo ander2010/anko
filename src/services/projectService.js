@@ -165,30 +165,24 @@ const projectService = {
 
       if (documentId) {
         const url = `${API_BASE}/projects/${projectId}/documents-with-sections/?document_id=${documentId}`;
-        const { ok, data, status } = await apiFetch(url, { token });
-        console.log(`[getDocumentsWithSections] single doc response ok=${ok} status=${status}`, data);
+        const { ok, data } = await apiFetch(url, { token });
         if (!ok) throw data || { error: "Failed to fetch document sections" };
         const doc = extractDocument(data, documentId);
-        console.log("[getDocumentsWithSections] extracted doc:", doc);
         return { projectId, document: doc };
       }
 
       // No documentId: first get all docs for the project, then fetch sections per-doc
       const docsData = await this.getProjectDocuments(projectId, 1, 200);
-      console.log("[getDocumentsWithSections] docsData from getProjectDocuments:", docsData);
       const docs = Array.isArray(docsData) ? docsData : docsData?.results || [];
-      console.log("[getDocumentsWithSections] docs to iterate:", docs.length, docs.map(d => d.id));
 
       const documentsWithSections = await Promise.all(
         docs.map(async (doc) => {
           try {
             const url = `${API_BASE}/projects/${projectId}/documents-with-sections/?document_id=${doc.id}`;
-            const { ok, data, status } = await apiFetch(url, { token });
-            console.log(`[getDocumentsWithSections] doc ${doc.id} ok=${ok} status=${status}`, data);
+            const { ok, data } = await apiFetch(url, { token });
             if (!ok) return null;
             return extractDocument(data, doc.id);
-          } catch (e) {
-            console.error(`[getDocumentsWithSections] doc ${doc.id} threw:`, e);
+          } catch {
             return null;
           }
         })
@@ -199,7 +193,6 @@ const projectService = {
         documents: documentsWithSections.filter(Boolean),
       };
     } catch (err) {
-      console.error("[getDocumentsWithSections] outer catch:", err);
       throw err?.response?.data || err || { error: "Failed to fetch document sections" };
     }
   },

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { API_BASE } from "@/services/api";
 
 /**
@@ -16,15 +16,42 @@ export function useJobProgress(jobId) {
 
     const [retryCount, setRetryCount] = useState(0);
     const MAX_RETRIES = 4;
+    const isCompletedRef = useRef(false);
+
+    // Fake progress animation: moves bar up randomly while backend processes.
+    // Caps at FAKE_CAP so real SSE progress can always overtake it.
+    useEffect(() => {
+        if (!jobId) return;
+
+        const FAKE_CAP = 82;
+
+        let timeoutId;
+
+        const tick = () => {
+            if (isCompletedRef.current) return;
+            setProgress(prev => {
+                if (prev >= FAKE_CAP) return prev;
+                // Random step 3–12 so it never feels mechanical
+                const step = Math.floor(Math.random() * 10) + 3;
+                return Math.min(prev + step, FAKE_CAP);
+            });
+            // Next tick: random 700–2800 ms
+            const delay = Math.floor(Math.random() * 2100) + 7000;
+            timeoutId = setTimeout(tick, delay);
+        };
+
+        // Start after a brief initial pause (200–600 ms)
+        const initDelay = Math.floor(Math.random() * 400) + 200;
+        timeoutId = setTimeout(tick, initDelay);
+
+        return () => clearTimeout(timeoutId);
+    }, [jobId]);
 
     useEffect(() => {
         if (!jobId || isCompleted || retryCount >= MAX_RETRIES) return;
 
         const token = localStorage.getItem("token");
 
-        // Use API_BASE to construct absolute URL for production support.
-        // If API_BASE is relative (starts with /), it will still work locally via proxy.
-        // We ensure no double slashes if API_BASE ends with /
         const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE;
         const streamUrl = `${base}/projects/progress-stream/?job_id=${encodeURIComponent(jobId)}` +
             (token ? `&token=${encodeURIComponent(token)}` : "");
@@ -41,23 +68,25 @@ export function useJobProgress(jobId) {
                 const data = JSON.parse(event.data);
 
                 if (event.type === "end" || data.type === "progress" || data.type === "snapshot" || data.type === "heartbeat" || data.final_status) {
-                    const currentProgress = parseFloat(data.progress || progress);
-                    if (!isNaN(currentProgress)) {
-                        setProgress(currentProgress);
+                    const incoming = parseFloat(data.progress);
+                    if (!isNaN(incoming)) {
+                        // Only move forward — never let SSE lower the fake-animated bar
+                        setProgress(prev => Math.max(prev, incoming));
                     }
 
                     if (data.status) setStatus(data.status);
                     if (data.current_step) setCurrentStep(data.current_step);
                     if (data.doc_id) setDocId(data.doc_id);
                     setError(null);
-                    setRetryCount(0); // Reset retry count on successful message
+                    setRetryCount(0);
 
                     const isDoneStatus = ["COMPLETED", "DONE", "FINISHED", "SUCCESS"].includes(data.final_status) || ["COMPLETED", "DONE", "FINISHED"].includes(data.status);
 
-                    if (currentProgress >= 100 || isDoneStatus || event.type === "end") {
+                    if (incoming >= 100 || isDoneStatus || event.type === "end") {
+                        isCompletedRef.current = true;
                         setIsCompleted(true);
-                        if (currentProgress < 100) setProgress(100);
-                        eventSource.onerror = null; // Prevent reconnection if server drops connection after completion
+                        setProgress(100);
+                        eventSource.onerror = null;
                         eventSource.close();
                     }
                 }
@@ -74,7 +103,7 @@ export function useJobProgress(jobId) {
                 setError(`Connection lost. Retrying (${retryCount + 1}/${MAX_RETRIES})...`);
                 const timer = setTimeout(() => {
                     setRetryCount(prev => prev + 1);
-                }, 3000); // Wait 3 seconds before retrying
+                }, 3000);
                 return () => clearTimeout(timer);
             } else {
                 setError("Connection failed after multiple attempts.");
@@ -86,7 +115,7 @@ export function useJobProgress(jobId) {
         eventSource.addEventListener("end", handleMessage);
         eventSource.onerror = handleError;
         eventSource.addEventListener("ping", () => {
-            setRetryCount(0); // Reset on ping too
+            setRetryCount(0);
         });
 
         return () => {
