@@ -10,22 +10,20 @@ export function GlobalDecks() {
             resource="admin/decks"
             disableCreate
             columns={[
-                { header: t("global.pages.decks.columns.name"), accessor: "name" },
-                { header: t("global.pages.decks.columns.owner"), accessor: "owner" },
-                { header: t("global.pages.decks.columns.is_public"), accessor: "is_public" },
+                { header: "Título", accessor: "title" },
+                { header: "Descripción", accessor: "description" },
+                { header: "Tarjetas", accessor: "card_count" },
+                { header: "Proyecto", accessor: (item) => item.project?.title || item.project?.name || item.project || "—" },
+                { header: "Propietario", accessor: (item) => item.owner?.email || item.owner?.username || item.owner || "—" },
+                { header: "Visibilidad", accessor: (item) => item.is_public ? "Público" : "Privado" },
+                { header: "Job ID", accessor: (item) => item.external_job_id || item.job_id || "—" },
+                { header: "Estado", accessor: "status" },
             ]}
             fields={[
-                { name: "name", label: t("global.pages.decks.fields.name"), type: "text" },
-                { name: "description", label: t("global.pages.decks.fields.description"), type: "textarea" },
-                {
-                    name: "owner",
-                    label: t("global.pages.decks.fields.owner"),
-                    type: "select-resource",
-                    resource: "users",
-                    labelAccessor: "email",
-                    valueAccessor: "id"
-                },
-                { name: "is_public", label: t("global.pages.decks.fields.is_public"), type: "boolean" },
+                { name: "title", label: "Título", type: "text" },
+                { name: "description", label: "Descripción", type: "textarea" },
+                { name: "is_public", label: "Público", type: "boolean" },
+                { name: "status", label: "Estado", type: "text" },
             ]}
         />
     );

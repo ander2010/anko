@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { AppPagination } from "@/components/AppPagination";
+import { useMaterialTailwindController } from "@/context";
 import {
   Card,
   CardHeader,
@@ -22,8 +24,15 @@ import { useLanguage } from "@/context/language-context";
 
 export function GlobalRules() {
   const { t, language } = useLanguage();
+  const [controller] = useMaterialTailwindController();
+  const { openSidenav } = controller;
+
   const [rules, setRules] = useState([]);
   const [projects, setProjects] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [loadingRules, setLoadingRules] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -73,48 +82,22 @@ export function GlobalRules() {
     }
   };
 
-  const fetchRules = async () => {
+  const fetchRules = useCallback(async () => {
     try {
       setLoadingRules(true);
       setError(null);
-
-      // Como no tienes getRules() global en service, usamos el endpoint directo con api:
-      // Pero para mantenerlo simple sin tocar tu service, hacemos esta “convención”:
-      // -> si tienes un endpoint /rules/ global, agrega projectService.getRules() y úsalo aquí.
-      // Por ahora: intentamos llamar a /rules/ via un helper rápido:
-      const data = await projectService.getAllRules?.(); // si existe, perfecto
-      if (data) {
-        const list = Array.isArray(data) ? data : data?.results || [];
-        setRules(list);
-        return;
-      }
-
-      // Fallback: si NO agregaste getAllRules, intentamos cargar reglas por cada proyecto y unir.
-      const projs = Array.isArray(projects) && projects.length ? projects : (await projectService.getProjects());
-      const projsList = Array.isArray(projs) ? projs : projs?.results || [];
-
-      const all = [];
-      for (const p of projsList) {
-        try {
-          const r = await projectService.getProjectRules(p.id);
-          const list = Array.isArray(r) ? r : r?.results || [];
-          all.push(...list);
-        } catch (e) {
-          // ignoramos por proyecto
-        }
-      }
-
-      // dedupe por id
-      const map = new Map();
-      all.forEach((r) => map.set(r.id, r));
-      setRules(Array.from(map.values()));
+      const data = await projectService.getAllRules(page, pageSize);
+      const list = Array.isArray(data) ? data : data?.results || [];
+      setRules(list);
+      setTotalCount(typeof data?.count === "number" ? data.count : list.length);
     } catch (e) {
       setRules([]);
+      setTotalCount(0);
       setError(e?.error || e?.detail || "Failed to load rules");
     } finally {
       setLoadingRules(false);
     }
-  };
+  }, [page, pageSize]);
 
   const fetchTopics = async () => {
     try {
@@ -135,13 +118,9 @@ export function GlobalRules() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cuando ya hay projects listos, cargar rules
   useEffect(() => {
-    if (!loadingProjects) {
-      fetchRules();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingProjects]);
+    fetchRules();
+  }, [fetchRules]);
 
   // ---------- project name map ----------
   const projectNameById = useMemo(() => {
@@ -277,7 +256,7 @@ export function GlobalRules() {
   const isLoading = loadingRules || loadingProjects;
 
   return (
-    <div className="mt-12 mb-8 flex flex-col gap-12">
+    <div className="mt-12 flex flex-col">
       <Card>
         <CardHeader variant="gradient" color="blue-gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
@@ -285,7 +264,7 @@ export function GlobalRules() {
           </Typography>
         </CardHeader>
 
-        <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+        <CardBody className="overflow-x-scroll px-0 pt-0 pb-24">
           {error && (
             <div className="px-6 pb-4">
               <Typography color="red" variant="small">
@@ -424,6 +403,17 @@ export function GlobalRules() {
           )}
         </CardBody>
       </Card>
+
+      <div className={`fixed bottom-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-100 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] px-6 py-2 transition-all duration-300 ${openSidenav ? "left-80" : "left-0"}`}>
+        <AppPagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          onPageChange={(p) => setPage(p)}
+          onPageSizeChange={(s) => { setPageSize(Number(s)); setPage(1); }}
+          disabled={loadingRules}
+        />
+      </div>
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">

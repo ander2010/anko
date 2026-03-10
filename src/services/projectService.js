@@ -364,8 +364,8 @@ const projectService = {
   },
 
 
-  async getAllRules() {
-    const res = await api.get("/rules/");
+  async getAllRules(page = 1, pageSize = 25) {
+    const res = await api.get("/rules/", { params: { page, page_size: pageSize } });
     return res.data;
   },
 
@@ -385,8 +385,8 @@ const projectService = {
     }
   },
 
-  async getAllBatteries() {
-    const res = await api.get("/batteries/");
+  async getAllBatteries(page = 1, pageSize = 25) {
+    const res = await api.get("/batteries/", { params: { page, page_size: pageSize } });
     return res.data;
   }
   ,
@@ -554,8 +554,8 @@ const projectService = {
 
 
 
-  async getTopics() {
-    const res = await api.get("/topics/");
+  async getTopics(page = 1, pageSize = 25) {
+    const res = await api.get("/topics/", { params: { page, page_size: pageSize } });
     return res.data;
   },
 

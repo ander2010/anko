@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { AppPagination } from "@/components/AppPagination";
+import { useMaterialTailwindController } from "@/context";
 import {
     Card,
     CardHeader,
@@ -16,9 +18,14 @@ import { useLanguage } from "@/context/language-context";
 
 export function GlobalSections() {
     const { t, language } = useLanguage();
+    const [controller] = useMaterialTailwindController();
+    const { openSidenav } = controller;
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
 
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState(null);
@@ -74,6 +81,11 @@ export function GlobalSections() {
         fetchAllData();
     }, []);
 
+    const paginatedSections = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return sections.slice(start, start + pageSize);
+    }, [sections, page, pageSize]);
+
     const handleDelete = (section) => {
         setSelectedSection(section);
         setConfirmDialogOpen(true);
@@ -101,7 +113,7 @@ export function GlobalSections() {
     }
 
     return (
-        <div className="mt-12 mb-8 flex flex-col gap-12">
+        <div className="mt-12 mb-8 flex flex-col">
             <Card>
                 <CardHeader variant="gradient" color="blue-gray" className="mb-8 p-6 flex items-center justify-between">
                     <div>
@@ -109,7 +121,7 @@ export function GlobalSections() {
                             {t("global.sections.title")}
                         </Typography>
                         <Typography variant="small" color="white" className="font-normal opacity-80">
-                            {language === "es" ? `Se encontraron ${sections.length} secciones en total` : `All sections across ${sections.length} found`}
+                            {language === "es" ? `${sections.length} secciones en total` : `${sections.length} sections total`}
                         </Typography>
                     </div>
                     <Button size="sm" color="white" variant="text" onClick={fetchAllData}>
@@ -117,7 +129,7 @@ export function GlobalSections() {
                     </Button>
                 </CardHeader>
 
-                <CardBody className="px-0 pb-2">
+                <CardBody className="px-0 pb-24">
                     {error && (
                         <div className="px-6 mb-4 text-red-500 text-sm">
                             {error}
@@ -130,9 +142,9 @@ export function GlobalSections() {
                             <Typography color="gray">{t("global.sections.no_sections")}</Typography>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto max-h-[70vh]">
+                        <div className="overflow-x-auto">
                             <table className="w-full min-w-[640px] table-auto text-left">
-                                <thead className="sticky top-0 bg-white z-10">
+                                <thead>
                                     <tr>
                                         {[
                                             "ID",
@@ -159,9 +171,9 @@ export function GlobalSections() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {sections.map(
+                                    {paginatedSections.map(
                                         (section, key) => {
-                                            const className = `py-3 px-5 ${key === sections.length - 1
+                                            const className = `py-3 px-5 ${key === paginatedSections.length - 1
                                                 ? ""
                                                 : "border-b border-blue-gray-50"
                                                 }`;
@@ -222,6 +234,18 @@ export function GlobalSections() {
                     )}
                 </CardBody>
             </Card>
+
+            {/* ---------------- PAGINATION BAR ---------------- */}
+            <div className={`fixed bottom-20 right-0 px-6 py-2 transition-all duration-300 ${openSidenav ? "left-80" : "left-0"}`}>
+                <AppPagination
+                    page={page}
+                    pageSize={pageSize}
+                    totalCount={sections.length}
+                    onPageChange={(newPage) => setPage(newPage)}
+                    onPageSizeChange={(newSize) => { setPageSize(Number(newSize)); setPage(1); }}
+                    disabled={loading}
+                />
+            </div>
 
             <ConfirmDialog
                 open={confirmDialogOpen}

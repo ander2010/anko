@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { AppPagination } from "@/components/AppPagination";
+import { useMaterialTailwindController } from "@/context";
 import {
   Card,
   CardHeader,
@@ -23,10 +25,17 @@ import { useLanguage } from "@/context/language-context";
 
 export function GlobalBatteries() {
   const { t, language } = useLanguage();
+  const [controller] = useMaterialTailwindController();
+  const { openSidenav } = controller;
+
   const [batteries, setBatteries] = useState([]);
   const [projects, setProjects] = useState([]);
   const [rules, setRules] = useState([]);
   const [topics, setTopics] = useState([]);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [loadingBatteries, setLoadingBatteries] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -124,60 +133,33 @@ export function GlobalBatteries() {
     }
   };
 
-  const fetchBatteries = async () => {
+  const fetchBatteries = useCallback(async () => {
     try {
       setLoadingBatteries(true);
       setError(null);
-
-      // ideal: endpoint global /batteries/ => projectService.getAllBatteries()
-      const data = await projectService.getAllBatteries?.();
-      if (data) {
-        const list = Array.isArray(data) ? data : data?.results || [];
-        setBatteries(list);
-        return;
-      }
-
-      // fallback: por proyecto
-      const projs = Array.isArray(projects) && projects.length ? projects : (await projectService.getProjects());
-      const projsList = Array.isArray(projs) ? projs : projs?.results || [];
-
-      const all = [];
-      for (const p of projsList) {
-        try {
-          const b = await projectService.getProjectBatteries(p.id);
-          const list = Array.isArray(b) ? b : b?.results || [];
-          all.push(...list);
-        } catch (e) {
-          // ignore
-        }
-      }
-
-      // dedupe
-      const map = new Map();
-      all.forEach((b) => map.set(b.id, b));
-      setBatteries(Array.from(map.values()));
+      const data = await projectService.getAllBatteries(page, pageSize);
+      const list = Array.isArray(data) ? data : data?.results || [];
+      setBatteries(list);
+      setTotalCount(typeof data?.count === "number" ? data.count : list.length);
     } catch (e) {
       setBatteries([]);
+      setTotalCount(0);
       setError(e?.error || e?.detail || "Failed to load batteries");
     } finally {
       setLoadingBatteries(false);
     }
-  };
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchProjects();
     fetchTopics();
+    fetchRules();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // cuando projects listos, cargar rules y batteries
   useEffect(() => {
-    if (!loadingProjects) {
-      fetchRules();
-      fetchBatteries();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingProjects]);
+    fetchBatteries();
+  }, [fetchBatteries]);
 
   // ---------- Maps ----------
   const projectNameById = useMemo(() => {
@@ -310,7 +292,7 @@ export function GlobalBatteries() {
   const isLoading = loadingProjects || loadingRules || loadingTopics || loadingBatteries;
 
   return (
-    <div className="mt-12 mb-8 flex flex-col gap-12">
+    <div className="mt-12 flex flex-col">
       <Card>
         <CardHeader variant="gradient" color="blue-gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
@@ -318,7 +300,7 @@ export function GlobalBatteries() {
           </Typography>
         </CardHeader>
 
-        <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+        <CardBody className="overflow-x-scroll px-0 pt-0 pb-24">
           {error && (
             <div className="px-6 pb-4">
               <Typography color="red" variant="small">
@@ -472,6 +454,17 @@ export function GlobalBatteries() {
           )}
         </CardBody>
       </Card>
+
+      <div className={`fixed bottom-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-100 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] px-6 py-2 transition-all duration-300 ${openSidenav ? "left-80" : "left-0"}`}>
+        <AppPagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          onPageChange={(p) => setPage(p)}
+          onPageSizeChange={(s) => { setPageSize(Number(s)); setPage(1); }}
+          disabled={loadingBatteries}
+        />
+      </div>
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">

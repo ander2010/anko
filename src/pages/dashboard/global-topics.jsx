@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { AppPagination } from "@/components/AppPagination";
+import { useMaterialTailwindController } from "@/context";
 import {
   Card,
   CardHeader,
@@ -23,8 +25,14 @@ import { useLanguage } from "@/context/language-context";
 
 export function GlobalTopics() {
   const { t, language } = useLanguage();
+  const [controller] = useMaterialTailwindController();
+  const { openSidenav } = controller;
+
   const [topics, setTopics] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [loadingTopics, setLoadingTopics] = useState(true);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -68,26 +76,31 @@ export function GlobalTopics() {
   };
 
   // --- fetch topics global ---
-  const fetchTopics = async () => {
+  const fetchTopics = useCallback(async () => {
     try {
       setLoadingTopics(true);
       setError(null);
-      const data = await projectService.getTopics();
+      const data = await projectService.getTopics(page, pageSize);
       const list = Array.isArray(data) ? data : data?.results || [];
       setTopics(list);
+      setTotalCount(typeof data?.count === "number" ? data.count : list.length);
     } catch (e) {
       setTopics([]);
+      setTotalCount(0);
       setError(e?.error || e?.detail || "Failed to load topics");
     } finally {
       setLoadingTopics(false);
     }
-  };
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchProjects();
-    fetchTopics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
 
   // Mapa { projectId: projectTitle }
   const projectNameById = useMemo(() => {
@@ -202,7 +215,7 @@ export function GlobalTopics() {
   };
 
   return (
-    <div className="mt-12 mb-8 flex flex-col gap-12">
+    <div className="mt-12 mb-8 flex flex-col">
       <Card>
         <CardHeader variant="gradient" color="blue-gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
@@ -210,7 +223,7 @@ export function GlobalTopics() {
           </Typography>
         </CardHeader>
 
-        <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+        <CardBody className="overflow-x-scroll px-0 pt-0 pb-24">
           {error && (
             <div className="px-6 pb-4">
               <Typography color="red" variant="small">
@@ -333,6 +346,18 @@ export function GlobalTopics() {
           )}
         </CardBody>
       </Card>
+
+      {/* ---------------- PAGINATION BAR ---------------- */}
+      <div className={`fixed bottom-20 right-0 px-6 py-2 transition-all duration-300 ${openSidenav ? "left-80" : "left-0"}`}>
+        <AppPagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          onPageChange={(newPage) => setPage(newPage)}
+          onPageSizeChange={(newSize) => { setPageSize(Number(newSize)); setPage(1); }}
+          disabled={loadingTopics}
+        />
+      </div>
 
       {/* ---------------- EDIT DIALOG ---------------- */}
       <Dialog open={editOpen} handler={closeEdit} size="sm">

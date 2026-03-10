@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { AppPagination } from "@/components/AppPagination";
 import {
     Card,
     CardHeader,
@@ -19,6 +20,7 @@ import {
 import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
+import { useMaterialTailwindController } from "@/context";
 
 export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null, editTitle, createTitle, disableCreate = false }) {
     const languageContext = useLanguage();
@@ -28,6 +30,8 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
     }
 
     const { t } = languageContext;
+    const [controller] = useMaterialTailwindController();
+    const { openSidenav } = controller;
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -35,31 +39,41 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
     const [currentItem, setCurrentItem] = useState(null);
     const [formData, setFormData] = useState({});
     const [selectOptions, setSelectOptions] = useState({});
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [totalCount, setTotalCount] = useState(0);
 
-    useEffect(() => {
-        fetchItems();
-        fetchSelectOptions();
-    }, [resource]);
-
-    const fetchItems = async () => {
+    const fetchItems = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await projectService.getList(resource, extraParams);
+            const data = await projectService.getList(resource, { ...extraParams, page, page_size: pageSize });
             if (Array.isArray(data)) {
                 setItems(data);
+                setTotalCount(data.length);
             } else if (data && Array.isArray(data.results)) {
                 setItems(data.results);
+                setTotalCount(data.count ?? data.results.length);
             } else {
                 console.error(`Expected array for ${resource} but got:`, data);
                 setItems([]);
+                setTotalCount(0);
             }
         } catch (error) {
             console.error(`Failed to fetch ${resource}`, error);
             setItems([]);
+            setTotalCount(0);
         } finally {
             setLoading(false);
         }
-    };
+    }, [resource, page, pageSize]);
+
+    useEffect(() => {
+        fetchItems();
+    }, [fetchItems]);
+
+    useEffect(() => {
+        fetchSelectOptions();
+    }, [resource]);
 
     const fetchSelectOptions = async () => {
         const selectFields = fields.filter((f) => f.type === "select-resource");
@@ -162,8 +176,8 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
     };
 
     return (
-        <div className="mt-12 mb-8 flex flex-col gap-12">
-            <Card>
+        <div className="mt-12 flex flex-col ">
+            <Card className="flex-1">
                 <CardHeader variant="gradient" color="gray" className="mb-8 p-6 flex justify-between items-center">
                     <Typography variant="h6" color="white">
                         {title}
@@ -174,7 +188,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                         </Button>
                     )}
                 </CardHeader>
-                <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+                <CardBody className="overflow-x-scroll px-0 pt-0 pb-24">
                     <table className="w-full min-w-[640px] table-auto">
                         <thead>
                             <tr>
@@ -230,6 +244,19 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                     </table>
                 </CardBody>
             </Card>
+
+            {/* Paginación fija al fondo, respeta offset del sidenav */}
+            <div className={`fixed bottom-20 right-0 px-6 py-2 transition-all duration-300 ${openSidenav ? "left-80" : "left-0"}`}>
+                <AppPagination
+                    page={page}
+                    pageSize={pageSize}
+                    totalCount={totalCount}
+                    onPageChange={(newPage) => setPage(newPage)}
+                    onPageSizeChange={(newSize) => { setPageSize(Number(newSize)); setPage(1); }}
+                    disabled={loading}
+                />
+            </div>
+
 
             <Dialog open={openDialog} handler={() => setOpenDialog(!openDialog)}>
                 <DialogHeader>{currentItem ? (editTitle || t("global.crud.edit_item")) : (createTitle || t("global.crud.create_item"))}</DialogHeader>
