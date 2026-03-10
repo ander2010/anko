@@ -296,18 +296,18 @@ const projectService = {
     }
   },
 
-  async getBatterySummary(batteryId) {
+  async getBatterySummary(batteryId, language = "en") {
     try {
-      const res = await api.get(`/summary-jobs/by-battery/${batteryId}/`);
+      const res = await api.get(`/summary-jobs/by-battery/${batteryId}/`, { params: { language } });
       return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Failed to fetch battery summary" };
     }
   },
 
-  async getDeckSummary(deckId) {
+  async getDeckSummary(deckId, language = "en") {
     try {
-      const res = await api.get(`/summary-jobs/by-deck/${deckId}/`);
+      const res = await api.get(`/summary-jobs/by-deck/${deckId}/`, { params: { language } });
       return res.data;
     } catch (err) {
       throw err?.response?.data || { error: "Failed to fetch deck summary" };

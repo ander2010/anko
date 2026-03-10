@@ -67,7 +67,7 @@ export function DeckCard({
                 if (!isMounted) return;
                 try {
                     console.log(`[DeckCard] Fetching summary for deck ${deck.id}, attempt ${attempts + 1}`);
-                    const data = await projectService.getDeckSummary(deck.id);
+                    const data = await projectService.getDeckSummary(deck.id, language);
                     if (isMounted && data?.summary) {
                         setSummary(data.summary);
                         setLoadingSummary(false);

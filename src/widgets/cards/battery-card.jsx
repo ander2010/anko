@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
     Card,
@@ -45,38 +45,35 @@ export function BatteryCard({
 
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
+    const [showAiSummary, setShowAiSummary] = useState(false);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchSummary = async () => {
-            if (!battery?.id) return;
-            setLoadingSummary(true);
-            try {
-                const data = await projectService.getBatterySummary(battery.id);
-                if (isMounted && data?.summary) {
-                    setSummary(data.summary);
-                }
-            } catch (error) {
-                // Ignore 404s as they just mean no summary exists yet
-                console.debug(`No summary found for battery ${battery.id}`);
-            } finally {
-                if (isMounted) setLoadingSummary(false);
-            }
-        };
-
-        // Only fetch summary when:
-        // 1. No active generation job (isGenerating = false)
-        // 2. Battery status is "Ready" — Django sets this only after questions are saved
-        // This prevents fetching before the generation WebSocket sends status: COMPLETED
-        if (!isGenerating && battery?.status === "Ready") {
-            fetchSummary();
+    const handleToggleSummary = async (e) => {
+        e.stopPropagation();
+        // If already showing, just hide
+        if (showAiSummary) {
+            setShowAiSummary(false);
+            return;
         }
-
-        return () => {
-            isMounted = false;
-        };
-    }, [battery?.id, battery?.status, isGenerating]);
+        // If summary already loaded, just show it
+        if (summary) {
+            setShowAiSummary(true);
+            return;
+        }
+        // Fetch on first click
+        if (!battery?.id) return;
+        setLoadingSummary(true);
+        try {
+            const data = await projectService.getBatterySummary(battery.id, language);
+            if (data?.summary) {
+                setSummary(data.summary);
+                setShowAiSummary(true);
+            }
+        } catch (error) {
+            console.debug(`No summary found for battery ${battery.id}`);
+        } finally {
+            setLoadingSummary(false);
+        }
+    };
 
     const formatDate = (dateString) => {
         if (!dateString) return "—";
@@ -218,19 +215,38 @@ export function BatteryCard({
                     </div>
                 </div>
 
-                {/* AI Summary Section */}
-                {summary && (
-                    <div className="mb-5 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
-                        <div className="flex items-center gap-1.5 mb-2">
-                            <Typography variant="small" className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">
-                                {t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated")}
+                {/* AI Summary Button + Section */}
+                <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <Typography variant="small" className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
+                            {showAiSummary
+                                ? (t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated"))
+                                : (language === "es" ? "Resumen" : "Summary")}
+                        </Typography>
+                        <button
+                            onClick={handleToggleSummary}
+                            disabled={loadingSummary || isGenerating}
+                            className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border font-bold uppercase tracking-wider disabled:opacity-50 ${showAiSummary
+                                    ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
+                                    : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                                }`}
+                        >
+                            {loadingSummary
+                                ? (language === "es" ? "Cargando..." : "Loading...")
+                                : showAiSummary
+                                    ? (language === "es" ? "Ocultar" : "Hide")
+                                    : (language === "es" ? "✨ Ver Resumen IA" : "✨ View AI Summary")}
+                        </button>
+                    </div>
+
+                    {showAiSummary && summary && (
+                        <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
+                            <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
+                                &ldquo;{summary}&rdquo;
                             </Typography>
                         </div>
-                        <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
-                            "{summary}"
-                        </Typography>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {progress && (
                     <div className="mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50 group/batprog">
