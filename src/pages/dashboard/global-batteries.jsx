@@ -208,6 +208,7 @@ export function GlobalBatteries() {
   const getBatteryStatus = (b) => b?.status ?? "Draft";
   const getBatteryDifficulty = (b) => b?.difficulty ?? "Medium";
   const getBatteryQuestionsCount = (b) => {
+    if (typeof b?.question_count === "number") return b.question_count;
     if (typeof b?.questionsCount === "number") return b.questionsCount;
     if (typeof b?.questions_count === "number") return b.questions_count;
     if (Array.isArray(b?.questions)) return b.questions.length;
