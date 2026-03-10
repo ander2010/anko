@@ -16,7 +16,7 @@ import {
     PlusIcon,
     MagnifyingGlassIcon,
     FolderIcon,
-    UserGroupIcon,
+    // UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { ProjectCard } from "@/widgets/cards/project-card";
 import { CreateProjectDialog } from "@/widgets/dialogs/create-project-dialog";
@@ -307,8 +307,8 @@ export function Projects() {
                     <div className="inline-flex p-1 bg-zinc-100 rounded-2xl border border-zinc-200/60">
                         {[
                             { value: "all", label: t("projects.tabs.all"), icon: FolderIcon },
-                            { value: "owned", label: t("projects.tabs.owned"), icon: UserGroupIcon },
-                            { value: "member", label: t("projects.tabs.shared"), icon: UserGroupIcon }
+                            // { value: "owned", label: t("projects.tabs.owned"), icon: UserGroupIcon },
+                            // { value: "member", label: t("projects.tabs.shared"), icon: UserGroupIcon }
                         ].map((tab) => (
                             <button
                                 key={tab.value}
