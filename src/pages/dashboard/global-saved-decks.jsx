@@ -7,7 +7,8 @@ export function GlobalSavedDecks() {
     return (
         <GlobalCrudPage
             title={t("global.pages.saved-decks.title")}
-            resource="saved-decks"
+            resource="admin/saved-decks"
+            disableCreate
             columns={[
                 { header: t("global.pages.saved-decks.columns.user"), accessor: "user" },
                 { header: t("global.pages.saved-decks.columns.deck"), accessor: "deck" },

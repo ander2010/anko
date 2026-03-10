@@ -7,7 +7,8 @@ export function GlobalBatteryShares() {
     return (
         <GlobalCrudPage
             title={t("global.pages.battery-shares.title")}
-            resource="battery-shares"
+            resource="admin/battery-shares"
+            disableCreate
             columns={[
                 { header: t("global.pages.battery-shares.columns.battery"), accessor: "battery" },
                 { header: t("global.pages.battery-shares.columns.shared_with"), accessor: "shared_with" },

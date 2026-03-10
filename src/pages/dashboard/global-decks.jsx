@@ -7,7 +7,8 @@ export function GlobalDecks() {
     return (
         <GlobalCrudPage
             title={t("global.pages.decks.title")}
-            resource="decks"
+            resource="admin/decks"
+            disableCreate
             columns={[
                 { header: t("global.pages.decks.columns.name"), accessor: "name" },
                 { header: t("global.pages.decks.columns.owner"), accessor: "owner" },

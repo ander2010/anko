@@ -20,7 +20,7 @@ import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 
-export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null, editTitle, createTitle }) {
+export function GlobalCrudPage({ title, resource, columns, fields, extraParams = {}, extraActions = null, editTitle, createTitle, disableCreate = false }) {
     const languageContext = useLanguage();
 
     if (!languageContext) {
@@ -168,9 +168,11 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
                     <Typography variant="h6" color="white">
                         {title}
                     </Typography>
-                    <Button size="sm" color="white" className="flex items-center gap-2 text-gray-900" onClick={() => handleOpenDialog()}>
-                        <PlusIcon strokeWidth={2} className="h-4 w-4" /> {t("global.crud.add_new")}
-                    </Button>
+                    {!disableCreate && (
+                        <Button size="sm" color="white" className="flex items-center gap-2 text-gray-900" onClick={() => handleOpenDialog()}>
+                            <PlusIcon strokeWidth={2} className="h-4 w-4" /> {t("global.crud.add_new")}
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
                     <table className="w-full min-w-[640px] table-auto">

@@ -7,7 +7,8 @@ export function GlobalFlashcards() {
     return (
         <GlobalCrudPage
             title={t("global.pages.flashcards.title")}
-            resource="flashcards"
+            resource="admin/flashcards"
+            disableCreate
             columns={[
                 { header: t("global.pages.flashcards.columns.deck"), accessor: "deck" },
                 { header: t("global.pages.flashcards.columns.front"), accessor: "front" },

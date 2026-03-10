@@ -7,7 +7,8 @@ export function GlobalProjects() {
     return (
         <GlobalCrudPage
             title={t("global.pages.projects.title")}
-            resource="projects"
+            resource="admin/projects"
+            disableCreate
             columns={[
                 { header: t("global.pages.projects.columns.title"), accessor: "title" },
                 { header: t("global.pages.projects.columns.owner"), accessor: (item) => item.owner_details?.username || item.owner?.username || item.owner },

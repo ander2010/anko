@@ -7,7 +7,8 @@ export function GlobalDeckShares() {
     return (
         <GlobalCrudPage
             title={t("global.pages.deck-shares.title")}
-            resource="deck-shares"
+            resource="admin/deck-shares"
+            disableCreate
             columns={[
                 { header: t("global.pages.deck-shares.columns.deck"), accessor: "deck" },
                 { header: t("global.pages.deck-shares.columns.shared_with"), accessor: "shared_with" },
