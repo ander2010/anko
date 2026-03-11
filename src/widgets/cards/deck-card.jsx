@@ -54,58 +54,33 @@ export function DeckCard({
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [showAiSummary, setShowAiSummary] = useState(false);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchSummary = async () => {
-            if (!deck?.id) return;
-
-            setLoadingSummary(true);
-
-            // Polling helper to retry fetching the summary
-            const poll = async (attempts = 0, maxAttempts = 5) => {
-                if (!isMounted) return;
-                try {
-                    console.log(`[DeckCard] Fetching summary for deck ${deck.id}, attempt ${attempts + 1}`);
-                    const data = await projectService.getDeckSummary(deck.id, language);
-                    if (isMounted && data?.summary) {
-                        setSummary(data.summary);
-                        setLoadingSummary(false);
-                        return true;
-                    }
-                } catch (error) {
-                    console.debug(`[DeckCard] Summary not ready for deck ${deck.id} (attempt ${attempts + 1})`);
-                }
-
-                if (attempts < maxAttempts - 1) {
-                    // Wait 3s between retries (total ~15s ceiling)
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    return poll(attempts + 1, maxAttempts);
-                }
-
-                if (isMounted) setLoadingSummary(false);
-                return false;
-            };
-
-            // If the job just completed, wait a bit then start polling
-            if (isCompleted) {
-                console.log(`[DeckCard] Job completed for deck ${deck.id}. Waiting 3s before starting summary polling...`);
-                await new Promise(resolve => setTimeout(resolve, 3000));
-            }
-
-            await poll();
-        };
-
-        // Don't fetch if there is an ongoing flashcard generation job.
-        // Wait until the SSE tells us the job is completed (job disappears or progress reaches 100)
-        if (!job || isCompleted) {
-            fetchSummary();
+    const handleToggleSummary = async (e) => {
+        e.stopPropagation();
+        // If already showing, just hide
+        if (showAiSummary) {
+            setShowAiSummary(false);
+            return;
         }
-
-        return () => {
-            isMounted = false;
-        };
-    }, [deck?.id, job, isCompleted]);
+        // If summary already loaded, just show it
+        if (summary) {
+            setShowAiSummary(true);
+            return;
+        }
+        // Fetch on first click
+        if (!deck?.id) return;
+        setLoadingSummary(true);
+        try {
+            const data = await projectService.getDeckSummary(deck.id, language);
+            if (data?.summary) {
+                setSummary(data.summary);
+                setShowAiSummary(true);
+            }
+        } catch (error) {
+            console.debug(`[DeckCard] No summary found for deck ${deck.id}`);
+        } finally {
+            setLoadingSummary(false);
+        }
+    };
 
     // Reset notification guard when job changes
     useEffect(() => {
@@ -292,47 +267,43 @@ export function DeckCard({
                     </div>
                 )}
 
-                {(deck.description || summary) && (
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <Typography variant="small" className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
-                                {showAiSummary ? t("global.ai_generated") || (language === "es" ? "✨ Generado por IA" : "✨ AI Generated") : language === "es" ? "Descripción Personal" : "Personal Description"}
-                            </Typography>
+                {/* Description + AI Summary Section - always visible */}
+                <div className="mb-4">
+                    <div className="flex items-center justify-end mb-2">
+                        <button
+                            onClick={handleToggleSummary}
+                            disabled={loadingSummary || (job && !isCompleted)}
+                            className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border font-bold uppercase tracking-wider disabled:opacity-50 ${showAiSummary
+                                    ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
+                                    : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
+                                }`}
+                        >
+                            {loadingSummary
+                                ? (language === "es" ? "Cargando..." : "Loading...")
+                                : showAiSummary
+                                    ? (language === "es" ? "Ver Descripción" : "View Description")
+                                    : (language === "es" ? "✨ Ver Resumen IA" : "✨ View AI Summary")}
+                        </button>
+                    </div>
 
-                            {summary && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setShowAiSummary(!showAiSummary); }}
-                                    className={`text-[10px] px-2 py-0.5 rounded-full transition-colors border font-bold uppercase tracking-wider ${showAiSummary
-                                        ? "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
-                                        : "bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100"
-                                        }`}
-                                >
-                                    {showAiSummary ? (language === "es" ? "Ver Personal" : "View Personal") : (language === "es" ? "✨ Ver IA" : "✨ View AI")}
-                                </button>
-                            )}
-                        </div>
-
-                        {!showAiSummary && deck.description && (
-                            <Typography variant="small" className="text-zinc-500 line-clamp-2 text-sm leading-relaxed">
+                    {!showAiSummary && (
+                        deck.description
+                            ? <Typography variant="small" className="text-zinc-500 line-clamp-2 text-sm leading-relaxed">
                                 {deck.description}
                             </Typography>
-                        )}
-
-                        {showAiSummary && summary && (
-                            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
-                                <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
-                                    "{summary}"
-                                </Typography>
-                            </div>
-                        )}
-
-                        {!showAiSummary && !deck.description && summary && (
-                            <Typography variant="small" className="text-zinc-400 italic text-sm leading-relaxed">
-                                {language === "es" ? "No se proporcionó descripción." : "No description provided."}
+                            : <Typography variant="small" className="text-zinc-400 italic text-sm leading-relaxed">
+                                {language === "es" ? "Sin descripción." : "No description."}
                             </Typography>
-                        )}
-                    </div>
-                )}
+                    )}
+
+                    {showAiSummary && summary && (
+                        <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3 rounded-lg border border-blue-100/50">
+                            <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed italic line-clamp-3 text-justify">
+                                &ldquo;{summary}&rdquo;
+                            </Typography>
+                        </div>
+                    )}
+                </div>
 
                 <div className="flex items-center gap-2 mt-auto">
                     {isOwner && onLearn && (
