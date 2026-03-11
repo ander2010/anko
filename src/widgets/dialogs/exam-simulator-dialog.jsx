@@ -61,6 +61,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
   console.log("Current Question Data:", currentQuestion);
   console.log("Question Type:", currentQuestion?.type);
   console.log("isMultiSelect result:", isMultiSelect(currentQuestion?.type));
+  console.log("Page Reference Value:", currentQuestion?.page_reference);
 
 
   // key estable por cada vez que se abre el dialog con esa batería
@@ -70,12 +71,18 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
     return `${battery?.id}-opened`;
   }, [open, battery?.id]);
 
-  // -------------------- Cargar Batería Completa (siempre del API para respetar idioma) --------------------
+  // -------------------- Cargar Batería + Preguntas --------------------
   useEffect(() => {
     if (open && initialBattery) {
       setLoadingBattery(true);
-      projectService.getBattery(initialBattery.id)
-        .then(fullData => setBattery(fullData))
+      Promise.all([
+        projectService.getBattery(initialBattery.id),
+        projectService.getBatteryQuestions(initialBattery.id),
+      ])
+        .then(([fullData, questions]) => {
+          const questionList = Array.isArray(questions) ? questions : questions?.results || [];
+          setBattery({ ...fullData, questions: questionList });
+        })
         .catch(() => setBattery(initialBattery))
         .finally(() => setLoadingBattery(false));
     }
@@ -500,6 +507,11 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
             </Typography>
             <Typography variant="small" className="opacity-90">
               {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación para esta pregunta." : "No explanation provided for this question.")}
+              {currentQuestion.page_reference && (
+                <div className="mt-2 text-xs font-bold italic">
+                  {language === "es" ? "Página de Referencia:" : "Reference Page:"} {currentQuestion.page_reference}
+                </div>
+              )}
             </Typography>
           </Alert>
         )}
