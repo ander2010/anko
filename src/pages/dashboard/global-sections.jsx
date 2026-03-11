@@ -25,7 +25,7 @@ export function GlobalSections() {
     const [error, setError] = useState(null);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(25);
+    const [pageSize, setPageSize] = useState(10);
 
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState(null);

@@ -380,7 +380,7 @@ const projectService = {
   },
 
 
-  async getAllRules(page = 1, pageSize = 25) {
+  async getAllRules(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/rules/?page=${page}&page_size=${pageSize}`;
@@ -411,7 +411,7 @@ const projectService = {
     }
   },
 
-  async getAllBatteries(page = 1, pageSize = 25) {
+  async getAllBatteries(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/batteries/?page=${page}&page_size=${pageSize}`;
@@ -587,7 +587,7 @@ const projectService = {
 
 
 
-  async getTopics(page = 1, pageSize = 25) {
+  async getTopics(page = 1, pageSize = 10) {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/topics/?page=${page}&page_size=${pageSize}`;

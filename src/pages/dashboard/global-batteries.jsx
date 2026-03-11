@@ -34,7 +34,7 @@ export function GlobalBatteries() {
   const [topics, setTopics] = useState([]);
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
   const [loadingBatteries, setLoadingBatteries] = useState(true);

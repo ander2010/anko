@@ -40,7 +40,7 @@ export function GlobalCrudPage({ title, resource, columns, fields, extraParams =
     const [formData, setFormData] = useState({});
     const [selectOptions, setSelectOptions] = useState({});
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(25);
+    const [pageSize, setPageSize] = useState(10);
     const [totalCount, setTotalCount] = useState(0);
 
     const fetchItems = useCallback(async () => {
