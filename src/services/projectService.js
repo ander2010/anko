@@ -280,7 +280,10 @@ const projectService = {
     try {
       const token = localStorage.getItem("token");
       const url = `${API_BASE}/documents/${documentId}/download-url/?mode=${mode}`;
-      const { ok, data } = await apiFetch(url, { token });
+      const { ok, data } = await apiFetch(url, {
+        token,
+        headers: { "Accept-Language": "en" }
+      });
       if (!ok) throw data || { error: "Failed to fetch download URL" };
       return data;
     } catch (err) {
