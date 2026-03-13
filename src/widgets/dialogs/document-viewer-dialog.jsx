@@ -19,11 +19,16 @@ import {
 import { useLanguage } from "@/context/language-context";
 import projectService, { API_BASE } from "@/services/projectService";
 
-export function DocumentViewerDialog({ open, onClose, document }) {
+export function DocumentViewerDialog({ open, onClose, document, page }) {
     const { language } = useLanguage();
     const [fileUrl, setFileUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [docMetadata, setDocMetadata] = useState(document || {});
+
+    useEffect(() => {
+        setDocMetadata(document || {});
+    }, [document]);
 
     useEffect(() => {
         if (open && document?.id) {
@@ -54,6 +59,11 @@ export function DocumentViewerDialog({ open, onClose, document }) {
             const data = await projectService.getDocumentDownloadUrl(document.id, 'view');
             let targetUrl = data.url;
 
+            // Update metadata if we got a filename back
+            if (data.filename) {
+                setDocMetadata(prev => ({ ...prev, filename: data.filename }));
+            }
+
             // Normalize relative URLs
             if (targetUrl && targetUrl.startsWith('/')) {
                 const origin = API_BASE.replace('/api', '');
@@ -62,12 +72,10 @@ export function DocumentViewerDialog({ open, onClose, document }) {
 
             try {
                 // 2. Attempt to fetch with Token to get a Blob (best for internal files)
-                // If this is a cross-origin pre-signed URL, it might fail due to CORS
                 const blobUrl = await projectService.fetchDocumentWithAuth(targetUrl);
                 setFileUrl(blobUrl);
             } catch (fetchErr) {
                 console.warn("fetchDocumentWithAuth failed, falling back to direct URL:", fetchErr);
-                // Fallback: Use the direct URL returned by the backend
                 setFileUrl(targetUrl);
             }
         } catch (err) {
@@ -80,7 +88,11 @@ export function DocumentViewerDialog({ open, onClose, document }) {
 
     if (!document) return null;
 
-    const isPDF = document.filename?.toLowerCase().endsWith(".pdf") || document.type === "pdf";
+    const isPDF =
+        docMetadata.filename?.toLowerCase().endsWith(".pdf") ||
+        docMetadata.type === "pdf" ||
+        fileUrl?.toLowerCase().includes(".pdf") ||
+        (!docMetadata.filename && fileUrl); // Fallback: if no filename, assume PDF if we have a URL in this viewer
 
     return (
         <Dialog open={open} handler={onClose} size="xl" className="h-[90vh] flex flex-col">
@@ -88,7 +100,7 @@ export function DocumentViewerDialog({ open, onClose, document }) {
                 <div className="flex items-center gap-3">
                     <DocumentIcon className="h-6 w-6 text-blue-500" />
                     <Typography variant="h5" color="blue-gray" className="truncate max-w-[50vw]">
-                        {document.filename}
+                        {docMetadata.filename || (language === "es" ? "Cargando..." : "Loading...")}
                     </Typography>
                 </div>
                 <div className="flex items-center gap-2">
@@ -128,8 +140,8 @@ export function DocumentViewerDialog({ open, onClose, document }) {
                     </div>
                 ) : isPDF && fileUrl ? (
                     <iframe
-                        src={`${fileUrl}#toolbar=0&navpanes=0`}
-                        title={document.filename}
+                        src={`${fileUrl}${page ? `&page=${page}` : ''}`}
+                        title={docMetadata.filename || "PDF Viewer"}
                         className="w-full h-full border-none"
                     />
                 ) : (
@@ -170,6 +182,7 @@ export function DocumentViewerDialog({ open, onClose, document }) {
 DocumentViewerDialog.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
+    page: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     document: PropTypes.shape({
         id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         filename: PropTypes.string,

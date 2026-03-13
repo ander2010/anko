@@ -21,10 +21,12 @@ import {
   LightBulbIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DocumentIcon,
 } from "@heroicons/react/24/solid";
 
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
+import { DocumentViewerDialog } from "./document-viewer-dialog";
 
 const isMultiSelect = (type) => {
   if (!type) return false;
@@ -57,11 +59,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
   const totalQuestions = questions.length;
   const currentQuestion = questions[activeStep];
 
-  // DEBUG: Inspect incoming question data
-  console.log("Current Question Data:", currentQuestion);
-  console.log("Question Type:", currentQuestion?.type);
-  console.log("isMultiSelect result:", isMultiSelect(currentQuestion?.type));
-  console.log("Page Reference Value:", currentQuestion?.page_reference);
+
 
 
   // key estable por cada vez que se abre el dialog con esa batería
@@ -147,6 +145,19 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
       setShowAnswer(false);
     } else {
       setIsFinished(true);
+    }
+  };
+
+  const [viewingDocument, setViewingDocument] = useState(null);
+  const [viewingPage, setViewingPage] = useState(null);
+
+  const handleOpenViewer = (docId, page) => {
+    console.log("handleOpenViewer called with:", docId, page);
+    // Si no tenemos un docId específico en la pregunta, intentamos usar el de la batería
+    const finalDocId = docId || battery.document_id || (battery.documents && battery.documents[0]?.id);
+    if (finalDocId) {
+      setViewingDocument({ id: finalDocId });
+      setViewingPage(page);
     }
   };
 
@@ -505,14 +516,25 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
             <Typography variant="h6" className="mb-1">
               {language === "es" ? "Explicación" : "Explanation"}
             </Typography>
-            <Typography variant="small" className="opacity-90">
+            <div className="text-sm opacity-90">
               {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación para esta pregunta." : "No explanation provided for this question.")}
               {currentQuestion.page_reference && (
-                <div className="mt-2 text-xs font-bold italic">
-                  {language === "es" ? "Página de Referencia:" : "Reference Page:"} {currentQuestion.page_reference}
+                <div className="mt-2 text-xs font-bold italic flex items-center gap-2">
+                  <span>{language === "es" ? "Página de Referencia:" : "Reference Page:"} {currentQuestion.page_reference}</span>
+                  {(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document || battery.document_id || (battery.documents && battery.documents[0]?.id)) && (
+                    <IconButton
+                      size="sm"
+                      variant="text"
+                      color="blue"
+                      onClick={() => handleOpenViewer(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document, currentQuestion.page_reference)}
+                      title={language === "es" ? "Ver documento" : "View document"}
+                    >
+                      <DocumentIcon className="h-4 w-4" />
+                    </IconButton>
+                  )}
                 </div>
               )}
-            </Typography>
+            </div>
           </Alert>
         )}
       </DialogBody>
@@ -553,6 +575,13 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
           </Button>
         </div>
       </DialogFooter>
+
+      <DocumentViewerDialog
+        open={!!viewingDocument}
+        onClose={() => setViewingDocument(null)}
+        document={viewingDocument}
+        page={viewingPage}
+      />
     </Dialog>
   );
 }
