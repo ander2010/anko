@@ -91,8 +91,13 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
     const isPDF =
         docMetadata.filename?.toLowerCase().endsWith(".pdf") ||
         docMetadata.type === "pdf" ||
-        fileUrl?.toLowerCase().includes(".pdf") ||
-        (!docMetadata.filename && fileUrl); // Fallback: if no filename, assume PDF if we have a URL in this viewer
+        fileUrl?.toLowerCase().includes(".pdf");
+
+    const iframeSrc = fileUrl
+        ? isPDF && page
+            ? `${fileUrl}#page=${page}`
+            : fileUrl
+        : null;
 
     return (
         <Dialog open={open} handler={onClose} size="xl" className="h-[90vh] flex flex-col">
@@ -138,10 +143,10 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
                             {language === "es" ? "Reintentar" : "Retry"}
                         </Button>
                     </div>
-                ) : isPDF && fileUrl ? (
+                ) : iframeSrc ? (
                     <iframe
-                        src={`${fileUrl}${page ? `&page=${page}` : ''}`}
-                        title={docMetadata.filename || "PDF Viewer"}
+                        src={iframeSrc}
+                        title={docMetadata.filename || "Document Viewer"}
                         className="w-full h-full border-none"
                     />
                 ) : (
@@ -152,20 +157,10 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
                         </Typography>
                         <Typography className="text-blue-gray-500 mb-6 max-w-sm">
                             {language === "es"
-                                ? "Este tipo de archivo no se puede visualizar directamente. Puedes descargarlo o abrirlo en una nueva pestaña."
-                                : "This file type cannot be previewed directly. You can download it or open it in a new tab."
+                                ? "No se pudo obtener la URL del documento."
+                                : "Could not retrieve the document URL."
                             }
                         </Typography>
-                        {fileUrl && (
-                            <Button
-                                color="blue"
-                                onClick={() => window.open(fileUrl, "_blank")}
-                                className="flex items-center gap-2"
-                            >
-                                <ArrowTopRightOnSquareIcon className="h-5 w-5" />
-                                {language === "es" ? "Abrir en nueva pestaña" : "Open in new tab"}
-                            </Button>
-                        )}
                     </div>
                 )}
             </DialogBody>
