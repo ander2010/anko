@@ -12,6 +12,10 @@ import {
     Chip,
     Button,
     Progress,
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
 } from "@material-tailwind/react";
 import {
     EllipsisVerticalIcon,
@@ -23,6 +27,7 @@ import {
     PlusIcon,
     CheckBadgeIcon,
     HandThumbUpIcon,
+    ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { useLanguage } from "@/context/language-context";
 import { useAuth } from "@/context/auth-context";
@@ -53,6 +58,23 @@ export function DeckCard({
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [showAiSummary, setShowAiSummary] = useState(false);
+
+    const [showPrintModal, setShowPrintModal] = useState(false);
+    const [printMode, setPrintMode] = useState("book");
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownload = async () => {
+        if (downloading) return;
+        setDownloading(true);
+        try {
+            await projectService.downloadDeckPdf(deck.id, language, printMode);
+            setShowPrintModal(false);
+        } catch (err) {
+            console.error("Download failed:", err);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const handleToggleSummary = async (e) => {
         e.stopPropagation();
@@ -122,6 +144,7 @@ export function DeckCard({
     const isOwner = user?.id && deck.ownerId && String(user.id) === String(deck.ownerId);
 
     return (
+        <>
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
             <CardBody className="p-5 flex flex-col h-full">
                 <div className="flex items-start justify-between mb-4">
@@ -205,6 +228,17 @@ export function DeckCard({
                         </div>
                     </div>
 
+                    <div className="flex items-center gap-1">
+                        <IconButton
+                            variant="text"
+                            size="sm"
+                            className="rounded-full text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 -mt-1 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setShowPrintModal(true); }}
+                            title={language === "es" ? "Descargar PDF" : "Download PDF"}
+                        >
+                            <ArrowDownTrayIcon className="h-4 w-4" />
+                        </IconButton>
+
                     {isOwner && (
                         <Menu placement="bottom-end">
                             <MenuHandler>
@@ -237,6 +271,7 @@ export function DeckCard({
                             </MenuList>
                         </Menu>
                     )}
+                    </div>
                 </div>
 
                 {job && !isCompleted && (
@@ -332,7 +367,62 @@ export function DeckCard({
                     </Button>
                 </div>
             </CardBody>
-        </Card >
+        </Card>
+
+        {/* ---------------- PRINT MODE DIALOG ---------------- */}
+        <Dialog open={showPrintModal} handler={() => setShowPrintModal(false)} size="xs">
+            <DialogHeader className="text-base font-bold text-zinc-900">
+                {language === "es" ? "Descargar PDF de Fichas" : "Download Flashcards PDF"}
+            </DialogHeader>
+            <DialogBody className="space-y-3 pt-0">
+                <Typography className="text-sm text-zinc-500 mb-4">
+                    {language === "es" ? "Elige el modo de impresión:" : "Choose print mode:"}
+                </Typography>
+
+                {[
+                    {
+                        value: "book",
+                        label: language === "es" ? "Libro (giro horizontal)" : "Book (left/right flip)",
+                        desc: language === "es" ? "Volteo normal izquierda/derecha. Recomendado para la mayoría de impresoras." : "Normal left/right page turn. Recommended for most printers.",
+                    },
+                    {
+                        value: "notebook",
+                        label: language === "es" ? "Cuaderno (giro vertical)" : "Notebook (top flip)",
+                        desc: language === "es" ? "Volteo hacia arriba. Úsalo si los reversos salen invertidos con el modo Libro." : "Flip upward like a notebook. Use when backs appear inverted with Book mode.",
+                    },
+                ].map((opt) => (
+                    <div
+                        key={opt.value}
+                        onClick={() => setPrintMode(opt.value)}
+                        className={`cursor-pointer rounded-xl border-2 p-3 transition-all ${printMode === opt.value ? "border-indigo-500 bg-indigo-50" : "border-zinc-200 hover:border-zinc-300"}`}
+                    >
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <div className={`h-3.5 w-3.5 rounded-full border-2 flex-shrink-0 ${printMode === opt.value ? "border-indigo-600 bg-indigo-600" : "border-zinc-400"}`} />
+                            <Typography className="text-sm font-bold text-zinc-800">{opt.label}</Typography>
+                        </div>
+                        <Typography className="text-xs text-zinc-500 pl-5">{opt.desc}</Typography>
+                    </div>
+                ))}
+            </DialogBody>
+            <DialogFooter className="gap-2 pt-2">
+                <Button variant="text" color="blue-gray" onClick={() => setShowPrintModal(false)} disabled={downloading}>
+                    {language === "es" ? "Cancelar" : "Cancel"}
+                </Button>
+                <Button
+                    variant="gradient"
+                    color="indigo"
+                    onClick={handleDownload}
+                    disabled={downloading}
+                    className="flex items-center gap-2 normal-case"
+                >
+                    <ArrowDownTrayIcon className={`h-4 w-4 ${downloading ? "animate-bounce" : ""}`} />
+                    {downloading
+                        ? (language === "es" ? "Descargando..." : "Downloading...")
+                        : (language === "es" ? "Descargar" : "Download")}
+                </Button>
+            </DialogFooter>
+        </Dialog>
+        </>
     );
 }
 

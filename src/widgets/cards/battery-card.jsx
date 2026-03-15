@@ -24,6 +24,7 @@ import {
     XMarkIcon,
     CheckBadgeIcon,
     HandThumbUpIcon,
+    ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { Progress } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
@@ -46,6 +47,20 @@ export function BatteryCard({
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [showAiSummary, setShowAiSummary] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownload = async (e) => {
+        e.stopPropagation();
+        if (downloading) return;
+        setDownloading(true);
+        try {
+            await projectService.downloadBatteryPdf(battery.id, language);
+        } catch (err) {
+            console.error("Download failed:", err);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const handleToggleSummary = async (e) => {
         e.stopPropagation();
@@ -173,6 +188,16 @@ export function BatteryCard({
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        <IconButton
+                            variant="text"
+                            size="sm"
+                            className="rounded-full text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                            onClick={handleDownload}
+                            disabled={downloading}
+                            title={language === "es" ? "Descargar PDF" : "Download PDF"}
+                        >
+                            <ArrowDownTrayIcon className={`h-4 w-4 ${downloading ? "animate-bounce" : ""}`} />
+                        </IconButton>
                         <div className="bg-zinc-50 px-2 py-1 rounded-md">
                             <Typography variant="small" className="text-zinc-500 text-[10px] font-bold">
                                 {formatDate(battery.created_at)}

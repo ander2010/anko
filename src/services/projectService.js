@@ -433,6 +433,44 @@ const projectService = {
     return res.data;
   },
 
+  async downloadDeckPdf(deckId, language = "en", printMode = "book") {
+    const token = localStorage.getItem("token");
+    const url = `${API_BASE}/decks/${deckId}/download-flashcards-pdf/?print_mode=${printMode}&disposition=attachment`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Token ${token}`, "Accept-Language": language },
+    });
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+    const blob = await res.blob();
+    const cd = res.headers.get("Content-Disposition") || "";
+    const match = cd.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    const filename = match ? decodeURIComponent(match[1].replace(/"/g, "")) : `deck_${deckId}_${language}.pdf`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
+
+  async downloadBatteryPdf(batteryId, language = "en") {
+    const token = localStorage.getItem("token");
+    const url = `${API_BASE}/batteries/${batteryId}/download-questions-pdf/?disposition=attachment`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Token ${token}`, "Accept-Language": language },
+    });
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+    const blob = await res.blob();
+    const cd = res.headers.get("Content-Disposition") || "";
+    const match = cd.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    const filename = match ? decodeURIComponent(match[1].replace(/"/g, "")) : `battery_${batteryId}_${language}.pdf`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
+
   async getBattery(batteryId) {
     try {
       const token = localStorage.getItem("token");
