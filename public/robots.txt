@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block dashboard and private routes
+Disallow: /dashboard/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://ankard.app/sitemap.xml
