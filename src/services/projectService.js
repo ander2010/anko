@@ -992,6 +992,26 @@ const projectService = {
     }
   },
 
+  async getRichCardConfig() {
+    try {
+      const res = await api.get("/decks/rich-card-config/");
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to get rich card config" };
+    }
+  },
+
+  async addRichCard(deckId, formData) {
+    try {
+      const res = await api.post(`/decks/${deckId}/add-rich-card/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to add rich card" };
+    }
+  },
+
   async addFlashcards(payload) {
     try {
       const res = await api.post("/decks/add-flashcards/", payload);

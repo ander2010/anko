@@ -133,8 +133,9 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                 </div>
 
                                 {/* Back Side */}
-                                <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-3xl shadow-2xl border border-indigo-100/50 flex flex-col p-8 md:p-12 items-center justify-center text-center">
-                                    <div className="absolute top-6 left-8">
+                                <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-3xl shadow-2xl border border-indigo-100/50 flex flex-col overflow-hidden">
+                                    {/* Label */}
+                                    <div className="absolute top-6 left-8 z-10">
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-indigo-100 shadow-sm">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                                             <Typography variant="small" className="font-bold uppercase tracking-widest text-[10px] text-indigo-900/60">
@@ -142,21 +143,45 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                             </Typography>
                                         </div>
                                     </div>
-                                    <Typography variant="h4" className="text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-6">
-                                        {currentCard?.back || currentCard?.answer || ""}
-                                    </Typography>
 
-                                    {currentCard?.explanation && (
-                                        <div className="mt-2 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-50/50 w-full overflow-y-auto max-h-[120px] shadow-sm">
-                                            <div className="flex items-center gap-2 mb-2 justify-center text-amber-500">
-                                                <LightBulbIcon className="h-4 w-4" />
-                                                <Typography variant="small" className="font-bold text-[10px] uppercase tracking-wide text-amber-600/80">
-                                                    {t("global.actions.explanation")}
-                                                </Typography>
+                                    {currentCard?.backImageUrl ? (
+                                        /* Rich card: image top, text bottom */
+                                        <div className="flex flex-col h-full pt-12">
+                                            <div className="flex-1 flex items-center justify-center px-6 overflow-hidden min-h-0">
+                                                <img
+                                                    src={currentCard.backImageUrl}
+                                                    alt="back"
+                                                    className="max-h-full max-w-full object-contain rounded-xl"
+                                                />
                                             </div>
-                                            <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed">
-                                                {currentCard?.explanation}
+                                            {currentCard?.back && (
+                                                <div className="flex-shrink-0 px-8 pb-6 pt-3 text-center border-t border-indigo-100/50">
+                                                    <Typography variant="h5" className="text-zinc-800 font-semibold leading-snug break-words">
+                                                        {currentCard.back}
+                                                    </Typography>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        /* Text-only card */
+                                        <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 text-center">
+                                            <Typography variant="h4" className="text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-6">
+                                                {currentCard?.back || currentCard?.answer || ""}
                                             </Typography>
+
+                                            {currentCard?.explanation && (
+                                                <div className="mt-2 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-50/50 w-full overflow-y-auto max-h-[120px] shadow-sm">
+                                                    <div className="flex items-center gap-2 mb-2 justify-center text-amber-500">
+                                                        <LightBulbIcon className="h-4 w-4" />
+                                                        <Typography variant="small" className="font-bold text-[10px] uppercase tracking-wide text-amber-600/80">
+                                                            {t("global.actions.explanation")}
+                                                        </Typography>
+                                                    </div>
+                                                    <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed">
+                                                        {currentCard?.explanation}
+                                                    </Typography>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
