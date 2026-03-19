@@ -8,6 +8,12 @@
   body {
     @apply font-sans antialiased text-zinc-900 bg-zinc-50;
   }
+
+  /* Hide Edge's native password reveal button to avoid duplicate eye icons */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
 }
 
 @layer components {
