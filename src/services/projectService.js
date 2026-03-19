@@ -937,19 +937,31 @@ const projectService = {
   async getDeckFlashcards(deckId, jobId = null) {
     try {
       const token = localStorage.getItem("token");
-      const params = { deck: deckId };
+      const params = { deck: deckId, page_size: 1000 };
       if (jobId) params.job_id = jobId;
 
       const queryString = new URLSearchParams(params).toString();
-      const url = `${API_BASE}/flashcards/${queryString ? `?${queryString}` : ""}`;
+      let url = `${API_BASE}/flashcards/${queryString ? `?${queryString}` : ""}`;
 
-      const { ok, data } = await apiFetch(url, { token });
+      let allResults = [];
+      let totalCount = 0;
 
-      if (!ok) {
-        throw data || { error: "Failed to fetch flashcards" };
+      // Fetch all pages to get every card in the deck
+      while (url) {
+        const { ok, data } = await apiFetch(url, { token });
+        if (!ok) throw data || { error: "Failed to fetch flashcards" };
+
+        if (Array.isArray(data)) {
+          allResults = allResults.concat(data);
+          url = null;
+        } else {
+          allResults = allResults.concat(data.results || []);
+          totalCount = data.count || allResults.length;
+          url = data.next || null;
+        }
       }
 
-      return data;
+      return { count: totalCount || allResults.length, results: allResults, next: null, previous: null };
     } catch (err) {
       throw err?.response?.data || err || { error: "Failed to fetch flashcards" };
     }
