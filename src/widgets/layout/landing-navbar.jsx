@@ -7,6 +7,7 @@ import {
 } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
 import { useAuth } from "@/context/auth-context";
+import { APP_NAME } from "@/config/app";
 
 export function LandingNavbar() {
     const { t, language, changeLanguage } = useLanguage();
@@ -20,7 +21,7 @@ export function LandingNavbar() {
                     <Typography
                         className="mr-4 ml-2 cursor-pointer py-1.5 font-bold text-xl tracking-tight"
                     >
-                        Ankard
+                        {APP_NAME}
                     </Typography>
                 </Link>
 

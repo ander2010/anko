@@ -22,6 +22,7 @@ import {
 import Chart from "react-apexcharts";
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
+import { APP_NAME } from "@/config/app";
 
 const formatStudyTime = (seconds, language) => {
     if (!seconds || seconds === 0) return language === "es" ? "0m" : "0m";
@@ -472,7 +473,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
 
             <div className="px-8 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                 <span className="flex items-center gap-2">
-                    Ankard Intelligence <div className="h-1 w-1 rounded-full bg-zinc-300" /> {new Date().toLocaleDateString()}
+                    {APP_NAME} Intelligence <div className="h-1 w-1 rounded-full bg-zinc-300" /> {new Date().toLocaleDateString()}
                 </span>
                 <span className="flex items-center gap-1.5 text-zinc-500">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />

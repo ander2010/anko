@@ -12,6 +12,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { useGoogleLogin } from "@react-oauth/google";
+import { APP_NAME } from "@/config/app";
 
 
 export function SignUp() {
@@ -135,8 +136,8 @@ export function SignUp() {
               </Typography>
               <Typography className="text-white/70 text-lg font-medium">
                 {language === "es"
-                  ? "Ankard  utiliza IA avanzada para ayudarte a dominar cualquier tema en tiempo récord."
-                  : "Ankard  uses advanced AI to help you master any subject in record time."}
+                  ? `${APP_NAME} utiliza IA avanzada para ayudarte a dominar cualquier tema en tiempo récord.`
+                  : `${APP_NAME} uses advanced AI to help you master any subject in record time.`}
               </Typography>
 
               <div className="mt-12 bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 text-left">
@@ -176,7 +177,7 @@ export function SignUp() {
               {language === "es" ? "Crea tu cuenta" : "Create your account"}
             </Typography>
             <Typography className="text-zinc-500 font-medium mt-2">
-              {language === "es" ? "Empieza tu viaje con Ankard gratis" : "Start your journey with Ankard for free"}
+              {language === "es" ? `Empieza tu viaje con ${APP_NAME} gratis` : `Start your journey with ${APP_NAME} for free`}
             </Typography>
           </div>
 

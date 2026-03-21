@@ -6,6 +6,7 @@ import {
     Avatar,
 } from "@material-tailwind/react";
 import { useLanguage } from "@/context/language-context";
+import { APP_NAME } from "@/config/app";
 import { HeartIcon, RocketLaunchIcon, ChartBarIcon } from "@heroicons/react/24/solid";
 
 export function AboutUs() {
@@ -64,7 +65,7 @@ export function AboutUs() {
                 <CardBody className="p-10 text-center">
                     <RocketLaunchIcon className="h-12 w-12 text-blue-500 mx-auto mb-4" />
                     <Typography variant="h3" color="blue-gray" className="mb-2">
-                        Join the Ankard Revolution
+                        Join the {APP_NAME} Revolution
                     </Typography>
                     <Typography className="text-blue-gray-600 max-w-2xl mx-auto">
                         Discover a smarter way to master your content. Whether you're a student or a pro, we're here to help you reach your goals.

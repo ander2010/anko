@@ -23,6 +23,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 import { useLanguage } from "@/context/language-context";
+import { APP_NAME } from "@/config/app";
 import { LandingNavbar, Footer } from "@/widgets/layout";
 
 export function LandingPage() {
@@ -196,7 +197,7 @@ export function LandingPage() {
                                 <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl overflow-hidden">
                                     <img
                                         src="/img/anko-hero.png"
-                                        alt="Ankard UI"
+                                        alt={`${APP_NAME} UI`}
                                         className="h-[320px] w-full object-cover lg:h-[420px]"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>

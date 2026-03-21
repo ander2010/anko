@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/language-context";
 import { EnvelopeIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import authService from "@/services/authService";
+import { APP_NAME } from "@/config/app";
 
 export function EmailVerification() {
     const { language } = useLanguage();
@@ -139,7 +140,7 @@ export function EmailVerification() {
                     <div className="p-10 text-center space-y-6">
                         {renderContent()}
                         <Typography variant="small" className="text-zinc-400 font-medium pt-4">
-                            Ankard
+                            {APP_NAME}
                         </Typography>
                     </div>
                 </div>

@@ -1,6 +1,8 @@
+import { APP_NAME } from "@/config/app";
+
 export const es = {
     sidenav: {
-        brand: "ANKARD",
+        brand: APP_NAME.toUpperCase(),
         admin: "Admin Global",
         dashboard: "Panel",
         profile: "Perfil",
@@ -94,7 +96,7 @@ export const es = {
             },
             title_1: "Aprende con preguntas.",
             title_2: "Domina con práctica.",
-            subtitle_prefix: "Ankard",
+            subtitle_prefix: APP_NAME,
             subtitle_mid1: "convierte tus documentos en",
             subtitle_flashcards: "flashcards",
             subtitle_mid2: "y",
@@ -215,7 +217,7 @@ export const es = {
             }
         },
         testimonials: {
-            title: "Lo que dicen quienes estudian con Ankard",
+            title: `Lo que dicen quienes estudian con ${APP_NAME}`,
             subtitle: "Opiniones centradas en lo importante: práctica, enfoque y resultados.",
             t1: {
                 name: "Rafael S.",
@@ -237,11 +239,11 @@ export const es = {
             title: "Preguntas frecuentes",
             subtitle: "Respuestas claras para empezar sin dudas.",
             q1: {
-                q: "¿Qué es Ankard?",
+                q: `¿Qué es ${APP_NAME}?`,
                 a: "Es una plataforma de estudio que convierte contenido en preguntas y flashcards para practicar y medir tu progreso."
             },
             q2: {
-                q: "¿Ankard sirve para certificaciones?",
+                q: `¿${APP_NAME} sirve para certificaciones?`,
                 a: "Sí. Puedes estudiar por temas, practicar con sets de preguntas y ver tu avance para enfocarte en lo que te falta."
             },
             q3: {
@@ -806,7 +808,7 @@ export const es = {
     },
     faqs_page: {
         title: "Preguntas Frecuentes",
-        subtitle: "Todo lo que necesitas saber sobre Ankard.",
+        subtitle: `Todo lo que necesitas saber sobre ${APP_NAME}.`,
         categories: {
             general: "General",
             practice: "Práctica y Preguntas",
@@ -814,11 +816,11 @@ export const es = {
         },
         questions: {
             q1: {
-                q: "¿Qué es Ankard?",
-                a: "ANKARD es una plataforma de estudio inteligente que te ayuda a convertir tus documentos en tarjetas de aprendizaje (flashcards) y cuestionarios interactivos usando análisis de IA."
+                q: `¿Qué es ${APP_NAME}?`,
+                a: `${APP_NAME.toUpperCase()} es una plataforma de estudio inteligente que te ayuda a convertir tus documentos en tarjetas de aprendizaje (flashcards) y cuestionarios interactivos usando análisis de IA.`
             },
             q2: {
-                q: "¿Es Ankard gratuito?",
+                q: `¿Es ${APP_NAME} gratuito?`,
                 a: "Sí, ofrecemos un plan Gratuito generoso que te permite crear hasta 2 proyectos y practicar diariamente con tipos de preguntas básicos."
             },
             q3: {
@@ -836,12 +838,12 @@ export const es = {
         }
     },
     about_us: {
-        title: "Sobre Ankard",
+        title: `Sobre ${APP_NAME}`,
         subtitle: "Redefiniendo cómo estudia el mundo.",
         mission_title: "Nuestra Misión",
         mission_text: "Nuestra misión es empoderar a estudiantes y aprendices constantes transformando la lectura pasiva en una práctica activa y efectiva. Creemos que el aprendizaje es más poderoso cuando es interactivo, mensurable y personalizado.",
         story_title: "Nuestra Historia",
-        story_text: "ANKARD nació en una habitación de estudiantes a partir de una frustración simple: leer cientos de páginas no significa que hayas aprendido el material. Creamos una herramienta para ayudarnos a evaluarnos, enfocarnos en nuestras debilidades y rastrear el progreso real.",
+        story_text: `${APP_NAME.toUpperCase()} nació en una habitación de estudiantes a partir de una frustración simple: leer cientos de páginas no significa que hayas aprendido el material. Creamos una herramienta para ayudarnos a evaluarnos, enfocarnos en nuestras debilidades y rastrear el progreso real.`,
         values: {
             v1: "Práctica Activa sobre Lectura Pasiva",
             v2: "Progreso Basado en Datos",

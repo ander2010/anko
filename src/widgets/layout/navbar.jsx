@@ -10,6 +10,7 @@ import {
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/auth-context";
+import { APP_NAME } from "@/config/app";
 
 export function Navbar({ brandName, routes, action }) {
   const { user, logout } = useAuth();
@@ -93,7 +94,7 @@ export function Navbar({ brandName, routes, action }) {
 }
 
 Navbar.defaultProps = {
-  brandName: "Ankard",
+  brandName: APP_NAME,
   action: (
     <a
       href="https://www.creative-tim.com/product/material-tailwind-dashboard-react"

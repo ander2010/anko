@@ -14,6 +14,7 @@ import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useLocation } from "react-router-dom";
+import { APP_NAME } from "@/config/app";
 
 
 export function SignIn() {
@@ -98,7 +99,7 @@ export function SignIn() {
               {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
             </Typography>
             <Typography className="text-zinc-500 font-medium mt-2">
-              {language === "es" ? "Ingresa a tu cuenta de Ankard" : "Log in to your Ankard account"}
+              {language === "es" ? `Ingresa a tu cuenta de ${APP_NAME}` : `Log in to your ${APP_NAME} account`}
             </Typography>
           </div>
 
@@ -265,8 +266,8 @@ export function SignIn() {
               </Typography>
               <Typography className="text-white/70 text-lg font-medium">
                 {language === "es"
-                  ? "Únete a miles de estudiantes que ya están potenciando su aprendizaje con Ankard."
-                  : "Join thousands of students who are already powering their learning with Ankard."}
+                  ? `Únete a miles de estudiantes que ya están potenciando su aprendizaje con ${APP_NAME}.`
+                  : `Join thousands of students who are already powering their learning with ${APP_NAME}.`}
               </Typography>
 
               <div className="mt-12 grid grid-cols-2 gap-6 w-full max-w-sm">

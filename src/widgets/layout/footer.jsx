@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Typography } from "@material-tailwind/react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { useLanguage } from "@/context/language-context";
+import { APP_NAME } from "@/config/app";
 
 export function Footer({ brandName, brandLink, routes }) {
   const { t } = useLanguage();
@@ -42,7 +43,7 @@ export function Footer({ brandName, brandLink, routes }) {
 }
 
 Footer.defaultProps = {
-  brandName: "Ankard",
+  brandName: APP_NAME,
   brandLink: "/dashboard/home",
   routes: [
     { name: "about", path: "/dashboard/about-us" },
