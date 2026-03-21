@@ -122,17 +122,19 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
     };
 
     return (
-        <Dialog open={open} handler={onClose} size="xl" className="overflow-hidden flex flex-col max-h-[90vh]">
-            <DialogHeader className="flex-none">
-                <div className="flex items-center gap-3">
-                    <DocumentTextIcon className="h-6 w-6 text-blue-500" />
-                    <Typography variant="h5">{language === "es" ? "Metadatos y Contenido del Documento" : "Document Metadata & Content"}</Typography>
+        <Dialog open={open} handler={onClose} size="xl" className="overflow-hidden flex flex-col h-[90vh]">
+            <DialogHeader className="flex-none py-3 px-4 md:px-6">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <DocumentTextIcon className="h-5 w-5 md:h-6 md:w-6 text-blue-500 flex-shrink-0" />
+                    <Typography className="font-bold text-sm md:text-lg text-blue-gray-900 leading-tight">
+                        {language === "es" ? "Metadatos y Contenido" : "Metadata & Content"}
+                    </Typography>
                 </div>
             </DialogHeader>
 
-            <DialogBody divider className="flex-1 overflow-y-auto p-0 flex flex-col md:flex-row">
+            <DialogBody divider className="flex-1 overflow-y-auto p-0 flex flex-col md:flex-row min-h-0">
                 {/* Left Column: Metadata */}
-                <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-blue-gray-100 space-y-6 overflow-y-auto">
+                <div className="w-full md:w-1/3 p-4 md:p-6 border-b md:border-b-0 md:border-r border-blue-gray-100 space-y-4 md:space-y-6 overflow-y-auto">
 
                     <div>
                         <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Nombre de archivo" : "Filename"}</Typography>
@@ -196,7 +198,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                 </div>
 
                 {/* Right Column: Sections content */}
-                <div className="w-full md:w-2/3 p-6 bg-gray-50 overflow-y-auto">
+                <div className="w-full md:w-2/3 p-4 md:p-6 bg-gray-50 overflow-y-auto">
                     <div className="flex items-center gap-2 mb-4">
                         <ViewColumnsIcon className="h-5 w-5 text-blue-gray-700" />
                         <Typography variant="h6" color="blue-gray">{language === "es" ? "Secciones Extraídas" : "Extracted Sections"}</Typography>
@@ -262,8 +264,8 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                     )}
                 </div>
             </DialogBody>
-            <DialogFooter className="flex-none border-t border-blue-gray-50">
-                <Button variant="gradient" color="blue" onClick={onClose}>
+            <DialogFooter className="flex-none border-t border-blue-gray-50 py-3 px-4 md:px-6">
+                <Button variant="gradient" color="blue" onClick={onClose} className="normal-case">
                     {language === "es" ? "Cerrar" : "Close"}
                 </Button>
             </DialogFooter>

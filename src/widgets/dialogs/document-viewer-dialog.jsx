@@ -104,7 +104,7 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
             <DialogHeader className="flex justify-between items-center py-3 px-6 border-b border-blue-gray-50 flex-none">
                 <div className="flex items-center gap-3">
                     <DocumentIcon className="h-6 w-6 text-blue-500" />
-                    <Typography variant="h5" color="blue-gray" className="truncate max-w-[50vw]">
+                    <Typography variant="small" color="blue-gray" className="truncate max-w-[45vw] font-bold md:text-lg">
                         {docMetadata.filename || (language === "es" ? "Cargando..." : "Loading...")}
                     </Typography>
                 </div>
@@ -134,7 +134,7 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
                         </Typography>
                     </div>
                 ) : error ? (
-                    <div className="flex flex-col items-center justify-center h-full p-12 text-center">
+                    <div className="flex flex-col items-center justify-center h-full p-4 md:p-12 text-center">
                         <ExclamationCircleIcon className="h-16 w-16 text-red-400 mb-4" />
                         <Typography variant="h6" color="red" className="mb-2">
                             {error}
@@ -150,7 +150,7 @@ export function DocumentViewerDialog({ open, onClose, document, page }) {
                         className="w-full h-full border-none"
                     />
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-12 text-center">
+                    <div className="flex flex-col items-center justify-center h-full p-4 md:p-12 text-center">
                         <DocumentIcon className="h-20 w-20 text-blue-gray-200 mb-4" />
                         <Typography variant="h6" color="blue-gray" className="mb-2">
                             {language === "es" ? "Vista previa no disponible" : "Preview not available"}

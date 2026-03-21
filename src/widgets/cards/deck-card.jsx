@@ -146,8 +146,8 @@ export function DeckCard({
     return (
         <>
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
-            <CardBody className="p-5 flex flex-col h-full">
-                <div className="flex items-start justify-between mb-4">
+            <CardBody className="p-3 md:p-5 flex flex-col h-full">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
                     <div className="flex-1 min-w-0 pr-3">
                         <Typography variant="h6" className="mb-1.5 truncate text-zinc-900 font-bold tracking-tight">
                             {deck.title}
@@ -275,7 +275,7 @@ export function DeckCard({
                 </div>
 
                 {job && !isCompleted && (
-                    <div className="mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
+                    <div className="mb-3 md:mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
                         <div className="flex items-center justify-between mb-2">
                             {/* <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
                                 {currentProgress?.current_step
@@ -303,7 +303,7 @@ export function DeckCard({
                 )}
 
                 {/* Description + AI Summary Section - always visible */}
-                <div className="mb-4">
+                <div className="mb-3 md:mb-4">
                     <div className="flex items-center justify-end mb-2">
                         <button
                             onClick={handleToggleSummary}

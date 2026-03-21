@@ -120,8 +120,8 @@ export function BatteryCard({
 
     return (
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 bg-white group hover:-translate-y-1">
-            <CardBody className="p-5 flex flex-col h-full">
-                <div className="flex items-center justify-between mb-3">
+            <CardBody className="p-3 md:p-5 flex flex-col h-full">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
                     <div className="flex items-center gap-2">
                         {/* Status Label */}
                         <div className="flex items-center gap-1.5">
@@ -226,7 +226,7 @@ export function BatteryCard({
                 <Typography variant="h6" className="mb-2 truncate text-zinc-900 font-bold tracking-tight">
                     {battery.name || battery.title || `Battery #${battery.id}`}
                 </Typography>
-                <div className="flex items-center gap-2 mb-5">
+                <div className="flex items-center gap-2 mb-3 md:mb-5">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-50 border border-zinc-100">
                         <BoltIcon className="h-3.5 w-3.5 text-zinc-400" />
                         <Typography className="text-[10px] font-bold text-zinc-600 uppercase">
@@ -241,7 +241,7 @@ export function BatteryCard({
                 </div>
 
                 {/* AI Summary Button + Section */}
-                <div className="mb-4">
+                <div className="mb-3 md:mb-4">
                     <div className="flex items-center justify-between mb-2">
                         <Typography variant="small" className="text-xs font-bold text-zinc-600 uppercase tracking-wider">
                             {showAiSummary
@@ -274,7 +274,7 @@ export function BatteryCard({
                 </div>
 
                 {progress && (
-                    <div className="mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50 group/batprog">
+                    <div className="mb-3 md:mb-5 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50 group/batprog">
                         <div className="flex items-center justify-between mb-2">
                             {/* <div className="flex items-center gap-2 text-blue-600">
                                 <Typography variant="small" className="font-bold flex items-center gap-1 text-[10px]">
@@ -314,7 +314,7 @@ export function BatteryCard({
                     </div>
                 )}
 
-                <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
+                <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-zinc-100 mt-auto">
                     <div className="text-[11px] font-medium text-zinc-500">
                         {battery.attempts_count > 0 && (
                             <span className="flex items-center gap-1">
