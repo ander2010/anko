@@ -1374,7 +1374,7 @@ export function ProjectDetail() {
   }
 
   return (
-    <div className="mt-12 flex flex-col flex-grow h-full">
+    <div className="mt-4 md:mt-12 flex flex-col flex-grow h-full">
       {/* Error Display */}
       {error && (
         <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
@@ -1387,19 +1387,19 @@ export function ProjectDetail() {
       {processingCount > 0 && <CookingLoader />}
 
       {/* Header Area */}
-      <div className="flex flex-col gap-6 pb-2">
+      <div className="flex flex-col gap-3 md:gap-6 pb-2">
         <button
           onClick={() => navigate("/dashboard/projects")}
-          className="flex items-center gap-2 w-fit px-4 py-2 rounded-xl text-zinc-500 font-bold text-xs hover:bg-zinc-100 hover:text-zinc-900 transition-all group"
+          className="flex items-center gap-2 w-fit px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-zinc-500 font-bold text-xs hover:bg-zinc-100 hover:text-zinc-900 transition-all group"
         >
           <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           {t("project_detail.back").toUpperCase()}
         </button>
 
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Typography variant="h2" className="font-black tracking-tight text-zinc-900">
+            <div className="flex items-center gap-2 md:gap-3 mb-2 flex-wrap">
+              <Typography className="font-black tracking-tight text-zinc-900 text-2xl md:text-4xl leading-tight">
                 {project.title || project.name || "Untitled"}
               </Typography>
               <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"} `}>
@@ -1426,8 +1426,8 @@ export function ProjectDetail() {
       </div>
 
       {/* Main Tabs Navigation */}
-      <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
-        <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-2">
+      <div className="sticky top-0 z-30 -mx-4 px-2 md:px-4 py-2 md:py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
+        <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-1 md:gap-2">
           {[
             { id: "documents", label: t("project_detail.tabs.documents"), count: docsTotal, icon: DocumentTextIcon },
             { id: "topics", label: t("project_detail.tabs.topics"), count: topicsTotal, icon: FolderIcon },
@@ -1438,14 +1438,14 @@ export function ProjectDetail() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
+              className={`flex items-center gap-1.5 md:gap-2.5 px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all whitespace-nowrap ${activeTab === tab.id
                 ? "bg-white text-zinc-900 shadow-premium ring-1 ring-zinc-200/50"
                 : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50"
                 }`}
             >
-              <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400 group-hover:text-zinc-500"}`} />
-              {tab.label}
-              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"}`}>
+              <tab.icon className={`h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400"}`} />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"}`}>
                 {tab.count}
               </span>
             </button>
@@ -1455,10 +1455,10 @@ export function ProjectDetail() {
 
       {/* Documents tab */}
       {activeTab === "documents" && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-grow">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-grow pt-4 md:pt-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
             <div className="flex-1">
-              <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
+              <Typography variant="h5" className="font-bold text-zinc-900 mb-1 md:mb-2">
                 {t("project_detail.tabs.documents")}
               </Typography>
               <Typography className="text-zinc-500 text-sm font-medium">
@@ -1468,7 +1468,7 @@ export function ProjectDetail() {
 
             <div className="flex gap-2">
               <Button
-                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white"
+                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white text-sm"
                 onClick={handleOpenUploadDialog}
               >
                 <DocumentArrowUpIcon className="h-5 w-5" />
@@ -1505,7 +1505,79 @@ export function ProjectDetail() {
                   <Typography className="text-zinc-500 font-bold text-sm tracking-tight uppercase tracking-widest">{t("project_detail.docs.loading")}</Typography>
                 </div>
               ) : documents.length > 0 ? (
-                <div className="overflow-x-auto">
+                <>
+                {/* Mobile card list */}
+                <div className="md:hidden divide-y divide-zinc-100">
+                  {documents.map((doc) => (
+                    <div key={doc.id} className="p-4 flex items-start gap-3">
+                      <div
+                        className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 flex-shrink-0 cursor-pointer"
+                        onClick={() => setViewingDocument(doc)}
+                      >
+                        <DocumentTextIcon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Typography
+                          className="font-bold text-zinc-900 text-sm truncate cursor-pointer hover:text-indigo-600 transition-colors"
+                          onClick={() => setViewingDocument(doc)}
+                        >
+                          {doc.filename || doc.file || "Untitled"}
+                        </Typography>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded text-[10px] font-black uppercase">{doc.type}</span>
+                          <span className="text-zinc-400 text-xs font-mono">{formatFileSize(doc.size)}</span>
+                          <span className="text-zinc-400 text-xs">{sectionsCounts[doc.id] || 0} sec.</span>
+                        </div>
+                        <div className="mt-1.5">
+                          {activeJobs[String(doc.id)] ? (
+                            <div className="w-32">
+                              <ProjectProcessingProgress
+                                jobId={activeJobs[String(doc.id)]}
+                                onComplete={() => handleJobComplete(String(doc.id), activeJobs[String(doc.id)])}
+                              />
+                            </div>
+                          ) : getStatusBadge(doc)}
+                        </div>
+                      </div>
+                      <Menu placement="left-start">
+                        <MenuHandler>
+                          <IconButton variant="text" className="rounded-xl text-zinc-400 hover:bg-zinc-100" size="sm">
+                            <EllipsisVerticalIcon className="h-5 w-5" />
+                          </IconButton>
+                        </MenuHandler>
+                        <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl bg-white/90">
+                          <MenuItem onClick={() => handleDownloadDocument(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                            <ArrowDownTrayIcon className="h-4 w-4 text-zinc-400" />
+                            {t("project_detail.docs.actions.download")}
+                          </MenuItem>
+                          <MenuItem onClick={() => setViewingDocument(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                            <EyeIcon className="h-4 w-4 text-zinc-400" />
+                            {language === "es" ? "Ver Documento" : "View Document"}
+                          </MenuItem>
+                          <MenuItem onClick={() => handleViewMetadata(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                            <InformationCircleIcon className="h-4 w-4 text-zinc-400" />
+                            {t("project_detail.docs.actions.metadata")}
+                          </MenuItem>
+                          <MenuItem onClick={() => handleOpenDocumentRelated(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                            <LinkIcon className="h-4 w-4 text-zinc-400" />
+                            {t("project_detail.docs.actions.related") || (language === "es" ? "Ver Relacionados" : "View Related")}
+                          </MenuItem>
+                          {isOwner && (
+                            <>
+                              <div className="my-2 border-t border-zinc-100" />
+                              <MenuItem onClick={() => handleDeleteDocument(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-600 font-bold text-xs hover:bg-red-50">
+                                <TrashIcon className="h-4 w-4" />
+                                {t("project_detail.docs.actions.delete")}
+                              </MenuItem>
+                            </>
+                          )}
+                        </MenuList>
+                      </Menu>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full min-w-[800px] table-auto text-left">
                     <thead>
                       <tr className="border-b border-zinc-100 bg-zinc-50/50">
@@ -1665,6 +1737,7 @@ export function ProjectDetail() {
                     </tbody>
                   </table>
                 </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center min-h-[400px] py-12 text-center px-6">
                   <div className="h-20 w-20 rounded-[2rem] bg-zinc-50 flex items-center justify-center text-zinc-300 mb-6 shadow-inner">
@@ -1708,7 +1781,7 @@ export function ProjectDetail() {
         activeTab === "topics" && (
           <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
@@ -1719,9 +1792,9 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
                   {/* Search Topics */}
-                  <div className="relative flex-1 min-w-[240px]">
+                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={language === "es" ? "Buscar temas..." : "Search topics..."}
@@ -1737,7 +1810,7 @@ export function ProjectDetail() {
                   </div>
 
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => setCreateTopicDialogOpen(true)}
                   >
                     <PlusIcon className="h-5 w-5" />
@@ -1831,7 +1904,7 @@ export function ProjectDetail() {
         activeTab === "rules" && (
           <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
@@ -1842,9 +1915,9 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
                   {/* Search Rules */}
-                  <div className="relative flex-1 min-w-[240px]">
+                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={language === "es" ? "Buscar reglas..." : "Search rules..."}
@@ -1860,7 +1933,7 @@ export function ProjectDetail() {
                   </div>
 
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => setShowCreateRule(true)}
                   >
                     <PlusIcon className="h-5 w-5" />
@@ -2024,7 +2097,7 @@ export function ProjectDetail() {
         activeTab === "batteries" && (
           <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
@@ -2035,9 +2108,9 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
                   {/* Search Batteries */}
-                  <div className="relative flex-1 min-w-[240px]">
+                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={t("project_detail.batteries.search_placeholder")}
@@ -2053,7 +2126,7 @@ export function ProjectDetail() {
                   </div>
 
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => {
                       setShowGenerateBattery(true);
                     }}
@@ -2158,7 +2231,7 @@ export function ProjectDetail() {
         activeTab === "decks" && (
           <div className="flex flex-col flex-grow">
             {/* Header + Actions Row */}
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
@@ -2169,9 +2242,9 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
                   {/* Search Decks */}
-                  <div className="relative flex-1 min-w-[240px]">
+                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={t("project_detail.decks.search_placeholder")}
@@ -2187,7 +2260,7 @@ export function ProjectDetail() {
                   </div>
 
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => {
                       setSelectedDeck(null);
                       setCreateDeckDialogOpen(true);

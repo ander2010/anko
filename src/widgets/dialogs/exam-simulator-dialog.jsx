@@ -376,7 +376,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
             className="h-4 w-full rounded-full bg-blue-gray-50 mb-6"
           />
 
-          <div className="grid grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
             <div>
               <Typography variant="small" className="font-bold">
                 {language === "es" ? "Nombre de la Batería" : "Battery Name"}:
@@ -397,11 +397,11 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
           </div>
         </DialogBody>
 
-        <DialogFooter className="justify-center gap-4">
-          <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt}>
-            {language === "es" ? "Reintentar Examen" : "Retry Exam"}
+        <DialogFooter className="justify-center gap-3 flex-wrap">
+          <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt} className="normal-case">
+            {language === "es" ? "Reintentar" : "Retry"}
           </Button>
-          <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt}>
+          <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt} className="normal-case">
             {language === "es" ? "Cerrar" : "Close"}
           </Button>
         </DialogFooter>
@@ -430,7 +430,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
         </div>
       </DialogHeader>
 
-      <DialogBody className="h-[60vh] overflow-y-auto p-6 bg-gray-50">
+      <DialogBody className="h-[60vh] overflow-y-auto p-3 md:p-6 bg-gray-50">
         <div className="mb-6">
           <Progress
             value={totalQuestions > 0 ? ((activeStep + 1) / totalQuestions) * 100 : 0}
@@ -439,9 +439,9 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
           />
         </div>
 
-        <Card className="mb-6 shadow-sm border border-gray-200">
-          <CardBody>
-            <Typography variant="h5" color="blue-gray" className="mb-2">
+        <Card className="mb-4 md:mb-6 shadow-sm border border-gray-200">
+          <CardBody className="p-3 md:p-4">
+            <Typography className="text-base md:text-xl font-bold text-blue-gray-900 mb-2 leading-snug">
               {currentQuestion.question}
             </Typography>
 
@@ -487,7 +487,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
                 className={`cursor-pointer transition-all border ${borderColor} ${cardColor} hover:shadow-md`}
                 onClick={() => handleOptionSelect(currentQuestion.id, option.id, currentQuestion.type)}
               >
-                <CardBody className="p-4 flex items-center gap-4">
+                <CardBody className="p-3 md:p-4 flex items-center gap-3">
                   <div className="pointer-events-none">
                     {isMultiSelect(currentQuestion.type) ? (
                       <Checkbox checked={isSelected} containerProps={{ className: "p-0" }} readOnly />
@@ -539,25 +539,27 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
         )}
       </DialogBody>
 
-      <DialogFooter className="justify-between border-t border-gray-100 p-4">
+      <DialogFooter className="justify-between border-t border-gray-100 p-3 md:p-4 flex-wrap gap-2">
         <Button
           variant="text"
           onClick={handlePrev}
           disabled={activeStep === 0}
-          className="flex items-center gap-2"
+          className="flex items-center gap-1 text-xs md:text-sm normal-case"
         >
-          <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Previous"}
+          <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Prev"}
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
           {!showAnswer && (
             <Button
               variant="outlined"
               color="amber"
               onClick={() => setShowAnswer(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 text-xs md:text-sm normal-case px-3 md:px-4"
             >
-              <LightBulbIcon className="h-4 w-4" /> {language === "es" ? "Mostrar Respuesta" : "Show Answer"}
+              <LightBulbIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">{language === "es" ? "Mostrar Respuesta" : "Show Answer"}</span>
+              <span className="sm:hidden">{language === "es" ? "Respuesta" : "Answer"}</span>
             </Button>
           )}
 
@@ -565,12 +567,12 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
             variant="gradient"
             color="blue"
             onClick={handleNext}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 text-xs md:text-sm normal-case px-3 md:px-4"
             disabled={savingAttempt}
           >
             {activeStep === totalQuestions - 1
-              ? (language === "es" ? "Finalizar Examen" : "Finish Exam")
-              : (language === "es" ? "Siguiente Pregunta" : "Next Question")}
+              ? (language === "es" ? "Finalizar" : "Finish")
+              : (language === "es" ? "Siguiente" : "Next")}
             {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
           </Button>
         </div>

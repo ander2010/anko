@@ -90,7 +90,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                     </IconButton>
                 </DialogHeader>
 
-                <DialogBody className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 overflow-hidden relative bg-gray-50/50">
+                <DialogBody className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 md:p-12 overflow-hidden relative bg-gray-50/50">
                     {loading ? (
                         <div className="flex flex-col items-center gap-4">
                             <Spinner className="h-10 w-10 text-indigo-500" />
@@ -112,8 +112,8 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                 onClick={handleFlip}
                             >
                                 {/* Front Side */}
-                                <div className="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-2xl hover:shadow-indigo-500/10 transition-shadow duration-300 flex flex-col p-8 md:p-12 items-center justify-center text-center border border-zinc-100">
-                                    <div className="absolute top-6 left-8">
+                                <div className="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-2xl hover:shadow-indigo-500/10 transition-shadow duration-300 flex flex-col p-5 md:p-12 items-center justify-center text-center border border-zinc-100">
+                                    <div className="absolute top-4 left-5 md:top-6 md:left-8">
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-50 border border-zinc-100">
                                             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
                                             <Typography variant="small" className="font-bold uppercase tracking-widest text-[10px] text-zinc-500">
@@ -121,10 +121,10 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                             </Typography>
                                         </div>
                                     </div>
-                                    <Typography variant="h3" className="text-zinc-800 font-bold leading-tight break-words overflow-y-auto max-h-full">
+                                    <Typography className="text-lg md:text-3xl text-zinc-800 font-bold leading-tight break-words overflow-y-auto max-h-full">
                                         {currentCard?.front || currentCard?.question || ""}
                                     </Typography>
-                                    <div className="absolute bottom-6 text-zinc-400 flex items-center gap-2 animate-bounce-slow">
+                                    <div className="absolute bottom-4 md:bottom-6 text-zinc-400 flex items-center gap-2 animate-bounce-slow">
                                         <ArrowPathIcon className="h-4 w-4" />
                                         <Typography variant="small" className="font-medium text-[11px]">
                                             {language === "es" ? "Clic para girar" : "Click to flip"}
@@ -135,7 +135,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                 {/* Back Side */}
                                 <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-3xl shadow-2xl border border-indigo-100/50 flex flex-col overflow-hidden">
                                     {/* Label */}
-                                    <div className="absolute top-6 left-8 z-10">
+                                    <div className="absolute top-4 left-5 md:top-6 md:left-8 z-10">
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-indigo-100 shadow-sm">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                                             <Typography variant="small" className="font-bold uppercase tracking-widest text-[10px] text-indigo-900/60">
@@ -164,8 +164,8 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                                         </div>
                                     ) : (
                                         /* Text-only card */
-                                        <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 text-center">
-                                            <Typography variant="h4" className="text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-6">
+                                        <div className="flex-1 flex flex-col items-center justify-center p-5 md:p-12 text-center">
+                                            <Typography className="text-base md:text-2xl text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-4 md:mb-6">
                                                 {currentCard?.back || currentCard?.answer || ""}
                                             </Typography>
 
@@ -192,7 +192,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                     )}
                 </DialogBody>
 
-                <DialogFooter className="justify-between border-t border-zinc-100 bg-white px-8 py-5">
+                <DialogFooter className="justify-between border-t border-zinc-100 bg-white px-4 py-3 md:px-8 md:py-5">
                     <Button
                         variant="text"
                         color="blue-gray"

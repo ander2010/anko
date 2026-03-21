@@ -200,9 +200,9 @@ export function GenerateBatteryDialog({
             open={open}
             handler={onClose}
             size="lg"
-            className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5 max-h-[90vh] flex flex-col"
+            className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5 h-[90vh] flex flex-col"
         >
-            <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
                 <DialogHeader className="relative p-0 overflow-hidden bg-zinc-50 border-b border-zinc-100 flex-none">
                     <div className="px-6 py-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
@@ -219,7 +219,7 @@ export function GenerateBatteryDialog({
                     </div>
                 </DialogHeader>
 
-                <DialogBody className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+                <DialogBody className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6 space-y-6">
                     {/* Query Text */}
                     <div>
                         <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
@@ -272,7 +272,7 @@ export function GenerateBatteryDialog({
                                 </div>
                             </div>
                         ) : (
-                            <div className={`border rounded-2xl overflow-y-auto max-h-72 bg-white shadow-sm transition-colors ${errors.sections ? "border-red-500 bg-red-50/5" : "border-zinc-200"}`}>
+                            <div className={`border rounded-2xl overflow-y-auto max-h-48 md:max-h-72 bg-white shadow-sm transition-colors ${errors.sections ? "border-red-500 bg-red-50/5" : "border-zinc-200"}`}>
                                 {scannedDocuments.map((doc, index) => {
                                     const docId = Number(doc.id);
                                     const docSections = doc.sections || [];
@@ -439,7 +439,7 @@ export function GenerateBatteryDialog({
                     </div>
                 </DialogBody>
 
-                <DialogFooter className="bg-zinc-50/50 border-t border-zinc-100 p-4 flex justify-end gap-3 flex-none">
+                <DialogFooter className="bg-zinc-50/50 border-t border-zinc-100 p-4 flex flex-wrap justify-end gap-3 flex-none">
                     <Button
                         variant="text"
                         color="blue-gray"
