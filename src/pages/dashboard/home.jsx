@@ -23,10 +23,6 @@ import {
   QuestionMarkCircleIcon,
   DocumentArrowUpIcon,
   SparklesIcon,
-  FolderIcon,
-  RectangleStackIcon,
-  FireIcon,
-  PlayCircleIcon,
 } from "@heroicons/react/24/solid";
 
 import { useLanguage } from "@/context/language-context";
@@ -46,10 +42,16 @@ export function Home() {
   const [showEditProfile, setShowEditProfile] = React.useState(false);
   const [showStats, setShowStats] = React.useState(false);
   const [deckCount, setDeckCount] = React.useState(null);
+  const [recentDecks, setRecentDecks] = React.useState([]);
 
   React.useEffect(() => {
-    projectService.getUserDecks(1, 1)
-      .then(data => setDeckCount(data.count ?? (Array.isArray(data) ? data.length : null)))
+    projectService.getUserDecks(1, 3)
+      .then(data => {
+        const results = data.results || (Array.isArray(data) ? data : []);
+        const count = data.count ?? (Array.isArray(data) ? data.length : null);
+        setDeckCount(count);
+        setRecentDecks(results);
+      })
       .catch(() => setDeckCount(null));
   }, []);
 
@@ -211,87 +213,43 @@ export function Home() {
     <div>
 
     {/* ═══════════════ MOBILE HOME ═══════════════ */}
-    <div className="md:hidden">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+    <div className="md:hidden min-h-screen" style={{ background: "#f4f4f8" }}>
+
+      {/* ── Header ── */}
+      <div style={{ padding: "12px 20px 8px", background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontSize: "11px", color: "#888", fontWeight: 400 }}>{greeting()},</p>
-          <p style={{ fontSize: "16px", color: "#1a1a2e", fontWeight: 700, lineHeight: 1.2 }}>{displayName}</p>
+          <p style={{ fontSize: "12px", color: "#888", fontWeight: 400 }}>{greeting()},</p>
+          <p style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a2e", letterSpacing: "-0.3px", marginTop: "1px" }}>{displayName}</p>
         </div>
 
         {/* Avatar + dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(v => !v)}
-            style={{
-              width: 36, height: 36, borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--ank-purple), #534AB7)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontSize: "13px", fontWeight: 700,
-              border: "2px solid #fff", boxShadow: "0 2px 8px rgba(127,119,221,0.3)",
-              cursor: "pointer",
-            }}
+            style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, var(--ank-purple), #534AB7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "16px", fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0 }}
           >
             {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
           </button>
 
           {showProfileMenu && (
             <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowProfileMenu(false)}
-              />
-              {/* Menu */}
-              <div
-                className="absolute right-0 top-10 z-50 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden"
-                style={{ minWidth: 180 }}
-              >
-                {/* Language toggle */}
+              <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+              <div className="absolute right-0 top-11 z-50 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden" style={{ minWidth: 180 }}>
                 <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
-                  <span style={{ fontSize: "11px", color: "#888" }}>
-                    {language === "es" ? "Idioma" : "Language"}
-                  </span>
+                  <span style={{ fontSize: "11px", color: "#888" }}>{language === "es" ? "Idioma" : "Language"}</span>
                   <div className="flex gap-1">
-                    <button
-                      onClick={() => changeLanguage("es")}
-                      style={{
-                        padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600,
-                        background: language === "es" ? "var(--ank-purple)" : "#f5f5f5",
-                        color: language === "es" ? "#fff" : "#888",
-                        border: "none", cursor: "pointer",
-                      }}
-                    >ES</button>
-                    <button
-                      onClick={() => changeLanguage("en")}
-                      style={{
-                        padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600,
-                        background: language === "en" ? "var(--ank-purple)" : "#f5f5f5",
-                        color: language === "en" ? "#fff" : "#888",
-                        border: "none", cursor: "pointer",
-                      }}
-                    >EN</button>
+                    {["es","en"].map(lang => (
+                      <button key={lang} onClick={() => changeLanguage(lang)} style={{ padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600, background: language === lang ? "var(--ank-purple)" : "#f5f5f5", color: language === lang ? "#fff" : "#888", border: "none", cursor: "pointer" }}>{lang.toUpperCase()}</button>
+                    ))}
                   </div>
                 </div>
-                {/* Profile link */}
-                <button
-                  onClick={() => { setShowProfileMenu(false); setShowEditProfile(true); }}
-                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <button onClick={() => { setShowProfileMenu(false); setShowEditProfile(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                   <span>👤</span> {language === "es" ? "Mi perfil" : "My profile"}
                 </button>
-                {/* Statistics */}
-                <button
-                  onClick={() => { setShowProfileMenu(false); setShowStats(true); }}
-                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <button onClick={() => { setShowProfileMenu(false); setShowStats(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                   <span>📊</span> {language === "es" ? "Estadísticas" : "Statistics"}
                 </button>
-                {/* Sign out */}
-                <button
-                  onClick={() => { setShowProfileMenu(false); logout(); }}
-                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#e53e3e", fontWeight: 600, background: "none", border: "none", borderTop: "1px solid #fef2f2", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <button onClick={() => { setShowProfileMenu(false); logout(); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#e53e3e", fontWeight: 600, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                   <span>→</span> {language === "es" ? "Cerrar sesión" : "Sign out"}
                 </button>
               </div>
@@ -300,73 +258,144 @@ export function Home() {
         </div>
       </div>
 
-      {/* Hero card — Study Streak */}
-      <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background: "linear-gradient(135deg, var(--ank-purple) 0%, #534AB7 100%)", color: "#fff" }}>
-        <div className="flex items-center gap-2 mb-2">
-          <FireIcon className="h-5 w-5" style={{ color: "#FFD580" }} />
-          <p style={{ fontSize: "13px", fontWeight: 700 }}>
-            {language === "es" ? "Racha de estudio" : "Study Streak"}
+      {/* ── Stats row ── */}
+      <div style={{ display: "flex", gap: 8, padding: "8px 20px 16px" }}>
+        {/* Featured: streak */}
+        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "var(--ank-purple)", textAlign: "center" }}>
+          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#fff" }}>0</p>
+          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>{language === "es" ? "racha" : "day streak"}</p>
+        </div>
+        {/* Neutral: projects */}
+        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#fff", border: "0.5px solid rgba(0,0,0,0.08)", textAlign: "center" }}>
+          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#1a1a2e" }}>{projects.length}</p>
+          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "#888" }}>{language === "es" ? "proyectos" : "projects"}</p>
+        </div>
+        {/* Neutral: batteries */}
+        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#fff", border: "0.5px solid rgba(0,0,0,0.08)", textAlign: "center" }}>
+          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#1a1a2e" }}>{batteries.length}</p>
+          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "#888" }}>{language === "es" ? "baterías" : "batteries"}</p>
+        </div>
+      </div>
+
+      {/* ── Today's Focus ── */}
+      {batteries.length > 0 && (
+        <>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.6px", padding: "0 20px 10px" }}>
+            {language === "es" ? "Enfoque de hoy" : "Today's focus"}
           </p>
-        </div>
-        <p style={{ fontSize: "28px", fontWeight: 800, lineHeight: 1 }}>
-          {language === "es" ? "¡Sigue así!" : "Keep it up!"}
-        </p>
-        <p style={{ fontSize: "10px", opacity: 0.8, marginTop: "4px" }}>
-          {language === "es" ? "Estudia hoy para mantener tu racha" : "Study today to keep your streak going"}
-        </p>
-        <div style={{ height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.25)", marginTop: "12px", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: "60%", borderRadius: "2px", background: "#FFD580" }} />
-        </div>
-      </div>
 
-      {/* Quick actions 2×2 */}
-      <div className="px-4 mb-4">
-        <p style={{ fontSize: "10px", color: "#888", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-          {language === "es" ? "Acceso rápido" : "Quick access"}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: FolderIcon, label: language === "es" ? "Proyectos" : "Projects", color: "#7F77DD", bg: "#EEEDFE", path: "/dashboard/projects", count: projects.length },
-            { icon: RectangleStackIcon, label: language === "es" ? "Mis Mazos" : "My Decks", color: "#1D9E75", bg: "#E6F5F0", path: "/dashboard/my-decks", count: deckCount },
-            { icon: BoltIcon, label: language === "es" ? "Mis Baterías" : "My Batteries", color: "#BA7517", bg: "#FEF0D8", path: "/dashboard/my-batteries", count: batteries.length },
-            { icon: PlayCircleIcon, label: language === "es" ? "Simular" : "Simulate", color: "#e53e3e", bg: "#FFF5F5", path: "/dashboard/my-batteries", count: batteries.length },
-            { icon: RectangleStackIcon, label: language === "es" ? "Mazos Públicos" : "Public Decks", color: "#534AB7", bg: "#F0EFF9", path: "/dashboard/public-decks", count: null, isPublic: true },
-            { icon: BoltIcon, label: language === "es" ? "Baterías Públicas" : "Public Batteries", color: "#2B7A54", bg: "#E6F5F0", path: "/dashboard/public-batteries", count: null, isPublic: true },
-          ].map(({ icon: Icon, label, color, bg, path, count, isPublic }) => (
-            <button
-              key={label}
-              onClick={() => navigate(path)}
-              style={{ background: bg, border: "none", borderRadius: "14px", padding: "14px 12px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: "6px" }}
-            >
-              <div style={{ width: 32, height: 32, borderRadius: "10px", background: color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Icon style={{ width: 16, height: 16, color: "#fff" }} />
+          {/* Featured battery card */}
+          <div style={{ margin: "0 16px 10px", background: "var(--ank-purple)", borderRadius: 20, padding: "18px 18px 16px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>
+                  {language === "es" ? "Batería" : "Battery"}
+                </p>
+                <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {batteries[0]?.title || batteries[0]?.name || "—"}
+                </p>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 3 }}>
+                  {batteries[0]?.question_count || batteries[0]?.questions_count || batteries[0]?.total_questions || "—"} {language === "es" ? "preguntas" : "questions"}
+                </p>
               </div>
-              <p style={{ fontSize: "20px", fontWeight: 800, color: "#1a1a2e", lineHeight: 1 }}>
-                {isPublic ? "🌐" : count === null ? "—" : count}
-              </p>
-              <p style={{ fontSize: "10px", fontWeight: 500, color: "#888" }}>{label}</p>
+              <span style={{ background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "4px 10px", fontSize: 11, color: "#fff", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+                {language === "es" ? "No iniciado" : "Not started"}
+              </span>
+            </div>
+            <div style={{ height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }}>
+              <div style={{ height: "100%", background: "#fff", borderRadius: 2, width: "0%" }} />
+            </div>
+            <button
+              onClick={() => navigate("/dashboard/my-batteries")}
+              style={{ background: "rgba(255,255,255,0.18)", borderRadius: 12, padding: 11, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#fff", border: "none", width: "100%", cursor: "pointer" }}
+            >
+              {language === "es" ? "Iniciar Simulación" : "Start Simulation"}
             </button>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
-      {/* Get started hint */}
-      <div className="mx-4 mb-6 rounded-2xl border border-zinc-100 p-4 bg-white">
-        <p style={{ fontSize: "11px", fontWeight: 600, color: "#1a1a2e", marginBottom: "4px" }}>
-          {language === "es" ? "¿Nuevo aquí?" : "New here?"}
-        </p>
-        <p style={{ fontSize: "10px", color: "#888", marginBottom: "10px" }}>
-          {language === "es"
-            ? "Crea tu primer proyecto y sube tus documentos para comenzar."
-            : "Create your first project and upload your documents to get started."}
-        </p>
-        <button
-          onClick={() => navigate("/dashboard/projects")}
-          style={{ background: "var(--ank-purple)", color: "#fff", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
-        >
-          {language === "es" ? "Ir a Proyectos" : "Go to Projects"}
+      {/* ── Secondary study cards ── */}
+      {/* Deck card */}
+      {recentDecks[0] && (
+        <div style={{ margin: "0 16px 8px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#E1F5EE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="5" width="18" height="14" rx="3" fill="#1D9E75"/>
+              <rect x="6" y="3" width="12" height="3" rx="1.5" fill="#1D9E75" opacity="0.5"/>
+              <rect x="7" y="10" width="10" height="1.5" rx="0.75" fill="#fff"/>
+              <rect x="7" y="13" width="6" height="1.5" rx="0.75" fill="#fff" opacity="0.6"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {recentDecks[0]?.title || recentDecks[0]?.name}
+            </p>
+            <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
+              {recentDecks[0]?.flashcard_count || recentDecks[0]?.total_flashcards || recentDecks[0]?.cards_count || "—"} {language === "es" ? "flashcards" : "flashcards"}
+            </p>
+            <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
+              <div style={{ height: "100%", background: "#1D9E75", borderRadius: 2, width: "40%" }} />
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/dashboard/my-decks")}
+            style={{ background: "#E1F5EE", color: "#0F6E56", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            {language === "es" ? "Estudiar" : "Study"}
+          </button>
+        </div>
+      )}
+
+      {/* Second battery card */}
+      {batteries[1] && (
+        <div style={{ margin: "0 16px 8px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#FAEEDA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3L14.5 8.5H20L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8.5H9.5L12 3Z" fill="#BA7517"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {batteries[1]?.title || batteries[1]?.name}
+            </p>
+            <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
+              {batteries[1]?.question_count || batteries[1]?.questions_count || batteries[1]?.total_questions || "—"} {language === "es" ? "preguntas" : "questions"} · {language === "es" ? "No iniciado" : "Not started"}
+            </p>
+            <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
+              <div style={{ height: "100%", background: "#BA7517", borderRadius: 2, width: "0%" }} />
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/dashboard/my-batteries")}
+            style={{ background: "#FAEEDA", color: "#854F0B", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            {language === "es" ? "Iniciar" : "Start"}
+          </button>
+        </div>
+      )}
+
+      {/* ── Quick Access ── */}
+      <div style={{ height: 16 }} />
+      <p style={{ fontSize: 11, fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.6px", padding: "0 20px 10px" }}>
+        {language === "es" ? "Acceso rápido" : "Quick access"}
+      </p>
+      <div style={{ display: "flex", gap: 8, padding: "0 16px" }}>
+        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#FAEEDA", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#633806" }}>{batteries.length}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#854F0B" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
+        </button>
+        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#EEEDFE", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#3C3489" }}>{deckCount ?? "—"}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#534AB7" }}>{language === "es" ? "Mazos" : "Decks"}</p>
+        </button>
+        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#EAF3DE", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#27500A" }}>{batteries.length}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#3B6D11" }}>{language === "es" ? "Simular" : "Simulate"}</p>
         </button>
       </div>
+
+      <div style={{ height: 24 }} />
     </div>
 
       <EditProfileDialog open={showEditProfile} handler={() => setShowEditProfile(false)} />
