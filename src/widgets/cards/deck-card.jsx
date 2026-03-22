@@ -147,7 +147,24 @@ export function DeckCard({
         <>
         <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 group bg-white">
             <CardBody className="p-3 md:p-5 flex flex-col h-full">
-                <div className="flex items-start justify-between mb-3 md:mb-4">
+                {/* ── MOBILE COMPACT LAYOUT ── */}
+                <div className="flex md:hidden items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p className="font-semibold truncate" style={{ fontSize: "12px", color: "#1a1a2e" }}>{deck.title}</p>
+                    <p style={{ fontSize: "9px", color: "#888", marginTop: "2px" }}>
+                      {deck.flashcards_count || deck.cardsCount || deck.flashcards?.length || deck.card_count || 0} {language === "es" ? "fichas" : "cards"}
+                      {deck.description ? ` · ${deck.description.slice(0, 24)}` : ""}
+                    </p>
+                  </div>
+                  <span style={{ flexShrink: 0, background: deck.visibility === "public" ? "#EAF3DE" : deck.visibility === "shared" ? "#E1F5EE" : "#EEEDFE", color: deck.visibility === "public" ? "#3B6D11" : deck.visibility === "shared" ? "#0F6E56" : "#534AB7", fontSize: "9px", padding: "2px 7px", borderRadius: "8px", fontWeight: 600 }}>
+                    {deck.visibility === "public" ? (language === "es" ? "Público" : "Public") :
+                     deck.visibility === "shared" ? (language === "es" ? "Compartido" : "Shared") :
+                     (language === "es" ? "Privado" : "Private")}
+                  </span>
+                </div>
+
+                {/* ── DESKTOP LAYOUT ── */}
+                <div className="hidden md:flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0 pr-3">
                         <Typography variant="h6" className="mb-1.5 truncate text-zinc-900 font-bold tracking-tight">
                             {deck.title}
@@ -275,7 +292,7 @@ export function DeckCard({
                 </div>
 
                 {job && !isCompleted && (
-                    <div className="mb-3 md:mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
+                    <div className="hidden md:block mb-5 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50">
                         <div className="flex items-center justify-between mb-2">
                             {/* <Typography variant="small" className="text-indigo-600 font-bold capitalize text-xs">
                                 {currentProgress?.current_step
@@ -302,8 +319,8 @@ export function DeckCard({
                     </div>
                 )}
 
-                {/* Description + AI Summary Section - always visible */}
-                <div className="mb-3 md:mb-4">
+                {/* Description + AI Summary Section - desktop only */}
+                <div className="hidden md:block mb-4">
                     <div className="flex items-center justify-end mb-2">
                         <button
                             onClick={handleToggleSummary}
@@ -340,7 +357,44 @@ export function DeckCard({
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 mt-auto">
+                {/* Mobile AI Summary — discrete link style */}
+                <div className="md:hidden mb-1.5">
+                  <button
+                    onClick={handleToggleSummary}
+                    disabled={loadingSummary || (job && !isCompleted)}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: "9px", color: "var(--ank-purple)", padding: "2px 0", fontWeight: 500, display: "flex", alignItems: "center", gap: "3px", opacity: (loadingSummary || (job && !isCompleted)) ? 0.5 : 1 }}
+                  >
+                    ✨ {loadingSummary ? (language === "es" ? "Cargando..." : "Loading...") : showAiSummary ? (language === "es" ? "Ocultar resumen" : "Hide summary") : (language === "es" ? "Ver resumen IA" : "View AI summary")}
+                  </button>
+                  {showAiSummary && summary && (
+                    <div style={{ marginTop: "6px", marginBottom: "4px", padding: "8px", borderRadius: "8px", background: "#f7f7fb", fontSize: "9px", color: "#666", lineHeight: 1.5, fontStyle: "italic" }}>
+                      {summary}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile button pair */}
+                <div className="flex md:hidden gap-1.5 mt-2">
+                    {isOwner && onLearn && (
+                        <button
+                            disabled={job && !isCompleted}
+                            style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "#EEEDFE", color: "#534AB7", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
+                            onClick={() => onLearn && onLearn(deck)}
+                        >
+                            {t("global.action.learn")}
+                        </button>
+                    )}
+                    <button
+                        disabled={job && !isCompleted}
+                        style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "#EAF3DE", color: "#3B6D11", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
+                        onClick={() => onStudy && onStudy(deck)}
+                    >
+                        {t("global.action.study")}
+                    </button>
+                </div>
+
+                {/* Desktop button pair */}
+                <div className="hidden md:flex items-center gap-2 mt-auto">
                     {isOwner && onLearn && (
                         <Button
                             variant="outlined"

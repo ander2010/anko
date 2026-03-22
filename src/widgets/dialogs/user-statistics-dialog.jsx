@@ -161,18 +161,18 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             open={open}
             handler={handler}
             size="xl"
-            className="bg-white border border-zinc-200 shadow-xl rounded-2xl overflow-hidden outline-none"
+            className="bg-white border border-zinc-200 shadow-xl rounded-2xl overflow-hidden outline-none !mx-3 md:!mx-auto"
         >
             {/* Header: Compact & Clean */}
-            <DialogHeader className="flex items-center justify-between px-8 py-5 bg-zinc-50 border-b border-zinc-100">
-                <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
-                        <ChartBarIcon className="h-6 w-6" />
+            <DialogHeader className="flex items-center justify-between px-4 py-3 md:px-8 md:py-5 bg-zinc-50 border-b border-zinc-100">
+                <div className="flex items-center gap-3 md:gap-4">
+                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shrink-0">
+                        <ChartBarIcon className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
                     <div>
-                        <Typography variant="h5" className="font-bold text-zinc-900 tracking-tight leading-none mb-0.5">
-                            {language === "es" ? "Estadísticas del Usuario" : "User Statistics"}
-                        </Typography>
+                        <p className="font-bold text-zinc-900 tracking-tight leading-none mb-0.5" style={{ fontSize: "14px" }}>
+                            {language === "es" ? "Estadísticas" : "Statistics"}
+                        </p>
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
@@ -191,7 +191,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                 </IconButton>
             </DialogHeader>
 
-            <DialogBody className="px-8 py-5 overflow-y-auto max-h-[75vh] custom-scrollbar">
+            <DialogBody className="px-3 py-3 md:px-8 md:py-5 overflow-y-auto max-h-[80vh] md:max-h-[75vh] custom-scrollbar">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-32">
                         <Spinner className="h-8 w-8 text-indigo-500 mb-3" />
@@ -209,93 +209,71 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                 ) : (
                     <div className="space-y-6">
                         {/* Section 01: Top Stats Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                            <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
+                            <div className="lg:col-span-9 grid grid-cols-3 gap-2 md:gap-5">
                                 {/* Total Questions Card */}
-                                <Card className="p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-                                            {language === "es" ? "Preguntas Totales" : "Total Questions"}
-                                        </Typography>
-                                        <SparklesIcon className="h-3.5 w-3.5 text-indigo-200" />
+                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-2 md:mb-4">
+                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
+                                            {language === "es" ? "Preguntas" : "Questions"}
+                                        </p>
+                                        <SparklesIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-indigo-200 shrink-0" />
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <Typography className="text-2xl font-extrabold text-zinc-900 leading-none">
-                                            {stats.question_level.total_questions}
-                                        </Typography>
-                                        <Typography className="text-[9px] font-bold text-zinc-400 uppercase">Tags</Typography>
-                                    </div>
-                                    <div className="mt-4 pt-3 border-t border-zinc-50 flex items-center justify-between">
-                                        <Typography className="text-[8px] font-bold text-zinc-400 uppercase">Progreso</Typography>
-                                        <Typography className="text-[8px] font-bold text-indigo-500">100%</Typography>
-                                    </div>
-                                    <div className="mt-1 h-1 w-full bg-zinc-50 rounded-full">
-                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
+                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
+                                        {stats.question_level.total_questions}
+                                    </p>
+                                    <div className="mt-2 md:mt-4 pt-2 md:pt-3 border-t border-zinc-50 flex items-center justify-between">
+                                        <p className="text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">100%</p>
+                                        <div className="h-1 flex-1 ml-2 bg-zinc-50 rounded-full">
+                                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
+                                        </div>
                                     </div>
                                 </Card>
 
                                 {/* Correct Answers Card */}
-                                <Card className="p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-2 md:mb-4">
+                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
                                             {language === "es" ? "Aciertos" : "Correct"}
-                                        </Typography>
-                                        <TrophyIcon className="h-3.5 w-3.5 text-emerald-200" />
+                                        </p>
+                                        <TrophyIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-emerald-200 shrink-0" />
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <Typography className="text-2xl font-extrabold text-zinc-900 leading-none">
-                                            {stats.question_level.correct_count}
-                                        </Typography>
-                                        <div className="text-[7px] font-black text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded uppercase">
-                                            Accuracy
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 space-y-1.5">
-                                        <div className="flex justify-between items-center text-[8px] font-bold text-zinc-400 uppercase">
-                                            <span>{language === "es" ? "Precisión" : "Accuracy"}</span>
+                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
+                                        {stats.question_level.correct_count}
+                                    </p>
+                                    <div className="mt-2 md:mt-4 space-y-1">
+                                        <div className="flex justify-between items-center text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">
+                                            <span>{language === "es" ? "Acc." : "Acc."}</span>
                                             <span className="text-zinc-600">{stats.question_level.accuracy || 0}%</span>
                                         </div>
                                         <div className="h-1 w-full bg-zinc-50 rounded-full">
-                                            <div
-                                                className="h-full bg-emerald-500 rounded-full"
-                                                style={{ width: `${stats.question_level.accuracy || 0}%` }}
-                                            />
+                                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.question_level.accuracy || 0}%` }} />
                                         </div>
                                     </div>
                                 </Card>
 
                                 {/* Activity / Time Card */}
-                                <Card className="p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-                                            {language === "es" ? "Tiempo de Estudio" : "Study Time"}
-                                        </Typography>
-                                        <ArrowTrendingUpIcon className="h-3.5 w-3.5 text-orange-200" />
+                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
+                                    <div className="flex justify-between items-center mb-2 md:mb-4">
+                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
+                                            {language === "es" ? "Tiempo" : "Time"}
+                                        </p>
+                                        <ArrowTrendingUpIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-orange-200 shrink-0" />
                                     </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <Typography className="text-2xl font-extrabold text-zinc-900 leading-none">
-                                            {formatStudyTime(stats.document_level.reduce((acc, doc) => acc + (doc.study_seconds || 0), 0), language)}
-                                        </Typography>
-                                        <Typography className="text-[9px] font-bold text-zinc-400 uppercase">Total</Typography>
-                                    </div>
-                                    <div className="mt-4 flex items-center gap-3">
+                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
+                                        {formatStudyTime(stats.document_level.reduce((acc, doc) => acc + (doc.study_seconds || 0), 0), language)}
+                                    </p>
+                                    <div className="mt-2 md:mt-4 flex items-center gap-2">
                                         <div className="flex flex-col">
-                                            <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-1">Attempts</Typography>
-                                            <Typography className="text-xs font-bold text-zinc-700">
-                                                {stats.document_level.reduce((acc, doc) => acc + (doc.attempts_count || 0), 0)}
-                                            </Typography>
-                                        </div>
-                                        <div className="h-6 w-px bg-zinc-100" />
-                                        <div className="flex flex-col">
-                                            <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-1">Projects</Typography>
-                                            <Typography className="text-xs font-bold text-zinc-700">{stats.project_level.length}</Typography>
+                                            <p className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-0.5">Proj.</p>
+                                            <p className="text-[10px] md:text-xs font-bold text-zinc-700">{stats.project_level.length}</p>
                                         </div>
                                     </div>
                                 </Card>
                             </div>
 
                             {/* Center Donut */}
-                            <Card className="lg:col-span-3 p-4 border border-zinc-100 bg-white shadow-sm flex flex-col items-center justify-center rounded-xl">
+                            <Card className="hidden md:flex lg:col-span-3 p-4 border border-zinc-100 bg-white shadow-sm flex-col items-center justify-center rounded-xl">
                                 <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
                                     {language === "es" ? "Score Global" : "Global Score"}
                                 </Typography>
@@ -310,9 +288,9 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                         </div>
 
                         {/* Section 02: Analysis Grid */}
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 pt-2">
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-5 pt-2">
                             {/* Project Breakdown Chart */}
-                            <div className="xl:col-span-7 bg-white p-6 rounded-xl border border-zinc-100 shadow-sm">
+                            <div className="hidden md:block xl:col-span-7 bg-white p-6 rounded-xl border border-zinc-100 shadow-sm">
                                 <div className="flex items-center justify-between mb-4">
                                     <Typography className="text-[9px] font-bold text-zinc-900 uppercase tracking-widest flex items-center gap-2">
                                         <FolderIcon className="h-3.5 w-3.5 text-indigo-500" />
@@ -334,7 +312,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                             </div>
 
                             {/* Dense Project List */}
-                            <div className="xl:col-span-5 space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-thin">
+                            <div className="xl:col-span-5 space-y-2 md:space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-thin">
                                 {stats.project_level.map((proj) => (
                                     <div
                                         key={proj.project_id}
@@ -398,7 +376,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
                                 {stats.document_level.map((doc) => (
                                     <div
                                         key={doc.document_id}
@@ -471,7 +449,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                 )}
             </DialogBody>
 
-            <div className="px-8 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+            <div className="px-4 py-3 md:px-8 md:py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                 <span className="flex items-center gap-2">
                     {APP_NAME} Intelligence <div className="h-1 w-1 rounded-full bg-zinc-300" /> {new Date().toLocaleDateString()}
                 </span>

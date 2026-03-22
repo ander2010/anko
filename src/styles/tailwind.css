@@ -1,8 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── ANK Design System — Color Variables ─── */
+:root {
+  --ank-purple:       #7F77DD;
+  --ank-purple-light: #EEEDFE;
+  --ank-purple-dark:  #534AB7;
+  --ank-teal:         #1D9E75;
+  --ank-teal-light:   #E1F5EE;
+  --ank-amber:        #BA7517;
+  --ank-amber-light:  #FAEEDA;
+  --ank-green:        #639922;
+  --ank-green-light:  #EAF3DE;
+  --ank-red:          #A32D2D;
+  --ank-red-light:    #FCEBEB;
+  --ank-bg:           #f7f7f7;
+  --ank-border:       rgba(0,0,0,0.10);
+  --ank-text:         #1a1a2e;
+  --ank-muted:        #888888;
+}
 
 @layer base {
   body {
@@ -19,5 +38,72 @@
 @layer components {
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  /* ─── ANK Mobile Cards ─── */
+  .ank-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid var(--ank-border);
+    padding: 11px 13px;
+    margin: 0 12px 8px;
+  }
+
+  /* ─── ANK Pills / Badges ─── */
+  .ank-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .ank-pill-purple { background: var(--ank-purple-light); color: var(--ank-purple-dark); }
+  .ank-pill-green  { background: var(--ank-green-light);  color: #3B6D11; }
+  .ank-pill-amber  { background: var(--ank-amber-light);  color: #854F0B; }
+  .ank-pill-teal   { background: var(--ank-teal-light);   color: #0F6E56; }
+  .ank-pill-red    { background: var(--ank-red-light);    color: var(--ank-red); }
+
+  /* ─── ANK Buttons ─── */
+  .ank-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: var(--ank-purple);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  .ank-btn-outline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ank-purple);
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--ank-purple);
+    cursor: pointer;
+  }
+
+  /* ─── ANK Progress Bar ─── */
+  .ank-progress-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #f0f0f0;
+    overflow: hidden;
+  }
+  .ank-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--ank-purple);
   }
 }

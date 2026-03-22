@@ -142,8 +142,27 @@ export function MyDecks() {
     );
 
     return (
-        <div className="mt-8 flex flex-col flex-grow gap-8 pb-12 w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col flex-grow pb-12 w-full">
+            {/* Mobile sticky header */}
+            <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-zinc-100 px-3 py-2.5 flex items-center gap-2 mb-3">
+                <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a2e" }}>{t("project_detail.decks.my_decks")}</p>
+                    <p style={{ fontSize: "10px", color: "#888" }}>{totalCount} {language === "es" ? "total" : "total"}</p>
+                </div>
+                <div className="relative" style={{ flex: "0 0 140px" }}>
+                    <MagnifyingGlassIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                    <input
+                        type="text"
+                        placeholder={language === "es" ? "Buscar..." : "Search..."}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: "100%", paddingLeft: "22px", paddingRight: "8px", paddingTop: "5px", paddingBottom: "5px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "11px", outline: "none", background: "#f9f9f9" }}
+                    />
+                </div>
+            </div>
+
+            <div className="mt-8 md:mt-8 flex flex-col flex-grow gap-8">
+            <div className="hidden md:flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
                         {t("project_detail.decks.my_decks")}
@@ -206,7 +225,7 @@ export function MyDecks() {
                     </Button>
                 </div>
             ) : filteredDecks.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 md:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                     {filteredDecks.map((deck) => (
                         <DeckCard
                             key={deck.id}
@@ -293,6 +312,7 @@ export function MyDecks() {
                         onPageSizeChange={setPageSize}
                     />
                 )}
+            </div>
             </div>
         </div>
     );

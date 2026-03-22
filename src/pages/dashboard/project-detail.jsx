@@ -1374,7 +1374,25 @@ export function ProjectDetail() {
   }
 
   return (
-    <div className="mt-4 md:mt-12 flex flex-col flex-grow h-full">
+    <div className="mt-0 md:mt-12 flex flex-col flex-grow h-full">
+      {/* Mobile-only sticky header */}
+      <div className="flex md:hidden items-center gap-2 px-1 pt-2 pb-3 sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-zinc-100">
+        <button
+          onClick={() => navigate("/dashboard/projects")}
+          className="flex items-center gap-1 font-bold text-[11px] shrink-0"
+          style={{ color: "var(--ank-purple)", background: "none", border: "none", padding: "4px 6px", cursor: "pointer" }}
+        >
+          <ArrowLeftIcon className="h-3.5 w-3.5" />
+          {language === "es" ? "Proyectos" : "Projects"}
+        </button>
+        <div className="flex-1 min-w-0 text-center">
+          <p className="truncate font-bold" style={{ fontSize: "13px", color: "var(--ank-text)" }}>
+            {project?.title || project?.name || ""}
+          </p>
+        </div>
+        <div style={{ width: 60 }} />
+      </div>
+
       {/* Error Display */}
       {error && (
         <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
@@ -1386,11 +1404,12 @@ export function ProjectDetail() {
       {/* Blocking Loader when processing documents */}
       {processingCount > 0 && <CookingLoader />}
 
-      {/* Header Area */}
-      <div className="flex flex-col gap-3 md:gap-6 pb-2">
+      {/* Header Area — hidden on mobile (replaced by sticky mobile header above) */}
+      <div className="hidden md:flex flex-col gap-3 md:gap-6 pb-2">
         <button
           onClick={() => navigate("/dashboard/projects")}
-          className="flex items-center gap-2 w-fit px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-zinc-500 font-bold text-xs hover:bg-zinc-100 hover:text-zinc-900 transition-all group"
+          className="flex items-center gap-2 w-fit px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-bold text-xs hover:bg-zinc-100 transition-all group"
+          style={{ color: "var(--ank-purple)" }}
         >
           <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           {t("project_detail.back").toUpperCase()}
@@ -1398,15 +1417,15 @@ export function ProjectDetail() {
 
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="flex-1">
-            <div className="flex items-center gap-2 md:gap-3 mb-2 flex-wrap">
-              <Typography className="font-black tracking-tight text-zinc-900 text-2xl md:text-4xl leading-tight">
+            <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2 flex-wrap">
+              <Typography className="font-black tracking-tight text-zinc-900 leading-tight" style={{ fontSize: "clamp(17px, 4vw, 2.25rem)" }}>
                 {project.title || project.name || "Untitled"}
               </Typography>
-              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"} `}>
+              <div className={`hidden md:block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isOwner ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-zinc-100 text-zinc-500"} `}>
                 {isOwner ? "Owner" : "Member"}
               </div>
             </div>
-            <Typography className="text-zinc-500 font-medium max-w-2xl leading-relaxed">
+            <Typography className="text-zinc-500 font-medium max-w-2xl leading-relaxed text-[9px] md:text-sm">
               {project.description || (language === "es" ? "Sin descripción" : "No description")}
             </Typography>
 
@@ -1425,9 +1444,41 @@ export function ProjectDetail() {
         </div>
       </div>
 
-      {/* Main Tabs Navigation */}
-      <div className="sticky top-0 z-30 -mx-4 px-2 md:px-4 py-2 md:py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
-        <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-1 md:gap-2">
+      {/* Main Tabs Navigation — Mobile: pill segmented control, Desktop: full tab bar */}
+      {/* Mobile pill switcher */}
+      <div className="md:hidden sticky top-[52px] z-30 bg-white/95 backdrop-blur-sm py-2 px-3">
+        <div className="flex rounded-[10px] overflow-x-auto no-scrollbar" style={{ background: "#f5f5f5", padding: "2px" }}>
+          {[
+            { id: "documents", label: t("project_detail.tabs.documents") },
+            { id: "topics", label: t("project_detail.tabs.topics") },
+            { id: "rules", label: t("project_detail.tabs.rules") },
+            { id: "batteries", label: t("project_detail.tabs.batteries") },
+            { id: "decks", label: t("project_detail.tabs.decks") },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 text-center rounded-[8px] whitespace-nowrap transition-all"
+              style={{
+                padding: "5px 8px",
+                fontSize: "9px",
+                fontWeight: activeTab === tab.id ? 600 : 400,
+                background: activeTab === tab.id ? "#fff" : "transparent",
+                color: activeTab === tab.id ? "var(--ank-purple)" : "#888",
+                boxShadow: activeTab === tab.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                minWidth: "max-content",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Desktop tab bar */}
+      <div className="hidden md:block sticky top-0 z-30 -mx-4 px-4 py-4 bg-zinc-50/80 backdrop-blur-md border-b border-zinc-200/60 transition-all">
+        <div className="max-w-screen-2xl mx-auto flex overflow-x-auto no-scrollbar gap-2">
           {[
             { id: "documents", label: t("project_detail.tabs.documents"), count: docsTotal, icon: DocumentTextIcon },
             { id: "topics", label: t("project_detail.tabs.topics"), count: topicsTotal, icon: FolderIcon },
@@ -1438,14 +1489,14 @@ export function ProjectDetail() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 md:gap-2.5 px-3 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all whitespace-nowrap ${activeTab === tab.id
+              className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
                 ? "bg-white text-zinc-900 shadow-premium ring-1 ring-zinc-200/50"
                 : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50"
                 }`}
             >
-              <tab.icon className={`h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400"}`} />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"}`}>
+              <tab.icon className={`h-5 w-5 flex-shrink-0 ${activeTab === tab.id ? "text-indigo-600" : "text-zinc-400"}`} />
+              <span>{tab.label}</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${activeTab === tab.id ? "bg-indigo-50 text-indigo-600" : "bg-zinc-100 text-zinc-400"}`}>
                 {tab.count}
               </span>
             </button>
@@ -1455,9 +1506,9 @@ export function ProjectDetail() {
 
       {/* Documents tab */}
       {activeTab === "documents" && (
-        <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-grow pt-4 md:pt-6">
+        <div className="space-y-3 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col flex-grow pt-3 md:pt-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-            <div className="flex-1">
+            <div className="hidden md:block flex-1">
               <Typography variant="h5" className="font-bold text-zinc-900 mb-1 md:mb-2">
                 {t("project_detail.tabs.documents")}
               </Typography>
@@ -1466,13 +1517,15 @@ export function ProjectDetail() {
               </Typography>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Button
-                className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 text-white text-sm"
+                className="flex items-center gap-1.5 md:gap-2 shadow-lg rounded-xl md:rounded-2xl normal-case font-black px-3 md:px-6 py-2 md:py-3 transition-all active:scale-95 text-white"
+                style={{ background: "var(--ank-purple)", fontSize: "11px" }}
                 onClick={handleOpenUploadDialog}
               >
-                <DocumentArrowUpIcon className="h-5 w-5" />
-                {t("project_detail.docs.btn_upload")}
+                <DocumentArrowUpIcon className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="md:hidden">+ Upload</span>
+                <span className="hidden md:inline">{t("project_detail.docs.btn_upload")}</span>
               </Button>
             </div>
           </div>
@@ -1509,28 +1562,28 @@ export function ProjectDetail() {
                 {/* Mobile card list */}
                 <div className="md:hidden divide-y divide-zinc-100">
                   {documents.map((doc) => (
-                    <div key={doc.id} className="p-4 flex items-start gap-3">
+                    <div key={doc.id} className="px-3 py-3 flex items-center gap-3">
                       <div
-                        className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400 flex-shrink-0 cursor-pointer"
+                        className="h-9 w-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 flex-shrink-0 cursor-pointer"
                         onClick={() => setViewingDocument(doc)}
                       >
-                        <DocumentTextIcon className="h-5 w-5" />
+                        <DocumentTextIcon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Typography
-                          className="font-bold text-zinc-900 text-sm truncate cursor-pointer hover:text-indigo-600 transition-colors"
+                        <p
+                          className="truncate cursor-pointer"
+                          style={{ fontSize: "10px", fontWeight: 600, color: "var(--ank-text)", lineHeight: 1.3 }}
                           onClick={() => setViewingDocument(doc)}
                         >
                           {doc.filename || doc.file || "Untitled"}
-                        </Typography>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <span className="px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded text-[10px] font-black uppercase">{doc.type}</span>
-                          <span className="text-zinc-400 text-xs font-mono">{formatFileSize(doc.size)}</span>
-                          <span className="text-zinc-400 text-xs">{sectionsCounts[doc.id] || 0} sec.</span>
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <span style={{ fontSize: "8px", color: "#aaa" }}>{formatFileSize(doc.size)}</span>
+                          <span style={{ fontSize: "8px", color: "#aaa" }}>· {sectionsCounts[doc.id] || 0} sec.</span>
                         </div>
-                        <div className="mt-1.5">
+                        <div className="mt-1">
                           {activeJobs[String(doc.id)] ? (
-                            <div className="w-32">
+                            <div className="w-28">
                               <ProjectProcessingProgress
                                 jobId={activeJobs[String(doc.id)]}
                                 onComplete={() => handleJobComplete(String(doc.id), activeJobs[String(doc.id)])}
@@ -1783,7 +1836,7 @@ export function ProjectDetail() {
             {/* Header + Actions Row */}
             <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="hidden md:block flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                     {t("project_detail.topics.title")}
                   </Typography>
@@ -1792,25 +1845,33 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
+                <div className="flex gap-2 md:gap-4 w-full xl:w-auto items-center">
                   {/* Search Topics */}
-                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
+                  <div className="relative flex-1 md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={language === "es" ? "Buscar temas..." : "Search topics..."}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      className="w-full pl-8 md:pl-10 pr-3 py-2 md:py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      style={{ fontSize: "11px" }}
                       value={topicsSearch}
                       onChange={(e) => setTopicsSearch(e.target.value)}
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                       </svg>
                     </div>
                   </div>
 
+                  <button
+                    className="shrink-0 font-semibold text-white transition-all active:scale-95 md:hidden"
+                    style={{ background: "var(--ank-purple)", fontSize: "9px", padding: "5px 10px", borderRadius: "8px", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                    onClick={() => setCreateTopicDialogOpen(true)}
+                  >
+                    + {t("project_detail.topics.btn_create")}
+                  </button>
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="hidden md:flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => setCreateTopicDialogOpen(true)}
                   >
                     <PlusIcon className="h-5 w-5" />
@@ -1906,7 +1967,7 @@ export function ProjectDetail() {
             {/* Header + Actions Row */}
             <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="hidden md:block flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                     {t("project_detail.rules.title")}
                   </Typography>
@@ -1915,25 +1976,33 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
+                <div className="flex gap-2 md:gap-4 w-full xl:w-auto items-center">
                   {/* Search Rules */}
-                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
+                  <div className="relative flex-1 md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={language === "es" ? "Buscar reglas..." : "Search rules..."}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      className="w-full pl-8 md:pl-10 pr-3 py-2 md:py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      style={{ fontSize: "11px" }}
                       value={rulesSearch}
                       onChange={(e) => setRulesSearch(e.target.value)}
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                       </svg>
                     </div>
                   </div>
 
+                  <button
+                    className="shrink-0 font-semibold text-white transition-all active:scale-95 md:hidden"
+                    style={{ background: "var(--ank-purple)", fontSize: "9px", padding: "5px 10px", borderRadius: "8px", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                    onClick={() => setShowCreateRule(true)}
+                  >
+                    + {t("project_detail.rules.btn_create")}
+                  </button>
                   <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
+                    className="hidden md:flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-6 py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
                     onClick={() => setShowCreateRule(true)}
                   >
                     <PlusIcon className="h-5 w-5" />
@@ -2099,7 +2168,7 @@ export function ProjectDetail() {
             {/* Header + Actions Row */}
             <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="hidden md:block flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                     {t("project_detail.batteries.title")}
                   </Typography>
@@ -2108,32 +2177,31 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
+                <div className="flex gap-2 md:gap-4 w-full xl:w-auto items-center">
                   {/* Search Batteries */}
-                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
+                  <div className="relative flex-1 md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={t("project_detail.batteries.search_placeholder")}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      className="w-full pl-8 md:pl-10 pr-3 py-2 md:py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      style={{ fontSize: "11px" }}
                       value={batteriesSearch}
                       onChange={(e) => setBatteriesSearch(e.target.value)}
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                       </svg>
                     </div>
                   </div>
 
-                  <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                    onClick={() => {
-                      setShowGenerateBattery(true);
-                    }}
+                  <button
+                    className="shrink-0 font-semibold text-white transition-all active:scale-95"
+                    style={{ background: "var(--ank-purple)", fontSize: "9px", padding: "5px 10px", borderRadius: "8px", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                    onClick={() => { setShowGenerateBattery(true); }}
                   >
-                    <PlusIcon className="h-5 w-5" />
-                    {t("project_detail.batteries.btn_create")}
-                  </Button>
+                    + {t("project_detail.batteries.btn_create")}
+                  </button>
                 </div>
               </div>
 
@@ -2160,7 +2228,7 @@ export function ProjectDetail() {
               {/* Se eliminó el formulario inline para usar GenerateBatteryDialog */}
 
               {batteries.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                   {batteries
                     .map((battery) => {
                       const isGenerating = globalActiveJobs.some(j => j.type === 'battery' && j.id === String(battery.id));
@@ -2233,7 +2301,7 @@ export function ProjectDetail() {
             {/* Header + Actions Row */}
             <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4 md:pt-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="hidden md:block flex-1">
                   <Typography variant="h5" className="font-bold text-zinc-900 mb-2">
                     {t("project_detail.decks.title")}
                   </Typography>
@@ -2242,33 +2310,31 @@ export function ProjectDetail() {
                   </Typography>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto">
+                <div className="flex gap-2 md:gap-4 w-full xl:w-auto items-center">
                   {/* Search Decks */}
-                  <div className="relative flex-1 sm:min-w-[200px] md:min-w-[240px]">
+                  <div className="relative flex-1 md:min-w-[240px]">
                     <input
                       type="text"
                       placeholder={t("project_detail.decks.search_placeholder")}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      className="w-full pl-8 md:pl-10 pr-3 py-2 md:py-2.5 rounded-xl border border-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-zinc-400 text-sm bg-white"
+                      style={{ fontSize: "11px" }}
                       value={deckSearch}
                       onChange={(e) => setDeckSearch(e.target.value)}
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                       </svg>
                     </div>
                   </div>
 
-                  <Button
-                    className="flex items-center gap-2 bg-zinc-900 shadow-lg shadow-zinc-200 rounded-2xl normal-case font-black px-4 md:px-6 py-2.5 md:py-3 text-sm transition-all hover:bg-indigo-600 hover:shadow-indigo-500/20 active:scale-95 shrink-0"
-                    onClick={() => {
-                      setSelectedDeck(null);
-                      setCreateDeckDialogOpen(true);
-                    }}
+                  <button
+                    className="shrink-0 font-semibold text-white transition-all active:scale-95"
+                    style={{ background: "var(--ank-purple)", fontSize: "9px", padding: "5px 10px", borderRadius: "8px", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                    onClick={() => { setSelectedDeck(null); setCreateDeckDialogOpen(true); }}
                   >
-                    <PlusIcon className="h-5 w-5" />
-                    {t("project_detail.decks.btn_create")}
-                  </Button>
+                    + {t("project_detail.decks.btn_create")}
+                  </button>
                 </div>
               </div>
 
@@ -2298,7 +2364,7 @@ export function ProjectDetail() {
                   <Typography className="text-blue-gray-600">{language === "es" ? "Cargando mazos..." : "Loading decks..."}</Typography>
                 </div>
               ) : decks.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
                   {decks
                     .filter(deck => deck.title.toLowerCase().includes(deckSearch.toLowerCase()))
                     .map((deck) => {

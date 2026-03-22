@@ -183,34 +183,33 @@ export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) 
       open={open}
       handler={handleClose}
       size="md"
-      className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5"
+      className="bg-white shadow-2xl rounded-2xl md:rounded-3xl overflow-hidden ring-1 ring-zinc-900/5 !mx-3 md:!mx-auto"
     >
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
         <DialogHeader className="relative p-0 overflow-hidden bg-zinc-50 border-b border-zinc-100">
-          <div className="px-6 py-6 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
-              <FolderPlusIcon className="h-6 w-6" />
+          <div className="px-4 py-3 md:px-6 md:py-6 flex items-center gap-3">
+            <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white shrink-0">
+              <FolderPlusIcon className="h-4 w-4 md:h-6 md:w-6" />
             </div>
             <div>
-              <Typography variant="h5" className="text-zinc-900 font-black tracking-tight">
+              <p className="text-zinc-900 font-black tracking-tight" style={{ fontSize: "14px" }}>
                 {t("projects.dialogs.create_project_title") || "Create New Project"}
-              </Typography>
-              <Typography variant="tiny" className="text-zinc-500 font-medium">
+              </p>
+              <p className="text-zinc-500 font-medium" style={{ fontSize: "11px" }}>
                 {language === "es" ? "Inicia un nuevo espacio de trabajo" : "Start a new workspace"}
-              </Typography>
+              </p>
             </div>
           </div>
         </DialogHeader>
 
-        <DialogBody className="space-y-6 p-6 overflow-y-auto max-h-[65vh]">
+        <DialogBody className="space-y-4 p-4 md:p-6 overflow-y-auto max-h-[65vh]">
           <div>
-            <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+            <p className="font-bold text-zinc-900 mb-1.5 ml-1" style={{ fontSize: "12px" }}>
               {language === "es" ? "Nombre del Proyecto" : "Project Name"} <span className="text-red-500">*</span>
-            </Typography>
+            </p>
             <Input
               placeholder={language === "es" ? "Ej. Microbiología 101" : "Ex. Microbiology 101"}
-              className={`!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 transition-all ${errors.name ? "!border-red-500 shadow-sm shadow-red-500/10" : ""
-                }`}
+              className={`!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 transition-all ${errors.name ? "!border-red-500 shadow-sm shadow-red-500/10" : ""}`}
               value={formData.name}
               name="name"
               onChange={handleChange}
@@ -219,55 +218,34 @@ export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) 
               labelProps={{ className: "hidden" }}
             />
             {errors.name && (
-              <Typography variant="small" color="red" className="mt-1 font-medium flex items-center gap-1">
-                <span className="h-1 w-1 rounded-full bg-red-500" /> {errors.name}
-              </Typography>
+              <p className="mt-1 font-medium flex items-center gap-1 text-red-500" style={{ fontSize: "11px" }}>
+                <span className="h-1 w-1 rounded-full bg-red-500 shrink-0" /> {errors.name}
+              </p>
             )}
           </div>
 
           <div>
-            <Typography variant="small" className="font-bold text-zinc-900 mb-1.5 ml-1">
+            <p className="font-bold text-zinc-900 mb-1.5 ml-1" style={{ fontSize: "12px" }}>
               {language === "es" ? "Descripción (opcional)" : "Description (optional)"}
-            </Typography>
+            </p>
             <Textarea
               placeholder={language === "es" ? "Describe brevemente el objetivo de este proyecto..." : "Briefly describe the goal of this project..."}
-              className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 min-h-[100px]"
+              className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/50 rounded-xl !text-zinc-900 min-h-[80px] md:min-h-[100px]"
               name="description"
               value={formData.description}
               onChange={handleChange}
               labelProps={{ className: "hidden" }}
             />
           </div>
-
-          {/* Docs with Uppy - Hidden as requested
-          <div>
-            <Typography variant="small" className="font-bold text-zinc-900 mb-2 ml-1 flex items-center justify-between">
-              <span>{language === "es" ? "Documentos Iniciales" : "Initial Documents"}</span>
-              <span className="text-indigo-500 text-[10px] bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">{language === "es" ? "Opcional" : "Optional"}</span>
-            </Typography>
-
-            <div className="border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50">
-              <Dashboard
-                uppy={uppy}
-                width="100%"
-                height={250}
-                hideUploadButton={true}
-                showProgressDetails={true}
-                theme="light"
-              />
-            </div>
-          </div>
-          */}
-
         </DialogBody>
 
-        <DialogFooter className="border-t border-zinc-100 p-4 flex items-center justify-end gap-3 bg-zinc-50/50">
+        <DialogFooter className="border-t border-zinc-100 p-3 md:p-4 flex items-center justify-end gap-2 bg-zinc-50/50">
           <Button
             variant="text"
             color="blue-gray"
             onClick={handleClose}
             disabled={loading}
-            className="normal-case font-bold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+            className="normal-case font-bold text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 text-xs md:text-sm px-3 py-2"
           >
             {t("projects.dialogs.cancel")}
           </Button>
@@ -276,18 +254,18 @@ export function CreateProjectDialog({ open, onClose, onCreate, projects = [] }) 
             variant="gradient"
             color="indigo"
             disabled={loading}
-            className="normal-case font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30"
+            className="normal-case font-bold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 text-xs md:text-sm px-4 py-2"
           >
             {loading
-              ? (language === "es" ? "Creando..." : "Creating Workspace...")
-              : (t("projects.dialogs.create_project_title") || "Create Project")}
+              ? (language === "es" ? "Creando..." : "Creating...")
+              : (language === "es" ? "Crear Proyecto" : "Create Project")}
           </Button>
         </DialogFooter>
 
         {errors.submit && (
-          <Typography variant="small" color="red" className="px-6 pb-4 text-center font-bold">
+          <p className="px-4 pb-3 text-center font-bold text-red-500" style={{ fontSize: "11px" }}>
             {errors.submit}
-          </Typography>
+          </p>
         )}
       </form>
     </Dialog>

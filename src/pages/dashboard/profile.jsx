@@ -25,10 +25,16 @@ import { ProfileInfoCard, MessageCard } from "@/widgets/cards/index";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
 import projectService from "@/services/projectService";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "@/context/language-context";
+import { EditProfileDialog } from "@/widgets/dialogs/edit-profile-dialog";
+import { UserStatisticsDialog } from "@/widgets/dialogs/user-statistics-dialog";
 
 export function Profile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { language, changeLanguage } = useLanguage();
   const [membership, setMembership] = useState(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     async function fetchMembership() {
@@ -44,6 +50,88 @@ export function Profile() {
 
   return (
     <>
+      {/* ═══ MOBILE PROFILE — full page, hidden on desktop ═══ */}
+      <div className="md:hidden min-h-screen bg-zinc-50 pb-24">
+        {/* Top: avatar + name */}
+        <div className="flex flex-col items-center pt-10 pb-6 px-4">
+          <div style={{
+            width: 72, height: 72, borderRadius: "50%",
+            background: "linear-gradient(135deg, var(--ank-purple), #534AB7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontSize: "26px", fontWeight: 800,
+            boxShadow: "0 4px 16px rgba(127,119,221,0.35)",
+          }}>
+            {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
+          </div>
+          <p style={{ fontSize: "17px", fontWeight: 700, color: "#1a1a2e", marginTop: "12px" }}>
+            {user?.first_name ? `${user.first_name} ${user.last_name || ""}`.trim() : user?.username || ""}
+          </p>
+          <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{user?.email || ""}</p>
+          {membership?.tier && (
+            <span style={{ marginTop: "8px", background: "#FAEEDA", color: "#854F0B", fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "10px" }}>
+              {membership.tier}
+            </span>
+          )}
+        </div>
+
+        {/* Language toggle */}
+        <div className="flex justify-center gap-2 mb-6">
+          {["es", "en"].map(lang => (
+            <button key={lang} onClick={() => changeLanguage(lang)} style={{
+              padding: "6px 18px", borderRadius: "10px", fontSize: "12px", fontWeight: 600,
+              background: language === lang ? "var(--ank-purple)" : "#fff",
+              color: language === lang ? "#fff" : "#888",
+              border: `1px solid ${language === lang ? "var(--ank-purple)" : "#e5e7eb"}`,
+              cursor: "pointer",
+            }}>
+              {lang.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* Menu items */}
+        <div className="mx-4 bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm">
+          <button
+            onClick={() => setShowEditProfile(true)}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", textAlign: "left" }}
+          >
+            <span style={{ width: 36, height: 36, borderRadius: "10px", background: "#EEEDFE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>👤</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "#1a1a2e" }}>{language === "es" ? "Mi Perfil" : "My Profile"}</p>
+              <p style={{ fontSize: "10px", color: "#888" }}>{language === "es" ? "Editar nombre y contraseña" : "Edit name and password"}</p>
+            </div>
+            <span style={{ color: "#ccc", fontSize: "16px" }}>›</span>
+          </button>
+
+          <button
+            onClick={() => setShowStats(true)}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", textAlign: "left" }}
+          >
+            <span style={{ width: 36, height: 36, borderRadius: "10px", background: "#E6F5F0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>📊</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "#1a1a2e" }}>{language === "es" ? "Estadísticas" : "Statistics"}</p>
+              <p style={{ fontSize: "10px", color: "#888" }}>{language === "es" ? "Tu progreso de estudio" : "Your study progress"}</p>
+            </div>
+            <span style={{ color: "#ccc", fontSize: "16px" }}>›</span>
+          </button>
+
+          <button
+            onClick={logout}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+          >
+            <span style={{ width: 36, height: 36, borderRadius: "10px", background: "#FFF5F5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>🚪</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "#e53e3e" }}>{language === "es" ? "Cerrar Sesión" : "Sign Out"}</p>
+              <p style={{ fontSize: "10px", color: "#888" }}>{language === "es" ? "Salir de tu cuenta" : "Log out of your account"}</p>
+            </div>
+            <span style={{ color: "#ccc", fontSize: "16px" }}>›</span>
+          </button>
+        </div>
+
+        <EditProfileDialog open={showEditProfile} handler={() => setShowEditProfile(false)} />
+        <UserStatisticsDialog open={showStats} handler={() => setShowStats(false)} userId={user?.id} />
+      </div>
+
       <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover	bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>

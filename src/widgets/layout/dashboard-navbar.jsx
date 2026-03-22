@@ -351,8 +351,8 @@ export function DashboardNavbar() {
         </div>
       </Navbar>
 
-      {/* Toast notifications — fixed bottom-right */}
-      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+      {/* Toast notifications — above mobile tab bar on small screens */}
+      <div className="fixed bottom-16 right-3 md:bottom-6 md:right-6 z-[9999] flex flex-col gap-3 pointer-events-none max-w-[calc(100vw-24px)] md:max-w-none">
         {toasts.map((toast) => {
           const title = toast.title || toast.notification?.title || "";
           const body  = toast.body  || toast.notification?.body  || toast.message || "";
@@ -361,7 +361,7 @@ export function DashboardNavbar() {
           return (
             <div
               key={toast._toastId}
-              className={`pointer-events-auto flex items-start gap-3 w-80 bg-white rounded-2xl shadow-2xl ring-1 ${ring} px-4 py-3.5`}
+              className={`pointer-events-auto flex items-start gap-3 w-72 md:w-80 bg-white rounded-2xl shadow-2xl ring-1 ${ring} px-3 md:px-4 py-3 md:py-3.5`}
             >
               <Icon className={`h-5 w-5 mt-0.5 shrink-0 ${cls}`} strokeWidth={2} />
               <div className="flex-1 min-w-0">

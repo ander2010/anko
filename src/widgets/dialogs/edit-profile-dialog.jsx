@@ -154,315 +154,224 @@ export function EditProfileDialog({ open, handler }) {
         <Dialog
             open={open}
             handler={handler}
-            className="bg-transparent shadow-none"
+            className="bg-transparent shadow-none !mx-3 md:!mx-auto"
             size="md"
         >
-            <div className="bg-white rounded-[2rem] shadow-2xl border border-zinc-200 p-8 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+            <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-2xl border border-zinc-200 p-4 md:p-8 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+                <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-                <DialogHeader className="p-0 mb-6 flex flex-col items-start gap-1">
-                    <Typography variant="h4" className="font-black text-zinc-900 tracking-tight">
+                {/* Header */}
+                <DialogHeader className="p-0 mb-3 md:mb-6 flex flex-col items-start gap-0.5">
+                    <p className="font-black text-zinc-900 tracking-tight" style={{ fontSize: "15px" }}>
                         {language === 'es' ? 'Editar Perfil' : 'Edit Profile'}
-                    </Typography>
-                    <Typography className="font-medium text-zinc-500 text-sm">
+                    </p>
+                    <p className="font-medium text-zinc-500" style={{ fontSize: "11px" }}>
                         {language === 'es' ? 'Actualiza tu información personal y seguridad.' : 'Update your personal information and security.'}
-                    </Typography>
+                    </p>
                 </DialogHeader>
 
                 <DialogBody className="p-0">
                     <Tabs value={activeTab} className="w-full">
                         <TabsHeader
                             className="rounded-xl bg-zinc-100 p-1"
-                            indicatorProps={{
-                                className: "bg-white shadow-md rounded-lg",
-                            }}
+                            indicatorProps={{ className: "bg-white shadow-md rounded-lg" }}
                         >
                             {tabsData.map(({ label, value, icon: Icon }) => (
                                 <Tab
                                     key={value}
                                     value={value}
                                     onClick={() => setActiveTab(value)}
-                                    className={`font-bold text-xs transition-colors ${activeTab === value ? "text-indigo-600" : "text-zinc-500"
-                                        }`}
+                                    className={`font-bold transition-colors ${activeTab === value ? "text-indigo-600" : "text-zinc-500"}`}
+                                    style={{ fontSize: "11px" }}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <Icon className="w-4 h-4" />
-                                        {label}
+                                    <div className="flex items-center gap-1.5">
+                                        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                        <span className="hidden md:inline">{label}</span>
+                                        <span className="md:hidden">{label.split(" ")[0]}</span>
                                     </div>
                                 </Tab>
                             ))}
                         </TabsHeader>
 
-                        <TabsBody className="mt-6">
+                        <TabsBody className="mt-3 md:mt-6">
                             {/* PROFILE TAB */}
                             <TabPanel value="profile" className="p-0">
-                                <div className="flex flex-col gap-5">
+                                <div className="flex flex-col gap-3 md:gap-5">
                                     {profileError && (
-                                        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-2.5 md:p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 font-bold" style={{ fontSize: "11px" }}>
                                             {profileError}
                                         </div>
                                     )}
                                     {profileSuccess && (
-                                        <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-2.5 md:p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 font-bold" style={{ fontSize: "11px" }}>
                                             {profileSuccess}
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <div className="flex flex-col gap-2">
-                                            <Typography variant="small" className="font-bold text-zinc-700 ml-1">
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-5">
+                                        <div className="flex flex-col gap-1">
+                                            <p className="font-bold text-zinc-700 ml-1" style={{ fontSize: "11px" }}>
                                                 {t("global.pages.users.fields.first_name") || (language === 'es' ? 'Nombre' : 'First Name')}
-                                            </Typography>
+                                            </p>
                                             <Input
-                                                size="lg"
+                                                size="md"
                                                 placeholder="John"
                                                 name="first_name"
                                                 value={profileData.first_name}
                                                 onChange={handleProfileChange}
                                                 className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400"
-                                                labelProps={{
-                                                    className: "hidden",
-                                                }}
+                                                labelProps={{ className: "hidden" }}
                                             />
                                         </div>
-                                        <div className="flex flex-col gap-2">
-                                            <Typography variant="small" className="font-bold text-zinc-700 ml-1">
+                                        <div className="flex flex-col gap-1">
+                                            <p className="font-bold text-zinc-700 ml-1" style={{ fontSize: "11px" }}>
                                                 {t("global.pages.users.fields.last_name") || (language === 'es' ? 'Apellidos' : 'Last Name')}
-                                            </Typography>
+                                            </p>
                                             <Input
-                                                size="lg"
+                                                size="md"
                                                 placeholder=""
                                                 name="last_name"
                                                 value={profileData.last_name}
                                                 onChange={handleProfileChange}
                                                 className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400"
-                                                labelProps={{
-                                                    className: "hidden",
-                                                }}
+                                                labelProps={{ className: "hidden" }}
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-2">
-                                        <Typography variant="small" className="font-bold text-zinc-700 ml-1">
+                                    <div className="flex flex-col gap-1">
+                                        <p className="font-bold text-zinc-700 ml-1" style={{ fontSize: "11px" }}>
                                             {t("global.pages.users.fields.email") || "Email"}
-                                        </Typography>
+                                        </p>
                                         <Input
-                                            size="lg"
+                                            size="md"
                                             placeholder="name@example.com"
                                             type="email"
                                             value={user?.email || ""}
                                             disabled
                                             className="!border-zinc-200 !bg-zinc-100 rounded-xl !text-zinc-500 placeholder:text-zinc-400 cursor-not-allowed"
-                                            labelProps={{
-                                                className: "hidden",
-                                            }}
+                                            labelProps={{ className: "hidden" }}
                                         />
-                                        <Typography variant="small" className="text-zinc-400 text-xs ml-1 italic">
-                                            {language === 'es' ? 'El correo electrónico no se puede modificar' : 'Email cannot be changed'}
-                                        </Typography>
+                                        <p className="text-zinc-400 ml-1 italic" style={{ fontSize: "10px" }}>
+                                            {language === 'es' ? 'El correo no se puede modificar' : 'Email cannot be changed'}
+                                        </p>
                                     </div>
 
-                                    {/* Membership Section */}
-                                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 p-6 shadow-xl">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
-                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
-
-                                        <div className="relative z-10 flex flex-col gap-3">
+                                    {/* Membership — compact on mobile */}
+                                    <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 p-3 md:p-6 shadow-lg">
+                                        <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
+                                        <div className="relative z-10 flex items-center justify-between gap-2">
                                             <div className="flex items-center gap-2">
-                                                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                                    </svg>
-                                                </div>
-                                                <Typography variant="small" className="font-black text-white uppercase tracking-wide">
-                                                    {language === 'es' ? 'Membresía Actual' : 'Current Membership'}
-                                                </Typography>
-                                            </div>
-
-                                            <div className="flex items-end justify-between">
-                                                <div className="flex flex-col gap-1">
-                                                    <Typography variant="h4" className="font-black text-white uppercase tracking-tight">
+                                                <svg className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                                </svg>
+                                                <div>
+                                                    <p className="font-black text-white uppercase tracking-wide" style={{ fontSize: "9px" }}>
+                                                        {language === 'es' ? 'Membresía' : 'Membership'}
+                                                    </p>
+                                                    <p className="font-black text-white uppercase" style={{ fontSize: "14px", lineHeight: 1 }}>
                                                         {membership?.tier || "Free"}
-                                                    </Typography>
+                                                    </p>
                                                     {membership?.remaining_days && (
-                                                        <Typography variant="small" className="text-white/80 text-xs font-bold">
-                                                            {membership.remaining_days} {language === 'es' ? 'días restantes' : 'days remaining'}
-                                                        </Typography>
+                                                        <p className="text-white/80" style={{ fontSize: "9px" }}>
+                                                            {membership.remaining_days} {language === 'es' ? 'días' : 'days'}
+                                                        </p>
                                                     )}
                                                 </div>
-
-                                                {(membership?.tier === "Free" || !membership?.tier) && (
-                                                    <Button
-                                                        size="sm"
-                                                        className="bg-white text-orange-600 hover:bg-white/90 normal-case font-black shadow-lg rounded-xl px-4 py-2 flex items-center gap-2"
-                                                        onClick={() => window.location.href = '/dashboard/billing'}
-                                                    >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                                        </svg>
-                                                        {language === 'es' ? 'Mejorar' : 'Upgrade'}
-                                                    </Button>
-                                                )}
                                             </div>
+                                            {(membership?.tier === "Free" || !membership?.tier) && (
+                                                <button
+                                                    onClick={() => window.location.href = '/dashboard/billing'}
+                                                    style={{ background: "#fff", color: "#ea580c", borderRadius: "10px", padding: "5px 12px", fontSize: "11px", fontWeight: 700, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                    </svg>
+                                                    {language === 'es' ? 'Mejorar' : 'Upgrade'}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <Button
-                                        variant="gradient"
-                                        color="indigo"
+                                    <button
                                         onClick={handleProfileSubmit}
-                                        loading={profileLoading}
-                                        className="mt-4 rounded-xl shadow-lg shadow-indigo-500/20 normal-case font-bold text-sm"
-                                        fullWidth
+                                        disabled={profileLoading}
+                                        style={{ width: "100%", padding: "10px", borderRadius: "12px", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontSize: "12px", fontWeight: 700, border: "none", cursor: profileLoading ? "not-allowed" : "pointer", opacity: profileLoading ? 0.7 : 1 }}
                                     >
-                                        {t("global.crud.save") || (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
-                                    </Button>
+                                        {profileLoading ? "..." : (t("global.crud.save") || (language === 'es' ? 'Guardar Cambios' : 'Save Changes'))}
+                                    </button>
                                 </div>
                             </TabPanel>
 
                             {/* PASSWORD TAB */}
                             <TabPanel value="password" className="p-0">
-                                <div className="flex flex-col gap-5">
+                                <div className="flex flex-col gap-3 md:gap-5">
                                     {passwordError && (
-                                        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-2.5 rounded-xl bg-red-50 border border-red-100 text-red-600 font-bold" style={{ fontSize: "11px" }}>
                                             {passwordError}
                                         </div>
                                     )}
                                     {passwordSuccess && (
-                                        <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-2.5 rounded-xl bg-green-50 border border-green-100 text-green-600 font-bold" style={{ fontSize: "11px" }}>
                                             {passwordSuccess}
                                         </div>
                                     )}
 
-                                    <div className="flex flex-col gap-2">
-                                        <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                                            {language === 'es' ? 'Contraseña Actual' : 'Current Password'}
-                                        </Typography>
-                                        <div className="relative">
-                                            <Input
-                                                size="lg"
-                                                placeholder="••••••••"
-                                                name="old_password"
-                                                type={showOldPassword ? "text" : "password"}
-                                                value={passwordData.old_password}
-                                                onChange={handlePasswordChange}
-                                                className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10"
-                                                labelProps={{
-                                                    className: "hidden",
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowOldPassword(!showOldPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                                                tabIndex={-1}
-                                            >
-                                                {showOldPassword ? (
-                                                    <EyeSlashIcon className="h-5 w-5" />
-                                                ) : (
-                                                    <EyeIcon className="h-5 w-5" />
-                                                )}
-                                            </button>
+                                    {[
+                                        { label: language === 'es' ? 'Contraseña Actual' : 'Current Password', name: "old_password", show: showOldPassword, setShow: setShowOldPassword },
+                                        { label: language === 'es' ? 'Nueva Contraseña' : 'New Password', name: "new_password", show: showNewPassword, setShow: setShowNewPassword },
+                                        { label: language === 'es' ? 'Confirmar Nueva' : 'Confirm New', name: "confirm_password", show: showConfirmPassword, setShow: setShowConfirmPassword },
+                                    ].map(({ label, name, show, setShow }) => (
+                                        <div key={name} className="flex flex-col gap-1">
+                                            <p className="font-bold text-zinc-700 ml-1" style={{ fontSize: "11px" }}>{label}</p>
+                                            <div className="relative">
+                                                <Input
+                                                    size="md"
+                                                    placeholder="••••••••"
+                                                    name={name}
+                                                    type={show ? "text" : "password"}
+                                                    value={passwordData[name]}
+                                                    onChange={handlePasswordChange}
+                                                    className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 pr-10"
+                                                    labelProps={{ className: "hidden" }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShow(!show)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                                                    tabIndex={-1}
+                                                >
+                                                    {show ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                                                </button>
+                                            </div>
+                                            {name === "confirm_password" && passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password && (
+                                                <p className="text-red-500 ml-1" style={{ fontSize: "10px" }}>
+                                                    {language === 'es' ? 'Las contraseñas no coinciden' : 'Passwords must match'}
+                                                </p>
+                                            )}
                                         </div>
-                                    </div>
+                                    ))}
 
-                                    <div className="flex flex-col gap-2">
-                                        <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                                            {language === 'es' ? 'Nueva Contraseña' : 'New Password'}
-                                        </Typography>
-                                        <div className="relative">
-                                            <Input
-                                                size="lg"
-                                                placeholder="••••••••"
-                                                name="new_password"
-                                                type={showNewPassword ? "text" : "password"}
-                                                value={passwordData.new_password}
-                                                onChange={handlePasswordChange}
-                                                className="!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10"
-                                                labelProps={{
-                                                    className: "hidden",
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowNewPassword(!showNewPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                                                tabIndex={-1}
-                                            >
-                                                {showNewPassword ? (
-                                                    <EyeSlashIcon className="h-5 w-5" />
-                                                ) : (
-                                                    <EyeIcon className="h-5 w-5" />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                                            {language === 'es' ? 'Confirmar Nueva Contraseña' : 'Confirm New Password'}
-                                        </Typography>
-                                        <div className="relative">
-                                            <Input
-                                                size="lg"
-                                                placeholder="••••••••"
-                                                name="confirm_password"
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                value={passwordData.confirm_password}
-                                                onChange={handlePasswordChange}
-                                                className={`!border-zinc-200 focus:!border-indigo-500 !bg-zinc-50/50 rounded-xl !text-zinc-900 placeholder:text-zinc-400 pr-10 ${passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password
-                                                    ? '!border-red-300 focus:!border-red-500'
-                                                    : ''
-                                                    }`}
-                                                labelProps={{
-                                                    className: "hidden",
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                                                tabIndex={-1}
-                                            >
-                                                {showConfirmPassword ? (
-                                                    <EyeSlashIcon className="h-5 w-5" />
-                                                ) : (
-                                                    <EyeIcon className="h-5 w-5" />
-                                                )}
-                                            </button>
-                                        </div>
-                                        {passwordData.confirm_password && passwordData.new_password && passwordData.confirm_password !== passwordData.new_password && (
-                                            <Typography variant="small" className="text-red-500 text-xs ml-1 mt-1">
-                                                {language === 'es' ? 'Las contraseñas deben ser iguales' : 'Passwords must match'}
-                                            </Typography>
-                                        )}
-                                    </div>
-
-                                    <Button
-                                        variant="gradient"
-                                        color="indigo"
+                                    <button
                                         onClick={handlePasswordSubmit}
-                                        loading={passwordLoading}
-                                        className="mt-4 rounded-xl shadow-lg shadow-indigo-500/20 normal-case font-bold text-sm"
-                                        fullWidth
+                                        disabled={passwordLoading}
+                                        style={{ width: "100%", padding: "10px", borderRadius: "12px", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", fontSize: "12px", fontWeight: 700, border: "none", cursor: passwordLoading ? "not-allowed" : "pointer", opacity: passwordLoading ? 0.7 : 1 }}
                                     >
-                                        {language === 'es' ? 'Cambiar Contraseña' : 'Change Password'}
-                                    </Button>
+                                        {passwordLoading ? "..." : (language === 'es' ? 'Cambiar Contraseña' : 'Change Password')}
+                                    </button>
                                 </div>
                             </TabPanel>
                         </TabsBody>
                     </Tabs>
                 </DialogBody>
 
-                <DialogFooter className="p-0 pt-6 flex gap-3">
-                    <Button
-                        variant="text"
+                <DialogFooter className="p-0 pt-3 md:pt-6 flex gap-3">
+                    <button
                         onClick={handler}
-                        className="flex-1 rounded-xl text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 normal-case font-bold"
+                        style={{ flex: 1, padding: "9px", borderRadius: "12px", background: "#f5f5f5", color: "#888", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer" }}
                     >
                         {t("global.crud.cancel") || (language === 'es' ? 'Cerrar' : 'Close')}
-                    </Button>
+                    </button>
                 </DialogFooter>
             </div>
         </Dialog>

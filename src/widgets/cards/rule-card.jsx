@@ -10,16 +10,17 @@ export function RuleCard({ rule, isOwner, onDelete }) {
     if (!rule) return null;
 
     return (
-        <Card className="border border-blue-gray-100 shadow-sm h-full flex flex-col">
-            <CardBody className="flex flex-col flex-1">
-                <div className="flex justify-between items-start mb-3">
+        <Card className="border border-zinc-200 shadow-sm hover:shadow-premium transition-all duration-300 bg-white group hover:-translate-y-0.5">
+            <CardBody className="p-3 md:p-5 flex flex-col h-full">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-2 md:mb-3">
                     <div className="flex-1 min-w-0 pr-2">
-                        <Typography variant="h6" color="blue-gray" className="truncate" title={rule.name}>
+                        <p className="font-semibold truncate" style={{ fontSize: "12px", color: "#1a1a2e" }} title={rule.name}>
                             {rule.name}
-                        </Typography>
-                        <Typography variant="small" className="text-blue-gray-500 truncate">
-                            {t("global.rules.table.strategy")}: {rule.distribution_strategy} • {t("global.rules.table.difficulty")}: {rule.difficulty}
-                        </Typography>
+                        </p>
+                        <p className="truncate" style={{ fontSize: "9px", color: "var(--ank-purple)", marginTop: "2px" }}>
+                            {rule.distribution_strategy} · {rule.difficulty}
+                        </p>
                     </div>
 
                     {isOwner && onDelete && (
@@ -28,25 +29,26 @@ export function RuleCard({ rule, isOwner, onDelete }) {
                             variant="text"
                             color="red"
                             onClick={() => onDelete(rule)}
-                            className="shrink-0 -mt-1 -mr-1"
+                            className="shrink-0 -mt-1 -mr-1 rounded-full hover:bg-red-50"
                         >
                             <TrashIcon className="h-4 w-4" />
                         </IconButton>
                     )}
                 </div>
 
-                <div className="space-y-1 text-sm text-blue-gray-600 mt-auto">
-                    <div className="flex justify-between items-center py-0.5">
-                        <span>{t("global.rules.table.questions")}</span>
-                        <span className="font-medium text-blue-gray-900">{rule.global_count}</span>
+                {/* Data rows */}
+                <div className="space-y-1 mt-auto pt-2 border-t border-zinc-100">
+                    <div className="flex justify-between items-center">
+                        <span style={{ fontSize: "9px", color: "#888" }}>{t("global.rules.table.questions")}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#1a1a2e" }}>{rule.global_count}</span>
                     </div>
-                    <div className="flex justify-between items-center py-0.5">
-                        <span>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
-                        <span className="font-medium text-blue-gray-900">{rule.time_limit} min</span>
+                    <div className="flex justify-between items-center">
+                        <span style={{ fontSize: "9px", color: "#888" }}>{language === "es" ? "Límite de Tiempo" : "Time Limit"}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#1a1a2e" }}>{rule.time_limit} min</span>
                     </div>
-                    <div className="flex justify-between items-center py-0.5">
-                        <span>{t("global.rules.table.topic")}</span>
-                        <span className="font-medium text-blue-gray-900 truncate ml-2 text-right">
+                    <div className="flex justify-between items-center">
+                        <span style={{ fontSize: "9px", color: "#888" }}>{t("global.rules.table.topic")}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#1a1a2e" }} className="truncate ml-2 text-right">
                             {rule.topic_scope ? `${t("project_detail.tabs.topics")} #${rule.topic_scope}` : (language === "es" ? "Global" : "Global")}
                         </span>
                     </div>

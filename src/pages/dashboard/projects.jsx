@@ -269,9 +269,41 @@ export function Projects() {
     // };
 
     return (
-        <div className="mt-8 space-y-8 pb-20">
-            {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-6 border-b border-zinc-200/60">
+        <div className="mt-0 md:mt-8 md:space-y-8 pb-20">
+
+            {/* ── Mobile Header (hidden on desktop) ── */}
+            <div className="flex md:hidden items-center justify-between px-4 pt-4 pb-2">
+                <span style={{ fontSize: "22px", fontWeight: 600, color: "var(--ank-text)" }}>
+                    {t("projects.title")}
+                </span>
+                <button
+                    onClick={() => setCreateDialogOpen(true)}
+                    style={{
+                        width: 32, height: 32, borderRadius: "50%",
+                        background: "var(--ank-purple)", border: "none",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer",
+                    }}
+                >
+                    <PlusIcon className="h-4 w-4 text-white" strokeWidth={2.5} />
+                </button>
+            </div>
+
+            {/* ── Mobile Search ── */}
+            <div className="flex md:hidden items-center gap-2 mx-3 mb-3"
+                style={{ background: "#f5f5f5", borderRadius: 10, padding: "7px 11px", border: "0.5px solid rgba(0,0,0,0.10)" }}>
+                <MagnifyingGlassIcon className="h-4 w-4 flex-shrink-0" style={{ color: "#aaa" }} />
+                <input
+                    type="text"
+                    placeholder={t("projects.search_placeholder") || "Search projects..."}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ background: "transparent", border: "none", outline: "none", fontSize: 10, color: "#aaa", width: "100%" }}
+                />
+            </div>
+
+            {/* ── Desktop Header (hidden on mobile) ── */}
+            <div className="hidden md:flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-6 border-b border-zinc-200/60">
                 <div>
                     <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 mb-1">
                         {t("projects.title")}
@@ -281,16 +313,6 @@ export function Projects() {
                     </Typography>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* {globalActiveJobs.length > 0 && (
-                        <Button
-                            variant="text"
-                            color="red"
-                            className="flex items-center gap-2 rounded-xl normal-case text-xs font-bold hover:bg-red-50"
-                            onClick={clearAllJobs}
-                        >
-                            {language === "es" ? "Limpiar Todo" : "Clear All"}
-                        </Button>
-                    )} */}
                     <Button
                         className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 px-6 py-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5"
                         onClick={() => setCreateDialogOpen(true)}
@@ -301,14 +323,12 @@ export function Projects() {
                 </div>
             </div>
 
-            {/* Filters and Search Bar - Unified */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            {/* ── Desktop Filters + Search (hidden on mobile) ── */}
+            <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
                     <div className="inline-flex p-1 bg-zinc-100 rounded-2xl border border-zinc-200/60">
                         {[
                             { value: "all", label: t("projects.tabs.all"), icon: FolderIcon },
-                            // { value: "owned", label: t("projects.tabs.owned"), icon: UserGroupIcon },
-                            // { value: "member", label: t("projects.tabs.shared"), icon: UserGroupIcon }
                         ].map((tab) => (
                             <button
                                 key={tab.value}
@@ -324,7 +344,6 @@ export function Projects() {
                         ))}
                     </div>
                 </div>
-
                 <div className="relative w-full lg:w-96 group">
                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                         <MagnifyingGlassIcon className="h-5 w-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
@@ -341,7 +360,7 @@ export function Projects() {
 
             {/* Projects Grid */}
             {filteredProjects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6 px-0 md:px-0">
                     {filteredProjects.map((project) => (
                         // <ProjectCard
                         //     key={project.id}

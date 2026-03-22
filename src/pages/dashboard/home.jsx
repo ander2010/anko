@@ -23,14 +23,44 @@ import {
   QuestionMarkCircleIcon,
   DocumentArrowUpIcon,
   SparklesIcon,
+  FolderIcon,
+  RectangleStackIcon,
+  FireIcon,
+  PlayCircleIcon,
 } from "@heroicons/react/24/solid";
 
 import { useLanguage } from "@/context/language-context";
+import { useAuth } from "@/context/auth-context";
+import { useProjects } from "@/context/projects-context";
+import projectService from "@/services/projectService";
 import supportService from "@/services/supportService";
+import { EditProfileDialog } from "@/widgets/dialogs/edit-profile-dialog";
+import { UserStatisticsDialog } from "@/widgets/dialogs/user-statistics-dialog";
 
 export function Home() {
-  const { t, language } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { projects, batteries } = useProjects();
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [showEditProfile, setShowEditProfile] = React.useState(false);
+  const [showStats, setShowStats] = React.useState(false);
+  const [deckCount, setDeckCount] = React.useState(null);
+
+  React.useEffect(() => {
+    projectService.getUserDecks(1, 1)
+      .then(data => setDeckCount(data.count ?? (Array.isArray(data) ? data.length : null)))
+      .catch(() => setDeckCount(null));
+  }, []);
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return language === "es" ? "Buenos días" : "Good morning";
+    if (h < 18) return language === "es" ? "Buenas tardes" : "Good afternoon";
+    return language === "es" ? "Buenas noches" : "Good evening";
+  };
+
+  const displayName = user?.first_name || user?.username || "there";
 
   const [formData, setFormData] = React.useState({
     name: "",
@@ -178,7 +208,172 @@ export function Home() {
   ];
 
   return (
-    <div className="mt-6 space-y-24">
+    <div>
+
+    {/* ═══════════════ MOBILE HOME ═══════════════ */}
+    <div className="md:hidden">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <div>
+          <p style={{ fontSize: "11px", color: "#888", fontWeight: 400 }}>{greeting()},</p>
+          <p style={{ fontSize: "16px", color: "#1a1a2e", fontWeight: 700, lineHeight: 1.2 }}>{displayName}</p>
+        </div>
+
+        {/* Avatar + dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowProfileMenu(v => !v)}
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "linear-gradient(135deg, var(--ank-purple), #534AB7)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontSize: "13px", fontWeight: 700,
+              border: "2px solid #fff", boxShadow: "0 2px 8px rgba(127,119,221,0.3)",
+              cursor: "pointer",
+            }}
+          >
+            {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
+          </button>
+
+          {showProfileMenu && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowProfileMenu(false)}
+              />
+              {/* Menu */}
+              <div
+                className="absolute right-0 top-10 z-50 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden"
+                style={{ minWidth: 180 }}
+              >
+                {/* Language toggle */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
+                  <span style={{ fontSize: "11px", color: "#888" }}>
+                    {language === "es" ? "Idioma" : "Language"}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => changeLanguage("es")}
+                      style={{
+                        padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600,
+                        background: language === "es" ? "var(--ank-purple)" : "#f5f5f5",
+                        color: language === "es" ? "#fff" : "#888",
+                        border: "none", cursor: "pointer",
+                      }}
+                    >ES</button>
+                    <button
+                      onClick={() => changeLanguage("en")}
+                      style={{
+                        padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600,
+                        background: language === "en" ? "var(--ank-purple)" : "#f5f5f5",
+                        color: language === "en" ? "#fff" : "#888",
+                        border: "none", cursor: "pointer",
+                      }}
+                    >EN</button>
+                  </div>
+                </div>
+                {/* Profile link */}
+                <button
+                  onClick={() => { setShowProfileMenu(false); setShowEditProfile(true); }}
+                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span>👤</span> {language === "es" ? "Mi perfil" : "My profile"}
+                </button>
+                {/* Statistics */}
+                <button
+                  onClick={() => { setShowProfileMenu(false); setShowStats(true); }}
+                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span>📊</span> {language === "es" ? "Estadísticas" : "Statistics"}
+                </button>
+                {/* Sign out */}
+                <button
+                  onClick={() => { setShowProfileMenu(false); logout(); }}
+                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#e53e3e", fontWeight: 600, background: "none", border: "none", borderTop: "1px solid #fef2f2", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <span>→</span> {language === "es" ? "Cerrar sesión" : "Sign out"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Hero card — Study Streak */}
+      <div className="mx-4 mb-4 rounded-2xl p-4" style={{ background: "linear-gradient(135deg, var(--ank-purple) 0%, #534AB7 100%)", color: "#fff" }}>
+        <div className="flex items-center gap-2 mb-2">
+          <FireIcon className="h-5 w-5" style={{ color: "#FFD580" }} />
+          <p style={{ fontSize: "13px", fontWeight: 700 }}>
+            {language === "es" ? "Racha de estudio" : "Study Streak"}
+          </p>
+        </div>
+        <p style={{ fontSize: "28px", fontWeight: 800, lineHeight: 1 }}>
+          {language === "es" ? "¡Sigue así!" : "Keep it up!"}
+        </p>
+        <p style={{ fontSize: "10px", opacity: 0.8, marginTop: "4px" }}>
+          {language === "es" ? "Estudia hoy para mantener tu racha" : "Study today to keep your streak going"}
+        </p>
+        <div style={{ height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.25)", marginTop: "12px", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: "60%", borderRadius: "2px", background: "#FFD580" }} />
+        </div>
+      </div>
+
+      {/* Quick actions 2×2 */}
+      <div className="px-4 mb-4">
+        <p style={{ fontSize: "10px", color: "#888", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+          {language === "es" ? "Acceso rápido" : "Quick access"}
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: FolderIcon, label: language === "es" ? "Proyectos" : "Projects", color: "#7F77DD", bg: "#EEEDFE", path: "/dashboard/projects", count: projects.length },
+            { icon: RectangleStackIcon, label: language === "es" ? "Mis Mazos" : "My Decks", color: "#1D9E75", bg: "#E6F5F0", path: "/dashboard/my-decks", count: deckCount },
+            { icon: BoltIcon, label: language === "es" ? "Mis Baterías" : "My Batteries", color: "#BA7517", bg: "#FEF0D8", path: "/dashboard/my-batteries", count: batteries.length },
+            { icon: PlayCircleIcon, label: language === "es" ? "Simular" : "Simulate", color: "#e53e3e", bg: "#FFF5F5", path: "/dashboard/my-batteries", count: batteries.length },
+            { icon: RectangleStackIcon, label: language === "es" ? "Mazos Públicos" : "Public Decks", color: "#534AB7", bg: "#F0EFF9", path: "/dashboard/public-decks", count: null, isPublic: true },
+            { icon: BoltIcon, label: language === "es" ? "Baterías Públicas" : "Public Batteries", color: "#2B7A54", bg: "#E6F5F0", path: "/dashboard/public-batteries", count: null, isPublic: true },
+          ].map(({ icon: Icon, label, color, bg, path, count, isPublic }) => (
+            <button
+              key={label}
+              onClick={() => navigate(path)}
+              style={{ background: bg, border: "none", borderRadius: "14px", padding: "14px 12px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: "6px" }}
+            >
+              <div style={{ width: 32, height: 32, borderRadius: "10px", background: color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon style={{ width: 16, height: 16, color: "#fff" }} />
+              </div>
+              <p style={{ fontSize: "20px", fontWeight: 800, color: "#1a1a2e", lineHeight: 1 }}>
+                {isPublic ? "🌐" : count === null ? "—" : count}
+              </p>
+              <p style={{ fontSize: "10px", fontWeight: 500, color: "#888" }}>{label}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Get started hint */}
+      <div className="mx-4 mb-6 rounded-2xl border border-zinc-100 p-4 bg-white">
+        <p style={{ fontSize: "11px", fontWeight: 600, color: "#1a1a2e", marginBottom: "4px" }}>
+          {language === "es" ? "¿Nuevo aquí?" : "New here?"}
+        </p>
+        <p style={{ fontSize: "10px", color: "#888", marginBottom: "10px" }}>
+          {language === "es"
+            ? "Crea tu primer proyecto y sube tus documentos para comenzar."
+            : "Create your first project and upload your documents to get started."}
+        </p>
+        <button
+          onClick={() => navigate("/dashboard/projects")}
+          style={{ background: "var(--ank-purple)", color: "#fff", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "11px", fontWeight: 600, cursor: "pointer" }}
+        >
+          {language === "es" ? "Ir a Proyectos" : "Go to Projects"}
+        </button>
+      </div>
+    </div>
+
+      <EditProfileDialog open={showEditProfile} handler={() => setShowEditProfile(false)} />
+      <UserStatisticsDialog open={showStats} handler={() => setShowStats(false)} userId={user?.id} />
+
+    {/* ═══════════════ DESKTOP HOME (landing page) ═══════════════ */}
+    <div className="hidden md:block mt-6 space-y-24">
       {/* ================= HERO (premium) ================= */}
       <section className="relative overflow-hidden rounded-2xl border border-blue-gray-100 bg-white">
         {/* Fondo suave tipo SaaS */}
@@ -649,6 +844,8 @@ export function Home() {
           </div>
         </div>
       </section>
+    </div>
+
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   ChatPanel,
   Footer,
 } from "@/widgets/layout";
+import { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
 import routes from "@/routes";
 import { ProjectDetail, ProjectTopics } from "@/pages/dashboard";
 import { useMaterialTailwindController, setOpenConfigurator, setOpenSidenav } from "@/context";
@@ -26,11 +27,11 @@ export function Dashboard() {
         }
       />
 
-
-      {/* Blinking Arrow Trigger - Visible when sidenav is closed */}
+      {/* Sidenav open arrow — hidden on mobile (tab bar handles nav) */}
       <div
-        className={`fixed left-0 z-50 transition-all duration-300 ${openSidenav ? "invisible opacity-0 -translate-x-full" : "visible opacity-100 translate-x-0"
-          }`}
+        className={`hidden md:block fixed left-0 z-50 transition-all duration-300 ${
+          openSidenav ? "invisible opacity-0 -translate-x-full" : "visible opacity-100 translate-x-0"
+        }`}
         style={{ position: "fixed", top: "55px" }}
       >
         <IconButton
@@ -42,34 +43,41 @@ export function Dashboard() {
           <ChevronRightIcon className="h-6 w-6 text-blue-gray-900" />
         </IconButton>
       </div>
+
       <div
-        className={`p-4 min-h-screen flex flex-col transition-all duration-300 ${openSidenav ? "xl:ml-80" : ""}`}
+        className={`p-4 pb-20 md:pb-4 min-h-screen flex flex-col transition-all duration-300 ${
+          openSidenav ? "xl:ml-80" : ""
+        }`}
         onClick={() => openSidenav && setOpenSidenav(dispatch, false)}
       >
-        <DashboardNavbar />
+        {/* Navbar — hidden on mobile, each page owns its mobile header */}
+        <div className="hidden md:block">
+          <DashboardNavbar />
+        </div>
+
         <ChatPanel />
+
+        {/* AI chat button — above tab bar on mobile */}
         <IconButton
           size="lg"
           color="white"
-          className="fixed bottom-8 right-8 z-40 rounded-full shadow-blue-gray-900/10"
+          className="fixed bottom-16 right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-blue-gray-900/10"
           ripple={false}
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
         </IconButton>
+
         <div className="flex-grow flex flex-col">
           <Routes>
             {routes.map(({ layout, pages }) =>
               layout === "dashboard" &&
               pages.map((page) => {
-                // RBAC Check for page
                 if (page.key && !isAdmin && !allowedRoutes.includes(page.key)) {
                   return null;
                 }
-
                 if (page.children) {
                   return page.children.map(({ path, element, key }) => {
-                    // RBAC Check for child
                     if (key && !isAdmin && !allowedRoutes.includes(key)) {
                       return null;
                     }
@@ -79,18 +87,20 @@ export function Dashboard() {
                 return <Route exact path={page.path} element={page.element} key={page.path} />;
               })
             )}
-            {/* Dynamic routes for project detail and topics - usually open to everyone who can see dashboard */}
             <Route path="/project/:projectId" element={<ProjectDetail />} />
             <Route path="/project/:projectId/topics" element={<ProjectTopics />} />
-
-            {/* Fallback for unauthorized/not found dashboard routes */}
             <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
           </Routes>
         </div>
-        <div className="text-blue-gray-600 mt-auto">
+
+        {/* Footer — hidden on mobile */}
+        <div className="hidden md:block text-blue-gray-600 mt-auto">
           <Footer />
         </div>
       </div>
+
+      {/* Mobile tab bar */}
+      <MobileTabBar />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   BoltIcon,
   EllipsisVerticalIcon,
   ArrowRightIcon,
+  ChevronRightIcon,
   PencilIcon,
   DocumentDuplicateIcon,
   TrashIcon,
@@ -85,168 +86,114 @@ export function ProjectCard({
 
   return (
     <Card
-      className="group border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium hover:shadow-premium-hover hover:-translate-y-1 transition-all duration-300 rounded-[2rem] overflow-hidden cursor-default"
+      className="group border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium hover:shadow-premium-hover hover:-translate-y-1 transition-all duration-300 rounded-xl md:rounded-[2rem] overflow-hidden cursor-default"
       onDoubleClick={() => onEnter(project)}
     >
-      <CardBody className="p-7">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex-1 min-w-0">
-            <Typography
-              variant="h5"
-              className="font-bold text-zinc-900 mb-1.5 truncate tracking-tight group-hover:text-indigo-600 transition-colors cursor-pointer"
-              onClick={() => onEnter(project)}
-            >
-              {project.title || project.name || "Untitled"}
-            </Typography>
+      <CardBody className="p-3 md:p-7">
 
-            <div className="flex items-center gap-2">
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between mb-2 md:mb-6">
+          <div className="flex-1 min-w-0" onClick={() => onEnter(project)} style={{ cursor: "pointer" }}>
+            {/* Title */}
+            <p className="truncate tracking-tight group-hover:text-indigo-600 transition-colors font-semibold"
+              style={{ fontSize: "12px", color: "var(--ank-text)", marginBottom: 2 }}>
+              {project.title || project.name || "Untitled"}
+            </p>
+            {/* Mobile: date under title */}
+            <p className="block md:hidden" style={{ fontSize: "9px", color: "var(--ank-muted)" }}>
+              {formatDate(project.updated_at || project.updatedAt)}
+            </p>
+            {/* Desktop: "BY owner" */}
+            <div className="hidden md:flex items-center gap-2 mt-1">
               <Typography className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                 {language === "es" ? "POR" : "BY"} {ownerLabel.toUpperCase()}
               </Typography>
-
               {isOwner && (
                 <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" title="Owner" />
               )}
             </div>
           </div>
 
-          {/* Actions */}
-          <Menu placement="bottom-end">
-            <MenuHandler>
-              <IconButton variant="text" color="zinc" size="sm" className="rounded-xl hover:bg-zinc-100">
-                <EllipsisVerticalIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600" />
-              </IconButton>
-            </MenuHandler>
+          {/* Mobile: chevron */}
+          <button
+            className="flex md:hidden items-center justify-center ml-2 flex-shrink-0"
+            onClick={() => onEnter(project)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
+          >
+            <ChevronRightIcon className="h-4 w-4 text-zinc-400" />
+          </button>
 
-            <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl backdrop-blur-md bg-white/90">
-              <MenuItem
-                onClick={() => onEnter(project)}
-                className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
-                {language === "es" ? "Entrar al Proyecto" : "Enter Project"}
-              </MenuItem>
-
-              <MenuItem
-                onClick={() => onUploadDocs(project)}
-                className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
-                {language === "es" ? "Subir Documentos" : "Upload Documents"}
-              </MenuItem>
-
-              {isOwner && (
-                <>
-                  <MenuItem
-                    onClick={() => onEdit(project)}
-                    className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900"
-                  >
-                    <PencilIcon className="h-4 w-4 text-zinc-400" />
-                    {language === "es" ? "Editar Detalles" : "Edit Details"}
-                  </MenuItem>
-
-                  <div className="my-1 border-t border-zinc-100" />
-
-                  <MenuItem
-                    onClick={() => onDelete(project)}
-                    className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50 hover:text-red-600"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                    {language === "es" ? "Eliminar Proyecto" : "Delete Project"}
-                  </MenuItem>
-                </>
-              )}
-            </MenuList>
-          </Menu>
+          {/* Desktop: ellipsis menu */}
+          <div className="hidden md:block">
+            <Menu placement="bottom-end">
+              <MenuHandler>
+                <IconButton variant="text" color="zinc" size="sm" className="rounded-xl hover:bg-zinc-100">
+                  <EllipsisVerticalIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600" />
+                </IconButton>
+              </MenuHandler>
+              <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl backdrop-blur-md bg-white/90">
+                <MenuItem onClick={() => onEnter(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
+                  <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
+                  {language === "es" ? "Entrar al Proyecto" : "Enter Project"}
+                </MenuItem>
+                <MenuItem onClick={() => onUploadDocs(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
+                  <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
+                  {language === "es" ? "Subir Documentos" : "Upload Documents"}
+                </MenuItem>
+                {isOwner && (
+                  <>
+                    <MenuItem onClick={() => onEdit(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
+                      <PencilIcon className="h-4 w-4 text-zinc-400" />
+                      {language === "es" ? "Editar Detalles" : "Edit Details"}
+                    </MenuItem>
+                    <div className="my-1 border-t border-zinc-100" />
+                    <MenuItem onClick={() => onDelete(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50 hover:text-red-600">
+                      <TrashIcon className="h-4 w-4" />
+                      {language === "es" ? "Eliminar Proyecto" : "Delete Project"}
+                    </MenuItem>
+                  </>
+                )}
+              </MenuList>
+            </Menu>
+          </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        {/* ── Stats ── */}
+        <div className="grid grid-cols-3 gap-1.5 md:gap-3 mb-0 md:mb-8">
           <div
-            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-colors cursor-pointer"
+            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-indigo-100 md:group-hover:bg-indigo-50/30 transition-colors"
+            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
             onClick={() => onEnter(project, "documents")}
           >
-            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
-              {t("project_detail.tabs.documents")}
-            </Typography>
-            <div className="flex items-end gap-1">
-              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.documents}</Typography>
-              <DocumentTextIcon className="h-3.5 w-3.5 text-indigo-500 mb-0.5" />
-            </div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-purple)", lineHeight: 1 }}>{counts.documents}</p>
+            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.documents")}</p>
           </div>
           <div
-            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-purple-100 group-hover:bg-purple-50/30 transition-colors cursor-pointer"
+            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-purple-100 md:group-hover:bg-purple-50/30 transition-colors"
+            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
             onClick={() => onEnter(project, "batteries")}
           >
-            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
-              {t("project_detail.tabs.batteries")}
-            </Typography>
-            <div className="flex items-end gap-1">
-              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.batteries}</Typography>
-              <BoltIcon className="h-3.5 w-3.5 text-purple-500 mb-0.5" />
-            </div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-amber)", lineHeight: 1 }}>{counts.batteries}</p>
+            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.batteries")}</p>
           </div>
           <div
-            className="p-3 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-orange-100 group-hover:bg-orange-50/30 transition-colors cursor-pointer"
+            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-orange-100 md:group-hover:bg-orange-50/30 transition-colors"
+            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
             onClick={() => onEnter(project, "decks")}
           >
-            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-1 truncate">
-              {t("project_detail.tabs.decks")}
-            </Typography>
-            <div className="flex items-end gap-1">
-              <Typography className="text-xl font-black text-zinc-900 leading-none">{counts.decks}</Typography>
-              <RectangleStackIcon className="h-3.5 w-3.5 text-orange-500 mb-0.5" />
-            </div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-teal)", lineHeight: 1 }}>{counts.decks}</p>
+            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.decks")}</p>
           </div>
         </div>
 
-        {/* Real-time Progress for Jobs */}
-        {/* Real-time Progress for Jobs - Hidden by request
-        {processingJobs.length > 0 && (
-          <div className="mb-6 space-y-3">
-            {processingJobs.map((job) => (
-              <ProjectProcessingProgress
-                key={job.jobId}
-                jobId={job.jobId}
-                onComplete={(jobId, dId) => onJobComplete && onJobComplete(project.id, jobId, dId)}
-              />
-            ))}
-          </div>
-        )}
-        */}
-
-        {/* Static Progress (legacy/backup) */}
-        {/* Static Progress (legacy/backup) - Hidden by request
-        {documentCount > 0 && processingJobs.length === 0 && progress > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <Typography className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                {language === "es" ? "PROCESANDO" : "PROCESSING"}
-              </Typography>
-              <Typography className="text-[10px] font-black text-indigo-600 uppercase">
-                {progress}%
-              </Typography>
-            </div>
-            <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-        */}
-
-        {/* Last Activity */}
-        <div className="flex items-center justify-between pt-5 border-t border-zinc-100">
+        {/* ── Desktop footer: date + arrow (hidden on mobile) ── */}
+        <div className="hidden md:flex items-center justify-between pt-5 border-t border-zinc-100">
           <div className="flex items-center gap-2">
             <ClockIcon className="h-3.5 w-3.5 text-zinc-400" />
             <Typography className="text-[11px] font-medium text-zinc-500">
               {formatDate(project.updated_at || project.updatedAt)}
             </Typography>
           </div>
-
           <button
             onClick={() => onEnter(project)}
             className="h-8 w-8 rounded-full bg-zinc-900 text-white flex items-center justify-center hover:bg-indigo-600 hover:scale-110 active:scale-95 transition-all shadow-lg shadow-zinc-200"
@@ -254,6 +201,7 @@ export function ProjectCard({
             <ArrowRightIcon className="h-4 w-4" />
           </button>
         </div>
+
       </CardBody>
     </Card>
   );

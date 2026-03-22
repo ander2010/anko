@@ -5,3 +5,4 @@ export * from "@/widgets/layout/chat-panel";
 export * from "@/widgets/layout/footer";
 export * from "@/widgets/layout/navbar";
 export * from "@/widgets/layout/landing-navbar";
+export { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
