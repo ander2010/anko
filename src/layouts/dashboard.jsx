@@ -58,15 +58,13 @@ export function Dashboard() {
         <ChatPanel />
 
         {/* AI chat button — above tab bar on mobile */}
-        <IconButton
-          size="lg"
-          color="white"
-          className="fixed bottom-16 right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-blue-gray-900/10"
-          ripple={false}
+        <button
+          className="fixed bottom-[72px] right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-lg flex items-center justify-center md:bg-white md:text-blue-gray-900 md:shadow-blue-gray-900/10"
+          style={{ width: 48, height: 48, background: "linear-gradient(135deg, var(--ank-purple), #534AB7)", border: "none", cursor: "pointer" }}
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
-          <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
-        </IconButton>
+          <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white md:text-blue-gray-900" />
+        </button>
 
         <div className="flex-grow flex flex-col">
           <Routes>

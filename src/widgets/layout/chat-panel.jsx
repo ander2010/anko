@@ -182,96 +182,92 @@ export function ChatPanel() {
 
     return (
         <aside
-            className={`fixed top-0 right-0 z-50 h-screen w-[400px] bg-white shadow-2xl transition-transform duration-500 ease-in-out flex flex-col border-l border-zinc-100 ${openConfigurator ? "translate-x-0" : "translate-x-full"
+            className={`fixed top-0 right-0 z-50 h-screen w-full md:w-[400px] bg-white shadow-2xl transition-transform duration-500 ease-in-out flex flex-col border-l border-zinc-100 ${openConfigurator ? "translate-x-0" : "translate-x-full"
                 }`}
         >
-            {/* Refined Professional Header - White/Gray Theme */}
-            <div className="flex flex-col bg-white border-b border-zinc-100 flex-none ring-1 ring-zinc-50">
-                <div className="flex items-center justify-between px-6 py-4">
+            {/* Header */}
+            <div className="flex flex-col bg-white border-b border-zinc-100 flex-none">
+                <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-50 rounded-xl">
-                            <ChatBubbleLeftRightIcon className="h-5 w-5 text-indigo-600" />
+                        <div className="h-8 w-8 md:h-9 md:w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--ank-purple), #534AB7)" }}>
+                            <ChatBubbleLeftRightIcon className="h-4 w-4 md:h-5 md:w-5 text-white" />
                         </div>
                         <div>
-                            <Typography variant="h6" className="font-bold leading-tight text-zinc-900">
+                            <p style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a2e", lineHeight: 1.2 }}>
                                 {t("chat.title")}
-                            </Typography>
+                            </p>
                             <div className="flex items-center gap-1.5">
                                 <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                <Typography variant="small" className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
-                                    AI Assistant Online
-                                </Typography>
+                                <p style={{ fontSize: "9px", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                    AI Online
+                                </p>
                             </div>
                         </div>
                     </div>
-                    <IconButton
-                        variant="text"
-                        color="blue-gray"
-                        size="sm"
-                        className="hover:bg-zinc-100 rounded-full"
+                    <button
                         onClick={() => setOpenConfigurator(dispatch, false)}
+                        style={{ width: 32, height: 32, borderRadius: "10px", background: "#f5f5f7", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                     >
-                        <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-zinc-500" />
-                    </IconButton>
+                        <XMarkIcon strokeWidth={2.5} className="h-4 w-4 text-zinc-500" />
+                    </button>
                 </div>
 
-                {/* Session Management Toolbar */}
-                <div className="px-6 py-2 border-t border-zinc-50 bg-zinc-50/30 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleNewChat}
-                            className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-tight text-indigo-600 hover:text-indigo-800 transition-colors py-1 px-2 rounded-lg hover:bg-indigo-50"
-                        >
-                            <span className="text-base font-normal">+</span>
-                            {language === "es" ? "Nuevo" : "New"}
-                        </button>
+                {/* Session toolbar */}
+                <div className="px-4 py-2 md:px-6 border-t border-zinc-50 bg-zinc-50/50 flex items-center gap-3">
+                    <button
+                        onClick={handleNewChat}
+                        style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 700, color: "var(--ank-purple)", background: "#EEEDFE", border: "none", borderRadius: "8px", padding: "4px 10px", cursor: "pointer" }}
+                    >
+                        <span style={{ fontSize: "14px", fontWeight: 400 }}>+</span>
+                        {language === "es" ? "Nuevo" : "New"}
+                    </button>
 
-                        <div className="flex items-center gap-1 border-l border-zinc-200 pl-4">
-                            {[1, 2, 3, 4, 5].map((num) => (
-                                <button
-                                    key={num}
-                                    disabled={historyLoading}
-                                    onClick={() => handleSwitchSession(num)}
-                                    className={`h-6 w-6 rounded-md text-[10px] font-bold transition-all flex items-center justify-center ${activeHistoryIndex === num
-                                        ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
-                                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
-                                        } ${historyLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                >
-                                    {historyLoading && activeHistoryIndex === num ? (
-                                        <Spinner className="h-2 w-2 text-white" />
-                                    ) : num}
-                                </button>
-                            ))}
-                        </div>
+                    <div className="flex items-center gap-1 border-l border-zinc-200 pl-3">
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <button
+                                key={num}
+                                disabled={historyLoading}
+                                onClick={() => handleSwitchSession(num)}
+                                style={{
+                                    width: 26, height: 26, borderRadius: "7px", fontSize: "10px", fontWeight: 700,
+                                    display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer",
+                                    background: activeHistoryIndex === num ? "var(--ank-purple)" : "transparent",
+                                    color: activeHistoryIndex === num ? "#fff" : "#94a3b8",
+                                    opacity: historyLoading ? 0.5 : 1,
+                                }}
+                            >
+                                {historyLoading && activeHistoryIndex === num ? (
+                                    <Spinner className="h-2 w-2 text-white" />
+                                ) : num}
+                            </button>
+                        ))}
                     </div>
-
                 </div>
             </div>
 
-            {/* Context Selectors - Refined */}
-            <div className="p-5 space-y-4 border-b border-zinc-100 bg-zinc-50/50 flex-none">
-                <div className="space-y-1.5">
-                    <Typography variant="small" className="font-black text-zinc-900 uppercase tracking-tighter text-[10px] ml-1">
+            {/* Context Selectors */}
+            <div className="p-3 md:p-5 space-y-3 md:space-y-4 border-b border-zinc-100 bg-zinc-50/50 flex-none">
+                <div className="space-y-1">
+                    <p style={{ fontSize: "10px", fontWeight: 700, color: "#1a1a2e", textTransform: "uppercase", letterSpacing: "0.06em", marginLeft: "2px" }}>
                         {t("chat.select_project")}
-                    </Typography>
+                    </p>
                     <Menu>
                         <MenuHandler>
                             <Button
                                 variant="outlined"
-                                className={`flex items-center gap-2 w-full justify-between px-4 h-11 font-medium normal-case rounded-xl transition-all border ${selectedProject ? "border-indigo-200 bg-indigo-50/30 text-indigo-700 shadow-sm shadow-indigo-500/5" : "border-zinc-200 bg-white text-zinc-500"
-                                    }`}
+                                className={`flex items-center gap-2 w-full justify-between px-3 h-9 md:px-4 md:h-11 font-medium normal-case rounded-xl transition-all border text-xs ${selectedProject ? "border-indigo-200 bg-indigo-50/30 text-indigo-700" : "border-zinc-200 bg-white text-zinc-500"}`}
                             >
-                                <span className="truncate text-xs">
+                                <span className="truncate">
                                     {selectedProject
                                         ? (projects.find(p => String(p.id) === String(selectedProject))?.title || projects.find(p => String(p.id) === String(selectedProject))?.name || "Proyecto Seleccionado")
-                                        : (language === "es" ? "Haz clic para seleccionar..." : "Click to select...")}
+                                        : (language === "es" ? "Seleccionar proyecto..." : "Select project...")}
                                 </span>
-                                <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                                <ChevronDownIcon className="h-3.5 w-3.5 opacity-50 shrink-0" />
                             </Button>
                         </MenuHandler>
-                        <MenuList className="max-h-72 overflow-y-auto rounded-xl border-zinc-100 shadow-2xl p-2 min-w-[350px] z-[99999]">
+                        <MenuList className="max-h-60 overflow-y-auto rounded-xl border-zinc-100 shadow-2xl p-2 w-[calc(100vw-2rem)] md:min-w-[350px] md:w-auto z-[99999]">
                             {projects.length === 0 ? (
-                                <div className="p-4 text-center text-xs text-zinc-500 italic">
+                                <div className="p-3 text-center text-xs text-zinc-500 italic">
                                     {language === "es" ? "Cargando proyectos..." : "Loading projects..."}
                                 </div>
                             ) : (
@@ -279,20 +275,11 @@ export function ChatPanel() {
                                     <MenuItem
                                         key={String(p.id)}
                                         className={`rounded-lg mb-1 flex items-center justify-between p-3 ${String(selectedProject) === String(p.id) ? "bg-indigo-50 text-indigo-700 font-bold" : "text-zinc-700 hover:bg-zinc-50"}`}
-                                        onClick={() => {
-                                            const newId = String(p.id);
-                                            console.log("[ChatPanel] User clicked project:", newId);
-                                            setSelectedProject(newId);
-                                        }}
+                                        onClick={() => setSelectedProject(String(p.id))}
                                     >
-                                        <div className="flex flex-col gap-0.5 max-w-[280px]">
-                                            <Typography variant="small" className="font-bold truncate">
-                                                {p.title || p.name}
-                                            </Typography>
-
-                                        </div>
+                                        <p className="text-xs font-bold truncate">{p.title || p.name}</p>
                                         {String(selectedProject) === String(p.id) && (
-                                            <div className="h-2 w-2 rounded-full bg-indigo-600 shadow-sm shadow-indigo-200" />
+                                            <div className="h-2 w-2 rounded-full shrink-0" style={{ background: "var(--ank-purple)" }} />
                                         )}
                                     </MenuItem>
                                 ))
@@ -301,40 +288,36 @@ export function ChatPanel() {
                     </Menu>
                 </div>
 
-                <div className="space-y-1.5">
-                    <Typography variant="small" className="font-black text-zinc-900 uppercase tracking-tighter text-[10px] ml-1">
+                <div className="space-y-1">
+                    <p style={{ fontSize: "10px", fontWeight: 700, color: "#1a1a2e", textTransform: "uppercase", letterSpacing: "0.06em", marginLeft: "2px" }}>
                         {t("chat.context_docs")}
-                    </Typography>
+                    </p>
                     <Menu dismiss={{ itemPress: false }}>
                         <MenuHandler>
                             <Button
                                 variant="outlined"
                                 disabled={!selectedProject}
-                                className={`flex items-center gap-2 w-full justify-between px-4 h-11 font-medium normal-case rounded-xl transition-all border ${selectedDocs.length > 0 ? "border-indigo-200 bg-indigo-50/30 text-indigo-700" : "border-zinc-200 bg-white text-zinc-500"
-                                    }`}
+                                className={`flex items-center gap-2 w-full justify-between px-3 h-9 md:px-4 md:h-11 font-medium normal-case rounded-xl transition-all border text-xs ${selectedDocs.length > 0 ? "border-indigo-200 bg-indigo-50/30 text-indigo-700" : "border-zinc-200 bg-white text-zinc-500"}`}
                             >
-                                <span className="truncate text-xs">
+                                <span className="truncate">
                                     {!selectedProject
                                         ? t("chat.select_project_first")
                                         : (selectedDocs.length === 0
                                             ? t("chat.select_docs")
                                             : t("chat.docs_selected").replace("{count}", selectedDocs.length))}
                                 </span>
-                                <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                                <ChevronDownIcon className="h-3.5 w-3.5 opacity-50 shrink-0" />
                             </Button>
                         </MenuHandler>
-                        <MenuList className="max-h-72 overflow-y-auto rounded-xl border-zinc-100 shadow-xl p-2 min-w-[350px]">
+                        <MenuList className="max-h-60 overflow-y-auto rounded-xl border-zinc-100 shadow-xl p-2 w-[calc(100vw-2rem)] md:min-w-[350px] md:w-auto z-[99999]">
                             {documents.length === 0 ? (
-                                <div className="p-4 text-center text-xs text-zinc-500 italic">
+                                <div className="p-3 text-center text-xs text-zinc-500 italic">
                                     {t("chat.no_docs")}
                                 </div>
                             ) : (
                                 documents.map((d) => (
                                     <MenuItem key={d.id} className="p-0 hover:bg-zinc-50 rounded-lg">
-                                        <label
-                                            htmlFor={`doc-${d.id}`}
-                                            className="flex cursor-pointer items-center gap-3 p-3 w-full"
-                                        >
+                                        <label htmlFor={`doc-${d.id}`} className="flex cursor-pointer items-center gap-3 p-3 w-full">
                                             <Checkbox
                                                 id={`doc-${d.id}`}
                                                 ripple={false}
@@ -345,15 +328,13 @@ export function ChatPanel() {
                                                 onChange={() => {
                                                     const idStr = String(d.id);
                                                     setSelectedDocs((prev) =>
-                                                        prev.includes(idStr)
-                                                            ? prev.filter((id) => id !== idStr)
-                                                            : [...prev, idStr]
+                                                        prev.includes(idStr) ? prev.filter((id) => id !== idStr) : [...prev, idStr]
                                                     );
                                                 }}
                                             />
-                                            <Typography variant="small" className="font-medium text-zinc-700 truncate text-[13px]">
+                                            <p className="text-xs font-medium text-zinc-700 truncate">
                                                 {d.name || d.title || d.filename || t("chat.no_name")}
-                                            </Typography>
+                                            </p>
                                         </label>
                                     </MenuItem>
                                 ))
@@ -362,9 +343,9 @@ export function ChatPanel() {
                     </Menu>
                 </div>
 
-                {/* Selected Documents Chips */}
+                {/* Selected doc chips */}
                 {selectedDocs.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap gap-1.5">
                         {selectedDocs.map((docId) => {
                             const doc = documents.find((d) => String(d.id) === docId);
                             if (!doc) return null;
@@ -375,9 +356,7 @@ export function ChatPanel() {
                                     size="sm"
                                     variant="ghost"
                                     color="indigo"
-                                    onClose={() =>
-                                        setSelectedDocs((prev) => prev.filter((id) => id !== docId))
-                                    }
+                                    onClose={() => setSelectedDocs((prev) => prev.filter((id) => id !== docId))}
                                     className="rounded-lg normal-case font-bold text-[10px] bg-indigo-50 border-indigo-100"
                                 />
                             );
@@ -386,124 +365,102 @@ export function ChatPanel() {
                 )}
             </div>
 
-            {/* Chat History - Professional Bubbles */}
-            <div
-                ref={scrollRef}
-                className="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50/30"
-            >
+            {/* Chat messages */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 bg-zinc-50/30">
                 {messages.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                        <div className={`p-4 rounded-3xl mb-4 ${isContextReady ? "bg-indigo-50 text-indigo-400" : "bg-red-50 text-red-400"}`}>
-                            <ChatBubbleLeftRightIcon className="h-10 w-10" />
+                    <div className="h-full flex flex-col items-center justify-center text-center px-6">
+                        <div className={`p-3 rounded-2xl mb-3 ${isContextReady ? "bg-indigo-50 text-indigo-400" : "bg-red-50 text-red-400"}`}>
+                            <ChatBubbleLeftRightIcon className="h-8 w-8" />
                         </div>
-                        <Typography variant="h6" className="text-zinc-900 font-bold mb-2">
+                        <p style={{ fontSize: "13px", fontWeight: 700, color: "#1a1a2e", marginBottom: "4px" }}>
                             {isContextReady ? t("chat.help_text") : t("chat.no_docs_title")}
-                        </Typography>
-                        <Typography variant="small" className="text-zinc-500 max-w-[200px] leading-relaxed">
+                        </p>
+                        <p style={{ fontSize: "11px", color: "#888", lineHeight: 1.5 }}>
                             {isContextReady
                                 ? (language === "es" ? "Haz una pregunta sobre el contenido seleccionado." : "Ask a question about the selected content.")
                                 : t("chat.missing_context")}
-                        </Typography>
+                        </p>
                     </div>
                 )}
 
                 {messages.map((msg, idx) => {
-                    // Format timestamp if available
                     let formattedTime = "";
                     if (msg.timestamp) {
                         try {
                             const date = new Date(msg.timestamp);
                             const now = new Date();
                             const isToday = date.toDateString() === now.toDateString();
-
                             if (isToday) {
-                                formattedTime = date.toLocaleTimeString(language === "es" ? "es-ES" : "en-US", {
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                });
+                                formattedTime = date.toLocaleTimeString(language === "es" ? "es-ES" : "en-US", { hour: "2-digit", minute: "2-digit" });
                             } else {
-                                formattedTime = date.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit"
-                                });
+                                formattedTime = date.toLocaleDateString(language === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
                             }
-                        } catch (e) {
-                            console.error("Error formatting timestamp:", e);
-                        }
+                        } catch (e) {}
                     }
 
                     return (
-                        <div
-                            key={idx}
-                            className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
-                        >
+                        <div key={idx} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                             <div
-                                className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-sm ${msg.role === "user"
-                                    ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none"
+                                className={`max-w-[85%] px-3 py-2.5 md:px-4 md:py-3 rounded-2xl text-[12px] md:text-[13px] leading-relaxed shadow-sm ${msg.role === "user"
+                                    ? "text-white rounded-tr-none"
                                     : "bg-white text-zinc-800 border border-zinc-100 rounded-tl-none"
-                                    }`}
+                                }`}
+                                style={msg.role === "user" ? { background: "linear-gradient(135deg, var(--ank-purple), #534AB7)" } : {}}
                             >
                                 {msg.text}
                             </div>
-                            <div className="flex items-center gap-2 mt-1 px-1">
-                                {formattedTime && (
-                                    <Typography className="text-[9px] font-medium text-zinc-400">
-                                        {formattedTime}
-                                    </Typography>
-                                )}
-                            </div>
+                            {formattedTime && (
+                                <p style={{ fontSize: "9px", color: "#b0b0b8", fontWeight: 500, marginTop: "3px", paddingLeft: "2px" }}>
+                                    {formattedTime}
+                                </p>
+                            )}
                         </div>
                     );
                 })}
 
                 {loading && (
-                    <div className="flex justify-start items-start gap-2">
+                    <div className="flex justify-start">
                         <div className="bg-white px-4 py-3 rounded-2xl shadow-sm border border-zinc-100 rounded-tl-none flex items-center gap-3">
                             <Spinner className="h-3 w-3 text-indigo-500" />
-                            <Typography variant="small" className="text-zinc-500 text-[12px] font-medium animate-pulse">
+                            <p style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500 }} className="animate-pulse">
                                 {t("chat.loading")}
-                            </Typography>
+                            </p>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Footer / Input - Refined with Glassmorphism */}
-            <div className="p-5 bg-white border-t border-zinc-100 relative shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)] flex-none">
+            {/* Input footer */}
+            <div className="p-3 md:p-5 bg-white border-t border-zinc-100 relative flex-none" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
                 {!isContextReady && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center transition-all duration-500">
-                        <div className="bg-red-50 text-red-700 text-[10px] font-black uppercase tracking-wider py-1.5 px-3 rounded-full border border-red-100 animate-bounce">
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                        <div style={{ background: "#FFF5F5", color: "#C53030", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", padding: "6px 14px", borderRadius: "100px", border: "1px solid #FED7D7" }}>
                             {t("chat.no_docs_title")}
                         </div>
                     </div>
                 )}
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSend();
-                    }}
-                    className="relative flex w-full group"
-                >
+                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex w-full">
                     <input
                         type="text"
                         placeholder={t("chat.input_placeholder")}
                         disabled={!isContextReady || loading}
-                        className={`w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3.5 pl-5 pr-14 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${(!isContextReady || loading) ? "opacity-50 cursor-not-allowed" : "hover:bg-zinc-100/50"}`}
+                        style={{ width: "100%", background: "#f9f9fb", border: "1px solid #e5e7eb", borderRadius: "14px", padding: "12px 50px 12px 16px", fontSize: "13px", color: "#1a1a2e", outline: "none" }}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                     />
-                    <IconButton
-                        size="sm"
-                        color="indigo"
-                        variant="gradient"
-                        className={`!absolute right-1.5 top-1.5 rounded-xl h-9 w-9 shadow-lg shadow-indigo-500/20 transition-transform active:scale-95 ${(!input.trim() || loading || !isContextReady) ? "grayscale opacity-50" : "hover:scale-105"}`}
+                    <button
+                        type="submit"
                         disabled={!input.trim() || loading || !isContextReady}
-                        onClick={handleSend}
+                        style={{
+                            position: "absolute", right: "6px", top: "6px",
+                            width: 36, height: 36, borderRadius: "10px", border: "none", cursor: "pointer",
+                            background: (!input.trim() || loading || !isContextReady) ? "#e5e7eb" : "linear-gradient(135deg, var(--ank-purple), #534AB7)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            transition: "opacity 0.2s",
+                        }}
                     >
-                        <PaperAirplaneIcon className="h-4 w-4" />
-                    </IconButton>
+                        <PaperAirplaneIcon className="h-4 w-4 text-white" />
+                    </button>
                 </form>
             </div>
         </aside>
