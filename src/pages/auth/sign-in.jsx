@@ -1,8 +1,4 @@
 import {
-  Card,
-  Input,
-  Checkbox,
-  Button,
   Typography,
   Spinner,
 } from "@material-tailwind/react";
@@ -88,171 +84,216 @@ export function SignIn() {
   };
 
   return (
-    <section className="min-h-screen flex items-stretch bg-white">
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-24">
-        <div className="mx-auto w-full max-w-sm">
-          <div className="mb-10 text-center">
-            <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-6 mx-auto">
-              <span className="text-white font-bold text-2xl">A</span>
-            </div>
-            <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 leading-tight">
-              {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
-            </Typography>
-            <Typography className="text-zinc-500 font-medium mt-2">
-              {language === "es" ? `Ingresa a tu cuenta de ${APP_NAME}` : `Log in to your ${APP_NAME} account`}
-            </Typography>
-          </div>
+    <section className="min-h-screen flex flex-col lg:flex-row lg:items-stretch" style={{ background: '#1a1730' }}>
 
-          {/* <div className="grid grid-cols-2 gap-4 mb-8">
-            <Button
-              variant="outline"
-              color="zinc"
-              className="flex items-center gap-2 justify-center py-2.5 border-zinc-200 hover:bg-zinc-50 normal-case shadow-sm transition-all text-zinc-700"
-              onClick={() => handleSocialLogin('google')}
-              disabled={loading}
-            >
-              <svg width="18" height="18" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16.3442 8.18429C16.3442 7.64047 16.3001 7.09371 16.206 6.55872H8.66016V9.63937H12.9813C12.802 10.6329 12.2258 11.5119 11.3822 12.0704V14.0693H13.9602C15.4741 12.6759 16.3442 10.6182 16.3442 8.18429Z" fill="#4285F4" />
-                <path d="M8.65974 16.0006C10.8174 16.0006 12.637 15.2922 13.9627 14.0693L11.3847 12.0704C10.6675 12.5584 9.7415 12.8347 8.66268 12.8347C6.5756 12.8347 4.80598 11.4266 4.17104 9.53357H1.51074V11.5942C2.86882 14.2956 5.63494 16.0006 8.65974 16.0006Z" fill="#34A853" />
-                <path d="M4.16852 9.53356C3.83341 8.53999 3.83341 7.46411 4.16852 6.47054V4.40991H1.51116C0.376489 6.67043 0.376489 9.33367 1.51116 11.5942L4.16852 9.53356Z" fill="#FBBC04" />
-                <path d="M8.65974 3.16644C9.80029 3.1488 10.9026 3.57798 11.7286 4.36578L14.0127 2.08174C12.5664 0.72367 10.6469 -0.0229773 8.65974 0.000539111C5.63494 0.000539111 2.86882 1.70548 1.51074 4.40987L4.1681 6.4705C4.8001 4.57449 6.57266 3.16644 8.65974 3.16644Z" fill="#EA4335" />
-              </svg>
-              <span className="font-semibold text-xs">Google</span>
-            </Button>
-            <Button
-              variant="outline"
-              color="zinc"
-              className="flex items-center gap-1 justify-center py-2.5 border-zinc-200 hover:bg-zinc-50 normal-case shadow-sm transition-all text-zinc-700"
-              onClick={() => handleSocialLogin('facebook')}
-              disabled={loading}
-            >
-              <img src="/img/facebook-logo.svg" height={18} width={18} alt="" />
-              <span className="font-semibold text-xs">Facebook</span>
-            </Button>
-          </div>
+      {/* ── Mobile hero ── */}
+      <div className="lg:hidden relative flex flex-col items-center px-7 pt-12 pb-14 flex-shrink-0 overflow-hidden" style={{ background: '#1a1730' }}>
+        {/* decorative circles */}
+        <div className="absolute top-5 right-7 w-14 h-14 rounded-full" style={{ background: 'rgba(127,119,221,0.15)' }} />
+        <div className="absolute top-12 right-16 w-7 h-7 rounded-full" style={{ background: 'rgba(127,119,221,0.10)' }} />
 
-          <div className="relative mb-8">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-zinc-200"></span>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-zinc-400 font-bold tracking-widest">
-                {language === "es" ? "O continúa con" : "Or continue with"}
-              </span>
-            </div>
-          </div> */}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Typography variant="small" className="font-bold text-zinc-700 ml-1">
-                {language === "es" ? "Nombre de usuario" : "Username"}
-              </Typography>
-              <Input
-                size="lg"
-                placeholder="johndoe"
-                className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
-                labelProps={{ className: "hidden" }}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <Typography variant="small" className="font-bold text-zinc-700">
-                  {language === "es" ? "Contraseña" : "Password"}
-                </Typography>
-                <Link to="/auth/forgot-password" size="sm" className="text-xs font-bold text-indigo-600 hover:text-indigo-800">
-                  {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  size="lg"
-                  placeholder="••••••••"
-                  className="!border-zinc-200 focus:!border-indigo-600 !bg-zinc-50/30 rounded-xl pr-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  labelProps={{ className: "hidden" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              className="mt-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-3 normal-case text-sm font-bold transition-all hover:-translate-y-0.5 text-white"
-              fullWidth
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Spinner className="h-4 w-4" />
-                  {language === "es" ? "Validando..." : "Signing In..."}
-                </>
-              ) : (
-                language === "es" ? "Entrar" : "Sign In"
-              )}
-            </Button>
-
-            {error && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-100 mt-4">
-                <Typography variant="small" color="red" className="text-center font-medium text-xs">
-                  {typeof error === 'string' ? error : JSON.stringify(error)}
-                </Typography>
-                {(typeof error === 'string' && error.toLowerCase().includes('not verified')) && (
-                  <div className="mt-2 text-center">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await authService.resendVerification(username);
-                          setError(language === 'es' ? 'Email de verificación re-enviado' : 'Verification email resent');
-                        } catch (err) {
-                          setError(err?.error || (language === 'es' ? 'Error al re-enviar email' : 'Error resending email'));
-                        }
-                      }}
-                      className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
-                    >
-                      {language === 'es' ? 'Re-enviar email de verificación' : 'Resend verification email'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <Typography variant="paragraph" className="text-center text-zinc-500 font-medium text-sm mt-8">
-              {language === "es" ? "¿No tienes una cuenta?" : "Not registered?"}
-              <Link to="/auth/sign-up" className="text-indigo-600 font-bold ml-2 hover:underline">
-                {language === "es" ? "Crea una aquí" : "Create account"}
-              </Link>
-            </Typography>
-
-            <div className="pt-8">
-              <a href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xs font-bold flex items-center justify-center gap-2 group">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                </svg>
-                {language === "es" ? "VOLVER AL INICIO" : "BACK TO HOME"}
-              </a>
-            </div>
-          </form>
+        <div className="w-16 h-16 rounded-[20px] flex items-center justify-center mb-5 shadow-lg"
+          style={{ background: 'var(--ank-purple, #7F77DD)', boxShadow: '0 8px 24px rgba(127,119,221,0.4)' }}>
+          <span className="text-white font-black text-3xl leading-none">A</span>
         </div>
+        <h1 className="text-white font-extrabold text-2xl tracking-tight mb-1.5">
+          {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
+        </h1>
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          {language === "es" ? "Ingresa para seguir aprendiendo" : "Sign in to continue learning"}
+        </p>
       </div>
 
+      {/* ── Form panel (mobile: overlapping card, desktop: left column) ── */}
+      <div className="
+        bg-white flex flex-col flex-1
+        rounded-t-[28px] -mt-6
+        lg:mt-0 lg:rounded-none lg:justify-center lg:px-8 lg:max-w-lg lg:w-full
+      ">
+        {/* drag handle — mobile only */}
+        <div className="lg:hidden w-10 h-1 rounded-full mx-auto mt-4 mb-6" style={{ background: 'rgba(0,0,0,0.10)' }} />
+
+        {/* Desktop header */}
+        <div className="hidden lg:flex flex-col items-center mb-10">
+          <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg mb-5"
+            style={{ background: 'var(--ank-purple, #7F77DD)', boxShadow: '0 8px 24px rgba(127,119,221,0.35)' }}>
+            <span className="text-white font-black text-3xl leading-none">A</span>
+          </div>
+          <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 leading-tight text-center">
+            {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
+          </Typography>
+          <Typography className="text-zinc-500 font-medium mt-2 text-center">
+            {language === "es" ? `Ingresa a tu cuenta de ${APP_NAME}` : `Log in to your ${APP_NAME} account`}
+          </Typography>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 lg:px-0 lg:mx-auto lg:w-full lg:max-w-sm space-y-4 pb-8">
+          {/* Username */}
+          <div>
+            <label className="block text-xs font-bold mb-2" style={{ color: '#1a1a2e' }}>
+              {language === "es" ? "Nombre de usuario" : "Username"}
+            </label>
+            <input
+              type="text"
+              placeholder={language === "es" ? "Tu usuario" : "Your username"}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+              autoComplete="username"
+              className="w-full rounded-[14px] px-4 py-3.5 text-sm outline-none transition-all"
+              style={{
+                background: '#f5f5f8',
+                border: '1.5px solid transparent',
+                color: '#1a1a2e',
+                fontFamily: 'inherit',
+              }}
+              onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #7F77DD)'; e.target.style.background = '#EEEDFE'; }}
+              onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold" style={{ color: '#1a1a2e' }}>
+                {language === "es" ? "Contraseña" : "Password"}
+              </label>
+              <Link to="/auth/forgot-password" className="text-xs font-semibold" style={{ color: 'var(--ank-purple, #7F77DD)' }}>
+                {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
+              </Link>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                autoComplete="current-password"
+                className="w-full rounded-[14px] px-4 py-3.5 pr-12 text-sm outline-none transition-all"
+                style={{
+                  background: '#f5f5f8',
+                  border: '1.5px solid transparent',
+                  color: '#1a1a2e',
+                  fontFamily: 'inherit',
+                }}
+                onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #7F77DD)'; e.target.style.background = '#EEEDFE'; }}
+                onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+                style={{ color: '#bbb', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}
+              >
+                {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Sign in button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl py-4 text-white font-extrabold text-base transition-all mt-2"
+            style={{
+              background: loading ? '#a9a4e0' : 'var(--ank-purple, #7F77DD)',
+              border: 'none',
+              cursor: loading ? 'default' : 'pointer',
+              fontFamily: 'inherit',
+              letterSpacing: '0.1px',
+            }}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Spinner className="h-4 w-4" />
+                {language === "es" ? "Validando..." : "Signing in..."}
+              </span>
+            ) : (
+              language === "es" ? "Entrar" : "Sign in"
+            )}
+          </button>
+
+          {/* Error */}
+          {error && (
+            <div className="p-3 rounded-xl mt-1" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+              <p className="text-center text-xs font-medium text-red-600">
+                {typeof error === 'string' ? error : JSON.stringify(error)}
+              </p>
+              {typeof error === 'string' && error.toLowerCase().includes('not verified') && (
+                <div className="mt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await authService.resendVerification(username);
+                        setError(language === 'es' ? 'Email de verificación re-enviado' : 'Verification email resent');
+                      } catch (err) {
+                        setError(err?.error || (language === 'es' ? 'Error al re-enviar email' : 'Error resending email'));
+                      }
+                    }}
+                    className="text-xs font-bold hover:underline cursor-pointer"
+                    style={{ color: 'var(--ank-purple, #7F77DD)', background: 'none', border: 'none' }}
+                  >
+                    {language === 'es' ? 'Re-enviar email de verificación' : 'Resend verification email'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Divider — comentado junto al botón de Google
+          <div className="flex items-center gap-3 py-1">
+            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
+            <span className="text-xs font-medium" style={{ color: '#bbb' }}>
+              {language === "es" ? "o continúa con" : "or continue with"}
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleSocialLogin('google')}
+            disabled={loading}
+            className="w-full rounded-[14px] py-3.5 flex items-center justify-center gap-2.5 text-sm font-semibold transition-all"
+            style={{
+              background: '#fff',
+              border: '1.5px solid rgba(0,0,0,0.08)',
+              color: '#1a1a2e',
+              cursor: loading ? 'default' : 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            {language === "es" ? "Continuar con Google" : "Continue with Google"}
+          </button>
+          */}
+
+          {/* Register link */}
+          <p className="text-center text-sm mt-2" style={{ color: '#888' }}>
+            {language === "es" ? "¿No tienes cuenta?" : "Not registered?"}{" "}
+            <Link to="/auth/sign-up" className="font-bold" style={{ color: 'var(--ank-purple, #7F77DD)' }}>
+              {language === "es" ? "Crea una aquí" : "Create account"}
+            </Link>
+          </p>
+
+          {/* Back to home */}
+          <a href="/" className="flex items-center justify-center gap-1.5 mt-2 text-xs transition-colors" style={{ color: '#bbb', textDecoration: 'none' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {language === "es" ? "Volver al inicio" : "Back to home"}
+          </a>
+        </form>
+      </div>
+
+      {/* ── Desktop right decorative panel ── */}
       <div className="hidden lg:block lg:flex-1 p-6">
         <div className="relative h-full w-full rounded-3xl overflow-hidden shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-zinc-950"></div>
@@ -269,7 +310,6 @@ export function SignIn() {
                   ? `Únete a miles de estudiantes que ya están potenciando su aprendizaje con ${APP_NAME}.`
                   : `Join thousands of students who are already powering their learning with ${APP_NAME}.`}
               </Typography>
-
               <div className="mt-12 grid grid-cols-2 gap-6 w-full max-w-sm">
                 <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 text-left">
                   <Typography className="text-white font-bold text-2xl mb-1">20k+</Typography>
@@ -282,7 +322,6 @@ export function SignIn() {
               </div>
             </div>
           </div>
-
           <div className="absolute bottom-10 left-10 p-4 flex items-center gap-4">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map(i => (
