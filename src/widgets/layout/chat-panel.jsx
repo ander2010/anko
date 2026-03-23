@@ -182,7 +182,7 @@ export function ChatPanel() {
 
     return (
         <aside
-            className={`fixed top-0 right-0 z-50 h-screen w-full md:w-[400px] bg-white shadow-2xl transition-transform duration-500 ease-in-out flex flex-col border-l border-zinc-100 ${openConfigurator ? "translate-x-0" : "translate-x-full"
+            className={`fixed top-0 right-0 z-[9999] h-screen w-full md:w-[400px] bg-white shadow-2xl transition-transform duration-500 ease-in-out flex flex-col border-l border-zinc-100 ${openConfigurator ? "translate-x-0" : "translate-x-full"
                 }`}
         >
             {/* Header */}
@@ -431,19 +431,17 @@ export function ChatPanel() {
             </div>
 
             {/* Input footer */}
-            <div className="p-3 md:p-5 bg-white border-t border-zinc-100 relative flex-none" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+            <div className="p-3 md:p-5 bg-white border-t border-zinc-100 flex-none" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
                 {!isContextReady && (
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                        <div style={{ background: "#FFF5F5", color: "#C53030", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", padding: "6px 14px", borderRadius: "100px", border: "1px solid #FED7D7" }}>
-                            {t("chat.no_docs_title")}
-                        </div>
-                    </div>
+                    <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 600, textAlign: "center", marginBottom: "8px" }}>
+                        {t("chat.no_docs_title")}
+                    </p>
                 )}
                 <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="relative flex w-full">
                     <input
                         type="text"
-                        placeholder={t("chat.input_placeholder")}
-                        disabled={!isContextReady || loading}
+                        placeholder={!isContextReady ? (language === "es" ? "Selecciona un proyecto y documentos primero..." : "Select a project and documents first...") : t("chat.input_placeholder")}
+                        disabled={loading}
                         style={{ width: "100%", background: "#f9f9fb", border: "1px solid #e5e7eb", borderRadius: "14px", padding: "12px 50px 12px 16px", fontSize: "13px", color: "#1a1a2e", outline: "none" }}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -453,7 +451,7 @@ export function ChatPanel() {
                         disabled={!input.trim() || loading || !isContextReady}
                         style={{
                             position: "absolute", right: "6px", top: "6px",
-                            width: 36, height: 36, borderRadius: "10px", border: "none", cursor: "pointer",
+                            width: 36, height: 36, borderRadius: "10px", border: "none", cursor: !input.trim() || loading || !isContextReady ? "not-allowed" : "pointer",
                             background: (!input.trim() || loading || !isContextReady) ? "#e5e7eb" : "linear-gradient(135deg, var(--ank-purple), #534AB7)",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             transition: "opacity 0.2s",
