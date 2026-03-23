@@ -355,56 +355,114 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
     const { totalScore, maxScore } = calculateScore();
     const percent = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
+    const passed = percent >= 60;
+    const scoreColor = passed ? "#3B6D11" : "#9B1C1C";
+    const scoreBg   = passed ? "#EAF3DE" : "#FEF2F2";
+    const barColor  = passed ? "#4CAF50" : "#EF4444";
+
     return (
-      <Dialog open={open} handler={handler} size="lg">
-        <DialogHeader className="justify-center">{language === "es" ? "Resultados del Examen" : "Exam Results"}</DialogHeader>
+      <Dialog open={open} handler={handler} size="lg"
+        className="!mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-lg md:!h-auto">
+        <div className="flex flex-col h-[100dvh] md:h-auto bg-white md:rounded-2xl overflow-hidden">
 
-        <DialogBody className="text-center">
-          <Typography variant="h1" color={percent >= 60 ? "green" : "red"} className="mb-4">
-            {percent}%
-          </Typography>
-
-          <Typography variant="h5" color="blue-gray" className="mb-2">
-            {language === "es" ? "Puntuaste" : "You scored"} {Number(totalScore || 0).toFixed(2)}{" "}
-            {language === "es" ? "de" : "out of"} {Number(maxScore || 0).toFixed(2)}{" "}
-            {language === "es" ? "puntos" : "points"}
-          </Typography>
-
-          <Progress
-            value={percent}
-            color={percent >= 60 ? "green" : "red"}
-            className="h-4 w-full rounded-full bg-blue-gray-50 mb-6"
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left p-4 bg-gray-50 rounded-lg">
-            <div>
-              <Typography variant="small" className="font-bold">
-                {language === "es" ? "Nombre de la Batería" : "Battery Name"}:
-              </Typography>
-              <Typography className="text-sm">{battery.name}</Typography>
-            </div>
-            <div>
-              <Typography variant="small" className="font-bold">
-                {language === "es" ? "Preguntas Totales" : "Total Questions"}:
-              </Typography>
-              <Typography className="text-sm">{totalQuestions}</Typography>
-            </div>
+          {/* Mobile header */}
+          <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+            <button onClick={handler} className="flex items-center gap-1 text-sm font-semibold"
+              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple, #7F77DD)", padding: 0 }}>
+              <ChevronLeftIcon className="h-4 w-4" />
+              <span className="truncate max-w-[160px]">{battery?.name || battery?.title}</span>
+            </button>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#EEEDFE", color: "#3C3489" }}>
+              {language === "es" ? "Resultados" : "Results"}
+            </span>
           </div>
 
-          <div className="mt-4 text-xs text-blue-gray-500">
-            {language === "es" ? "Intento #" : "Attempt #"}{(battery.attempts_count || 0) + 1}{" "}
-            {savingAttempt ? `• ${language === "es" ? "Guardando intento..." : "Saving attempt..."}` : ""}
-          </div>
-        </DialogBody>
+          {/* Desktop header */}
+          <DialogHeader className="hidden md:flex justify-center border-b border-gray-100">
+            {language === "es" ? "Resultados del Examen" : "Exam Results"}
+          </DialogHeader>
 
-        <DialogFooter className="justify-center gap-3 flex-wrap">
-          <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt} className="normal-case">
-            {language === "es" ? "Reintentar" : "Retry"}
-          </Button>
-          <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt} className="normal-case">
-            {language === "es" ? "Cerrar" : "Close"}
-          </Button>
-        </DialogFooter>
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col items-center gap-5">
+
+            {/* Score circle area */}
+            <div className="w-full rounded-2xl py-7 px-4 flex flex-col items-center" style={{ background: scoreBg }}>
+              <span className="text-6xl font-black leading-none mb-2" style={{ color: scoreColor }}>{percent}%</span>
+              <span className="text-sm font-semibold" style={{ color: scoreColor }}>
+                {passed
+                  ? (language === "es" ? "¡Aprobado!" : "Passed!")
+                  : (language === "es" ? "No aprobado" : "Not passed")}
+              </span>
+              <span className="text-xs mt-1 font-medium" style={{ color: scoreColor, opacity: 0.7 }}>
+                {Number(totalScore || 0).toFixed(2)} / {Number(maxScore || 0).toFixed(2)} {language === "es" ? "pts" : "pts"}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: "#f0f0f0" }}>
+              <div style={{ height: "100%", width: `${percent}%`, background: barColor, borderRadius: 999, transition: "width 0.4s ease" }} />
+            </div>
+
+            {/* Stats grid */}
+            <div className="w-full grid grid-cols-2 gap-3">
+              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
+                  {language === "es" ? "Batería" : "Battery"}
+                </p>
+                <p className="text-sm font-semibold text-blue-gray-800 leading-tight break-words">{battery?.name || "—"}</p>
+              </div>
+              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
+                  {language === "es" ? "Preguntas" : "Questions"}
+                </p>
+                <p className="text-sm font-semibold text-blue-gray-800">{totalQuestions}</p>
+              </div>
+              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
+                  {language === "es" ? "Puntuación" : "Score"}
+                </p>
+                <p className="text-sm font-semibold text-blue-gray-800">{Number(totalScore || 0).toFixed(2)} / {Number(maxScore || 0).toFixed(2)}</p>
+              </div>
+              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
+                  {language === "es" ? "Intento" : "Attempt"}
+                </p>
+                <p className="text-sm font-semibold text-blue-gray-800">#{(battery?.attempts_count || 0) + 1}</p>
+              </div>
+            </div>
+
+            {savingAttempt && (
+              <p className="text-xs text-center" style={{ color: "#aaa" }}>
+                {language === "es" ? "Guardando intento..." : "Saving attempt..."}
+              </p>
+            )}
+          </div>
+
+          {/* Mobile footer */}
+          <div className="md:hidden flex gap-2 px-4 pt-3 border-t border-gray-100 flex-shrink-0"
+            style={{ paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
+            <button onClick={resetExam} disabled={savingAttempt}
+              className="flex-1 py-3 rounded-xl text-sm font-bold"
+              style={{ background: "#EEEDFE", color: "#3C3489", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              {language === "es" ? "Reintentar" : "Retry"}
+            </button>
+            <button onClick={handler} disabled={savingAttempt}
+              className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
+              style={{ background: "linear-gradient(135deg, var(--ank-purple, #7F77DD), #534AB7)", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              {language === "es" ? "Cerrar" : "Close"}
+            </button>
+          </div>
+
+          {/* Desktop footer */}
+          <DialogFooter className="hidden md:flex justify-center gap-3 flex-wrap border-t border-gray-100">
+            <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt} className="normal-case">
+              {language === "es" ? "Reintentar" : "Retry"}
+            </Button>
+            <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt} className="normal-case">
+              {language === "es" ? "Cerrar" : "Close"}
+            </Button>
+          </DialogFooter>
+        </div>
       </Dialog>
     );
   }
