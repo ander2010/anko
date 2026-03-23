@@ -410,173 +410,166 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
   }
 
   // -------------------- Question Screen --------------------
+  const progressPct = totalQuestions > 0 ? ((activeStep + 1) / totalQuestions) * 100 : 0;
+
   return (
-    <Dialog open={open} handler={handler} size="xl" className="overflow-hidden">
-      <DialogHeader className="flex justify-between items-center border-b border-gray-100 p-4">
-        <Typography variant="h5" color="blue-gray">
-          {language === "es" ? "Pregunta" : "Question"} {activeStep + 1}{" "}
-          <span className="text-sm text-gray-500 font-normal">
-            {language === "es" ? "de" : "of"} {totalQuestions}
-          </span>
-        </Typography>
+    <Dialog open={open} handler={handler} size="xl"
+      className="overflow-hidden !mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-3xl md:!h-auto md:!w-auto">
+      <div className="flex flex-col h-full">
 
-        <div className="flex gap-2 items-center">
-          <Typography variant="small" className="font-bold text-blue-600">
-            {currentQuestion.points} pts
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 flex-shrink-0">
+          {/* Mobile: back button */}
+          <button onClick={handler} className="md:hidden flex items-center gap-1" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple)", fontSize: "13px", fontWeight: 600 }}>
+            <ChevronLeftIcon className="h-4 w-4" />
+            <span className="truncate max-w-[120px]">{battery?.name || battery?.title}</span>
+          </button>
+          {/* Desktop: full title */}
+          <Typography variant="h5" color="blue-gray" className="hidden md:block">
+            {language === "es" ? "Pregunta" : "Question"} {activeStep + 1}
+            <span className="text-sm text-gray-500 font-normal ml-1">{language === "es" ? "de" : "of"} {totalQuestions}</span>
           </Typography>
-          <IconButton variant="text" color="blue-gray" onClick={handler}>
-            <XCircleIcon className="h-6 w-6" />
-          </IconButton>
-        </div>
-      </DialogHeader>
 
-      <DialogBody className="h-[60vh] overflow-y-auto p-3 md:p-6 bg-gray-50">
-        <div className="mb-6">
-          <Progress
-            value={totalQuestions > 0 ? ((activeStep + 1) / totalQuestions) * 100 : 0}
-            size="sm"
-            color="blue"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold md:hidden" style={{ color: "#888" }}>{activeStep + 1}/{totalQuestions}</span>
+            <span className="text-xs px-2 py-1 rounded-full font-bold" style={{ background: "#FAEEDA", color: "#854F0B" }}>
+              {currentQuestion.points} pts
+            </span>
+            <IconButton variant="text" color="blue-gray" onClick={handler} className="hidden md:flex">
+              <XCircleIcon className="h-6 w-6" />
+            </IconButton>
+          </div>
         </div>
 
-        <Card className="mb-4 md:mb-6 shadow-sm border border-gray-200">
-          <CardBody className="p-3 md:p-4">
-            <Typography className="text-base md:text-xl font-bold text-blue-gray-900 mb-2 leading-snug">
+        {/* Thin progress strip */}
+        <div style={{ height: 3, background: "#f0f0f0", flexShrink: 0 }}>
+          <div style={{ height: "100%", width: `${progressPct}%`, background: "var(--ank-purple)", borderRadius: 2, transition: "width 0.3s" }} />
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-white md:bg-gray-50">
+
+          {/* Question card — purple on mobile, white on desktop */}
+          <div className="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-lg border md:shadow-sm"
+            style={{ background: "#EEEDFE", borderColor: "#AFA9EC" }}>
+            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#534AB7" }}>
+              {currentQuestion.type === "trueFalse"
+                ? (language === "es" ? "Verdadero / Falso" : "True / False")
+                : isMultiSelect(currentQuestion.type)
+                  ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
+                  : (language === "es" ? "Opción Única" : "Single Choice")}
+              {currentQuestion.topicName && (
+                <span className="ml-2 normal-case font-medium opacity-70">· {currentQuestion.topicName}</span>
+              )}
+            </p>
+            <p className="text-sm md:text-base font-medium leading-snug" style={{ color: "#3C3489" }}>
               {currentQuestion.question}
-            </Typography>
+            </p>
+          </div>
 
-            <div className="flex gap-2">
-              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full uppercase font-bold">
-                {currentQuestion.type === "trueFalse"
-                  ? (language === "es" ? "Verdadero / Falso" : "True / False")
-                  : isMultiSelect(currentQuestion.type)
-                    ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
-                    : (language === "es" ? "Opción Única" : "Single Choice")}
-              </span>
-              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-                {language === "es" ? "tema" : "topic"}: {currentQuestion.topicName || battery.name || (language === "es" ? "General" : "General")}
-              </span>
-            </div>
-          </CardBody>
-        </Card>
+          {/* Options */}
+          <div className="space-y-2 md:space-y-3">
+            {(currentQuestion.options || []).map((option) => {
+              const isSelected = isOptionSelected(currentQuestion.id, option.id, currentQuestion.type);
+              const isCorrect = !!option.correct;
 
-        <div className="space-y-3">
-          {(currentQuestion.options || []).map((option) => {
-            const isSelected = isOptionSelected(currentQuestion.id, option.id, currentQuestion.type);
-            const isCorrect = !!option.correct;
-
-            let cardColor = "white";
-            let borderColor = "border-gray-200";
-
-            if (showAnswer) {
-              if (isCorrect) {
-                cardColor = "bg-green-50";
-                borderColor = "border-green-500";
-              } else if (isSelected && !isCorrect) {
-                cardColor = "bg-red-50";
-                borderColor = "border-red-500";
+              let borderCol = "#e5e7eb";
+              let bgCol = "#fff";
+              if (showAnswer) {
+                if (isCorrect) { borderCol = "#22c55e"; bgCol = "#f0fdf4"; }
+                else if (isSelected && !isCorrect) { borderCol = "#ef4444"; bgCol = "#fef2f2"; }
+              } else if (isSelected) {
+                borderCol = "var(--ank-purple)";
+                bgCol = "#EEEDFE";
               }
-            } else if (isSelected) {
-              cardColor = "bg-blue-50";
-              borderColor = "border-blue-500";
-            }
 
-            return (
-              <Card
-                key={option.id}
-                className={`cursor-pointer transition-all border ${borderColor} ${cardColor} hover:shadow-md`}
-                onClick={() => handleOptionSelect(currentQuestion.id, option.id, currentQuestion.type)}
-              >
-                <CardBody className="p-3 md:p-4 flex items-center gap-3">
-                  <div className="pointer-events-none">
-                    {isMultiSelect(currentQuestion.type) ? (
-                      <Checkbox checked={isSelected} containerProps={{ className: "p-0" }} readOnly />
-                    ) : (
-                      <Radio checked={isSelected} containerProps={{ className: "p-0" }} readOnly />
-                    )}
+              return (
+                <div
+                  key={option.id}
+                  onClick={() => handleOptionSelect(currentQuestion.id, option.id, currentQuestion.type)}
+                  style={{ border: `1px solid ${borderCol}`, background: bgCol, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "all 0.15s" }}
+                >
+                  {/* Custom radio/checkbox dot */}
+                  <div style={{
+                    width: 16, height: 16, borderRadius: isMultiSelect(currentQuestion.type) ? 4 : "50%",
+                    border: `2px solid ${isSelected ? "var(--ank-purple)" : "#ccc"}`,
+                    background: isSelected ? "var(--ank-purple)" : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                  }}>
+                    {isSelected && <div style={{ width: 6, height: 6, borderRadius: isMultiSelect(currentQuestion.type) ? 2 : "50%", background: "#fff" }} />}
                   </div>
+                  <span style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 500, flex: 1 }}>{option.text}</span>
+                  {showAnswer && isCorrect && <CheckCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: "#22c55e" }} />}
+                  {showAnswer && isSelected && !isCorrect && <XCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: "#ef4444" }} />}
+                </div>
+              );
+            })}
+          </div>
 
-                  <Typography color="blue-gray" className="font-medium flex-1">
-                    {option.text}
-                  </Typography>
-
-                  {showAnswer && isCorrect && <CheckCircleIcon className="h-6 w-6 text-green-500" />}
-                  {showAnswer && isSelected && !isCorrect && <XCircleIcon className="h-6 w-6 text-red-500" />}
-                </CardBody>
-              </Card>
-            );
-          })}
-        </div>
-
-        {showAnswer && (
-          <Alert
-            icon={<LightBulbIcon className="mt-px h-6 w-6 text-yellow-600" />}
-            className="mt-6 bg-blue-50 border border-blue-100 text-blue-900"
-          >
-            <Typography variant="h6" className="mb-1">
-              {language === "es" ? "Explicación" : "Explanation"}
-            </Typography>
-            <div className="text-sm opacity-90">
-              {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación para esta pregunta." : "No explanation provided for this question.")}
+          {showAnswer && (
+            <div className="mt-4 p-3 rounded-xl border" style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}>
+              <div className="flex items-center gap-2 mb-1">
+                <LightBulbIcon className="h-4 w-4" style={{ color: "#D97706" }} />
+                <p className="text-xs font-bold uppercase" style={{ color: "#92400E" }}>{language === "es" ? "Explicación" : "Explanation"}</p>
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "#78350F" }}>
+                {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación." : "No explanation provided.")}
+              </p>
               {currentQuestion.page_reference && (
-                <div className="mt-2 text-xs font-bold italic flex items-center gap-2">
-                  <span>{language === "es" ? "Página de Referencia:" : "Reference Page:"} {currentQuestion.page_reference}</span>
-                  {(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document || battery.document_id || (battery.documents && battery.documents[0]?.id)) && (
-                    <IconButton
-                      size="sm"
-                      variant="text"
-                      color="blue"
-                      onClick={() => handleOpenViewer(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document, currentQuestion.page_reference)}
-                      title={language === "es" ? "Ver documento" : "View document"}
-                    >
-                      <DocumentIcon className="h-4 w-4" />
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-xs font-bold italic" style={{ color: "#92400E" }}>
+                    {language === "es" ? "Pág:" : "Page:"} {currentQuestion.page_reference}
+                  </span>
+                  {(currentQuestion.source_document_id || currentQuestion.document_id || battery.document_id) && (
+                    <IconButton size="sm" variant="text" color="amber"
+                      onClick={() => handleOpenViewer(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document, currentQuestion.page_reference)}>
+                      <DocumentIcon className="h-3 w-3" />
                     </IconButton>
                   )}
                 </div>
               )}
             </div>
-          </Alert>
-        )}
-      </DialogBody>
-
-      <DialogFooter className="justify-between border-t border-gray-100 p-3 md:p-4 flex-wrap gap-2">
-        <Button
-          variant="text"
-          onClick={handlePrev}
-          disabled={activeStep === 0}
-          className="flex items-center gap-1 text-xs md:text-sm normal-case"
-        >
-          <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Prev"}
-        </Button>
-
-        <div className="flex gap-2 flex-wrap justify-end">
-          {!showAnswer && (
-            <Button
-              variant="outlined"
-              color="amber"
-              onClick={() => setShowAnswer(true)}
-              className="flex items-center gap-1 text-xs md:text-sm normal-case px-3 md:px-4"
-            >
-              <LightBulbIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === "es" ? "Mostrar Respuesta" : "Show Answer"}</span>
-              <span className="sm:hidden">{language === "es" ? "Respuesta" : "Answer"}</span>
-            </Button>
           )}
-
-          <Button
-            variant="gradient"
-            color="blue"
-            onClick={handleNext}
-            className="flex items-center gap-1 text-xs md:text-sm normal-case px-3 md:px-4"
-            disabled={savingAttempt}
-          >
-            {activeStep === totalQuestions - 1
-              ? (language === "es" ? "Finalizar" : "Finish")
-              : (language === "es" ? "Siguiente" : "Next")}
-            {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
-          </Button>
         </div>
-      </DialogFooter>
+
+        {/* Footer */}
+        {/* Mobile footer */}
+        <div className="md:hidden flex gap-2 p-3 border-t border-gray-100 flex-shrink-0" style={{ background: "#fff" }}>
+          <button onClick={handlePrev} disabled={activeStep === 0}
+            style={{ flex: 1, padding: "10px", borderRadius: 10, background: activeStep === 0 ? "#f5f5f7" : "#EEEDFE", color: activeStep === 0 ? "#ccc" : "var(--ank-purple)", border: "none", fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer" }}>
+            ← {language === "es" ? "Anterior" : "Prev"}
+          </button>
+          {!showAnswer && (
+            <button onClick={() => setShowAnswer(true)}
+              style={{ flex: 1, padding: "10px", borderRadius: 10, background: "#FAEEDA", color: "#854F0B", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              {language === "es" ? "Respuesta" : "Answer"}
+            </button>
+          )}
+          <button onClick={handleNext} disabled={savingAttempt}
+            style={{ flex: 2, padding: "10px", borderRadius: 10, background: "var(--ank-purple)", color: "#fff", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            {activeStep === totalQuestions - 1 ? (language === "es" ? "Finalizar" : "Finish") : (language === "es" ? "Siguiente →" : "Next →")}
+          </button>
+        </div>
+
+        {/* Desktop footer */}
+        <DialogFooter className="hidden md:flex justify-between border-t border-gray-100 p-4 flex-wrap gap-2">
+          <Button variant="text" onClick={handlePrev} disabled={activeStep === 0} className="flex items-center gap-1 text-sm normal-case">
+            <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Prev"}
+          </Button>
+          <div className="flex gap-2">
+            {!showAnswer && (
+              <Button variant="outlined" color="amber" onClick={() => setShowAnswer(true)} className="flex items-center gap-1 text-sm normal-case">
+                <LightBulbIcon className="h-4 w-4" /> {language === "es" ? "Mostrar Respuesta" : "Show Answer"}
+              </Button>
+            )}
+            <Button variant="gradient" color="blue" onClick={handleNext} disabled={savingAttempt} className="flex items-center gap-1 text-sm normal-case">
+              {activeStep === totalQuestions - 1 ? (language === "es" ? "Finalizar" : "Finish") : (language === "es" ? "Siguiente" : "Next")}
+              {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
+            </Button>
+          </div>
+        </DialogFooter>
+
+      </div>
 
       <DocumentViewerDialog
         open={!!viewingDocument}

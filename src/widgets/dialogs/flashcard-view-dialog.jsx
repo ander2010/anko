@@ -73,10 +73,31 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
 
     const currentCard = flashcards[currentIndex];
 
+    const progressPct = flashcards.length > 0 ? ((currentIndex + 1) / flashcards.length) * 100 : 0;
+
     return (
-        <Dialog open={open} handler={onClose} size="xl" className="bg-transparent shadow-none">
-            <div className="flex flex-col h-[85vh] max-h-[700px] bg-white rounded-xl overflow-hidden">
-                <DialogHeader className="flex justify-between items-center border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+        <Dialog open={open} handler={onClose} size="xl"
+            className="bg-transparent shadow-none !mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-3xl md:!h-auto">
+            <div className="flex flex-col h-[100dvh] md:h-[85vh] md:max-h-[700px] bg-white md:rounded-xl overflow-hidden">
+
+                {/* Mobile header */}
+                <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
+                    <button onClick={onClose} className="flex items-center gap-1 text-sm font-semibold text-blue-gray-800" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                        <ChevronLeftIcon className="h-5 w-5" />
+                        <span className="max-w-[180px] truncate">{deckTitle}</span>
+                    </button>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#EEEDFE', color: '#3C3489' }}>
+                        {flashcards.length > 0 ? `${currentIndex + 1} / ${flashcards.length}` : "0 / 0"}
+                    </span>
+                </div>
+
+                {/* Mobile progress strip */}
+                <div className="md:hidden" style={{ height: 3, background: '#f0f0f0' }}>
+                    <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--ank-purple, #7F77DD)', transition: 'width 0.3s ease' }} />
+                </div>
+
+                {/* Desktop header */}
+                <DialogHeader className="hidden md:flex justify-between items-center border-b border-gray-100 bg-gray-50/50 px-6 py-4">
                     <div>
                         <Typography variant="h5" color="blue-gray">
                             {deckTitle}
@@ -90,7 +111,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                     </IconButton>
                 </DialogHeader>
 
-                <DialogBody className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 md:p-12 overflow-hidden relative bg-gray-50/50">
+                <DialogBody className="flex-1 flex flex-col items-center justify-center p-3 md:p-12 overflow-hidden relative bg-gray-50/50">
                     {loading ? (
                         <div className="flex flex-col items-center gap-4">
                             <Spinner className="h-10 w-10 text-indigo-500" />
@@ -192,7 +213,51 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                     )}
                 </DialogBody>
 
-                <DialogFooter className="justify-between border-t border-zinc-100 bg-white px-4 py-3 md:px-8 md:py-5">
+                {/* Mobile footer */}
+                <div className="md:hidden flex items-center justify-between border-t border-zinc-100 bg-white px-4 py-3"
+                    style={{ paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))` }}>
+                    <button
+                        onClick={handlePrev}
+                        disabled={currentIndex === 0 || loading}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold"
+                        style={{
+                            background: currentIndex === 0 || loading ? '#f1f0fe' : '#EEEDFE',
+                            color: currentIndex === 0 || loading ? '#a9a4e0' : '#3C3489',
+                            border: 'none', cursor: currentIndex === 0 || loading ? 'default' : 'pointer',
+                            opacity: currentIndex === 0 || loading ? 0.6 : 1,
+                        }}
+                    >
+                        <ChevronLeftIcon className="h-4 w-4" />
+                        {language === "es" ? "Anterior" : "Previous"}
+                    </button>
+
+                    <button
+                        onClick={handleFlip}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+                        style={{ background: 'linear-gradient(135deg, var(--ank-purple, #7F77DD), #534AB7)', border: 'none', cursor: 'pointer' }}
+                    >
+                        <ArrowPathIcon className="h-4 w-4" />
+                        {language === "es" ? "Girar" : "Flip"}
+                    </button>
+
+                    <button
+                        onClick={handleNext}
+                        disabled={currentIndex === flashcards.length - 1 || loading}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold"
+                        style={{
+                            background: currentIndex === flashcards.length - 1 || loading ? '#f1f0fe' : '#EEEDFE',
+                            color: currentIndex === flashcards.length - 1 || loading ? '#a9a4e0' : '#3C3489',
+                            border: 'none', cursor: currentIndex === flashcards.length - 1 || loading ? 'default' : 'pointer',
+                            opacity: currentIndex === flashcards.length - 1 || loading ? 0.6 : 1,
+                        }}
+                    >
+                        {language === "es" ? "Siguiente" : "Next"}
+                        <ChevronRightIcon className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Desktop footer */}
+                <DialogFooter className="hidden md:flex justify-between border-t border-zinc-100 bg-white px-4 py-3 md:px-8 md:py-5">
                     <Button
                         variant="text"
                         color="blue-gray"
@@ -204,18 +269,16 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                         {language === "es" ? "Anterior" : "Previous"}
                     </Button>
 
-                    <div className="hidden sm:block">
-                        <div className="flex gap-1.5">
-                            {flashcards.slice(Math.max(0, currentIndex - 2), Math.min(flashcards.length, currentIndex + 3)).map((_, idx) => {
-                                const actualIdx = Math.max(0, currentIndex - 2) + idx;
-                                return (
-                                    <div
-                                        key={actualIdx}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${actualIdx === currentIndex ? "bg-indigo-500 w-6" : "bg-zinc-200 w-1.5"}`}
-                                    />
-                                );
-                            })}
-                        </div>
+                    <div className="flex gap-1.5">
+                        {flashcards.slice(Math.max(0, currentIndex - 2), Math.min(flashcards.length, currentIndex + 3)).map((_, idx) => {
+                            const actualIdx = Math.max(0, currentIndex - 2) + idx;
+                            return (
+                                <div
+                                    key={actualIdx}
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${actualIdx === currentIndex ? "bg-indigo-500 w-6" : "bg-zinc-200 w-1.5"}`}
+                                />
+                            );
+                        })}
                     </div>
 
                     <Button
