@@ -431,7 +431,7 @@ export function ChatPanel() {
             </div>
 
             {/* Input footer */}
-            <div className="p-3 md:p-5 bg-white border-t border-zinc-100 flex-none" style={{ paddingBottom: "max(26px, env(safe-area-inset-bottom, 26px))" }}>
+            <div className="p-3 md:p-5 bg-white border-t border-zinc-100 flex-none" style={{ paddingBottom: "max(13px, env(safe-area-inset-bottom, 13px))" }}>
                 {!isContextReady && (
                     <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 600, textAlign: "center", marginBottom: "8px" }}>
                         {t("chat.no_docs_title")}
