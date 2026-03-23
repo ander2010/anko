@@ -534,7 +534,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
 
         {/* Footer */}
         {/* Mobile footer */}
-        <div className="md:hidden flex gap-2 p-3 border-t border-gray-100 flex-shrink-0" style={{ background: "#fff" }}>
+        <div className="md:hidden flex gap-2 px-3 pt-3 border-t border-gray-100 flex-shrink-0" style={{ background: "#fff", paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
           <button onClick={handlePrev} disabled={activeStep === 0}
             style={{ flex: 1, padding: "10px", borderRadius: 10, background: activeStep === 0 ? "#f5f5f7" : "#EEEDFE", color: activeStep === 0 ? "#ccc" : "var(--ank-purple)", border: "none", fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer" }}>
             ← {language === "es" ? "Anterior" : "Prev"}

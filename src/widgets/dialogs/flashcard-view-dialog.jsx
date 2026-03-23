@@ -215,7 +215,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
 
                 {/* Mobile footer */}
                 <div className="md:hidden flex items-center justify-between border-t border-zinc-100 bg-white px-4 py-3"
-                    style={{ paddingBottom: `max(12px, env(safe-area-inset-bottom, 12px))` }}>
+                    style={{ paddingBottom: `max(25px, env(safe-area-inset-bottom, 25px))` }}>
                     <button
                         onClick={handlePrev}
                         disabled={currentIndex === 0 || loading}
