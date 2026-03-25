@@ -6,9 +6,9 @@
 
 /* ─── ANK Design System — Color Variables ─── */
 :root {
-  --ank-purple:       #7F77DD;
-  --ank-purple-light: #EEEDFE;
-  --ank-purple-dark:  #534AB7;
+  --ank-purple:       #3949AB;
+  --ank-purple-light: #E8EAF6;
+  --ank-purple-dark:  #303F9F;
   --ank-teal:         #1D9E75;
   --ank-teal-light:   #E1F5EE;
   --ank-amber:        #BA7517;

@@ -50,7 +50,7 @@ export function AppPagination({
                     disabled={disabled || page <= 1}
                     style={{
                         width: 28, height: 28, borderRadius: "50%", border: "0.5px solid rgba(0,0,0,0.12)",
-                        background: page <= 1 ? "#f5f5f5" : "#fff", color: page <= 1 ? "#ccc" : "#534AB7",
+                        background: page <= 1 ? "#f5f5f5" : "#fff", color: page <= 1 ? "#ccc" : "#3949AB",
                         fontSize: 14, fontWeight: 600, cursor: page <= 1 ? "default" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                     }}
@@ -65,7 +65,7 @@ export function AppPagination({
                     disabled={disabled || page >= totalPages}
                     style={{
                         width: 28, height: 28, borderRadius: "50%", border: "0.5px solid rgba(0,0,0,0.12)",
-                        background: page >= totalPages ? "#f5f5f5" : "#7F77DD", color: page >= totalPages ? "#ccc" : "#fff",
+                        background: page >= totalPages ? "#f5f5f5" : "#3949AB", color: page >= totalPages ? "#ccc" : "#fff",
                         fontSize: 14, fontWeight: 600, cursor: page >= totalPages ? "default" : "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                     }}

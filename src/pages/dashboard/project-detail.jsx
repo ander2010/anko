@@ -1309,8 +1309,8 @@ export function ProjectDetail() {
             value={val}
             icon={<CheckCircleIcon className="h-4 w-4" />}
             size="sm"
-            color="green"
-            className="rounded-full shadow-sm shadow-green-200"
+            className="rounded-full shadow-sm"
+            style={{ background: "#3949AB", color: "#fff" }}
           />
         );
       case "failed":

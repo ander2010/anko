@@ -368,11 +368,11 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
           {/* Mobile header */}
           <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
             <button onClick={handler} className="flex items-center gap-1 text-sm font-semibold"
-              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple, #7F77DD)", padding: 0 }}>
+              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple, #3949AB)", padding: 0 }}>
               <ChevronLeftIcon className="h-4 w-4" />
               <span className="truncate max-w-[160px]">{battery?.name || battery?.title}</span>
             </button>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#EEEDFE", color: "#3C3489" }}>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#E8EAF6", color: "#3949AB" }}>
               {language === "es" ? "Resultados" : "Results"}
             </span>
           </div>
@@ -443,12 +443,12 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
             style={{ paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
             <button onClick={resetExam} disabled={savingAttempt}
               className="flex-1 py-3 rounded-xl text-sm font-bold"
-              style={{ background: "#EEEDFE", color: "#3C3489", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              style={{ background: "#E8EAF6", color: "#3949AB", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
               {language === "es" ? "Reintentar" : "Retry"}
             </button>
             <button onClick={handler} disabled={savingAttempt}
               className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, var(--ank-purple, #7F77DD), #534AB7)", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              style={{ background: "linear-gradient(135deg, var(--ank-purple, #3949AB), #303F9F)", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
               {language === "es" ? "Cerrar" : "Close"}
             </button>
           </div>
@@ -509,8 +509,8 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
 
           {/* Question card — purple on mobile, white on desktop */}
           <div className="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-lg border md:shadow-sm"
-            style={{ background: "#EEEDFE", borderColor: "#AFA9EC" }}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#534AB7" }}>
+            style={{ background: "#E8EAF6", borderColor: "#9FA8DA" }}>
+            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#303F9F" }}>
               {currentQuestion.type === "trueFalse"
                 ? (language === "es" ? "Verdadero / Falso" : "True / False")
                 : isMultiSelect(currentQuestion.type)
@@ -520,7 +520,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
                 <span className="ml-2 normal-case font-medium opacity-70">· {currentQuestion.topicName}</span>
               )}
             </p>
-            <p className="text-sm md:text-base font-medium leading-snug" style={{ color: "#3C3489" }}>
+            <p className="text-sm md:text-base font-medium leading-snug" style={{ color: "#3949AB" }}>
               {currentQuestion.question}
             </p>
           </div>
@@ -538,7 +538,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
                 else if (isSelected && !isCorrect) { borderCol = "#ef4444"; bgCol = "#fef2f2"; }
               } else if (isSelected) {
                 borderCol = "var(--ank-purple)";
-                bgCol = "#EEEDFE";
+                bgCol = "#E8EAF6";
               }
 
               return (
@@ -594,7 +594,7 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
         {/* Mobile footer */}
         <div className="md:hidden flex gap-2 px-3 pt-3 border-t border-gray-100 flex-shrink-0" style={{ background: "#fff", paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
           <button onClick={handlePrev} disabled={activeStep === 0}
-            style={{ flex: 1, padding: "10px", borderRadius: 10, background: activeStep === 0 ? "#f5f5f7" : "#EEEDFE", color: activeStep === 0 ? "#ccc" : "var(--ank-purple)", border: "none", fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer" }}>
+            style={{ flex: 1, padding: "10px", borderRadius: 10, background: activeStep === 0 ? "#f5f5f7" : "#E8EAF6", color: activeStep === 0 ? "#ccc" : "var(--ank-purple)", border: "none", fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer" }}>
             ← {language === "es" ? "Anterior" : "Prev"}
           </button>
           {!showAnswer && (

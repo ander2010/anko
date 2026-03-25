@@ -156,7 +156,7 @@ export function DeckCard({
                       {deck.description ? ` · ${deck.description.slice(0, 24)}` : ""}
                     </p>
                   </div>
-                  <span style={{ flexShrink: 0, background: deck.visibility === "public" ? "#EAF3DE" : deck.visibility === "shared" ? "#E1F5EE" : "#EEEDFE", color: deck.visibility === "public" ? "#3B6D11" : deck.visibility === "shared" ? "#0F6E56" : "#534AB7", fontSize: "9px", padding: "2px 7px", borderRadius: "8px", fontWeight: 600 }}>
+                  <span style={{ flexShrink: 0, background: deck.visibility === "public" ? "#EAF3DE" : deck.visibility === "shared" ? "#E1F5EE" : "#E8EAF6", color: deck.visibility === "public" ? "#3B6D11" : deck.visibility === "shared" ? "#0F6E56" : "#3949AB", fontSize: "9px", padding: "2px 7px", borderRadius: "8px", fontWeight: 600 }}>
                     {deck.visibility === "public" ? (language === "es" ? "Público" : "Public") :
                      deck.visibility === "shared" ? (language === "es" ? "Compartido" : "Shared") :
                      (language === "es" ? "Privado" : "Private")}
@@ -378,7 +378,7 @@ export function DeckCard({
                     {isOwner && onLearn && (
                         <button
                             disabled={job && !isCompleted}
-                            style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "#EEEDFE", color: "#534AB7", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
+                            style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "rgb(57, 73, 171)", color: "#ffffffff", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
                             onClick={() => onLearn && onLearn(deck)}
                         >
                             {t("global.action.learn")}
@@ -386,7 +386,7 @@ export function DeckCard({
                     )}
                     <button
                         disabled={job && !isCompleted}
-                        style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "#EAF3DE", color: "#3B6D11", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
+                        style={{ flex: 1, padding: "9px", borderRadius: "10px", background: "#EEEDFE", color: "#0f172a", fontSize: "10px", fontWeight: 600, border: "none", cursor: "pointer", textAlign: "center", opacity: (job && !isCompleted) ? 0.5 : 1 }}
                         onClick={() => onStudy && onStudy(deck)}
                     >
                         {t("global.action.study")}

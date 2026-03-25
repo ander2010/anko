@@ -86,14 +86,14 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                         <ChevronLeftIcon className="h-5 w-5" />
                         <span className="max-w-[180px] truncate">{deckTitle}</span>
                     </button>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#EEEDFE', color: '#3C3489' }}>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E8EAF6', color: '#3949AB' }}>
                         {flashcards.length > 0 ? `${currentIndex + 1} / ${flashcards.length}` : "0 / 0"}
                     </span>
                 </div>
 
                 {/* Mobile progress strip */}
                 <div className="md:hidden" style={{ height: 3, background: '#f0f0f0' }}>
-                    <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--ank-purple, #7F77DD)', transition: 'width 0.3s ease' }} />
+                    <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--ank-purple, #3949AB)', transition: 'width 0.3s ease' }} />
                 </div>
 
                 {/* Desktop header */}
@@ -221,8 +221,8 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                         disabled={currentIndex === 0 || loading}
                         className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold"
                         style={{
-                            background: currentIndex === 0 || loading ? '#f1f0fe' : '#EEEDFE',
-                            color: currentIndex === 0 || loading ? '#a9a4e0' : '#3C3489',
+                            background: currentIndex === 0 || loading ? '#E8EAF6' : '#E8EAF6',
+                            color: currentIndex === 0 || loading ? '#a9a4e0' : '#3949AB',
                             border: 'none', cursor: currentIndex === 0 || loading ? 'default' : 'pointer',
                             opacity: currentIndex === 0 || loading ? 0.6 : 1,
                         }}
@@ -234,7 +234,7 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                     <button
                         onClick={handleFlip}
                         className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-                        style={{ background: 'linear-gradient(135deg, var(--ank-purple, #7F77DD), #534AB7)', border: 'none', cursor: 'pointer' }}
+                        style={{ background: 'linear-gradient(135deg, var(--ank-purple, #3949AB), #303F9F)', border: 'none', cursor: 'pointer' }}
                     >
                         <ArrowPathIcon className="h-4 w-4" />
                         {language === "es" ? "Girar" : "Flip"}
@@ -245,8 +245,8 @@ export function FlashcardViewDialog({ open, onClose, deckId, deckTitle }) {
                         disabled={currentIndex === flashcards.length - 1 || loading}
                         className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold"
                         style={{
-                            background: currentIndex === flashcards.length - 1 || loading ? '#f1f0fe' : '#EEEDFE',
-                            color: currentIndex === flashcards.length - 1 || loading ? '#a9a4e0' : '#3C3489',
+                            background: currentIndex === flashcards.length - 1 || loading ? '#E8EAF6' : '#E8EAF6',
+                            color: currentIndex === flashcards.length - 1 || loading ? '#a9a4e0' : '#3949AB',
                             border: 'none', cursor: currentIndex === flashcards.length - 1 || loading ? 'default' : 'pointer',
                             opacity: currentIndex === flashcards.length - 1 || loading ? 0.6 : 1,
                         }}

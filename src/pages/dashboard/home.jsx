@@ -226,7 +226,7 @@ export function Home() {
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(v => !v)}
-            style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, var(--ank-purple), #534AB7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "16px", fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0 }}
+            style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #3949AB, #303F9F)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "16px", fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0 }}
           >
             {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
           </button>
@@ -239,7 +239,7 @@ export function Home() {
                   <span style={{ fontSize: "11px", color: "#888" }}>{language === "es" ? "Idioma" : "Language"}</span>
                   <div className="flex gap-1">
                     {["es","en"].map(lang => (
-                      <button key={lang} onClick={() => changeLanguage(lang)} style={{ padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600, background: language === lang ? "var(--ank-purple)" : "#f5f5f5", color: language === lang ? "#fff" : "#888", border: "none", cursor: "pointer" }}>{lang.toUpperCase()}</button>
+                      <button key={lang} onClick={() => changeLanguage(lang)} style={{ padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600, background: language === lang ? "#3949AB" : "#f5f5f5", color: language === lang ? "#fff" : "#888", border: "none", cursor: "pointer" }}>{lang.toUpperCase()}</button>
                     ))}
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export function Home() {
       {/* ── Stats row ── */}
       <div style={{ display: "flex", gap: 8, padding: "8px 20px 16px" }}>
         {/* Featured: streak */}
-        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "var(--ank-purple)", textAlign: "center" }}>
+        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#3949AB", textAlign: "center" }}>
           <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#fff" }}>0</p>
           <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>{language === "es" ? "racha" : "day streak"}</p>
         </div>
@@ -285,7 +285,7 @@ export function Home() {
           </p>
 
           {/* Featured battery card */}
-          <div style={{ margin: "0 16px 10px", background: "var(--ank-purple)", borderRadius: 20, padding: "18px 18px 16px" }}>
+          <div style={{ margin: "0 16px 10px", background: "#3949AB", borderRadius: 20, padding: "18px 18px 16px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>
@@ -318,11 +318,11 @@ export function Home() {
       {/* ── Secondary study cards ── */}
       {/* Deck card */}
       {recentDecks[0] && (
-        <div style={{ margin: "0 16px 8px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#E1F5EE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div style={{ margin: "0 16px 8px", background: "#ffffffff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="5" width="18" height="14" rx="3" fill="#1D9E75"/>
-              <rect x="6" y="3" width="12" height="3" rx="1.5" fill="#1D9E75" opacity="0.5"/>
+              <rect x="3" y="5" width="18" height="14" rx="3" fill="#ffffffff"/>
+              <rect x="6" y="3" width="12" height="3" rx="1.5" fill="#ffffffff" opacity="0.5"/>
               <rect x="7" y="10" width="10" height="1.5" rx="0.75" fill="#fff"/>
               <rect x="7" y="13" width="6" height="1.5" rx="0.75" fill="#fff" opacity="0.6"/>
             </svg>
@@ -331,16 +331,16 @@ export function Home() {
             <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {recentDecks[0]?.title || recentDecks[0]?.name}
             </p>
-            <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
+            <p style={{ fontSize: 11, color: "#ffffffff", marginTop: 2 }}>
               {recentDecks[0]?.flashcard_count || recentDecks[0]?.total_flashcards || recentDecks[0]?.cards_count || "—"} {language === "es" ? "flashcards" : "flashcards"}
             </p>
             <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
-              <div style={{ height: "100%", background: "#1D9E75", borderRadius: 2, width: "40%" }} />
+              <div style={{ height: "100%", background: "#0f172a", borderRadius: 2, width: "40%" }} />
             </div>
           </div>
           <button
             onClick={() => navigate("/dashboard/my-decks")}
-            style={{ background: "#E1F5EE", color: "#0F6E56", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ background: "#0f172a", color: "#ffffffff", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
           >
             {language === "es" ? "Estudiar" : "Study"}
           </button>
@@ -350,9 +350,9 @@ export function Home() {
       {/* Second battery card */}
       {batteries[1] && (
         <div style={{ margin: "0 16px 8px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#FAEEDA", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#3949AB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3L14.5 8.5H20L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8.5H9.5L12 3Z" fill="#BA7517"/>
+              <path d="M12 3L14.5 8.5H20L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8.5H9.5L12 3Z" fill="#ffffffff"/>
             </svg>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -363,12 +363,12 @@ export function Home() {
               {batteries[1]?.question_count || batteries[1]?.questions_count || batteries[1]?.total_questions || "—"} {language === "es" ? "preguntas" : "questions"} · {language === "es" ? "No iniciado" : "Not started"}
             </p>
             <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
-              <div style={{ height: "100%", background: "#BA7517", borderRadius: 2, width: "0%" }} />
+              <div style={{ height: "100%", background: "#ffffffff", borderRadius: 2, width: "0%" }} />
             </div>
           </div>
           <button
             onClick={() => navigate("/dashboard/my-batteries")}
-            style={{ background: "#FAEEDA", color: "#854F0B", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ background: "#3949AB", color: "#ffffffff", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
           >
             {language === "es" ? "Iniciar" : "Start"}
           </button>
@@ -381,17 +381,17 @@ export function Home() {
         {language === "es" ? "Acceso rápido" : "Quick access"}
       </p>
       <div style={{ display: "flex", gap: 8, padding: "0 16px" }}>
-        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#FAEEDA", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#633806" }}>{batteries.length}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#854F0B" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
+        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#3949AB", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{batteries.length}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
         </button>
-        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#EEEDFE", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#3C3489" }}>{deckCount ?? "—"}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#534AB7" }}>{language === "es" ? "Mazos" : "Decks"}</p>
+        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#07272fff", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{deckCount ?? "—"}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Mazos" : "Decks"}</p>
         </button>
-        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#EAF3DE", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#27500A" }}>{batteries.length}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#3B6D11" }}>{language === "es" ? "Simular" : "Simulate"}</p>
+        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#3949AB", border: "none", cursor: "pointer" }}>
+          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{batteries.length}</p>
+          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Simular" : "Simulate"}</p>
         </button>
       </div>
 

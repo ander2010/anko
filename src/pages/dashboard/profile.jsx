@@ -56,10 +56,10 @@ export function Profile() {
         <div className="flex flex-col items-center pt-10 pb-6 px-4">
           <div style={{
             width: 72, height: 72, borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--ank-purple), #534AB7)",
+            background: "linear-gradient(135deg, var(--ank-purple), #303F9F)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "#fff", fontSize: "26px", fontWeight: 800,
-            boxShadow: "0 4px 16px rgba(127,119,221,0.35)",
+            boxShadow: "0 4px 16px rgba(57,73,171,0.35)",
           }}>
             {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
           </div>
@@ -95,7 +95,7 @@ export function Profile() {
             onClick={() => setShowEditProfile(true)}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", textAlign: "left" }}
           >
-            <span style={{ width: 36, height: 36, borderRadius: "10px", background: "#EEEDFE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>👤</span>
+            <span style={{ width: 36, height: 36, borderRadius: "10px", background: "#E8EAF6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", flexShrink: 0 }}>👤</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: "13px", fontWeight: 600, color: "#1a1a2e" }}>{language === "es" ? "Mi Perfil" : "My Profile"}</p>
               <p style={{ fontSize: "10px", color: "#888" }}>{language === "es" ? "Editar nombre y contraseña" : "Edit name and password"}</p>

@@ -189,7 +189,7 @@ export function ChatPanel() {
             <div className="flex flex-col bg-white border-b border-zinc-100 flex-none">
                 <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 md:h-9 md:w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--ank-purple), #534AB7)" }}>
+                        <div className="h-8 w-8 md:h-9 md:w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #3949AB, #303F9F)" }}>
                             <ChatBubbleLeftRightIcon className="h-4 w-4 md:h-5 md:w-5 text-white" />
                         </div>
                         <div>
@@ -216,7 +216,7 @@ export function ChatPanel() {
                 <div className="px-4 py-2 md:px-6 border-t border-zinc-50 bg-zinc-50/50 flex items-center gap-3">
                     <button
                         onClick={handleNewChat}
-                        style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 700, color: "var(--ank-purple)", background: "#EEEDFE", border: "none", borderRadius: "8px", padding: "4px 10px", cursor: "pointer" }}
+                        style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 700, color: "#3949AB", background: "#E8EAF6", border: "none", borderRadius: "8px", padding: "4px 10px", cursor: "pointer" }}
                     >
                         <span style={{ fontSize: "14px", fontWeight: 400 }}>+</span>
                         {language === "es" ? "Nuevo" : "New"}
@@ -231,7 +231,7 @@ export function ChatPanel() {
                                 style={{
                                     width: 26, height: 26, borderRadius: "7px", fontSize: "10px", fontWeight: 700,
                                     display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer",
-                                    background: activeHistoryIndex === num ? "var(--ank-purple)" : "transparent",
+                                    background: activeHistoryIndex === num ? "#3949AB" : "transparent",
                                     color: activeHistoryIndex === num ? "#fff" : "#94a3b8",
                                     opacity: historyLoading ? 0.5 : 1,
                                 }}
@@ -279,7 +279,7 @@ export function ChatPanel() {
                                     >
                                         <p className="text-xs font-bold truncate">{p.title || p.name}</p>
                                         {String(selectedProject) === String(p.id) && (
-                                            <div className="h-2 w-2 rounded-full shrink-0" style={{ background: "var(--ank-purple)" }} />
+                                            <div className="h-2 w-2 rounded-full shrink-0" style={{ background: "#3949AB" }} />
                                         )}
                                     </MenuItem>
                                 ))
@@ -405,7 +405,7 @@ export function ChatPanel() {
                                     ? "text-white rounded-tr-none"
                                     : "bg-white text-zinc-800 border border-zinc-100 rounded-tl-none"
                                 }`}
-                                style={msg.role === "user" ? { background: "linear-gradient(135deg, var(--ank-purple), #534AB7)" } : {}}
+                                style={msg.role === "user" ? { background: "linear-gradient(135deg, #3949AB, #303F9F)" } : {}}
                             >
                                 {msg.text}
                             </div>
@@ -452,7 +452,7 @@ export function ChatPanel() {
                         style={{
                             position: "absolute", right: "6px", top: "6px",
                             width: 36, height: 36, borderRadius: "10px", border: "none", cursor: !input.trim() || loading || !isContextReady ? "not-allowed" : "pointer",
-                            background: (!input.trim() || loading || !isContextReady) ? "#e5e7eb" : "linear-gradient(135deg, var(--ank-purple), #534AB7)",
+                            background: (!input.trim() || loading || !isContextReady) ? "#e5e7eb" : "linear-gradient(135deg, #3949AB, #303F9F)",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             transition: "opacity 0.2s",
                         }}

@@ -5,7 +5,6 @@ import {
     CardBody,
     Typography,
     Chip,
-    Button,
     Menu,
     MenuHandler,
     MenuList,
@@ -155,7 +154,7 @@ export function BatteryCard({
           )}
           <button
             onClick={() => onSimulate(battery)}
-            style={{ width: "100%", padding: "9px", borderRadius: "10px", background: "var(--ank-purple)", color: "#fff", fontSize: "11px", fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}
+            style={{ width: "100%", padding: "9px", borderRadius: "10px", background: "#3949AB", color: "#fff", fontSize: "11px", fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}
           >
             ▶ {language === "es" ? "Simular" : "Simulate"}
           </button>
@@ -367,16 +366,16 @@ export function BatteryCard({
                         )}
                     </div>
 
-                    <Button
-                        variant="gradient"
-                        size="sm"
-                        color="indigo"
-                        className="flex items-center gap-2 px-4 py-2 normal-case rounded-lg shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all font-bold"
+                    <button
                         onClick={() => onSimulate(battery)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs text-white transition-all"
+                        style={{ background: "#3949AB", border: "none", cursor: "pointer", boxShadow: "0 2px 8px rgba(57,73,171,0.3)" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#303F9F"}
+                        onMouseLeave={e => e.currentTarget.style.background = "#3949AB"}
                     >
                         <PlayIcon className="h-3.5 w-3.5" strokeWidth={2.5} stroke="currentColor" fill="none" />
-                        <span className="text-xs">{language === "es" ? "Simular" : "Simulate"}</span>
-                    </Button>
+                        <span>{language === "es" ? "Simular" : "Simulate"}</span>
+                    </button>
                 </div>
             </CardBody>
         </Card>

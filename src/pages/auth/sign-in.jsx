@@ -89,11 +89,11 @@ export function SignIn() {
       {/* ── Mobile hero ── */}
       <div className="lg:hidden relative flex flex-col items-center px-7 pt-12 pb-14 flex-shrink-0 overflow-hidden" style={{ background: '#1a1730' }}>
         {/* decorative circles */}
-        <div className="absolute top-5 right-7 w-14 h-14 rounded-full" style={{ background: 'rgba(127,119,221,0.15)' }} />
-        <div className="absolute top-12 right-16 w-7 h-7 rounded-full" style={{ background: 'rgba(127,119,221,0.10)' }} />
+        <div className="absolute top-5 right-7 w-14 h-14 rounded-full" style={{ background: 'rgba(57,73,171,0.18)' }} />
+        <div className="absolute top-12 right-16 w-7 h-7 rounded-full" style={{ background: 'rgba(57,73,171,0.12)' }} />
 
         <div className="w-16 h-16 rounded-[20px] flex items-center justify-center mb-5 shadow-lg"
-          style={{ background: 'var(--ank-purple, #7F77DD)', boxShadow: '0 8px 24px rgba(127,119,221,0.4)' }}>
+          style={{ background: '#3949AB', boxShadow: '0 8px 24px rgba(57,73,171,0.45)' }}>
           <span className="text-white font-black text-3xl leading-none">A</span>
         </div>
         <h1 className="text-white font-extrabold text-2xl tracking-tight mb-1.5">
@@ -116,7 +116,7 @@ export function SignIn() {
         {/* Desktop header */}
         <div className="hidden lg:flex flex-col items-center mb-10">
           <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg mb-5"
-            style={{ background: 'var(--ank-purple, #7F77DD)', boxShadow: '0 8px 24px rgba(127,119,221,0.35)' }}>
+            style={{ background: '#3949AB', boxShadow: '0 8px 24px rgba(57,73,171,0.4)' }}>
             <span className="text-white font-black text-3xl leading-none">A</span>
           </div>
           <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 leading-tight text-center">
@@ -147,7 +147,7 @@ export function SignIn() {
                 color: '#1a1a2e',
                 fontFamily: 'inherit',
               }}
-              onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #7F77DD)'; e.target.style.background = '#EEEDFE'; }}
+              onFocus={e => { e.target.style.borderColor = '#3949AB'; e.target.style.background = '#E8EAF6'; }}
               onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
             />
           </div>
@@ -158,7 +158,7 @@ export function SignIn() {
               <label className="text-xs font-bold" style={{ color: '#1a1a2e' }}>
                 {language === "es" ? "Contraseña" : "Password"}
               </label>
-              <Link to="/auth/forgot-password" className="text-xs font-semibold" style={{ color: 'var(--ank-purple, #7F77DD)' }}>
+              <Link to="/auth/forgot-password" className="text-xs font-semibold" style={{ color: '#3949AB' }}>
                 {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
               </Link>
             </div>
@@ -177,7 +177,7 @@ export function SignIn() {
                   color: '#1a1a2e',
                   fontFamily: 'inherit',
                 }}
-                onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #7F77DD)'; e.target.style.background = '#EEEDFE'; }}
+                onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #3949AB)'; e.target.style.background = '#E8EAF6'; }}
                 onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
               />
               <button
@@ -196,22 +196,39 @@ export function SignIn() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl py-4 text-white font-extrabold text-base transition-all mt-2"
+            className="relative w-full rounded-2xl py-4 text-white font-extrabold text-base mt-2 overflow-hidden group"
             style={{
-              background: loading ? '#a9a4e0' : 'var(--ank-purple, #7F77DD)',
+              background: loading
+                ? 'linear-gradient(135deg, #7986CB, #5C6BC0)'
+                : 'linear-gradient(135deg, #3949AB 0%, #3949AB 100%)',
               border: 'none',
               cursor: loading ? 'default' : 'pointer',
               fontFamily: 'inherit',
-              letterSpacing: '0.1px',
+              letterSpacing: '0.3px',
+              boxShadow: loading ? 'none' : '0 4px 20px rgba(57,73,171,0.45), 0 1px 4px rgba(57,73,171,0.3)',
+              transition: 'box-shadow 0.2s, transform 0.15s',
             }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 6px 28px rgba(57,73,171,0.55), 0 2px 8px rgba(57,73,171,0.4)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(57,73,171,0.45), 0 1px 4px rgba(57,73,171,0.3)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
+            onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px) scale(1)'; }}
           >
+            {/* shine overlay */}
+            <span className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%)' }} />
+
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
+              <span className="relative flex items-center justify-center gap-2">
                 <Spinner className="h-4 w-4" />
                 {language === "es" ? "Validando..." : "Signing in..."}
               </span>
             ) : (
-              language === "es" ? "Entrar" : "Sign in"
+              <span className="relative flex items-center justify-center gap-2">
+                {language === "es" ? "Entrar" : "Sign in"}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.85 }}>
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
             )}
           </button>
 
@@ -234,7 +251,7 @@ export function SignIn() {
                       }
                     }}
                     className="text-xs font-bold hover:underline cursor-pointer"
-                    style={{ color: 'var(--ank-purple, #7F77DD)', background: 'none', border: 'none' }}
+                    style={{ color: '#3949AB', background: 'none', border: 'none' }}
                   >
                     {language === 'es' ? 'Re-enviar email de verificación' : 'Resend verification email'}
                   </button>
@@ -278,7 +295,7 @@ export function SignIn() {
           {/* Register link */}
           <p className="text-center text-sm mt-2" style={{ color: '#888' }}>
             {language === "es" ? "¿No tienes cuenta?" : "Not registered?"}{" "}
-            <Link to="/auth/sign-up" className="font-bold" style={{ color: 'var(--ank-purple, #7F77DD)' }}>
+            <Link to="/auth/sign-up" className="font-bold" style={{ color: '#3949AB' }}>
               {language === "es" ? "Crea una aquí" : "Create account"}
             </Link>
           </p>

@@ -131,7 +131,7 @@ export function MobileTabBar() {
                   height: 22,
                   borderRadius: "50%",
                   background: isActive
-                    ? "linear-gradient(135deg, var(--ank-purple), #534AB7)"
+                    ? "linear-gradient(135deg, var(--ank-purple), #303F9F)"
                     : "linear-gradient(135deg, #ccc, #aaa)",
                   display: "flex",
                   alignItems: "center",
