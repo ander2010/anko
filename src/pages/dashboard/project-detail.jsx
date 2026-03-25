@@ -1235,26 +1235,6 @@ export function ProjectDetail() {
     setViewingDocument(doc);
   };
 
-  const handleViewDocument = async (doc) => {
-    if (!doc?.id) return;
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) {
-      setViewingDocument(doc);
-      return;
-    }
-    try {
-      const { url } = await projectService.getDocumentDownloadUrl(doc.id, 'view');
-      if (!url) return;
-      let targetUrl = url;
-      if (targetUrl.startsWith("/")) {
-        const origin = API_BASE.replace("/api", "");
-        targetUrl = `${origin}${targetUrl}`;
-      }
-      window.open(targetUrl, "_blank");
-    } catch (err) {
-      console.error("Error opening document:", err);
-    }
-  };
 
   const handleDeleteDocument = (doc) => {
     setSelectedDocument(doc);
@@ -1586,7 +1566,7 @@ export function ProjectDetail() {
                     <div key={doc.id} className="px-3 py-3 flex items-center gap-3">
                       <div
                         className="h-9 w-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 flex-shrink-0 cursor-pointer"
-                        onClick={() => handleViewDocument(doc)}
+                        onClick={() => setViewingDocument(doc)}
                       >
                         <DocumentTextIcon className="h-4 w-4" />
                       </div>
@@ -1594,7 +1574,7 @@ export function ProjectDetail() {
                         <p
                           className="truncate cursor-pointer"
                           style={{ fontSize: "10px", fontWeight: 600, color: "var(--ank-text)", lineHeight: 1.3 }}
-                          onClick={() => handleViewDocument(doc)}
+                          onClick={() => setViewingDocument(doc)}
                         >
                           {doc.filename || doc.file || "Untitled"}
                         </p>
@@ -1624,7 +1604,7 @@ export function ProjectDetail() {
                             <ArrowDownTrayIcon className="h-4 w-4 text-zinc-400" />
                             {t("project_detail.docs.actions.download")}
                           </MenuItem>
-                          <MenuItem onClick={() => handleViewDocument(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                          <MenuItem onClick={() => setViewingDocument(doc)} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
                             <EyeIcon className="h-4 w-4 text-zinc-400" />
                             {language === "es" ? "Ver Documento" : "View Document"}
                           </MenuItem>
