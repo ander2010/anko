@@ -1,0 +1,349 @@
+================================================================================
+                     ANKARD — BRAND CREATION DOCUMENT
+              Prompt completo para agencia de branding / diseñador
+================================================================================
+
+FECHA: Marzo 2025
+PROYECTO: Ankard (también referenciado internamente como "Anko")
+TIPO: SaaS EdTech — Plataforma de aprendizaje potenciada por IA
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 1 — QUÉ ES ANKARD
+════════════════════════════════════════════════════════════════════════════════
+
+Ankard es una aplicación web y móvil de aprendizaje inteligente.
+Su propuesta central es: el usuario sube cualquier documento (PDF, texto, apuntes,
+manual, libro) y la IA de Ankard lo transforma automáticamente en materiales de
+estudio completos y listos para usar: flashcards, exámenes de práctica y resúmenes.
+
+Frase clave del producto:
+  "Convierte tus documentos en conocimiento de forma inteligente."
+  "Turn your documents into knowledge intelligently."
+
+El nombre "Ankard" fusiona:
+  - "Anki" (referencia a la popular app de flashcards por repetición espaciada)
+  - "-ard" (sufijo que sugiere dominio, maestría)
+
+En otras palabras: Ankard es la evolución moderna y con IA de Anki.
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 2 — FUNCIONALIDADES PRINCIPALES DEL PRODUCTO
+════════════════════════════════════════════════════════════════════════════════
+
+1. PROYECTOS
+   El espacio de trabajo principal del usuario. Cada proyecto agrupa:
+   - Documentos subidos
+   - Temas (Topics) extraídos por IA
+   - Reglas de estudio (Rules)
+   - Mazos de flashcards (Decks)
+   - Baterías de preguntas (Batteries)
+
+2. SUBIDA DE DOCUMENTOS
+   El usuario sube PDFs, Word, texto plano. La IA procesa el contenido,
+   extrae secciones, temas y genera materiales automáticamente.
+
+3. FLASHCARD DECKS (Mazos)
+   Colecciones de tarjetas frente/reverso generadas por IA.
+   El usuario puede estudiarlas con animación de giro (flip card),
+   navegar entre ellas, y ver resúmenes generados por IA.
+   Funcionalidad: Aprender (Learn) + Estudiar (Study/Flip cards)
+
+4. BATTERIES (Baterías de preguntas)
+   Bancos de preguntas generadas por IA sobre los documentos.
+   Tipos de pregunta: Opción única, selección múltiple, verdadero/falso.
+   Cada pregunta tiene: puntos, explicación, opciones con indicador de correcto/incorrecto.
+
+5. EXAM SIMULATOR
+   El usuario simula un examen completo a partir de una Batería.
+   Al finalizar recibe: porcentaje, puntuación, historial de intentos.
+   Sistema de reintentos para mejorar la nota.
+
+6. AI CHAT ASSISTANT
+   Chat integrado en la plataforma. El usuario puede preguntar sobre
+   cualquier proyecto o documento y recibir respuestas contextuales.
+   El chat mantiene historial de sesiones múltiples.
+
+7. MARKETPLACE PÚBLICO
+   Los usuarios pueden hacer públicas sus Baterías y Mazos para que
+   otros usuarios los descubran, guarden y usen.
+   Sistema de aprobación/valoración de contenido compartido.
+
+8. ESTADÍSTICAS Y PROGRESO
+   Dashboard con: racha de días consecutivos, progreso por batería,
+   histórico de intentos, porcentaje de aciertos, documentos procesados.
+
+9. PLANES DE SUSCRIPCIÓN
+   - Free: funciones básicas con límites
+   - Pro/Premium: acceso completo a generación IA ilimitada
+   - Enterprise/Team: para organizaciones y equipos
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 3 — AUDIENCIA OBJETIVO
+════════════════════════════════════════════════════════════════════════════════
+
+PRIMARIO:
+  - Estudiantes universitarios (20-28 años) que estudian para exámenes
+  - Profesionales que se preparan para certificaciones (médicos, abogados,
+    ingenieros, contadores, etc.)
+  - Autodidactas que quieren dominar cualquier tema rápidamente
+
+SECUNDARIO:
+  - Equipos y empresas que necesitan capacitar a empleados con documentación propia
+  - Creadores de contenido educativo que quieren monetizar sus materiales
+
+GEOGRAFÍA:
+  - Mercado hispanohablante (España, Latinoamérica) como mercado principal
+  - Mercado anglohablante como expansión
+  - La app está completamente bilingüe (ES/EN) desde el día uno
+
+PAIN POINTS QUE RESUELVE:
+  - "Tengo muchos apuntes/PDFs pero no tiempo de convertirlos en material de estudio"
+  - "Crear flashcards manualmente lleva horas"
+  - "No sé si realmente entendí el tema hasta que me pongo a hacer preguntas"
+  - "Las apps de estudio requieren ingresar el contenido a mano"
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 4 — IDENTIDAD DE MARCA ACTUAL (Estado del producto)
+════════════════════════════════════════════════════════════════════════════════
+
+NOMBRE: Ankard
+
+LOGO ACTUAL:
+  - Letra "A" en mayúscula, blanca, negrita
+  - Sobre fondo cuadrado con bordes redondeados (border-radius: 20px)
+  - Color de fondo: Azul índigo rgb(57, 73, 171) / #3949AB
+  - Sin iconografía adicional. Simple, limpio, memorable.
+
+PALETA DE COLORES ACTUAL:
+  Primary:   #3949AB  (Indigo 600 — azul índigo oscuro — color principal)
+  Dark:      #303F9F  (Indigo 700 — variante más oscura del primario)
+  Light:     #E8EAF6  (Indigo 50  — fondos suaves, chips, badges)
+  Teal:      #1D9E75  (Verde agua — destacados secundarios)
+  Amber:     #BA7517  (Ámbar — elementos de advertencia / dificultad)
+  Green:     #639922  (Verde — éxito, aprobado)
+  Red:       #A32D2D  (Rojo — error, reprobado)
+  Dark BG:   #1a1730  (Fondo oscuro para pantallas de auth y hero)
+  Surface:   #FFFFFF  (Tarjetas, fondos de contenido)
+  Muted:     #888888  (Texto secundario)
+
+TIPOGRAFÍA ACTUAL:
+  - Sistema: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI"
+  - Sin fuente personalizada definida todavía (oportunidad de marca)
+
+TONO DE VOZ ACTUAL (inferido del producto):
+  - Directo y eficiente: "Sign in to continue learning"
+  - Motivacional: "Boost your learning capacity today"
+  - Inteligente pero accesible: no usa jerga técnica en la UI
+  - Bilingüe natural: no es una traducción forzada
+
+PLATAFORMAS:
+  - Web (desktop + responsive)
+  - Mobile Web (diseño móvil nativo con tab bar, gestos, safe areas)
+  - PWA potencial
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 5 — COMPETIDORES DE REFERENCIA
+════════════════════════════════════════════════════════════════════════════════
+
+DIRECTOS:
+  - Anki (open source, sin IA, UI anticuada) — Ankard es su evolución
+  - Quizlet (flashcards manuales, algo de IA) — más social, menos automático
+  - Brainscape — nicho médico/profesional, sin generación IA desde documentos
+  - Knowt — convierte notas en flashcards, UI sencilla, menos features
+
+INDIRECTOS / INSPIRACIÓN DE MARCA:
+  - Notion: limpio, minimalista, productividad
+  - Linear: marca técnica premium, indigo/azul oscuro
+  - Duolingo: gamificación, racha diaria (Ankard tiene streaks)
+  - Perplexity: IA conversacional + búsqueda, premium y sobrio
+
+DIFERENCIADOR CLAVE DE ANKARD vs. COMPETENCIA:
+  "Ankard es la única app que convierte CUALQUIER documento propio
+   en un sistema de estudio completo (flashcards + exámenes) con un solo clic,
+   con chat IA integrado para profundizar, todo desde el móvil."
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 6 — PROPUESTA DE ESTRATEGIA DE MARCA (Recomendaciones)
+════════════════════════════════════════════════════════════════════════════════
+
+POSICIONAMIENTO SUGERIDO:
+  "La herramienta de estudio más inteligente del mundo hispanohablante."
+  Ankard no es solo una app de flashcards. Es un sistema de aprendizaje
+  personal impulsado por IA que convierte cualquier conocimiento en dominio real.
+
+TAGLINES CANDIDATOS:
+  ES: "Sube. Aprende. Domina."
+  ES: "Tu conocimiento, en modo examen."
+  ES: "De documento a experto, en minutos."
+  EN: "Upload. Learn. Master."
+  EN: "Your docs. Your exam. Your knowledge."
+
+ARQUETIPO DE MARCA SUGERIDO:
+  El Sabio + El Creador
+  Ankard es la herramienta que empodera al usuario para dominar cualquier tema.
+  No es condescendiente ni gamificada en exceso. Es seria pero accesible.
+  Como un profesor particular inteligente que siempre está disponible.
+
+PERSONALIDAD DE MARCA:
+  - Inteligente pero sin arrogancia
+  - Eficiente: respeta el tiempo del usuario
+  - Confiable: el contenido generado es preciso y organizado
+  - Moderno: diseño limpio, mobile-first, no se ve anticuado
+  - Empoderador: el usuario siente que puede con cualquier materia
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 7 — ENTREGABLES DE MARCA PRIORITARIOS
+════════════════════════════════════════════════════════════════════════════════
+
+FASE 1 — IDENTIDAD VISUAL BASE:
+  1. Logotipo final en variantes (color, blanco, negro, ícono solo)
+  2. Definición oficial de paleta de colores (hex, RGB, CMYK, Pantone)
+  3. Tipografía primaria y secundaria (fuente display + fuente de texto)
+  4. Guía de uso del logo (espacios mínimos, fondos permitidos)
+  5. Ícono de app (iOS + Android store)
+
+FASE 2 — ACTIVOS DIGITALES:
+  6. OG Image / Social preview cards (para links en redes)
+  7. Templates de posts para Instagram, TikTok, LinkedIn
+  8. Favicon web (16px, 32px, SVG)
+  9. Onboarding screens ilustradas (3-5 pantallas de bienvenida)
+  10. Ilustraciones de estados vacíos (sin mazos, sin baterías, etc.)
+
+FASE 3 — COPY Y VOZ:
+  11. Manifesto de marca (1 página)
+  12. Bio oficial para App Store / Play Store
+  13. Textos para landing page (hero, beneficios, pricing, footer)
+  14. Guía de tono de voz con ejemplos (ES + EN)
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PARTE 8 — PROMPT LISTO PARA USAR (Copiar y pegar en herramienta de IA)
+════════════════════════════════════════════════════════════════════════════════
+
+--- INICIO DEL PROMPT ---
+
+Eres un experto en branding y diseño de marca para startups de tecnología educativa
+(EdTech). Te voy a describir mi producto y necesito que me ayudes a crear su identidad
+de marca completa.
+
+PRODUCTO: Ankard
+CATEGORÍA: SaaS EdTech / App de aprendizaje con IA
+PLATAFORMAS: Web + Mobile (iOS / Android)
+MERCADO: Hispanohablante y anglohablante
+
+QUÉ HACE:
+El usuario sube cualquier documento (PDF, apuntes, manual) y Ankard usa IA para
+transformarlo automáticamente en:
+- Mazos de flashcards (tarjetas frente/reverso para memorizar)
+- Baterías de preguntas (exámenes de práctica con puntuación)
+- Resúmenes inteligentes
+- Un chat IA que responde preguntas sobre el contenido subido
+
+El usuario puede estudiar, simular exámenes, ver su progreso, y compartir
+su contenido con otros en un marketplace público.
+
+AUDIENCIA:
+- Estudiantes universitarios de 18-30 años
+- Profesionales preparando certificaciones (médicos, abogados, ingenieros)
+- Autodidactas que quieren aprender rápido
+- Equipos y empresas que necesitan capacitar a empleados
+
+DIFERENCIADOR CLAVE:
+Ankard es la única app que convierte documentos propios del usuario en un sistema
+completo de estudio con un solo clic. No requiere ingresar contenido manualmente.
+Es automático, inteligente y funciona desde el móvil.
+
+COMPETIDORES A SUPERAR:
+Anki (sin IA, UI anticuada), Quizlet (manual, poco IA), Brainscape, Knowt.
+
+ESTADO ACTUAL DE LA MARCA:
+- Nombre: Ankard
+- Logo provisional: letra "A" blanca sobre cuadrado azul índigo (#3949AB)
+- Colores actuales: Índigo #3949AB como primario, fondo oscuro #1a1730 para auth
+- Sin tipografía definida todavía
+- Tagline provisional: "Convierte tus documentos en conocimiento de forma inteligente"
+
+PERSONALIDAD DE MARCA DESEADA:
+Inteligente, eficiente, moderno, empoderador. Como un profesor particular con IA
+siempre disponible. Serio pero accesible. No gamificado en exceso. Premium pero
+no elitista.
+
+ARQUETIPO: El Sabio + El Creador
+
+NECESITO QUE GENERES:
+1. Análisis del nombre "Ankard" y si funciona para el mercado objetivo
+2. Propuesta de logotipo (descripción detallada para diseñador): símbolo, tipografía,
+   proporciones, variantes (horizontal, ícono, dark mode, light mode)
+3. Paleta de colores completa con justificación psicológica:
+   - Color primario, secundario, acento, neutros, éxito, error
+   - Valores en HEX, RGB y nombre semántico
+4. Tipografía recomendada (display + texto + monospace si aplica)
+5. 5 opciones de tagline en español y 5 en inglés
+6. Guía de tono de voz con 10 ejemplos de copy (5 ES + 5 EN)
+7. Manifesto de marca (150 palabras máx)
+8. Propuesta de estrategia en redes sociales: qué plataformas priorizar,
+   tipo de contenido, frecuencia, formatos visuales
+9. Ideas para la animación del logo y micro-interacciones en la app
+10. Naming de features: ¿cómo llamar mejor a "Batteries", "Decks", "Projects"
+    para que sean más memorables y de marca?
+
+Sé específico, creativo y fundamenta cada decisión en psicología del consumidor
+y tendencias actuales del mercado EdTech. El producto compite globalmente.
+
+--- FIN DEL PROMPT ---
+
+
+════════════════════════════════════════════════════════════════════════════════
+  DATOS TÉCNICOS ADICIONALES (Para equipos de desarrollo / integración)
+════════════════════════════════════════════════════════════════════════════════
+
+TECH STACK FRONTEND:
+  React 18 + Vite, Tailwind CSS, Material Tailwind components
+  React Router, React OAuth (Google), Axios
+
+TECH STACK BACKEND (inferido):
+  Django REST Framework, procesamiento de documentos con IA, JWT auth
+
+DISEÑO SYSTEM ACTUAL:
+  CSS Variables: --ank-purple: #3949AB | --ank-purple-light: #E8EAF6
+                 --ank-teal: #1D9E75  | --ank-amber: #BA7517
+  Mobile: Tab bar de 4 ítems (Home, Projects, Batteries, Study)
+  Dialogs: Full-screen en mobile, modal centrado en desktop
+
+INTEGRACIONES ACTUALES:
+  - Google OAuth 2.0
+  - Descarga de PDFs (decks y baterías)
+  - Chat IA con historial de sesiones
+
+FEATURES EN ROADMAP PROBABLE:
+  - App nativa iOS/Android
+  - Colaboración en equipos
+  - Integración con Google Drive / Dropbox
+  - Modo offline
+  - API pública para integraciones
+
+
+════════════════════════════════════════════════════════════════════════════════
+  NOTAS FINALES
+════════════════════════════════════════════════════════════════════════════════
+
+Este documento fue generado el 24 de marzo de 2026 analizando el código fuente
+completo de la aplicación Ankard (frontend React).
+
+Para una sesión de branding efectiva, se recomienda también proporcionar:
+  - Screenshots actuales de la app (login, home, project detail, exam)
+  - Ejemplos de contenido generado (una batería real, un mazo real)
+  - Datos de usuarios: cuántos, de qué países, qué estudian
+
+Contacto del proyecto: ver perfil de usuario en la plataforma.
+
+================================================================================
+                         FIN DEL DOCUMENTO — ANKARD BRAND
+================================================================================
