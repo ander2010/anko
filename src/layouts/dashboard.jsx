@@ -59,11 +59,11 @@ export function Dashboard() {
 
         {/* AI chat button — above tab bar on mobile */}
         <button
-          className="fixed bottom-[72px] right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-lg flex items-center justify-center md:bg-white md:text-blue-gray-900 md:shadow-blue-gray-900/10"
+          className="fixed bottom-[72px] right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-lg flex items-center justify-center"
           style={{ width: 48, height: 48, background: "linear-gradient(135deg, #3949AB, #303F9F)", border: "none", cursor: "pointer" }}
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
-          <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white md:text-blue-gray-900" />
+          <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white" />
         </button>
 
         <div className="flex-grow flex flex-col">
