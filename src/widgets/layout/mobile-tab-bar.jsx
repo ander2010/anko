@@ -1,7 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useLanguage } from "@/context/language-context";
-import { useAuth } from "@/context/auth-context";
 
 /* ─── Tab icons (inline SVG, matching mockup exactly) ─── */
 const IconHome = ({ active }) => (
@@ -62,7 +61,6 @@ const IconProfile = ({ active }) => (
 
 export function MobileTabBar() {
   const { language } = useLanguage();
-  const { user } = useAuth();
 
   const items = [
     {
@@ -117,41 +115,6 @@ export function MobileTabBar() {
         </NavLink>
       ))}
 
-      {/* Profile — navigates to profile page */}
-      <NavLink
-        to="/dashboard/profile"
-        className="flex flex-col items-center justify-center gap-[3px] flex-1 h-full"
-      >
-        {({ isActive }) => (
-          <>
-            {user ? (
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: "50%",
-                  background: isActive
-                    ? "linear-gradient(135deg, var(--ank-purple), #303F9F)"
-                    : "linear-gradient(135deg, #ccc, #aaa)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontSize: "10px",
-                  fontWeight: 600,
-                }}
-              >
-                {(user.first_name?.[0] || user.username?.[0] || "U").toUpperCase()}
-              </div>
-            ) : (
-              <IconProfile active={isActive} />
-            )}
-            <span style={{ fontSize: "8px", fontWeight: isActive ? 600 : 400, color: isActive ? "var(--ank-purple)" : "#bbb", lineHeight: 1 }}>
-              {language === "es" ? "Perfil" : "Profile"}
-            </span>
-          </>
-        )}
-      </NavLink>
     </nav>
   );
 }
