@@ -213,189 +213,221 @@ export function Home() {
     <div>
 
     {/* ═══════════════ MOBILE HOME ═══════════════ */}
-    <div className="md:hidden min-h-screen" style={{ background: "#f4f4f8" }}>
+    <div className="md:hidden min-h-screen" style={{ background: "#fff" }}>
 
-      {/* ── Header ── */}
-      <div style={{ padding: "12px 20px 8px", background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <p style={{ fontSize: "12px", color: "#888", fontWeight: 400 }}>{greeting()},</p>
-          <p style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a2e", letterSpacing: "-0.3px", marginTop: "1px" }}>{displayName}</p>
-        </div>
+      {/* ══ HERO — dark mesh ══ */}
+      <div style={{ background: "#0f172a", padding: "36px 22px 28px", position: "relative", overflow: "hidden" }}>
+        {/* Ambient orbs */}
+        <div style={{ position: "absolute", width: 420, height: 420, background: "radial-gradient(circle, rgba(57,73,171,.65) 0%, transparent 60%)", top: -180, right: -140, borderRadius: "50%", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 200, height: 200, background: "radial-gradient(circle, rgba(139,92,246,.35) 0%, transparent 65%)", bottom: -60, left: -40, borderRadius: "50%", pointerEvents: "none" }} />
 
-        {/* Avatar + dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowProfileMenu(v => !v)}
-            style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #3949AB, #303F9F)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "16px", fontWeight: 700, border: "none", cursor: "pointer", flexShrink: 0 }}
-          >
-            {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
-          </button>
+        {/* Top row */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 2, marginBottom: 28 }}>
+          <div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,.35)", marginBottom: 6, letterSpacing: ".4px" }}>{greeting()}</p>
+            <p style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,.32)", letterSpacing: 3, textTransform: "uppercase", marginBottom: 5 }}>
+              {language === "es" ? "Bienvenido de vuelta" : "Welcome back"}
+            </p>
+            <p style={{ fontSize: 34, fontWeight: 800, color: "#fff", letterSpacing: "-1px", lineHeight: .9 }}>{displayName}</p>
+          </div>
 
-          {showProfileMenu && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-              <div className="absolute right-0 top-11 z-50 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden" style={{ minWidth: 180 }}>
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
-                  <span style={{ fontSize: "11px", color: "#888" }}>{language === "es" ? "Idioma" : "Language"}</span>
-                  <div className="flex gap-1">
-                    {["es","en"].map(lang => (
-                      <button key={lang} onClick={() => changeLanguage(lang)} style={{ padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600, background: language === lang ? "#3949AB" : "#f5f5f5", color: language === lang ? "#fff" : "#888", border: "none", cursor: "pointer" }}>{lang.toUpperCase()}</button>
-                    ))}
+          {/* Avatar / profile menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowProfileMenu(v => !v)}
+              style={{ width: 42, height: 42, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff", fontSize: 15, fontWeight: 700 }}
+            >
+              {(user?.first_name?.[0] || user?.username?.[0] || "U").toUpperCase()}
+            </button>
+            {showProfileMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                <div className="absolute right-0 top-12 z-50 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden" style={{ minWidth: 180 }}>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
+                    <span style={{ fontSize: "11px", color: "#888" }}>{language === "es" ? "Idioma" : "Language"}</span>
+                    <div className="flex gap-1">
+                      {["es","en"].map(lang => (
+                        <button key={lang} onClick={() => changeLanguage(lang)} style={{ padding: "2px 8px", borderRadius: "8px", fontSize: "10px", fontWeight: 600, background: language === lang ? "#3949AB" : "#f5f5f5", color: language === lang ? "#fff" : "#888", border: "none", cursor: "pointer" }}>{lang.toUpperCase()}</button>
+                      ))}
+                    </div>
                   </div>
+                  <button onClick={() => { setShowProfileMenu(false); setShowEditProfile(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>👤</span> {language === "es" ? "Mi perfil" : "My profile"}
+                  </button>
+                  <button onClick={() => { setShowProfileMenu(false); setShowStats(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>📊</span> {language === "es" ? "Estadísticas" : "Statistics"}
+                  </button>
+                  <button onClick={() => { setShowProfileMenu(false); logout(); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#e53e3e", fontWeight: 600, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>→</span> {language === "es" ? "Cerrar sesión" : "Sign out"}
+                  </button>
                 </div>
-                <button onClick={() => { setShowProfileMenu(false); setShowEditProfile(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>👤</span> {language === "es" ? "Mi perfil" : "My profile"}
-                </button>
-                <button onClick={() => { setShowProfileMenu(false); setShowStats(true); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#1a1a2e", fontWeight: 500, background: "none", border: "none", borderBottom: "1px solid #f5f5f5", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>📊</span> {language === "es" ? "Estadísticas" : "Statistics"}
-                </button>
-                <button onClick={() => { setShowProfileMenu(false); logout(); }} style={{ width: "100%", textAlign: "left", padding: "12px 16px", fontSize: "12px", color: "#e53e3e", fontWeight: 600, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>→</span> {language === "es" ? "Cerrar sesión" : "Sign out"}
-                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Ring + stats */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20, position: "relative", zIndex: 2, marginBottom: 24 }}>
+          {/* Streak ring */}
+          <div style={{ position: "relative", width: 92, height: 92, flexShrink: 0 }}>
+            <svg viewBox="0 0 92 92" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
+              <defs>
+                <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgb(57,73,171)" />
+                  <stop offset="100%" stopColor="#818cf8" />
+                </linearGradient>
+              </defs>
+              <circle cx="46" cy="46" r="37" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="6" />
+              <circle cx="46" cy="46" r="37" fill="none" stroke="url(#rg)" strokeWidth="6" strokeLinecap="round" strokeDasharray="232" strokeDashoffset="232" />
+            </svg>
+            <div style={{ position: "absolute", inset: 12, background: "rgba(255,255,255,.05)", borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1 }}>0</p>
+              <p style={{ fontSize: 9, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: ".8px", marginTop: 2 }}>
+                {language === "es" ? "Racha" : "Streak"}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(52,211,153,.15)", border: "1px solid rgba(52,211,153,.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ── Stats row ── */}
-      <div style={{ display: "flex", gap: 8, padding: "8px 20px 16px" }}>
-        {/* Featured: streak */}
-        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#3949AB", textAlign: "center" }}>
-          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#fff" }}>0</p>
-          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "rgba(255,255,255,0.7)" }}>{language === "es" ? "racha" : "day streak"}</p>
-        </div>
-        {/* Neutral: projects */}
-        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#fff", border: "0.5px solid rgba(0,0,0,0.08)", textAlign: "center" }}>
-          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#1a1a2e" }}>{projects.length}</p>
-          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "#888" }}>{language === "es" ? "proyectos" : "projects"}</p>
-        </div>
-        {/* Neutral: batteries */}
-        <div style={{ flex: 1, borderRadius: 16, padding: "12px 10px", background: "#fff", border: "0.5px solid rgba(0,0,0,0.08)", textAlign: "center" }}>
-          <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.5px", color: "#1a1a2e" }}>{batteries.length}</p>
-          <p style={{ fontSize: 11, marginTop: 3, fontWeight: 500, color: "#888" }}>{language === "es" ? "baterías" : "batteries"}</p>
-        </div>
-      </div>
-
-      {/* ── Today's Focus ── */}
-      {batteries.length > 0 && (
-        <>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.6px", padding: "0 20px 10px" }}>
-            {language === "es" ? "Enfoque de hoy" : "Today's focus"}
-          </p>
-
-          {/* Featured battery card */}
-          <div style={{ margin: "0 16px 10px", background: "#3949AB", borderRadius: 20, padding: "18px 18px 16px" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-              <div style={{ flex: 1, minWidth: 0, marginRight: 10 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 }}>
-                  {language === "es" ? "Batería" : "Battery"}
+              <div>
+                <p style={{ fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1 }}>{projects.length}</p>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: ".7px" }}>
+                  {language === "es" ? "Proyectos" : "Projects"}
                 </p>
-                <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.3px", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(139,92,246,.15)", border: "1px solid rgba(139,92,246,.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div>
+                <p style={{ fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1 }}>{batteries.length}</p>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: ".7px" }}>
+                  {language === "es" ? "Baterías" : "Batteries"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Focus glass card */}
+        {batteries.length > 0 && (
+          <div style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 22, padding: 18, position: "relative", zIndex: 2, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", color: "rgba(255,255,255,.45)", display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                  <span style={{ width: 6, height: 6, background: "#34d399", borderRadius: "50%", display: "inline-block" }} />
+                  {language === "es" ? "Enfoque de hoy · Batería" : "Today's Focus · Battery"}
+                </p>
+                <p style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-.6px", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }}>
                   {batteries[0]?.title || batteries[0]?.name || "—"}
                 </p>
-                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 3 }}>
-                  {batteries[0]?.question_count || batteries[0]?.questions_count || batteries[0]?.total_questions || "—"} {language === "es" ? "preguntas" : "questions"}
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,.42)", marginTop: 3 }}>
+                  {batteries[0]?.question_count || batteries[0]?.questions_count || batteries[0]?.total_questions || "—"} {language === "es" ? "preguntas · No iniciado" : "questions · Not started"}
                 </p>
               </div>
-              <span style={{ background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "4px 10px", fontSize: 11, color: "#fff", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
-                {language === "es" ? "No iniciado" : "Not started"}
-              </span>
+              <div style={{ background: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.28)", borderRadius: 12, padding: "9px 13px", textAlign: "center", flexShrink: 0 }}>
+                <p style={{ fontSize: 20, fontWeight: 800, color: "#34d399", lineHeight: 1 }}>
+                  {batteries[0]?.question_count || batteries[0]?.questions_count || batteries[0]?.total_questions || "0"}
+                </p>
+                <p style={{ fontSize: 9, color: "rgba(52,211,153,.6)", textTransform: "uppercase", letterSpacing: ".7px", marginTop: 2 }}>Qs</p>
+              </div>
             </div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }}>
-              <div style={{ height: "100%", background: "#fff", borderRadius: 2, width: "0%" }} />
+            <div style={{ height: 4, background: "rgba(255,255,255,.10)", borderRadius: 2, marginBottom: 14, overflow: "hidden" }}>
+              <div style={{ width: "0%", height: "100%", background: "linear-gradient(90deg, #34d399, #6ee7b7)", borderRadius: 2 }} />
             </div>
             <button
               onClick={() => navigate("/dashboard/my-batteries")}
-              style={{ background: "rgba(255,255,255,0.18)", borderRadius: 12, padding: 11, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#fff", border: "none", width: "100%", cursor: "pointer" }}
+              style={{ width: "100%", padding: 14, background: "linear-gradient(135deg, #3949AB 0%, #818cf8 100%)", color: "#fff", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, boxShadow: "0 6px 22px rgba(57,73,171,.45)" }}
             >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               {language === "es" ? "Iniciar Simulación" : "Start Simulation"}
             </button>
           </div>
-        </>
-      )}
-
-      {/* ── Secondary study cards ── */}
-      {/* Deck card */}
-      {recentDecks[0] && (
-        <div style={{ margin: "0 16px 8px", background: "#ffffffff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="5" width="18" height="14" rx="3" fill="#ffffffff"/>
-              <rect x="6" y="3" width="12" height="3" rx="1.5" fill="#ffffffff" opacity="0.5"/>
-              <rect x="7" y="10" width="10" height="1.5" rx="0.75" fill="#fff"/>
-              <rect x="7" y="13" width="6" height="1.5" rx="0.75" fill="#fff" opacity="0.6"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {recentDecks[0]?.title || recentDecks[0]?.name}
-            </p>
-            <p style={{ fontSize: 11, color: "#ffffffff", marginTop: 2 }}>
-              {recentDecks[0]?.flashcard_count || recentDecks[0]?.total_flashcards || recentDecks[0]?.cards_count || "—"} {language === "es" ? "flashcards" : "flashcards"}
-            </p>
-            <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
-              <div style={{ height: "100%", background: "#0f172a", borderRadius: 2, width: "40%" }} />
-            </div>
-          </div>
-          <button
-            onClick={() => navigate("/dashboard/my-decks")}
-            style={{ background: "#0f172a", color: "#ffffffff", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
-          >
-            {language === "es" ? "Estudiar" : "Study"}
-          </button>
-        </div>
-      )}
-
-      {/* Second battery card */}
-      {batteries[1] && (
-        <div style={{ margin: "0 16px 8px", background: "#fff", borderRadius: 18, padding: "14px 16px", border: "0.5px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 13, background: "#3949AB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3L14.5 8.5H20L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8.5H9.5L12 3Z" fill="#ffffffff"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {batteries[1]?.title || batteries[1]?.name}
-            </p>
-            <p style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
-              {batteries[1]?.question_count || batteries[1]?.questions_count || batteries[1]?.total_questions || "—"} {language === "es" ? "preguntas" : "questions"} · {language === "es" ? "No iniciado" : "Not started"}
-            </p>
-            <div style={{ height: 3, background: "rgba(0,0,0,0.06)", borderRadius: 2, overflow: "hidden", marginTop: 7 }}>
-              <div style={{ height: "100%", background: "#ffffffff", borderRadius: 2, width: "0%" }} />
-            </div>
-          </div>
-          <button
-            onClick={() => navigate("/dashboard/my-batteries")}
-            style={{ background: "#3949AB", color: "#ffffffff", borderRadius: 9, padding: "6px 12px", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
-          >
-            {language === "es" ? "Iniciar" : "Start"}
-          </button>
-        </div>
-      )}
-
-      {/* ── Quick Access ── */}
-      <div style={{ height: 16 }} />
-      <p style={{ fontSize: 11, fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.6px", padding: "0 20px 10px" }}>
-        {language === "es" ? "Acceso rápido" : "Quick access"}
-      </p>
-      <div style={{ display: "flex", gap: 8, padding: "0 16px" }}>
-        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#3949AB", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{batteries.length}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
-        </button>
-        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#0f172a", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{deckCount ?? "—"}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Mazos" : "Decks"}</p>
-        </button>
-        <button onClick={() => navigate("/dashboard/my-batteries")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#3949AB", border: "none", cursor: "pointer" }}>
-          <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{batteries.length}</p>
-          <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Simular" : "Simulate"}</p>
-        </button>
+        )}
       </div>
 
-      <div style={{ height: 24 }} />
+      {/* ══ WHITE BODY ══ */}
+      <div style={{ background: "#fff", padding: "24px 20px 0" }}>
+
+        {/* Batteries section */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
+          <button onClick={() => navigate("/dashboard/my-batteries")} style={{ fontSize: 11, color: "#3949AB", fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>
+            {language === "es" ? "Ver todas →" : "See all →"}
+          </button>
+        </div>
+
+        {/* Horizontal battery scroll */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 24, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {batteries.slice(0, 5).map((batt, i) => (
+            <div key={batt.id || i} style={{ flexShrink: 0, width: 160, background: "#f8fafc", borderRadius: 20, border: "1.5px solid #e8edf8", padding: 16, cursor: "pointer" }}
+              onClick={() => navigate("/dashboard/my-batteries")}
+            >
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: i % 2 === 0 ? "#fffbeb" : "rgba(57,73,171,0.10)", border: `1.5px solid ${i % 2 === 0 ? "#fde68a" : "rgba(57,73,171,0.22)"}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={i % 2 === 0 ? "#d97706" : "#3949AB"} strokeWidth="1.8">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {batt.title || batt.name}
+              </p>
+              <p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10 }}>
+                {language === "es" ? "No iniciado" : "Not started"}
+              </p>
+              <div style={{ height: 3, background: "#e8edf8", borderRadius: 2, marginBottom: 11, overflow: "hidden" }}>
+                <div style={{ height: "100%", background: "#3949AB", borderRadius: 2, width: "0%" }} />
+              </div>
+              <button style={{ width: "100%", padding: "8px 0", borderRadius: 10, fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", background: "#3949AB", color: "#fff" }}>
+                {language === "es" ? "Iniciar" : "Start"}
+              </button>
+            </div>
+          ))}
+          {batteries.length === 0 && (
+            <p style={{ fontSize: 13, color: "#94a3b8", padding: "16px 0" }}>
+              {language === "es" ? "No hay baterías todavía" : "No batteries yet"}
+            </p>
+          )}
+        </div>
+
+        {/* Quick Access dark block */}
+        <div style={{ background: "#0f172a", margin: "0 -20px", padding: "22px 20px 28px", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", width: 260, height: 260, background: "radial-gradient(circle, rgba(57,73,171,.5) 0%, transparent 60%)", top: -100, right: -80, borderRadius: "50%", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", width: 160, height: 160, background: "radial-gradient(circle, rgba(139,92,246,.25) 0%, transparent 65%)", bottom: -50, left: -40, borderRadius: "50%", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, position: "relative", zIndex: 2 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{language === "es" ? "Acceso Rápido" : "Quick Access"}</p>
+            <button onClick={() => navigate("/dashboard/projects")} style={{ fontSize: 11, color: "#818cf8", fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>
+              {language === "es" ? "Gestionar →" : "Manage →"}
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, position: "relative", zIndex: 2 }}>
+            {[
+              { num: batteries.length, lbl: language === "es" ? "Baterías" : "Batteries", nav: "/dashboard/my-batteries", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> },
+              { num: deckCount ?? "—", lbl: language === "es" ? "Mazos" : "Decks", nav: "/dashboard/my-decks", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
+              { num: batteries.length, lbl: language === "es" ? "Simular" : "Simulate", nav: "/dashboard/my-batteries", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.8"><polygon points="5 3 19 12 5 21 5 3"/></svg> },
+            ].map((item, i) => (
+              <button key={i} onClick={() => navigate(item.nav)} style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 18, padding: "16px 10px 14px", display: "flex", flexDirection: "column", alignItems: "center", gap: 9, cursor: "pointer" }}>
+                <div style={{ width: 36, height: 36, background: "rgba(57,73,171,.3)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(99,102,241,.4)" }}>
+                  {item.icon}
+                </div>
+                <p style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{item.num}</p>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,.3)", textTransform: "uppercase", letterSpacing: ".8px" }}>{item.lbl}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ height: 24 }} />
+      </div>
+
     </div>
 
       <EditProfileDialog open={showEditProfile} handler={() => setShowEditProfile(false)} />
