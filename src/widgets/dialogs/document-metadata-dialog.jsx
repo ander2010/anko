@@ -22,6 +22,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
     const [errorSections, setErrorSections] = useState(null);
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
+    const [summaryOpen, setSummaryOpen] = useState(false);
 
     useEffect(() => {
         if (open && document && projectId) {
@@ -117,8 +118,9 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
             open={open}
             handler={onClose}
             size="md"
-            className="!mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] flex flex-col md:!mx-auto md:!my-8 md:!rounded-[20px] md:!max-w-lg md:!h-auto overflow-hidden !p-0 !shadow-2xl"
+            className="!p-0 !mx-0 !my-0 !rounded-t-[24px] !rounded-b-none !max-w-full !w-full md:!mx-auto md:!my-8 md:!rounded-[20px] md:!max-w-lg overflow-hidden"
         >
+        <div className="flex flex-col h-[100dvh] md:h-auto md:max-h-[85vh]">
             {/* ── Indigo header strip ── */}
             <div style={{ background: "#3949AB", padding: "16px 20px 20px", flexShrink: 0 }}>
                 {/* Drag handle (mobile) */}
@@ -187,22 +189,41 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                     ))}
                 </div>
 
-                {/* Summary */}
+                {/* Summary — collapsible */}
                 {(loadingSummary || summary) && (
                     <div style={{ marginBottom: 20 }}>
-                        <p style={{ ...labelStyle, marginBottom: 8 }}>
-                            {language === "es" ? "Resumen" : "Summary"}
-                        </p>
-                        {loadingSummary ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <Spinner className="h-4 w-4" style={{ color: "#3949AB" }} />
-                                <span style={{ fontSize: 13, color: "#94a3b8" }}>{language === "es" ? "Cargando..." : "Loading..."}</span>
-                            </div>
-                        ) : (
-                            <div style={{ ...infoCard }}>
-                                <div style={infoBar} />
-                                <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{summary}</p>
-                            </div>
+                        <button
+                            onClick={() => setSummaryOpen(o => !o)}
+                            style={{
+                                width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                                background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: summaryOpen ? "13px 13px 0 0" : 13,
+                                padding: "10px 14px", cursor: "pointer", marginBottom: 0,
+                            }}
+                        >
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1.1px" }}>
+                                {language === "es" ? "Resumen" : "Summary"}
+                            </span>
+                            <ChevronRightIcon
+                                style={{
+                                    width: 14, height: 14, color: "#94a3b8", flexShrink: 0,
+                                    transition: "transform 0.2s",
+                                    transform: summaryOpen ? "rotate(90deg)" : "rotate(0deg)",
+                                }}
+                                strokeWidth={2}
+                            />
+                        </button>
+                        {summaryOpen && (
+                            loadingSummary ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 13px 13px" }}>
+                                    <Spinner className="h-4 w-4" style={{ color: "#3949AB" }} />
+                                    <span style={{ fontSize: 13, color: "#94a3b8" }}>{language === "es" ? "Cargando..." : "Loading..."}</span>
+                                </div>
+                            ) : (
+                                <div style={{ ...infoCard, borderTop: "none", borderRadius: "0 0 13px 13px", marginBottom: 0 }}>
+                                    <div style={infoBar} />
+                                    <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{summary}</p>
+                                </div>
+                            )
                         )}
                     </div>
                 )}
@@ -310,6 +331,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
                     {language === "es" ? "Cerrar" : "Close"}
                 </button>
             </div>
+        </div>
         </Dialog>
     );
 }
