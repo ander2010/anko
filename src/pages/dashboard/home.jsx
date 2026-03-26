@@ -216,13 +216,15 @@ export function Home() {
     <div className="md:hidden min-h-screen" style={{ background: "#fff" }}>
 
       {/* ══ HERO — dark mesh ══ */}
-      <div style={{ background: "#0f172a", padding: "36px 22px 28px", position: "relative", overflow: "hidden" }}>
-        {/* Ambient orbs */}
-        <div style={{ position: "absolute", width: 420, height: 420, background: "radial-gradient(circle, rgba(57,73,171,.65) 0%, transparent 60%)", top: -180, right: -140, borderRadius: "50%", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: 200, height: 200, background: "radial-gradient(circle, rgba(139,92,246,.35) 0%, transparent 65%)", bottom: -60, left: -40, borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ background: "#0f172a", padding: "36px 22px 28px", position: "relative" }}>
+        {/* Ambient orbs — clipped in their own layer so they don't escape the hero bounds */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+          <div style={{ position: "absolute", width: 420, height: 420, background: "radial-gradient(circle, rgba(57,73,171,.65) 0%, transparent 60%)", top: -180, right: -140, borderRadius: "50%" }} />
+          <div style={{ position: "absolute", width: 200, height: 200, background: "radial-gradient(circle, rgba(139,92,246,.35) 0%, transparent 65%)", bottom: -60, left: -40, borderRadius: "50%" }} />
+        </div>
 
-        {/* Top row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 2, marginBottom: 28 }}>
+        {/* Top row — no z-index so dropdown's z-50 competes globally (not inside a sub-stacking-context) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", marginBottom: 28 }}>
           <div>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,.35)", marginBottom: 6, letterSpacing: ".4px" }}>{greeting()}</p>
             <p style={{ fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,.32)", letterSpacing: 3, textTransform: "uppercase", marginBottom: 5 }}>
