@@ -2,23 +2,12 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
     Dialog,
-    DialogHeader,
-    DialogBody,
-    DialogFooter,
-    Button,
-    Typography,
-    Chip,
     Spinner,
-    Card,
-    CardBody,
 } from "@material-tailwind/react";
 import {
     DocumentTextIcon,
-    CalendarIcon,
-    HashtagIcon,
-    LanguageIcon,
     DocumentIcon,
-    ViewColumnsIcon,
+    ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { useParams } from "react-router-dom";
 import { useLanguage } from "@/context/language-context";
@@ -26,9 +15,6 @@ import projectService from "@/services/projectService";
 
 export function DocumentMetadataDialog({ open, onClose, document }) {
     const { t, language } = useLanguage();
-    // We assume projectId is available in URL/Params or pass it as prop if needed.
-    // However, the cleanest way without refactoring parents is getting it from URL or prop.
-    // DocumentMetadataDialog is used in ProjectDetail which presumably has :projectId param.
     const { projectId } = useParams();
 
     const [sections, setSections] = useState([]);
@@ -52,19 +38,11 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
         setLoadingSections(true);
         setErrorSections(null);
         try {
-            // The API now returns { projectId, document: { id, sections: [...] } } for a specific doc
             const data = await projectService.getDocumentsWithSections(projectId, document.id);
-
             const docData = data.document;
-
-            if (docData && docData.sections) {
-                setSections(docData.sections);
-            } else {
-                setSections([]);
-            }
+            setSections(docData?.sections ?? []);
         } catch (err) {
-            console.error("Failed to fetch sections:", err);
-            setErrorSections(typeof err === 'string' ? err : (err?.error || err?.detail || t("global.sections.loading_error")));
+            setErrorSections(typeof err === "string" ? err : (err?.error || err?.detail || t("global.sections.loading_error")));
         } finally {
             setLoadingSections(false);
         }
@@ -75,8 +53,7 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
         try {
             const data = await projectService.getDocumentSummary(document.id);
             setSummary(data.summary || null);
-        } catch (err) {
-            console.error("Failed to fetch summary:", err);
+        } catch {
             setSummary(null);
         } finally {
             setLoadingSummary(false);
@@ -86,189 +63,253 @@ export function DocumentMetadataDialog({ open, onClose, document }) {
     if (!document) return null;
 
     const formatFileSize = (bytes) => {
-        if (bytes === 0) return "0 Bytes";
+        if (!bytes || bytes === 0) return "0 Bytes";
         const k = 1024;
         const sizes = ["Bytes", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString(language === "es" ? "es-ES" : "en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "ready": return "green";
-            case "processing": return "blue";
-            case "error": return "red";
-            default: return "gray";
-        }
-    };
-
     const getStatusLabel = (status) => {
         switch (status) {
-            case "ready": return language === "es" ? "Listo" : "Ready";
+            case "ready":      return language === "es" ? "Listo" : "Ready";
             case "processing": return language === "es" ? "Procesando" : "Processing";
-            case "error": return language === "es" ? "Error" : "Error";
-            default: return language === "es" ? "Finalizado" : "Finalized";
+            case "error":      return language === "es" ? "Error" : "Error";
+            default:           return language === "es" ? "Finalizado" : "Finalized";
         }
+    };
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case "ready":      return { background: "#dcfce7", color: "#15803d", dot: "#22c55e" };
+            case "processing": return { background: "#dbeafe", color: "#1d4ed8", dot: "#3b82f6" };
+            case "error":      return { background: "#fee2e2", color: "#b91c1c", dot: "#ef4444" };
+            default:           return { background: "#dcfce7", color: "#15803d", dot: "#22c55e" };
+        }
+    };
+
+    const uploadedDate = document.uploaded_at ? new Date(document.uploaded_at) : null;
+    const dateStr = uploadedDate
+        ? uploadedDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "—";
+    const timeStr = uploadedDate
+        ? uploadedDate.toLocaleTimeString(language === "es" ? "es-ES" : "en-US", { hour: "2-digit", minute: "2-digit" })
+        : "—";
+
+    const statusStyle = getStatusStyle(document.status);
+
+    /* ── reusable inline card style ── */
+    const infoCard = {
+        background: "#f8fafc", borderRadius: 13, padding: "12px 14px",
+        border: "1.5px solid #e2e8f0", position: "relative", overflow: "hidden",
+    };
+    const infoBar = {
+        position: "absolute", left: 0, top: 0, bottom: 0,
+        width: 3, background: "#3949AB", borderRadius: "13px 0 0 13px",
+    };
+    const labelStyle = {
+        fontSize: 10, fontWeight: 600, color: "#94a3b8",
+        textTransform: "uppercase", letterSpacing: "1.1px", marginBottom: 5,
     };
 
     return (
-        <Dialog open={open} handler={onClose} size="xl" className="overflow-hidden flex flex-col h-[90vh]">
-            <DialogHeader className="flex-none py-3 px-4 md:px-6">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <DocumentTextIcon className="h-5 w-5 md:h-6 md:w-6 text-blue-500 flex-shrink-0" />
-                    <Typography className="font-bold text-sm md:text-lg text-blue-gray-900 leading-tight">
-                        {language === "es" ? "Metadatos y Contenido" : "Metadata & Content"}
-                    </Typography>
+        <Dialog
+            open={open}
+            handler={onClose}
+            size="md"
+            className="!mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] flex flex-col md:!mx-auto md:!my-8 md:!rounded-[20px] md:!max-w-lg md:!h-auto overflow-hidden !p-0 !shadow-2xl"
+        >
+            {/* ── Indigo header strip ── */}
+            <div style={{ background: "#3949AB", padding: "16px 20px 20px", flexShrink: 0 }}>
+                {/* Drag handle (mobile) */}
+                <div className="md:hidden" style={{ width: 38, height: 4, background: "rgba(255,255,255,0.30)", borderRadius: 2, margin: "0 auto 18px" }} />
+
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4, letterSpacing: "-0.3px" }}>
+                            {language === "es" ? "Metadatos y Contenido" : "Metadata & Content"}
+                        </p>
+                        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.60)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {document.filename}
+                        </p>
+                    </div>
+                    <div style={{
+                        width: 40, height: 40, background: "rgba(255,255,255,0.15)",
+                        borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center",
+                        border: "1px solid rgba(255,255,255,0.20)", flexShrink: 0,
+                    }}>
+                        <DocumentTextIcon style={{ width: 17, height: 17, color: "#fff", strokeWidth: 1.8 }} />
+                    </div>
                 </div>
-            </DialogHeader>
 
-            <DialogBody divider className="flex-1 overflow-y-auto p-0 flex flex-col md:flex-row min-h-0">
-                {/* Left Column: Metadata */}
-                <div className="w-full md:w-1/3 p-4 md:p-6 border-b md:border-b-0 md:border-r border-blue-gray-100 space-y-4 md:space-y-6 overflow-y-auto">
+                {/* Pills */}
+                <div style={{ display: "flex", gap: 7, marginTop: 16, flexWrap: "wrap" }}>
+                    {document.type && (
+                        <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: "#fee2e2", color: "#b91c1c" }}>
+                            {document.type.toUpperCase()}
+                        </span>
+                    )}
+                    {document.size ? (
+                        <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.28)" }}>
+                            {formatFileSize(document.size)}
+                        </span>
+                    ) : null}
+                    <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: statusStyle.background, color: statusStyle.color, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 6, height: 6, background: statusStyle.dot, borderRadius: "50%" }} />
+                        {getStatusLabel(document.status)}
+                    </span>
+                </div>
+            </div>
 
-                    <div>
-                        <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Nombre de archivo" : "Filename"}</Typography>
-                        <Typography className="font-medium text-blue-gray-900 break-words">{document.filename}</Typography>
-                    </div>
+            {/* ── Scrollable body ── */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 0", background: "#fff" }}>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Tipo" : "Type"}</Typography>
-                            <Chip value={document.type} size="sm" color="blue" className="w-fit" />
+                {/* Filename card */}
+                <div style={{ ...infoCard, marginBottom: 14 }}>
+                    <div style={infoBar} />
+                    <p style={labelStyle}>{language === "es" ? "Nombre de archivo" : "Filename"}</p>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: "#0f172a", lineHeight: 1.5 }}>
+                        {document.filename}
+                    </p>
+                </div>
+
+                {/* Date + Time grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                    {[
+                        { lbl: language === "es" ? "Subido" : "Uploaded", val: dateStr },
+                        { lbl: language === "es" ? "Hora" : "Time",      val: timeStr },
+                    ].map((item, i) => (
+                        <div key={i} style={infoCard}>
+                            <div style={infoBar} />
+                            <p style={labelStyle}>{item.lbl}</p>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{item.val}</p>
                         </div>
-                        <div>
-                            <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Tamaño" : "Size"}</Typography>
-                            <Typography className="font-medium text-blue-gray-900">{formatFileSize(document.size)}</Typography>
-                        </div>
-                    </div>
+                    ))}
+                </div>
 
-                    <div>
-                        <Typography variant="small" className="text-blue-gray-500 mb-1 flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4" /> {language === "es" ? "Subido el" : "Uploaded At"}
-                        </Typography>
-                        <Typography className="font-medium text-blue-gray-900">{formatDate(document.uploaded_at)}</Typography>
-                    </div>
-
-                    <div>
-                        <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Estado de procesamiento" : "Processing Status"}</Typography>
-                        <Chip value={getStatusLabel(document.status)} size="sm" color={getStatusColor(document.status)} className="w-fit" />
-                    </div>
-
-                    {/* Document Summary */}
-                    <div>
-                        <Typography variant="small" className="text-blue-gray-500 mb-1">{language === "es" ? "Resumen" : "Summary"}</Typography>
+                {/* Summary */}
+                {(loadingSummary || summary) && (
+                    <div style={{ marginBottom: 20 }}>
+                        <p style={{ ...labelStyle, marginBottom: 8 }}>
+                            {language === "es" ? "Resumen" : "Summary"}
+                        </p>
                         {loadingSummary ? (
-                            <div className="flex items-center gap-2">
-                                <Spinner className="h-4 w-4" />
-                                <Typography variant="small" className="text-blue-gray-400">{language === "es" ? "Cargando..." : "Loading..."}</Typography>
-                            </div>
-                        ) : summary ? (
-                            <div className="bg-blue-gray-50 p-3 rounded-lg border border-blue-gray-100">
-                                <Typography variant="small" className="text-blue-gray-700 leading-relaxed text-justify">
-                                    {summary}
-                                </Typography>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <Spinner className="h-4 w-4" style={{ color: "#3949AB" }} />
+                                <span style={{ fontSize: 13, color: "#94a3b8" }}>{language === "es" ? "Cargando..." : "Loading..."}</span>
                             </div>
                         ) : (
-                            <Typography variant="small" className="text-blue-gray-400 italic">
-                                {language === "es" ? "No disponible" : "Not available"}
-                            </Typography>
+                            <div style={{ ...infoCard }}>
+                                <div style={infoBar} />
+                                <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{summary}</p>
+                            </div>
                         )}
                     </div>
+                )}
 
-                    {document.tags && document.tags.length > 0 && (
-                        <div>
-                            <Typography variant="small" className="text-blue-gray-500 mb-2">Tags</Typography>
-                            <div className="flex flex-wrap gap-2">
-                                {document.tags.map((tag, index) => (
-                                    <Chip key={index} value={tag} size="sm" variant="ghost" />
-                                ))}
-                            </div>
-                        </div>
+                {/* Sections header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>
+                        {language === "es" ? "Secciones Extraídas" : "Extracted Sections"}
+                    </p>
+                    {!loadingSections && sections.length > 0 && (
+                        <span style={{ background: "#3949AB", color: "#fff", fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20 }}>
+                            {sections.length}
+                        </span>
                     )}
                 </div>
 
-                {/* Right Column: Sections content */}
-                <div className="w-full md:w-2/3 p-4 md:p-6 bg-gray-50 overflow-y-auto">
-                    <div className="flex items-center gap-2 mb-4">
-                        <ViewColumnsIcon className="h-5 w-5 text-blue-gray-700" />
-                        <Typography variant="h6" color="blue-gray">{language === "es" ? "Secciones Extraídas" : "Extracted Sections"}</Typography>
+                {/* Sections list */}
+                {loadingSections ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 0", gap: 8 }}>
+                        <Spinner className="h-7 w-7" style={{ color: "#3949AB" }} />
+                        <span style={{ fontSize: 13, color: "#94a3b8" }}>
+                            {language === "es" ? "Cargando secciones..." : "Loading sections..."}
+                        </span>
                     </div>
-
-                    {loadingSections ? (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <Spinner className="h-8 w-8 text-blue-500 mb-2" />
-                            <Typography color="blue-gray" className="font-medium">{t("global.sections.loading")}</Typography>
-                        </div>
-                    ) : errorSections ? (
-                        <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-500 text-sm text-center">
-                            {errorSections}
-                        </div>
-                    ) : sections.length > 0 ? (
-                        <div className="space-y-3">
-                            {sections.map((section, index) => (
-                                <div
-                                    key={section.id}
-                                    className="group relative bg-white rounded-xl border border-blue-gray-100 hover:border-indigo-200 transition-all duration-200 overflow-hidden hover:shadow-md"
-                                >
-                                    {/* Gradient accent bar */}
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-
-                                    <div className="p-4 pl-5">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center flex-shrink-0">
-                                                        <Typography className="text-xs font-black text-indigo-600">
-                                                            {section.order}
-                                                        </Typography>
-                                                    </div>
-                                                    <Typography variant="h6" className="font-bold text-blue-gray-900 truncate">
-                                                        {section.title
-                                                            ? section.title.charAt(0).toUpperCase() + section.title.slice(1)
-                                                            : (language === "es" ? "Sección sin título" : "Untitled Section")}
-                                                    </Typography>
-                                                </div>
-                                                {/* {section.content && (
-                                                    <Typography variant="small" className="text-blue-gray-500 line-clamp-2 mt-2">
-                                                        {section.content.substring(0, 120)}...
-                                                    </Typography>
-                                                )} */}
-                                            </div>
-                                            <Chip
-                                                value={language === "es" ? "Sección" : "Section"}
-                                                size="sm"
-                                                variant="ghost"
-                                                color="indigo"
-                                                className="rounded-full flex-shrink-0"
-                                            />
-                                        </div>
-                                    </div>
+                ) : errorSections ? (
+                    <div style={{ padding: 14, background: "#fee2e2", borderRadius: 13, color: "#b91c1c", fontSize: 13, textAlign: "center", marginBottom: 16 }}>
+                        {errorSections}
+                    </div>
+                ) : sections.length > 0 ? (
+                    <div style={{ paddingBottom: 4 }}>
+                        {sections.map((section, index) => (
+                            <div
+                                key={section.id}
+                                style={{
+                                    display: "flex", alignItems: "center", gap: 11,
+                                    padding: "11px 14px",
+                                    background: "#fff",
+                                    borderRadius: 13,
+                                    border: "1.5px solid #e2e8f0",
+                                    marginBottom: 8,
+                                    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                                }}
+                            >
+                                <div style={{
+                                    width: 26, height: 26, borderRadius: "50%",
+                                    background: "#3949AB", color: "#fff",
+                                    fontSize: 12, fontWeight: 700,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    flexShrink: 0,
+                                }}>
+                                    {section.order ?? index + 1}
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-blue-gray-400">
-                            <DocumentIcon className="h-12 w-12 mb-3 opacity-50" />
-                            <Typography>No sections found for this document.</Typography>
-                        </div>
-                    )}
-                </div>
-            </DialogBody>
-            <DialogFooter className="flex-none border-t border-blue-gray-50 py-3 px-4 md:px-6">
-                <Button variant="gradient" color="blue" onClick={onClose} className="normal-case">
+                                <span style={{
+                                    flex: 1, fontSize: 13, fontWeight: 500, color: "#0f172a",
+                                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                                }}>
+                                    {section.title
+                                        ? section.title.charAt(0).toUpperCase() + section.title.slice(1)
+                                        : (language === "es" ? "Sección sin título" : "Untitled Section")}
+                                </span>
+                                <ChevronRightIcon style={{ width: 13, height: 13, color: "#94a3b8", flexShrink: 0, strokeWidth: 2 }} />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 0 20px", color: "#94a3b8", gap: 8 }}>
+                        <DocumentIcon style={{ width: 40, height: 40, opacity: 0.4 }} />
+                        <p style={{ fontSize: 13 }}>
+                            {language === "es" ? "No hay secciones para este documento" : "No sections found for this document"}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Bottom buttons ── */}
+            <div style={{
+                display: "flex", gap: 10,
+                padding: "16px 20px",
+                paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))",
+                flexShrink: 0,
+                borderTop: "1px solid #e2e8f0",
+                background: "#fff",
+            }}>
+                {/* <button
+                    onClick={onClose}
+                    style={{
+                        flex: 1, padding: 13,
+                        background: "#f8fafc", color: "#475569",
+                        border: "1.5px solid #e2e8f0", borderRadius: 13,
+                        fontSize: 14, fontWeight: 600, cursor: "pointer",
+                    }}
+                >
+                    {language === "es" ? "Cancelar" : "Cancel"}
+                </button> */}
+                <button
+                    onClick={onClose}
+                    style={{
+                        flex: 2, padding: 13,
+                        background: "#3949AB", color: "#fff",
+                        border: "none", borderRadius: 13,
+                        fontSize: 14, fontWeight: 600, cursor: "pointer",
+                        boxShadow: "0 4px 16px rgba(57,73,171,0.22)",
+                    }}
+                >
                     {language === "es" ? "Cerrar" : "Close"}
-                </Button>
-            </DialogFooter>
+                </button>
+            </div>
         </Dialog>
     );
 }
@@ -281,11 +322,8 @@ DocumentMetadataDialog.propTypes = {
         filename: PropTypes.string.isRequired,
         type: PropTypes.string,
         size: PropTypes.number,
-        uploadedAt: PropTypes.string,
+        uploaded_at: PropTypes.string,
         status: PropTypes.string,
-        hash: PropTypes.string,
-        language: PropTypes.string,
-        pages: PropTypes.number,
         tags: PropTypes.arrayOf(PropTypes.string),
     }),
 };
