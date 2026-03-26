@@ -23,6 +23,7 @@ import {
   DocumentTextIcon,
   ClockIcon,
   RectangleStackIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/outline";
 
 import { ProjectProcessingProgress } from "@/widgets/project/project-processing-progress";
@@ -85,125 +86,119 @@ export function ProjectCard({
     project?.owner?.name || project?.owner?.username || "Unknown";
 
   return (
-    <Card
-      className="group border border-zinc-200/60 bg-white/70 backdrop-blur-sm shadow-premium hover:shadow-premium-hover hover:-translate-y-1 transition-all duration-300 rounded-xl md:rounded-[2rem] overflow-hidden cursor-default"
+    <div
+      className="group bg-white overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+      style={{
+        borderRadius: 18,
+        border: "1.5px solid #e2e8f0",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+      }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 28px rgba(57,73,171,0.14)"}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)"}
       onDoubleClick={() => onEnter(project)}
     >
-      <CardBody className="p-3 md:p-7">
+      <div className="p-5">
 
-        {/* ── Header ── */}
-        <div className="flex items-start justify-between mb-2 md:mb-6">
-          <div className="flex-1 min-w-0" onClick={() => onEnter(project)} style={{ cursor: "pointer" }}>
-            {/* Title */}
-            <p className="truncate tracking-tight group-hover:text-indigo-600 transition-colors font-semibold"
-              style={{ fontSize: "12px", color: "var(--ank-text)", marginBottom: 2 }}>
-              {project.title || project.name || "Untitled"}
-            </p>
-            {/* Mobile: date under title */}
-            <p className="block md:hidden" style={{ fontSize: "9px", color: "var(--ank-muted)" }}>
-              {formatDate(project.updated_at || project.updatedAt)}
-            </p>
-            {/* Desktop: "BY owner" */}
-            <div className="hidden md:flex items-center gap-2 mt-1">
-              <Typography className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                {language === "es" ? "POR" : "BY"} {ownerLabel.toUpperCase()}
-              </Typography>
+        {/* ── Top row: icon + menu ── */}
+        <div className="flex items-start justify-between mb-4">
+          <div style={{
+            width: 40, height: 40,
+            background: "rgb(57, 73, 171)",
+            borderRadius: 11,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            border: "1px solid rgba(57,73,171,0.28)",
+            flexShrink: 0,
+          }}>
+            <BookOpenIcon style={{ width: 17, height: 17, color: "#ffffffff", strokeWidth: 1.8 }} />
+          </div>
+          <Menu placement="bottom-end">
+            <MenuHandler>
+              <IconButton variant="text" size="sm" className="rounded-xl hover:bg-zinc-100">
+                <EllipsisVerticalIcon className="h-5 w-5 text-zinc-400" />
+              </IconButton>
+            </MenuHandler>
+            <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl bg-white/90">
+              <MenuItem onClick={() => onEnter(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
+                {language === "es" ? "Entrar al Proyecto" : "Enter Project"}
+              </MenuItem>
+              <MenuItem onClick={() => onUploadDocs(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
+                {language === "es" ? "Subir Documentos" : "Upload Documents"}
+              </MenuItem>
               {isOwner && (
-                <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" title="Owner" />
+                <>
+                  <MenuItem onClick={() => onEdit(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50">
+                    <PencilIcon className="h-4 w-4 text-zinc-400" />
+                    {language === "es" ? "Editar Detalles" : "Edit Details"}
+                  </MenuItem>
+                  <div className="my-1 border-t border-zinc-100" />
+                  <MenuItem onClick={() => onDelete(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50">
+                    <TrashIcon className="h-4 w-4" />
+                    {language === "es" ? "Eliminar Proyecto" : "Delete Project"}
+                  </MenuItem>
+                </>
               )}
+            </MenuList>
+          </Menu>
+        </div>
+
+        {/* ── Title + owner ── */}
+        <p
+          onClick={() => onEnter(project)}
+          style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 3, letterSpacing: "-0.3px", cursor: "pointer" }}
+        >
+          {project.title || project.name || "Untitled"}
+        </p>
+        <p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 14 }}>
+          {language === "es" ? "Actualizado" : "Updated"} {formatDate(project.updated_at || project.updatedAt)}
+        </p>
+
+        {/* ── Divider ── */}
+        <div style={{ height: 1, background: "#e2e8f0", marginBottom: 14 }} />
+
+        {/* ── Stats row ── */}
+        <div style={{ display: "flex", marginBottom: 14 }}>
+          {[
+            { num: counts.documents, lbl: language === "es" ? "Docs" : "Docs", tab: "documents" },
+            { num: counts.batteries, lbl: language === "es" ? "Baterías" : "Batteries", tab: "batteries" },
+            { num: counts.decks, lbl: language === "es" ? "Mazos" : "Decks", tab: "decks" },
+          ].map((s, i) => (
+            <div
+              key={i}
+              onClick={() => onEnter(project, s.tab)}
+              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, position: "relative", cursor: "pointer" }}
+            >
+              {i < 2 && <div style={{ position: "absolute", right: 0, top: "10%", width: 1, height: "80%", background: "#e2e8f0" }} />}
+              <span style={{ fontSize: 20, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{s.num}</span>
+              <span style={{ fontSize: 10, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 500 }}>{s.lbl}</span>
             </div>
-          </div>
-
-          {/* Mobile: chevron */}
-          <button
-            className="flex md:hidden items-center justify-center ml-2 flex-shrink-0"
-            onClick={() => onEnter(project)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
-          >
-            <ChevronRightIcon className="h-4 w-4 text-zinc-400" />
-          </button>
-
-          {/* Desktop: ellipsis menu */}
-          <div className="hidden md:block">
-            <Menu placement="bottom-end">
-              <MenuHandler>
-                <IconButton variant="text" color="zinc" size="sm" className="rounded-xl hover:bg-zinc-100">
-                  <EllipsisVerticalIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600" />
-                </IconButton>
-              </MenuHandler>
-              <MenuList className="p-2 border-zinc-200/60 shadow-xl rounded-2xl backdrop-blur-md bg-white/90">
-                <MenuItem onClick={() => onEnter(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
-                  <ArrowRightIcon className="h-4 w-4 text-zinc-400" />
-                  {language === "es" ? "Entrar al Proyecto" : "Enter Project"}
-                </MenuItem>
-                <MenuItem onClick={() => onUploadDocs(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
-                  <DocumentDuplicateIcon className="h-4 w-4 text-zinc-400" />
-                  {language === "es" ? "Subir Documentos" : "Upload Documents"}
-                </MenuItem>
-                {isOwner && (
-                  <>
-                    <MenuItem onClick={() => onEdit(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-zinc-700 font-bold text-xs hover:bg-zinc-50 hover:text-zinc-900">
-                      <PencilIcon className="h-4 w-4 text-zinc-400" />
-                      {language === "es" ? "Editar Detalles" : "Edit Details"}
-                    </MenuItem>
-                    <div className="my-1 border-t border-zinc-100" />
-                    <MenuItem onClick={() => onDelete(project)} className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-500 font-bold text-xs hover:bg-red-50 hover:text-red-600">
-                      <TrashIcon className="h-4 w-4" />
-                      {language === "es" ? "Eliminar Proyecto" : "Delete Project"}
-                    </MenuItem>
-                  </>
-                )}
-              </MenuList>
-            </Menu>
-          </div>
+          ))}
         </div>
 
-        {/* ── Stats ── */}
-        <div className="grid grid-cols-3 gap-1.5 md:gap-3 mb-0 md:mb-8">
-          <div
-            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-indigo-100 md:group-hover:bg-indigo-50/30 transition-colors"
-            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
-            onClick={() => onEnter(project, "documents")}
-          >
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-purple)", lineHeight: 1 }}>{counts.documents}</p>
-            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.documents")}</p>
-          </div>
-          <div
-            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-purple-100 md:group-hover:bg-purple-50/30 transition-colors"
-            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
-            onClick={() => onEnter(project, "batteries")}
-          >
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-amber)", lineHeight: 1 }}>{counts.batteries}</p>
-            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.batteries")}</p>
-          </div>
-          <div
-            className="rounded-lg md:rounded-2xl cursor-pointer md:bg-zinc-50 md:border md:border-zinc-100 md:group-hover:border-orange-100 md:group-hover:bg-orange-50/30 transition-colors"
-            style={{ background: "var(--ank-bg)", padding: "5px", textAlign: "center" }}
-            onClick={() => onEnter(project, "decks")}
-          >
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--ank-teal)", lineHeight: 1 }}>{counts.decks}</p>
-            <p style={{ fontSize: "8px", color: "#aaa", marginTop: 2 }}>{t("project_detail.tabs.decks")}</p>
-          </div>
-        </div>
-
-        {/* ── Desktop footer: date + arrow (hidden on mobile) ── */}
-        <div className="hidden md:flex items-center justify-between pt-5 border-t border-zinc-100">
-          <div className="flex items-center gap-2">
-            <ClockIcon className="h-3.5 w-3.5 text-zinc-400" />
-            <Typography className="text-[11px] font-medium text-zinc-500">
-              {formatDate(project.updated_at || project.updatedAt)}
-            </Typography>
+        {/* ── Footer: date + enter ── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, borderTop: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <ClockIcon style={{ width: 13, height: 13, color: "#94a3b8" }} />
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>
+              {language === "es" ? "POR" : "BY"} {ownerLabel}
+            </span>
           </div>
           <button
             onClick={() => onEnter(project)}
-            className="h-8 w-8 rounded-full bg-zinc-900 text-white flex items-center justify-center hover:bg-indigo-600 hover:scale-110 active:scale-95 transition-all shadow-lg shadow-zinc-200"
+            style={{
+              width: 30, height: 30, borderRadius: "50%",
+              background: "#3949AB", border: "none",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
           >
-            <ArrowRightIcon className="h-4 w-4" />
+            <ArrowRightIcon style={{ width: 14, height: 14, color: "#fff" }} />
           </button>
         </div>
 
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 }
 

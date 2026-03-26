@@ -16,6 +16,8 @@ import {
     PlusIcon,
     MagnifyingGlassIcon,
     FolderIcon,
+    BookOpenIcon,
+    ChevronRightIcon,
     // UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { ProjectCard } from "@/widgets/cards/project-card";
@@ -48,6 +50,25 @@ export function Projects() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
     const [error, setError] = useState(null);
+    const [mobileCounts, setMobileCounts] = useState({});
+
+    useEffect(() => {
+        if (projects.length === 0) return;
+        projects.forEach(async (project) => {
+            try {
+                const data = await projectService.getProjectCounts(project.id);
+                setMobileCounts(prev => ({
+                    ...prev,
+                    [project.id]: {
+                        documents: data.documents_count ?? project.documents_count ?? 0,
+                        batteries: data.batteries_count ?? 0,
+                        decks: data.decks_count ?? 0,
+                    }
+                }));
+            } catch (_) {}
+        });
+    }, [projects]);
+
     const activeJobs = useMemo(() => {
         const projectJobs = {};
         globalActiveJobs.forEach(job => {
@@ -271,35 +292,39 @@ export function Projects() {
     return (
         <div className="mt-0 md:mt-8 md:space-y-8 pb-20">
 
-            {/* ── Mobile Header (hidden on desktop) ── */}
-            <div className="flex md:hidden items-center justify-between px-4 pt-4 pb-2">
-                <span style={{ fontSize: "22px", fontWeight: 600, color: "var(--ank-text)" }}>
-                    {t("projects.title")}
-                </span>
-                <button
-                    onClick={() => setCreateDialogOpen(true)}
-                    style={{
-                        width: 32, height: 32, borderRadius: "50%",
-                        background: "var(--ank-purple)", border: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer",
-                    }}
-                >
-                    <PlusIcon className="h-4 w-4 text-white" strokeWidth={2.5} />
-                </button>
-            </div>
-
-            {/* ── Mobile Search ── */}
-            <div className="flex md:hidden items-center gap-2 mx-3 mb-3"
-                style={{ background: "#f5f5f5", borderRadius: 10, padding: "7px 11px", border: "0.5px solid rgba(0,0,0,0.10)" }}>
-                <MagnifyingGlassIcon className="h-4 w-4 flex-shrink-0" style={{ color: "#aaa" }} />
-                <input
-                    type="text"
-                    placeholder={t("projects.search_placeholder") || "Search projects..."}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ background: "transparent", border: "none", outline: "none", fontSize: 10, color: "#aaa", width: "100%" }}
-                />
+            {/* ── Mobile Header + Search (hidden on desktop) ── */}
+            <div className="md:hidden px-4 pt-5 pb-1">
+                <div className="flex items-center justify-between mb-4">
+                    <span style={{ fontSize: 22, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.5px" }}>
+                        {t("projects.title")}
+                    </span>
+                    <button
+                        onClick={() => setCreateDialogOpen(true)}
+                        style={{
+                            width: 36, height: 36, borderRadius: "50%",
+                            background: "#3949AB", border: "none",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            cursor: "pointer", boxShadow: "0 4px 14px rgba(57,73,171,0.28)",
+                        }}
+                    >
+                        <PlusIcon className="h-[15px] w-[15px] text-white" strokeWidth={2.5} />
+                    </button>
+                </div>
+                <div style={{ position: "relative", marginBottom: 20 }}>
+                    <MagnifyingGlassIcon style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#94a3b8", pointerEvents: "none" }} />
+                    <input
+                        type="text"
+                        placeholder={t("projects.search_placeholder") || "Search projects…"}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            width: "100%", background: "#fff",
+                            border: "1.5px solid #e2e8f0", borderRadius: 13,
+                            padding: "11px 14px 11px 38px",
+                            fontSize: 13, color: "#0f172a", outline: "none",
+                        }}
+                    />
+                </div>
             </div>
 
             {/* ── Desktop Header (hidden on mobile) ── */}
@@ -358,22 +383,151 @@ export function Projects() {
                 </div>
             </div>
 
-            {/* Projects Grid */}
+            {/* ── Mobile Cards (hidden on desktop) ── */}
+            <div className="md:hidden px-4">
+                {filteredProjects.length > 0 ? (
+                    <>
+                        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.3px", color: "#94a3b8", textTransform: "uppercase", marginBottom: 12 }}>
+                            {language === "es" ? "Recientes" : "Recent"}
+                        </p>
+                        {filteredProjects.map((project, index) => {
+                            const isFeatured = index === 0;
+                            const title = project.title || project.name || "Untitled";
+                            const updatedAt = project.updated_at || project.created_at;
+                            const dateStr = updatedAt
+                                ? new Date(updatedAt).toLocaleDateString(language === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric", year: "numeric" })
+                                : "";
+                            return (
+                                <div
+                                    key={project.id}
+                                    onClick={() => handleEnterProject(project)}
+                                    style={{
+                                        background: isFeatured ? "linear-gradient(140deg, #fff 55%, #f4f6ff 100%)" : "#fff",
+                                        borderRadius: 18,
+                                        padding: 16,
+                                        marginBottom: 12,
+                                        border: `1.5px solid ${isFeatured ? "rgba(57,73,171,0.28)" : "#e2e8f0"}`,
+                                        cursor: "pointer",
+                                        position: "relative",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    {isFeatured && (
+                                        <div style={{
+                                            position: "absolute", top: 0, left: 0,
+                                            width: "100%", height: 3,
+                                            background: "linear-gradient(90deg, #3949AB, #818cf8)",
+                                            borderRadius: "18px 18px 0 0",
+                                        }} />
+                                    )}
+                                    {/* Top row */}
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                                        <div style={{
+                                            width: 40, height: 40,
+                                            background: "rgba(57, 73, 171)",
+                                            borderRadius: 11,
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            border: "1px solid rgba(57,73,171,0.28)",
+                                            flexShrink: 0,
+                                        }}>
+                                            <BookOpenIcon style={{ width: 17, height: 17, color: "#ffffff", strokeWidth: 1.8 }} />
+                                        </div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                            {isFeatured && (
+                                                <span style={{
+                                                    display: "inline-flex", alignItems: "center", gap: 5,
+                                                    background: "rgba(57,73,171,0.10)",
+                                                    border: "1px solid rgba(57,73,171,0.28)",
+                                                    color: "#3949AB", fontSize: 10, fontWeight: 600,
+                                                    padding: "3px 9px", borderRadius: 20,
+                                                }}>
+                                                    <span style={{ width: 5, height: 5, background: "#3949AB", borderRadius: "50%" }} />
+                                                    {language === "es" ? "Activo" : "Active"}
+                                                </span>
+                                            )}
+                                            <div style={{
+                                                width: 26, height: 26, borderRadius: "50%",
+                                                background: "rgba(57, 73, 171)",
+                                                display: "flex", alignItems: "center", justifyContent: "center",
+                                                border: "1px solid #e2e8f0",
+                                            }}>
+                                                <ChevronRightIcon style={{ width: 11, height: 11, color: "#ffffff" }} strokeWidth={2} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Title + date */}
+                                    <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 3, letterSpacing: "-0.3px" }}>
+                                        {title}
+                                    </p>
+                                    <p style={{ fontSize: 11, color: "#94a3b8" }}>
+                                        {language === "es" ? "Actualizado" : "Updated"} {dateStr}
+                                    </p>
+                                    {/* Divider */}
+                                    <div style={{ height: 1, background: "#e2e8f0", margin: "12px 0" }} />
+                                    {/* Stats */}
+                                    <div style={{ display: "flex" }}>
+                                        {[
+                                            { num: mobileCounts[project.id]?.documents ?? project.documents_count ?? 0, lbl: "Docs" },
+                                            { num: mobileCounts[project.id]?.batteries ?? project.batteries_count ?? 0, lbl: language === "es" ? "Baterías" : "Batteries" },
+                                            { num: mobileCounts[project.id]?.decks ?? project.decks_count ?? 0, lbl: language === "es" ? "Mazos" : "Decks" },
+                                        ].map((s, i) => (
+                                            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, position: "relative" }}>
+                                                {i < 2 && <div style={{ position: "absolute", right: 0, top: "10%", width: 1, height: "80%", background: "#e2e8f0" }} />}
+                                                <span style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{s.num}</span>
+                                                <span style={{ fontSize: 10, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", fontWeight: 500 }}>{s.lbl}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        {/* New project dashed card */}
+                        <button
+                            onClick={() => setCreateDialogOpen(true)}
+                            style={{
+                                border: "1.5px dashed #e2e8f0", borderRadius: 18,
+                                padding: 17, width: "100%",
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+                                cursor: "pointer", background: "transparent", marginBottom: 12,
+                            }}
+                        >
+                            <PlusIcon style={{ width: 14, height: 14, color: "#94a3b8" }} strokeWidth={2} />
+                            <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>
+                                {language === "es" ? "Nuevo proyecto" : "New project"}
+                            </span>
+                        </button>
+                    </>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 0", textAlign: "center" }}>
+                        <FolderIcon style={{ width: 56, height: 56, color: "#cbd5e1", marginBottom: 16 }} />
+                        <p style={{ fontSize: 15, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>
+                            {t("projects.no_projects")}
+                        </p>
+                        <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 20 }}>
+                            {searchQuery ? t("projects.no_projects_desc") : t("projects.no_projects_cta")}
+                        </p>
+                        {!searchQuery && (
+                            <button
+                                onClick={() => setCreateDialogOpen(true)}
+                                style={{
+                                    background: "#3949AB", color: "#fff", border: "none",
+                                    borderRadius: 12, padding: "10px 20px",
+                                    fontSize: 13, fontWeight: 600, cursor: "pointer",
+                                    display: "flex", alignItems: "center", gap: 6,
+                                }}
+                            >
+                                <PlusIcon style={{ width: 16, height: 16 }} />
+                                {t("projects.btn_create")}
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* ── Desktop Grid (hidden on mobile) ── */}
             {filteredProjects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-6 px-0 md:px-0">
+                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredProjects.map((project) => (
-                        // <ProjectCard
-                        //     key={project.id}
-                        //     project={project}
-                        //     documentCount={getProjectDocuments(project.id).length}
-                        //     progress={getProjectProgress(project.id)}
-                        //     isOwner={isOwner(project)}
-                        //     onEnter={handleEnterProject}
-                        //     onEdit={handleEditProject}
-                        //     onDuplicate={handleDuplicateProject}
-                        //     onArchive={handleArchiveProject}
-                        //     onDelete={handleDeleteProject}
-                        // />
                         <ProjectCard
                             key={project.id}
                             project={project}
@@ -389,28 +543,20 @@ export function Projects() {
                             onUploadDocs={handleUploadDocs}
                             onJobComplete={handleJobComplete}
                         />
-
-
                     ))}
                 </div>
             ) : (
-                <Card className="border border-blue-gray-100 shadow-sm">
+                <Card className="hidden md:block border border-blue-gray-100 shadow-sm">
                     <CardBody className="flex flex-col items-center justify-center py-12">
                         <FolderIcon className="h-16 w-16 text-blue-gray-300 mb-4" />
                         <Typography variant="h5" color="blue-gray" className="mb-2">
                             {t("projects.no_projects")}
                         </Typography>
                         <Typography className="text-blue-gray-600 mb-4 text-center">
-                            {searchQuery
-                                ? t("projects.no_projects_desc")
-                                : t("projects.no_projects_cta")}
+                            {searchQuery ? t("projects.no_projects_desc") : t("projects.no_projects_cta")}
                         </Typography>
                         {!searchQuery && (
-                            <Button
-                                className="flex items-center gap-2"
-                                color="blue-gray"
-                                onClick={() => setCreateDialogOpen(true)}
-                            >
+                            <Button className="flex items-center gap-2" color="blue-gray" onClick={() => setCreateDialogOpen(true)}>
                                 <PlusIcon className="h-5 w-5" />
                                 {t("projects.btn_create")}
                             </Button>
