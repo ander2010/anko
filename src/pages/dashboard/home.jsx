@@ -385,7 +385,7 @@ export function Home() {
           <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{batteries.length}</p>
           <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Baterías" : "Batteries"}</p>
         </button>
-        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#07272fff", border: "none", cursor: "pointer" }}>
+        <button onClick={() => navigate("/dashboard/my-decks")} style={{ flex: 1, borderRadius: 14, padding: "12px 10px", textAlign: "center", background: "#0f172a", border: "none", cursor: "pointer" }}>
           <p style={{ fontSize: 20, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.3px", color: "#ffffffff" }}>{deckCount ?? "—"}</p>
           <p style={{ fontSize: 10, fontWeight: 600, marginTop: 3, color: "#ffffffff" }}>{language === "es" ? "Mazos" : "Decks"}</p>
         </button>
