@@ -319,14 +319,313 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
         }
     };
 
+    const mLbl = { fontSize: 11, fontWeight: 700, letterSpacing: ".9px", textTransform: "uppercase", color: "#94a3b8", marginBottom: 9, display: "flex", alignItems: "center", gap: 7 };
+    const mInput = (hasErr) => ({ width: "100%", padding: "12px 14px", background: "#f8fafc", border: `1.5px solid ${hasErr ? "#ef4444" : "#e2e8f0"}`, borderRadius: 13, fontFamily: "inherit", fontSize: 14, color: "#0f172a", outline: "none" });
+    const mTextarea = { width: "100%", padding: "12px 14px", background: "#f8fafc", border: "0.5px solid #e2e8f0", borderRadius: 13, fontFamily: "inherit", fontSize: 14, color: "#0f172a", outline: "none", resize: "none", height: 88, lineHeight: 1.6 };
+
     return (
         <Dialog
             open={open}
             handler={onClose}
             size="lg"
-            className="bg-white shadow-2xl rounded-3xl overflow-hidden ring-1 ring-zinc-900/5 h-[90vh] flex flex-col"
+            className="!p-0 !mx-0 !my-0 !self-end md:!self-center !rounded-t-[28px] !rounded-b-none !max-w-full !w-full md:!mx-auto md:!my-8 md:!rounded-3xl md:!max-w-2xl overflow-hidden bg-white"
         >
-            <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <form onSubmit={handleSubmit} className="flex flex-col">
+
+                {/* ══════════════ MOBILE bottom-sheet ══════════════ */}
+                <div className="md:hidden flex flex-col" style={{ maxHeight: "calc(100dvh - 40px)" }}>
+
+                    {/* Dark header strip */}
+                    <div style={{ background: "#0f172a", padding: "14px 20px 0", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+                        <div style={{ position: "absolute", width: 300, height: 300, background: "radial-gradient(circle, rgba(57,73,171,.55) 0%, transparent 60%)", top: -120, right: -70, borderRadius: "50%", pointerEvents: "none" }} />
+                        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
+                        {/* drag handle */}
+                        <div style={{ width: 38, height: 4, background: "rgba(255,255,255,.18)", borderRadius: 2, margin: "0 auto 16px" }} />
+                        {/* title row */}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1, marginBottom: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 42, height: 42, background: "rgba(57,73,171,.28)", border: "1px solid rgba(99,102,241,.4)", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <svg viewBox="0 0 24 24" style={{ width: 19, height: 19, stroke: "#818cf8", strokeWidth: 1.8, fill: "none" }}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                </div>
+                                <div>
+                                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-.3px" }}>
+                                        {deck?.id ? (language === "es" ? "Editar Mazo" : "Edit Deck") : (language === "es" ? "Crear Mazo" : "Create Deck")}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginTop: 2 }}>
+                                        {activeTab === "ai" ? (language === "es" ? "Genera tu set de flashcards" : "Build your flashcard set") : (language === "es" ? "Crea tarjetas manualmente" : "Create cards manually")}
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.13)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                                <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "rgba(255,255,255,.6)", strokeWidth: 2, fill: "none" }}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        {/* Mode tabs — only show when creating (not editing) */}
+                        {!deck && (
+                            <div style={{ display: "flex", gap: 4, position: "relative", zIndex: 1, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.09)", borderRadius: "14px 14px 0 0", padding: "5px 5px 0" }}>
+                                {[
+                                    { key: "ai",     label: language === "es" ? "Generar con IA" : "AI Generation", ico: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/> },
+                                    { key: "manual", label: language === "es" ? "Manual" : "Manual",               ico: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></> },
+                                ].map(({ key, label, ico }) => (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setActiveTab(key)}
+                                        style={{ flex: 1, padding: "10px 0", textAlign: "center", fontSize: 13, fontWeight: 600, color: activeTab === key ? "rgb(57,73,171)" : "rgba(255,255,255,.38)", cursor: "pointer", borderRadius: "10px 10px 0 0", background: activeTab === key ? "#fff" : "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                                    >
+                                        <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: "currentColor", strokeWidth: 2, fill: "none" }}>{ico}</svg>
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Scrollable form body */}
+                    <div style={{ flex: 1, overflowY: "auto", padding: "22px 20px 0" }}>
+
+                        {/* ── AI MODE ── */}
+                        {activeTab === "ai" && (
+                            <>
+                                {/* AI hint */}
+                                <div style={{ background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", borderRadius: 13, padding: "12px 14px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 20 }}>
+                                    <div style={{ width: 28, height: 28, background: "rgb(57,73,171)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                                        <svg viewBox="0 0 24 24" style={{ width: 13, height: 13, stroke: "#fff", strokeWidth: 2, fill: "none" }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                    </div>
+                                    <p style={{ fontSize: 12, color: "rgb(57,73,171)", lineHeight: 1.55, fontWeight: 500 }}>
+                                        <strong style={{ fontWeight: 700 }}>{language === "es" ? "Generación con IA" : "AI Generation"}</strong> {language === "es" ? " crea flashcards automáticamente de tus documentos y secciones." : " creates flashcards automatically from your selected documents and sections."}
+                                    </p>
+                                </div>
+
+                                {/* Title */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>
+                                        {language === "es" ? "Título" : "Title"}
+                                        <span style={{ width: 5, height: 5, background: "rgb(57,73,171)", borderRadius: "50%", display: "inline-block", flexShrink: 0 }} />
+                                    </div>
+                                    <input style={mInput(!!errors.title)} type="text" name="title" value={formData.title} onChange={handleChange} placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"} />
+                                    {errors.title && <p style={{ fontSize: 11, color: "#ef4444", marginTop: 5 }}>{errors.title}</p>}
+                                </div>
+
+                                {/* Cards count stepper */}
+                                {!deck && (
+                                    <div style={{ marginBottom: 20 }}>
+                                        <div style={mLbl}>{language === "es" ? "Cantidad de Tarjetas" : "Cards Count"}</div>
+                                        <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 13, overflow: "hidden" }}>
+                                            <button type="button" onClick={() => setFormData(p => ({ ...p, cards_count: Math.max(1, p.cards_count - 1) }))} style={{ width: 52, height: 52, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, stroke: "#475569", strokeWidth: 2.5, fill: "none" }}><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                            </button>
+                                            <div style={{ flex: 1, textAlign: "center", fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{formData.cards_count}</div>
+                                            <button type="button" onClick={() => setFormData(p => ({ ...p, cards_count: Math.min(15, p.cards_count + 1) }))} style={{ width: 52, height: 52, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, stroke: "#475569", strokeWidth: 2.5, fill: "none" }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                            </button>
+                                        </div>
+                                        <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>{language === "es" ? "Máximo 15 tarjetas por mazo" : "Maximum 15 cards per deck"}</p>
+                                    </div>
+                                )}
+
+                                {/* Description */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>
+                                        {language === "es" ? "Descripción" : "Description"}
+                                        <span style={{ fontSize: 9, background: "#f8fafc", color: "#94a3b8", border: "1px solid #e2e8f0", padding: "1px 7px", borderRadius: 20, fontWeight: 500, textTransform: "none", letterSpacing: ".3px" }}>{language === "es" ? "opcional" : "optional"}</span>
+                                    </div>
+                                    <textarea style={mTextarea} name="description" value={formData.description} onChange={handleChange} placeholder={language === "es" ? "Describe este mazo..." : "Describe this deck..."} />
+                                </div>
+
+                                {/* Visibility toggle */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>{language === "es" ? "Visibilidad" : "Visibility"}</div>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 13, padding: "14px 16px" }}>
+                                        <div>
+                                            <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 2 }}>{language === "es" ? "Visibilidad Pública" : "Public Visibility"}</div>
+                                            <div style={{ fontSize: 12, color: "#94a3b8" }}>{formData.visibility === "public" ? (language === "es" ? "Visible para todos" : "Visible to everyone") : (language === "es" ? "Solo visible para ti" : "Visible only to you")}</div>
+                                        </div>
+                                        <label style={{ position: "relative", width: 46, height: 26, flexShrink: 0, cursor: "pointer", display: "block" }}>
+                                            <input type="checkbox" checked={formData.visibility === "public"} onChange={handleVisibilityChange} style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
+                                            <div style={{ position: "absolute", inset: 0, background: formData.visibility === "public" ? "rgb(57,73,171)" : "#e2e8f0", borderRadius: 13, transition: "background .25s" }} />
+                                            <div style={{ position: "absolute", top: 3, left: formData.visibility === "public" ? 23 : 3, width: 20, height: 20, background: "#fff", borderRadius: "50%", boxShadow: "0 1px 4px rgba(0,0,0,.2)", transition: "left .25s" }} />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Documents & Sections */}
+                                {!deck && (
+                                    <div style={{ marginBottom: 24 }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                                            <div style={mLbl}>{language === "es" ? "Documentos & Secciones" : "Documents & Sections"}</div>
+                                            {formData.section_ids.length > 0 && (
+                                                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "rgb(57,73,171)", flexShrink: 0 }}>
+                                                    <svg viewBox="0 0 24 24" style={{ width: 10, height: 10, stroke: "rgb(57,73,171)", strokeWidth: 2, fill: "none" }}><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18"/></svg>
+                                                    {formData.section_ids.length} {language === "es" ? "sel." : "sel."}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {loadingSections ? (
+                                            <div style={{ display: "flex", justifyContent: "center", padding: "24px 0" }}><Spinner className="h-6 w-6" style={{ color: "rgb(57,73,171)" }} /></div>
+                                        ) : scannedDocuments.length === 0 ? (
+                                            <div style={{ padding: 16, background: "#fff1f2", border: "1.5px dashed #fca5a5", borderRadius: 13, textAlign: "center" }}>
+                                                <ExclamationCircleIcon style={{ width: 28, height: 28, color: "#f87171", margin: "0 auto 6px" }} />
+                                                <p style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>{language === "es" ? "No hay secciones. Sube un documento primero." : "No sections available. Upload a document first."}</p>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                                {scannedDocuments.map((doc) => {
+                                                    const docSectionIds = (doc.sections || []).map(s => Number(s.id));
+                                                    const allSel = docSectionIds.length > 0 && docSectionIds.every(id => formData.section_ids.includes(id));
+                                                    const someSel = docSectionIds.some(id => formData.section_ids.includes(id));
+                                                    const isOn = allSel || someSel;
+                                                    return (
+                                                        <div key={doc.id} onClick={() => handleDocumentToggle(doc)} style={{ background: isOn ? "rgba(57,73,171,.07)" : "#f8fafc", border: `1.5px solid ${isOn ? "rgba(57,73,171,.30)" : (errors.general ? "#ef4444" : "#e2e8f0")}`, borderRadius: 13, padding: "13px 14px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                                                            <div style={{ width: 22, height: 22, borderRadius: 7, border: `1.5px solid ${isOn ? "rgb(57,73,171)" : "#e2e8f0"}`, background: isOn ? "rgb(57,73,171)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                                {isOn && <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "#fff", strokeWidth: 2.5, fill: "none" }}><polyline points="20 6 9 17 4 12"/></svg>}
+                                                            </div>
+                                                            <div style={{ width: 38, height: 38, borderRadius: 11, background: "#fee2e2", border: "1px solid #fecaca", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                                <svg viewBox="0 0 24 24" style={{ width: 17, height: 17, stroke: "#b91c1c", strokeWidth: 1.8, fill: "none" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                            </div>
+                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 3 }}>{doc.filename || doc.name}</div>
+                                                                <div style={{ fontSize: 11, color: "#94a3b8" }}>{doc.type ? `.${doc.type}` : ""}{doc.size ? ` · ${Math.round(doc.size / 1024)} KB` : ""}</div>
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", borderRadius: 20, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "rgb(57,73,171)", flexShrink: 0 }}>
+                                                                <svg viewBox="0 0 24 24" style={{ width: 10, height: 10, stroke: "rgb(57,73,171)", strokeWidth: 2, fill: "none" }}><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18"/></svg>
+                                                                {(doc.sections || []).length}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                        {errors.general && <p style={{ fontSize: 11, color: "#ef4444", marginTop: 6 }}>{errors.general}</p>}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* ── MANUAL MODE ── */}
+                        {activeTab === "manual" && (
+                            <>
+                                {/* Title */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>
+                                        {language === "es" ? "Título" : "Title"}
+                                        <span style={{ width: 5, height: 5, background: "rgb(57,73,171)", borderRadius: "50%", display: "inline-block", flexShrink: 0 }} />
+                                    </div>
+                                    <input style={mInput(!!errors.title)} type="text" name="title" value={formData.title} onChange={handleChange} placeholder={language === "es" ? "Ej. Anatomía del Corazón" : "Ex. Heart Anatomy"} />
+                                    {errors.title && <p style={{ fontSize: 11, color: "#ef4444", marginTop: 5 }}>{errors.title}</p>}
+                                </div>
+
+                                {/* Visibility toggle */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>{language === "es" ? "Visibilidad" : "Visibility"}</div>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 13, padding: "14px 16px" }}>
+                                        <div>
+                                            <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 2 }}>{language === "es" ? "Visibilidad Pública" : "Public Visibility"}</div>
+                                            <div style={{ fontSize: 12, color: "#94a3b8" }}>{formData.visibility === "public" ? (language === "es" ? "Visible para todos" : "Visible to everyone") : (language === "es" ? "Solo visible para ti" : "Visible only to you")}</div>
+                                        </div>
+                                        <label style={{ position: "relative", width: 46, height: 26, flexShrink: 0, cursor: "pointer", display: "block" }}>
+                                            <input type="checkbox" checked={formData.visibility === "public"} onChange={handleVisibilityChange} style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
+                                            <div style={{ position: "absolute", inset: 0, background: formData.visibility === "public" ? "rgb(57,73,171)" : "#e2e8f0", borderRadius: 13, transition: "background .25s" }} />
+                                            <div style={{ position: "absolute", top: 3, left: formData.visibility === "public" ? 23 : 3, width: 20, height: 20, background: "#fff", borderRadius: "50%", boxShadow: "0 1px 4px rgba(0,0,0,.2)", transition: "left .25s" }} />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Description */}
+                                <div style={{ marginBottom: 20 }}>
+                                    <div style={mLbl}>
+                                        {language === "es" ? "Descripción" : "Description"}
+                                        <span style={{ fontSize: 9, background: "#f8fafc", color: "#94a3b8", border: "1px solid #e2e8f0", padding: "1px 7px", borderRadius: 20, fontWeight: 500, textTransform: "none", letterSpacing: ".3px" }}>{language === "es" ? "opcional" : "optional"}</span>
+                                    </div>
+                                    <textarea style={mTextarea} name="description" value={formData.description} onChange={handleChange} placeholder={language === "es" ? "Describe este mazo..." : "Describe this deck..."} />
+                                </div>
+
+                                <div style={{ height: 1, background: "#e2e8f0", margin: "4px 0 22px" }} />
+
+                                {/* Card builder */}
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                                    <div style={{ ...mLbl, marginBottom: 0 }}>
+                                        {language === "es" ? "Tarjetas" : "Cards"}
+                                        <span style={{ background: "rgb(57,73,171)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, minWidth: 22, textAlign: "center" }}>{formData.cards.length}</span>
+                                    </div>
+                                </div>
+
+                                {/* Existing cards */}
+                                {formData.cards.map((card, index) => (
+                                    <div key={index} style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 16, padding: 16, marginBottom: 12, position: "relative" }}>
+                                        <div style={{ position: "absolute", top: -10, left: 14, background: "rgb(57,73,171)", color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 10, fontWeight: 800, padding: "2px 9px", borderRadius: 20 }}>
+                                            {language === "es" ? `Tarjeta ${index + 1}` : `Card ${index + 1}`}
+                                        </div>
+                                        <button type="button" onClick={() => removeCard(index)} style={{ position: "absolute", top: 10, right: 12, width: 24, height: 24, borderRadius: "50%", background: "#fee2e2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, stroke: "#b91c1c", strokeWidth: 2.5, fill: "none" }}><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                        </button>
+                                        <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, marginBottom: 4, marginTop: 6 }}>{language === "es" ? "Frente" : "Front"}</div>
+                                        <div style={{ fontSize: 13, color: "#0f172a", fontWeight: 500, marginBottom: 8 }}>{card.front}</div>
+                                        <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, marginBottom: 4 }}>{language === "es" ? "Reverso" : "Back"}</div>
+                                        <div style={{ fontSize: 13, color: "#0f172a", fontWeight: 500 }}>{card.back}</div>
+                                        {card.notes && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6, fontStyle: "italic" }}>{card.notes}</div>}
+                                    </div>
+                                ))}
+
+                                {/* New card input */}
+                                <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 16, padding: 16, marginBottom: 12, position: "relative" }}>
+                                    <div style={{ position: "absolute", top: -10, left: 14, background: "rgb(57,73,171)", color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 10, fontWeight: 800, padding: "2px 9px", borderRadius: 20 }}>
+                                        {language === "es" ? `Tarjeta ${formData.cards.length + 1}` : `Card ${formData.cards.length + 1}`}
+                                    </div>
+                                    <div style={{ marginTop: 6 }}>
+                                        <input style={{ width: "100%", padding: "10px 12px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 10, fontFamily: "inherit", fontSize: 13, color: "#0f172a", outline: "none", marginBottom: 8 }} type="text" name="front" value={currentCard.front} onChange={handleCurrentCardChange} placeholder={language === "es" ? "Frente (Pregunta)" : "Front (Question)"} />
+                                        <input style={{ width: "100%", padding: "10px 12px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 10, fontFamily: "inherit", fontSize: 13, color: "#0f172a", outline: "none", marginBottom: 8 }} type="text" name="back" value={currentCard.back} onChange={handleCurrentCardChange} placeholder={language === "es" ? "Reverso (Respuesta)" : "Back (Answer)"} />
+                                        <input style={{ width: "100%", padding: "10px 12px", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 10, fontFamily: "inherit", fontSize: 12, color: "#475569", outline: "none" }} type="text" name="notes" value={currentCard.notes} onChange={handleCurrentCardChange} placeholder={language === "es" ? "Notas (Opcional)" : "Notes (Optional)"} />
+                                    </div>
+                                </div>
+
+                                {/* Add to list button */}
+                                <button
+                                    type="button"
+                                    onClick={addCard}
+                                    disabled={!currentCard.front.trim() || !currentCard.back.trim()}
+                                    style={{ width: "100%", padding: 12, background: "transparent", border: "1.5px dashed rgba(57,73,171,.30)", borderRadius: 13, cursor: !currentCard.front.trim() || !currentCard.back.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 600, color: !currentCard.front.trim() || !currentCard.back.trim() ? "#94a3b8" : "rgb(57,73,171)", marginBottom: 4, opacity: !currentCard.front.trim() || !currentCard.back.trim() ? 0.5 : 1 }}
+                                >
+                                    <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "currentColor", strokeWidth: 2.5, fill: "none" }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    {language === "es" ? "Agregar a la lista" : "Add to list"}
+                                </button>
+                                {errors.general && <p style={{ fontSize: 11, color: "#ef4444", marginTop: 6 }}>{errors.general}</p>}
+                                <div style={{ height: 8 }} />
+                            </>
+                        )}
+
+                    </div>
+
+                    {/* Bottom action bar */}
+                    <div style={{ display: "flex", gap: 10, padding: "18px 20px", paddingBottom: "max(18px, env(safe-area-inset-bottom, 18px))", borderTop: "1px solid #e2e8f0", background: "#fff", flexShrink: 0, marginTop: 24 }}>
+                        <button type="button" onClick={onClose} style={{ flex: 1, padding: 14, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 13, fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>
+                            {language === "es" ? "Cancelar" : "Cancel"}
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting || (loadingSections && activeTab === "ai")}
+                            style={{ flex: 2, padding: 14, background: submitting ? "rgba(57,73,171,.6)" : "linear-gradient(135deg, rgb(57,73,171) 0%, #818cf8 100%)", border: "none", borderRadius: 13, fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 700, color: "#fff", cursor: submitting ? "not-allowed" : "pointer", boxShadow: "0 6px 20px rgba(57,73,171,.38)", display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}
+                        >
+                            {submitting ? (
+                                <Spinner className="h-4 w-4" />
+                            ) : activeTab === "ai" ? (
+                                <>
+                                    <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "#fff", strokeWidth: 2.5, fill: "none" }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                    {language === "es" ? "Generar Mazo" : "Generate Deck"}
+                                </>
+                            ) : (
+                                <>
+                                    <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "#fff", strokeWidth: 2.5, fill: "none" }}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                    {language === "es" ? "Crear Mazo" : "Create Deck"}
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                </div>
+
+                {/* ══════════════ DESKTOP (unchanged) ══════════════ */}
+                <div className="hidden md:flex md:flex-col" style={{ height: "90vh" }}>
                 <DialogHeader className="relative p-0 overflow-hidden bg-zinc-50 border-b border-zinc-100 flex-none">
                     <div className="px-6 py-4 flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
@@ -733,6 +1032,7 @@ export function CreateDeckDialog({ open, onClose, onCreate, projectId, deck = nu
                         {submitting ? <Spinner className="h-4 w-4" /> : (deck && deck.id ? t("global.actions.save") : t("projects.dialogs.create"))}
                     </Button>
                 </DialogFooter>
+            </div>
             </form>
         </Dialog>
     );
