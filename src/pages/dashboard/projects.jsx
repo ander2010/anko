@@ -360,7 +360,7 @@ export function Projects() {
             </div>
 
             {/* ══ DESKTOP — New Design ══ */}
-            <div className="hidden md:block" style={{ margin: "-16px -16px 0", background: "#ffffff", padding: "44px 40px 0", fontFamily: "'DM Sans', sans-serif" }}>
+            <div className="hidden md:block" style={{ margin: "0 -16px 0", background: "#ffffff", padding: "24px 40px 0", fontFamily: "'DM Sans', sans-serif" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
                 {/* PAGE TOP */}
@@ -615,7 +615,7 @@ export function Projects() {
             </div>
 
             {/* ══ DESKTOP GRID ══ */}
-            <div className="hidden md:block" style={{ background: "#ffffff", padding: "0 40px 80px", margin: "-2px -16px 0" }}>
+            <div className="hidden md:block" style={{ background: "#ffffff", padding: "0 40px 80px", margin: "0 -16px 0" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto" }}>
                 {/* PROJECTS GRID / LIST */}
                 {deskSortedProjects.length > 0 ? (
