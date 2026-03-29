@@ -341,25 +341,20 @@ export function Projects() {
         <div className="mt-0 pb-20 md:pb-0">
 
             {/* ── Mobile Header + Search (hidden on desktop) ── */}
-            <div className="md:hidden px-4 pt-5 pb-1">
-                <div className="flex items-center mb-4">
-                    <span style={{ fontSize: 22, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.5px" }}>
-                        {t("projects.title")}
-                    </span>
+            {/* Mobile sticky header — same structure as My Batteries / My Decks */}
+            <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-zinc-100 px-3 py-2.5 flex items-center gap-2 mb-3">
+                <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a2e" }}>{t("projects.title")}</p>
+                    <p style={{ fontSize: "10px", color: "#888" }}>{projects.length} {language === "es" ? "total" : "total"}</p>
                 </div>
-                <div style={{ position: "relative", marginBottom: 20 }}>
-                    <MagnifyingGlassIcon style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#94a3b8", pointerEvents: "none" }} />
+                <div className="relative" style={{ flex: "0 0 140px" }}>
+                    <MagnifyingGlassIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
                     <input
                         type="text"
-                        placeholder={t("projects.search_placeholder") || "Search projects…"}
+                        placeholder={language === "es" ? "Buscar..." : "Search..."}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{
-                            width: "100%", background: "#fff",
-                            border: "1.5px solid #e2e8f0", borderRadius: 13,
-                            padding: "11px 14px 11px 38px",
-                            fontSize: 13, color: "#0f172a", outline: "none",
-                        }}
+                        style={{ width: "100%", paddingLeft: "22px", paddingRight: "8px", paddingTop: "5px", paddingBottom: "5px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "11px", outline: "none", background: "#f9f9f9" }}
                     />
                 </div>
             </div>

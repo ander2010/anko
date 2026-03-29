@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Card,
     CardBody,
@@ -20,6 +21,7 @@ import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 export function MyBatteries() {
     const { t, language } = useLanguage();
+    const navigate = useNavigate();
     const [batteries, setBatteries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
@@ -113,7 +115,7 @@ export function MyBatteries() {
                 </div>
             </div>
 
-            <div className="mt-8 md:mt-8 flex flex-col flex-grow gap-8">
+            <div className="md:mt-8 flex flex-col flex-grow gap-3 md:gap-8">
             <div className="hidden md:flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <Typography variant="h3" className="font-black text-zinc-900 tracking-tight mb-2">
@@ -135,6 +137,20 @@ export function MyBatteries() {
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile label + create button row */}
+            <div className="md:hidden flex items-center justify-between" style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.3px", color: "#94a3b8", textTransform: "uppercase", margin: 0 }}>
+                    {language === "es" ? "Baterías" : "Batteries"}
+                </p>
+                <button
+                    className="shrink-0 font-semibold text-white transition-all active:scale-95"
+                    style={{ background: "var(--ank-purple)", fontSize: "9px", padding: "5px 10px", borderRadius: "8px", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                    onClick={() => navigate("/dashboard/projects")}
+                >
+                    + {language === "es" ? "Nueva Batería" : "New Battery"}
+                </button>
             </div>
 
             {loading ? (
