@@ -97,7 +97,7 @@ export const en = {
             title_1: "Learn with questions.",
             title_2: "Master with practice.",
             subtitle_prefix: APP_NAME,
-            subtitle_mid1: "turns your documents into",
+            subtitle_mid1: "uses AI to turn your documents into",
             subtitle_flashcards: "flashcards",
             subtitle_mid2: "and",
             subtitle_questions: "quizzes",

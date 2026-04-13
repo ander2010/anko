@@ -146,11 +146,11 @@ export function LandingPage() {
                             <span key={i} style={{ padding: "4px 12px", borderRadius: 20, fontSize: 10, fontWeight: 600, letterSpacing: ".8px", textTransform: "uppercase", background: p.hi ? "rgba(57,73,171,.3)" : "rgba(255,255,255,.08)", border: `1px solid ${p.hi ? "rgba(99,102,241,.4)" : "rgba(255,255,255,.13)"}`, color: p.hi ? "#a5b4fc" : "rgba(255,255,255,.6)" }}>{p.label}</span>
                         ))}
                     </div>
-                    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 800, color: "#fff", letterSpacing: "-1.2px", lineHeight: 1.05, marginBottom: 16 }}>
-                        Learn with <em style={{ fontStyle: "normal", color: "#818cf8" }}>questions.</em><br />Master with practice.
-                    </h1>
+                    <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 800, color: "#fff", letterSpacing: "-1.2px", lineHeight: 1.05, marginBottom: 16 }}>
+                        {language === "es" ? <>Aprende con <em style={{ fontStyle: "normal", color: "#818cf8" }}>IA.</em><br />Domina con práctica.</> : <>Learn with <em style={{ fontStyle: "normal", color: "#818cf8" }}>AI.</em><br />Master with practice.</>}
+                    </h2>
                     <p style={{ fontSize: 15, color: "rgba(255,255,255,.52)", lineHeight: 1.7, marginBottom: 28 }}>
-                        <strong style={{ color: "rgba(255,255,255,.82)", fontWeight: 600 }}>Ankard</strong> turns your documents into flashcards and quizzes — practice for real, measure progress, improve every day.
+                        <strong style={{ color: "rgba(255,255,255,.82)", fontWeight: 600 }}>Ankard</strong> {language === "es" ? "usa inteligencia artificial para convertir tus documentos en flashcards y cuestionarios — practica de verdad, mide tu progreso y mejora cada día." : "uses AI to turn your documents into flashcards and quizzes — practice for real, measure progress, improve every day."}
                     </p>
                     {/* CTAs */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
@@ -216,7 +216,7 @@ export function LandingPage() {
             </section>
 
             {/* HOW IT WORKS */}
-            <section id="how-mobile" style={{ padding: "64px 20px", background: "#f8fafc" }}>
+            <section id="how-mobile" style={{ padding: "64px 20px", background: "#f8fafc" }} aria-label={language === "es" ? "Cómo funciona" : "How it works"}>
                 <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", color: "rgb(57,73,171)", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 12px", borderRadius: 20, marginBottom: 12 }}>
                     {language === "es" ? "Cómo funciona" : "How it works"}
                 </div>
@@ -241,7 +241,7 @@ export function LandingPage() {
                             <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(57,73,171,.10)", border: "1.5px solid rgba(57,73,171,.22)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
                                 <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "rgb(57,73,171)", strokeWidth: 1.8, fill: "none" }}>{step.smallIcon}</svg>
                             </div>
-                            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 7 }}>{step.title}</div>
+                            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 7 }}>{step.title}</h3>
                             <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{step.desc}</p>
                         </div>
                     </div>
@@ -249,7 +249,7 @@ export function LandingPage() {
             </section>
 
             {/* FEATURES */}
-            <section style={{ padding: "64px 20px", background: "#0f172a", position: "relative", overflow: "hidden" }}>
+            <section id="features-mobile" style={{ padding: "64px 20px", background: "#0f172a", position: "relative", overflow: "hidden" }}>
                 <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 400, height: 400, background: "radial-gradient(circle, rgba(57,73,171,.45) 0%, transparent 60%)", top: -140, right: -120 }} />
                 <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 250, height: 250, background: "radial-gradient(circle, rgba(139,92,246,.2) 0%, transparent 65%)", bottom: -80, left: -60 }} />
                 <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)", backgroundSize: "36px 36px", pointerEvents: "none" }} />
@@ -286,7 +286,7 @@ export function LandingPage() {
             </section>
 
             {/* PRICING */}
-            <section style={{ padding: "64px 20px" }}>
+            <section id="pricing-mobile" style={{ padding: "64px 20px" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", color: "rgb(57,73,171)", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 12px", borderRadius: 20, marginBottom: 12 }}>
                     {language === "es" ? "Precios" : "Pricing"}
                 </div>
@@ -304,7 +304,7 @@ export function LandingPage() {
                 ].map((plan, i) => (
                     <div key={i} style={{ background: plan.dark ? "#0f172a" : "#f8fafc", borderRadius: 20, padding: 24, border: plan.dark ? "1.5px solid rgba(99,102,241,.3)" : "1.5px solid #e2e8f0", marginBottom: 14, position: "relative", boxShadow: plan.dark ? "0 12px 36px rgba(57,73,171,.25)" : "none" }}>
                         {plan.badge && <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "rgb(57,73,171)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 14px", borderRadius: 20, whiteSpace: "nowrap" }}>{plan.badge}</div>}
-                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: plan.dark ? "#818cf8" : "#94a3b8", marginBottom: 10 }}>{plan.tier}</div>
+                        <h3 style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: plan.dark ? "#818cf8" : "#94a3b8", marginBottom: 10 }}>{plan.tier}</h3>
                         <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 40, fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 4, color: plan.dark ? "#fff" : "#0f172a" }}>
                             <span style={{ fontSize: 18, fontWeight: 500, verticalAlign: "top", marginTop: 6, display: "inline-block" }}>$</span>
                             {plan.amount.replace("$","")}
@@ -338,13 +338,13 @@ export function LandingPage() {
                 {faqs.map((item, i) => (
                     <div key={i} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #e2e8f0", padding: 18, marginBottom: 10, position: "relative", overflow: "hidden" }}>
                         <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: "rgb(57,73,171)", borderRadius: "14px 0 0 14px" }} />
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 7 }}>{item.q}</div>
+                        <h3 style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 7 }}>{item.q}</h3>
                         <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{item.a}</div>
                     </div>
                 ))}
                 <p style={{ textAlign: "center", fontSize: 14, color: "#94a3b8", marginTop: 8 }}>
                     {language === "es" ? "¿Más preguntas? " : "Still have questions? "}
-                    <Link to="/dashboard/faqs" style={{ color: "rgb(57,73,171)", fontWeight: 600, textDecoration: "none" }}>
+                    <Link to="/faq" style={{ color: "rgb(57,73,171)", fontWeight: 600, textDecoration: "none" }}>
                         {language === "es" ? "Ver todas las FAQs →" : "View all FAQs →"}
                     </Link>
                 </p>
@@ -383,8 +383,8 @@ export function LandingPage() {
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 36 }}>
                     {[
-                        { title: language === "es" ? "Producto" : "Product", links: [[language === "es" ? "Cómo funciona" : "How it works","#how-mobile"],[language === "es" ? "Características" : "Features","#"],[language === "es" ? "Precios" : "Pricing","#"],[language === "es" ? "Hoja de ruta" : "Roadmap","#"]] },
-                        { title: language === "es" ? "Empresa" : "Company", links: [["FAQ","/dashboard/faqs"],["Contact","/dashboard/contact-us"],["Privacy","#"],["Terms","#"]] },
+                        { title: language === "es" ? "Producto" : "Product", links: [[language === "es" ? "Cómo funciona" : "How it works","#how-mobile"],[language === "es" ? "Características" : "Features","#features-mobile"],[language === "es" ? "Precios" : "Pricing","#pricing-mobile"],[language === "es" ? "Hoja de ruta" : "Roadmap","#"]] },
+                        { title: language === "es" ? "Empresa" : "Company", links: [["FAQ","/faq"],[language === "es" ? "Contacto" : "Contact","/dashboard/contact-us"],[language === "es" ? "Privacidad" : "Privacy","/privacidad"],[language === "es" ? "Términos" : "Terms","/terminos"]] },
                     ].map((col, i) => (
                         <div key={i}>
                             <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,.3)", marginBottom: 12 }}>{col.title}</h4>
@@ -428,7 +428,7 @@ export function LandingPage() {
                                     <Chip value={t("home.hero.tags.questions")} variant="outlined" color="blue-gray" />
                                     <Chip value={t("home.hero.tags.progress")} variant="outlined" color="blue-gray" />
                                 </div>
-                                <Typography variant="h2" color="blue-gray" className="leading-tight text-3xl lg:text-5xl font-black">
+                                <Typography variant="h1" color="blue-gray" className="leading-tight text-3xl lg:text-5xl font-black">
                                     {t("home.hero.title_1")}
                                     <br />
                                     <span className="text-blue-gray-700">{t("home.hero.title_2")}</span>
@@ -479,7 +479,7 @@ export function LandingPage() {
                                 <div className="mt-8 flex items-center gap-4">
                                     <div className="flex -space-x-2">
                                         {[1, 2, 3, 4].map(i => (
-                                            <img key={i} src={`/img/avatar${i > 3 ? 1 : i}.png`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" alt="user" />
+                                            <img key={i} src={`/img/avatar${i > 3 ? 1 : i}.png`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" alt={language === "es" ? `Estudiante de Ankard ${i}` : `Ankard student ${i}`} />
                                         ))}
                                     </div>
                                     <Typography variant="small" className="text-blue-gray-600 font-medium">
@@ -494,7 +494,7 @@ export function LandingPage() {
                                 <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl overflow-hidden">
                                     <img
                                         src="/img/anko-hero.png"
-                                        alt={`${APP_NAME} UI`}
+                                        alt={language === "es" ? "Ankard — interfaz de la plataforma de estudio con inteligencia artificial: flashcards y cuestionarios" : "Ankard — AI-powered study platform interface: flashcards and quiz generator"}
                                         className="h-[320px] w-full object-cover lg:h-[420px]"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -558,7 +558,7 @@ export function LandingPage() {
                                         <div className="p-2 bg-blue-gray-50 rounded-lg">
                                             {React.createElement(step.icon, { className: "h-6 w-6 text-blue-gray-700" })}
                                         </div>
-                                        <Typography variant="h5" color="blue-gray">
+                                        <Typography variant="h3" color="blue-gray" className="text-xl font-bold">
                                             {step.title}
                                         </Typography>
                                     </div>
@@ -594,7 +594,7 @@ export function LandingPage() {
                                     <div className="p-2 bg-blue-gray-100 rounded-lg w-fit mb-4">
                                         {React.createElement(b.icon, { className: "h-6 w-6 text-blue-gray-700" })}
                                     </div>
-                                    <Typography variant="h6" color="white" className="mb-2">
+                                    <Typography variant="h3" color="white" className="mb-2 text-lg font-bold">
                                         {b.title}
                                     </Typography>
                                     <Typography variant="small" className="text-white/60">
@@ -655,7 +655,7 @@ export function LandingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                         {faqs.map((f, idx) => (
                             <Card key={idx} className="border border-blue-gray-50 p-6 shadow-sm">
-                                <Typography variant="h6" color="blue-gray" className="mb-2">
+                                <Typography variant="h3" color="blue-gray" className="mb-2 text-base font-bold">
                                     {f.q}
                                 </Typography>
                                 <Typography variant="small" className="text-blue-gray-600">
@@ -664,7 +664,7 @@ export function LandingPage() {
                             </Card>
                         ))}
                     </div>
-                    <Link to="/dashboard/faqs">
+                    <Link to="/faq">
                         <Button variant="text" color="blue-gray" className="mt-10 px-8 flex items-center gap-2 mx-auto">
                             {t("landing.faq.cta")} <RocketLaunchIcon className="h-4 w-4" />
                         </Button>

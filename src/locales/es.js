@@ -97,7 +97,7 @@ export const es = {
             title_1: "Aprende con preguntas.",
             title_2: "Domina con práctica.",
             subtitle_prefix: APP_NAME,
-            subtitle_mid1: "convierte tus documentos en",
+            subtitle_mid1: "usa inteligencia artificial para convertir tus documentos en",
             subtitle_flashcards: "flashcards",
             subtitle_mid2: "y",
             subtitle_questions: "cuestionarios",
