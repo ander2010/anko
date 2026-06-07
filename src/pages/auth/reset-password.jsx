@@ -49,7 +49,12 @@ export function ResetPassword() {
             }, 3000);
         } catch (err) {
             console.error(err);
-            setError(err?.error || err?.detail || (language === "es" ? "Error al restablecer la contraseña" : "Failed to reset password"));
+            const passwordErrors = err?.new_password1 || err?.new_password2;
+            if (passwordErrors) {
+                setError(Array.isArray(passwordErrors) ? passwordErrors.join(" ") : passwordErrors);
+            } else {
+                setError(err?.error || err?.detail || err?.token?.[0] || err?.uid?.[0] || (language === "es" ? "Error al restablecer la contraseña" : "Failed to reset password"));
+            }
         } finally {
             setLoading(false);
         }
