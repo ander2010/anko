@@ -1,13 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { dictionaryList } from "../locales";
 
 export const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-    const savedLanguage = localStorage.getItem("language");
-    const [language, setLanguage] = useState(
-        savedLanguage === "es" || savedLanguage === "en" ? savedLanguage : "en"
-    );
+    const [language, setLanguage] = useState(() => {
+        const saved = localStorage.getItem("language");
+        if (saved === "es" || saved === "en") return saved;
+        localStorage.setItem("language", "en");
+        return "en";
+    });
 
     const changeLanguage = (lang) => {
         setLanguage(lang);
