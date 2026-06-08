@@ -4,16 +4,10 @@ import { dictionaryList } from "../locales";
 export const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-    const [language, setLanguage] = useState(() => {
-        const saved = localStorage.getItem("language");
-        if (saved === "es" || saved === "en") return saved;
-        localStorage.setItem("language", "en");
-        return "en";
-    });
+    const [language, setLanguage] = useState("en");
 
     const changeLanguage = (lang) => {
         setLanguage(lang);
-        localStorage.setItem("language", lang);
     };
 
     const t = (key, params) => {

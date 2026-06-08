@@ -33,11 +33,9 @@ export function setAuthToken(token) {
 const savedToken = localStorage.getItem("token");
 if (savedToken) setAuthToken(savedToken);
 
-// Attach Accept-Language from localStorage on every request
-// RBAC always uses "en" — route keys are code identifiers, not UI strings
+// Always send English — language is session-only and always starts as "en"
 api.interceptors.request.use((config) => {
-  const lang = localStorage.getItem("language") || "en";
-  config.headers["Accept-Language"] = config.url?.includes("/rbac/") ? "en" : lang;
+  config.headers["Accept-Language"] = "en";
   return config;
 });
 
