@@ -47,10 +47,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
       ...route,
       pages: (route.pages || []).filter((page) => {
         if (page.hidden) return false;
-        // If it has a key, check allowedRoutes
         if (page.key) {
-          if (isAdmin) return true;
-          return allowedRoutes.includes(page.key);
+          // Admin routes require admin role
+          if (page.key.startsWith("dashboard.admin")) return isAdmin;
+          // All other keyed routes are visible to any authenticated user
+          return true;
         }
         return true;
       }).map(page => {

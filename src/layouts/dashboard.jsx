@@ -71,14 +71,13 @@ export function Dashboard() {
             {routes.map(({ layout, pages }) =>
               layout === "dashboard" &&
               pages.map((page) => {
-                // Home is always accessible — it's the fallback redirect target
-                const isHome = page.key === "dashboard.home";
-                if (!isHome && page.key && !isAdmin && !allowedRoutes.includes(page.key)) {
+                // Admin routes require admin role; all other routes are accessible to authenticated users
+                if (page.key?.startsWith("dashboard.admin") && !isAdmin) {
                   return null;
                 }
                 if (page.children) {
                   return page.children.map(({ path, element, key }) => {
-                    if (key && !isAdmin && !allowedRoutes.includes(key)) {
+                    if (key?.startsWith("dashboard.admin") && !isAdmin) {
                       return null;
                     }
                     return <Route exact path={path} element={element} key={path} />;
