@@ -4,10 +4,16 @@ import { dictionaryList } from "../locales";
 export const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-    const [language, setLanguage] = useState("en");
+    const [language, setLanguage] = useState(() => {
+        // Always start in English — write it so the API interceptor picks it up
+        localStorage.setItem("language", "en");
+        return "en";
+    });
 
     const changeLanguage = (lang) => {
         setLanguage(lang);
+        // Persist so the axios interceptor sends the right Accept-Language header
+        localStorage.setItem("language", lang);
     };
 
     const t = (key, params) => {
