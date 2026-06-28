@@ -1,226 +1,209 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
-import { XMarkIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { Button, IconButton, Typography } from "@material-tailwind/react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { ChevronDownIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useLanguage } from "@/context/language-context";
-import { useAuth } from "@/context/auth-context";
 import { APP_NAME } from "@/config/app";
 
-export function Sidenav({ brandImg, brandName, routes }) {
+export function Sidenav({ routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { t } = useLanguage();
-  const { sidenavColor, sidenavType, openSidenav } = controller;
-  const { allowedRoutes, isAdmin } = useAuth();
+  const { openSidenav } = controller;
+  const location = useLocation();
 
-  // State for expanded groups
-  const [expanded, setExpanded] = useState({});
-
-  // Auth check
-  const isAuthenticated = !!localStorage.getItem("token");
-
-  const toggleGroup = (name) => {
-    setExpanded(prev => ({ ...prev, [name]: !prev[name] }));
+  const getInitialExpanded = () => {
+    const result = {};
+    (routes || []).forEach(({ pages }) => {
+      (pages || []).forEach((page) => {
+        if (page.children && !page.alwaysOpen) {
+          const isChildActive = page.children.some((child) => {
+            const to = child.href || `/${page.layout || "dashboard"}${child.path || ""}`;
+            return location.pathname.startsWith(to);
+          });
+          if (isChildActive) result[page.name] = true;
+        }
+      });
+    });
+    return result;
   };
 
-  const sidenavTypes = {
-    dark: "bg-gradient-to-br from-gray-800 to-gray-900",
-    white: "bg-white shadow-sm",
-    transparent: "bg-transparent",
-  };
+  const [expanded, setExpanded] = useState(getInitialExpanded);
 
-  const allowedColors = new Set([
-    "white", "blue-gray", "gray", "brown", "deep-orange", "orange", "amber", "yellow", "lime", "light-green", "green", "teal", "cyan", "light-blue", "blue", "indigo", "deep-purple", "purple", "pink", "red",
-  ]);
+  useEffect(() => {
+    (routes || []).forEach(({ pages, layout }) => {
+      (pages || []).forEach((page) => {
+        if (page.children && !page.alwaysOpen) {
+          const isChildActive = page.children.some((child) => {
+            const to = child.href || `/${layout || "dashboard"}${child.path || ""}`;
+            return location.pathname.startsWith(to);
+          });
+          if (isChildActive) {
+            setExpanded(prev => prev[page.name] ? prev : { ...prev, [page.name]: true });
+          }
+        }
+      });
+    });
+  }, [location.pathname, routes]);
 
-  const activeColor = allowedColors.has(sidenavColor) ? sidenavColor : "blue-gray";
+  const toggleGroup = (name) => setExpanded(prev => ({ ...prev, [name]: !prev[name] }));
 
-  // Filter routes based on RBAC
   const visibleRoutes = (routes || [])
-    .filter((route) => {
-      if (isAuthenticated && route.layout === "auth") return false;
-      if (route.hidden) return false;
-      return true;
-    })
+    .filter((route) => !route.hidden)
     .map((route) => ({
       ...route,
-      pages: (route.pages || []).filter((page) => {
-        if (page.hidden) return false;
-        if (page.key) {
-          // Admin routes require admin role
-          if (page.key.startsWith("dashboard.admin")) return isAdmin;
-          // All other keyed routes are visible to any authenticated user
-          return true;
-        }
-        return true;
-      }).map(page => {
-        // Also filter children if any
-        if (page.children) {
-          return {
-            ...page,
-            children: page.children.filter(child => {
-              if (child.key) {
-                if (isAdmin) return true;
-                return allowedRoutes.includes(child.key);
-              }
-              return true;
-            })
-          };
-        }
-        return page;
-      }).filter(page => {
-        // Hide parent if it has children and all are filtered out
-        if (page.children && page.children.length === 0) return false;
-        return true;
-      }),
+      pages: (route.pages || []).filter((page) => !page.hidden),
     }))
     .filter((route) => route.pages.length > 0 || route.layout === "auth");
 
   return (
-    <aside
-      className={`${sidenavTypes[sidenavType]} ${openSidenav ? "translate-x-0" : "-translate-x-80"
-        } fixed inset-0 z-[10000] my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 border border-blue-gray-100 overflow-y-auto shadow-2xl`}
-    >
-      <div className="relative">
-        <Link to="/dashboard/home" className="py-1 px-8 text-center block">
-          <img
-            src="/img/logoanko.png"
-            alt={t("sidenav.brand")}
-            className="h-32 w-auto mx-auto object-contain"
-          />
-        </Link>
-        <IconButton
-          variant="text"
-          color="white"
-          size="sm"
-          ripple={false}
-          className="absolute right-0 top-0 grid rounded-br-none rounded-tl-none"
+    <>
+      {/* Backdrop for mobile */}
+      {openSidenav && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/60 md:hidden"
           onClick={() => setOpenSidenav(dispatch, false)}
-        >
-          <XMarkIcon strokeWidth={2.5} className="h-5 w-5 text-blue-gray-500" />
-        </IconButton>
-      </div>
+        />
+      )}
 
-      <div className="mx-4 mb-4 mt-0">
-        {visibleRoutes.map(({ layout, title, pages }) => {
-          const groupKey = `${layout || "layout"}-${title || "group"}`;
+      <aside
+        style={{ background: "var(--sidebar-bg)", borderRight: "1px solid var(--sidebar-border)", width: "var(--sidebar-w)" }}
+        className={`fixed inset-y-0 left-0 z-[10000] flex flex-col transition-transform duration-200
+          ${openSidenav ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0`}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-between px-4 py-4" style={{ borderBottom: "1px solid var(--sidebar-border)" }}>
+          <Link to="/enterprise/dashboard" className="flex items-center gap-2.5">
+            <div
+              className="w-6 h-6 rounded flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+              style={{ background: "var(--accent)" }}
+            >
+              A
+            </div>
+            <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>
+              {APP_NAME || "Ankard"}
+            </span>
+          </Link>
+          <button
+            onClick={() => setOpenSidenav(dispatch, false)}
+            className="md:hidden p-1 rounded transition-colors"
+            style={{ color: "var(--text-tertiary)" }}
+          >
+            <XMarkIcon className="h-4 w-4" />
+          </button>
+        </div>
 
-          return (
-            <ul key={groupKey} className="mb-4 flex flex-col gap-1">
-              {title && (
-                <li className="mx-3.5 mt-4 mb-2">
-                  <Typography
-                    variant="small"
-                    color={sidenavType === "dark" ? "white" : "blue-gray"}
-                    className="font-black uppercase opacity-75"
-                  >
-                    {title}
-                  </Typography>
-                </li>
-              )}
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+          {visibleRoutes.map(({ layout, pages }) =>
+            (pages || []).map((page) => {
+              const { icon, name, path, href, children, alwaysOpen } = page;
+              const label = t(`sidenav.${name}`) || name;
+              const hasChildren = children && children.length > 0;
 
-              {(pages || []).map(({ icon, name, path, children }) => {
-                const label = name ?? path ?? "Untitled";
-                const pageKey = `${layout || ""}${path || label}`;
-                const hasChildren = children && children.length > 0;
-                const isExpanded = !!expanded[name];
-
-                if (hasChildren) {
-                  return (
-                    <li key={pageKey}>
-                      <Button
-                        variant="text"
-                        color={sidenavType === "dark" ? "white" : "blue-gray"}
-                        className="flex items-center justify-between gap-4 px-4 capitalize w-full"
-                        fullWidth
-                        onClick={() => toggleGroup(name)}
-                      >
-                        <div className="flex items-center gap-4">
-                          {icon}
-                          <Typography color="inherit" className="font-medium capitalize">
-                            {t(`sidenav.${label}`) || label}
-                          </Typography>
-                        </div>
-                        {isExpanded ? (
-                          <ChevronDownIcon strokeWidth={2.5} className="h-3 w-3" />
-                        ) : (
-                          <ChevronRightIcon strokeWidth={2.5} className="h-3 w-3" />
-                        )}
-                      </Button>
-                      {isExpanded && (
-                        <ul className="ml-8 mt-1 flex flex-col gap-1 border-l border-blue-gray-100 pl-2">
-                          {children.map((child) => (
-                            <li key={`${pageKey}-${child.path}`}>
-                              <NavLink to={`/${layout}${child.path}`}>
-                                {({ isActive }) => (
-                                  <Button
-                                    variant={isActive ? "gradient" : "text"}
-                                    color={isActive ? activeColor : (sidenavType === "dark" ? "white" : "blue-gray")}
-                                    className="flex items-center gap-4 px-4 capitalize"
-                                    fullWidth
-                                    size="sm"
-                                  >
-                                    {child.icon}
-                                    <Typography color="inherit" className="font-medium capitalize text-sm">
-                                      {t(`sidenav.${child.name}`) || child.name}
-                                    </Typography>
-                                  </Button>
-                                )}
-                              </NavLink>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                }
-
+              if (!hasChildren) {
+                const to = href || `/${layout || "dashboard"}${path || ""}`;
                 return (
-                  <li key={pageKey}>
-                    <NavLink to={`/${layout}${path || ""}`}>
-                      {({ isActive }) => (
-                        <Button
-                          variant={isActive ? "gradient" : "text"}
-                          color={
-                            isActive
-                              ? activeColor
-                              : sidenavType === "dark"
-                                ? "white"
-                                : "blue-gray"
-                          }
-                          className="flex items-center gap-4 px-4 capitalize"
-                          fullWidth
-                        >
-                          {icon}
-                          <Typography
-                            color="inherit"
-                            className="font-medium capitalize"
-                          >
-                            {t(`sidenav.${label}`)}
-                          </Typography>
-                        </Button>
-                      )}
-                    </NavLink>
-                  </li>
+                  <NavLink key={`${layout}-${name}`} to={to}>
+                    {({ isActive }) => (
+                      <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
+                        {icon && React.cloneElement(icon, { className: "ank-nav-icon" })}
+                        <span>{label}</span>
+                      </div>
+                    )}
+                  </NavLink>
                 );
-              })}
-            </ul>
-          );
-        })}
-      </div>
-    </aside>
+              }
+
+              if (alwaysOpen) {
+                return (
+                  <div key={`${layout}-${name}`}>
+                    <div className="ank-section-label">{label}</div>
+                    <div className="space-y-0.5">
+                      {children.map((child) => {
+                        const to = child.href || `/${layout || "dashboard"}${child.path || ""}`;
+                        const childLabel = t(`sidenav.${child.name}`) || child.name;
+                        return (
+                          <NavLink key={to} to={to}>
+                            {({ isActive }) => (
+                              <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
+                                {child.icon && React.cloneElement(child.icon, { className: "ank-nav-icon" })}
+                                <span>{childLabel}</span>
+                              </div>
+                            )}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Collapsible group
+              const isExpanded = !!expanded[name];
+              return (
+                <div key={`${layout}-${name}`}>
+                  <button
+                    onClick={() => toggleGroup(name)}
+                    className="ank-group-header w-full"
+                  >
+                    <div className="flex items-center gap-2">
+                      {icon && React.cloneElement(icon, { className: "ank-nav-icon" })}
+                      <span>{label}</span>
+                    </div>
+                    {isExpanded
+                      ? <ChevronDownIcon className="h-3 w-3 flex-shrink-0" style={{ color: "var(--text-tertiary)" }} />
+                      : <ChevronRightIcon className="h-3 w-3 flex-shrink-0" style={{ color: "var(--text-tertiary)" }} />
+                    }
+                  </button>
+                  {isExpanded && (
+                    <div className="mt-0.5 ml-3 pl-2.5 space-y-0.5" style={{ borderLeft: "1px solid var(--sidebar-border)" }}>
+                      {children.map((child) => {
+                        const to = child.href || `/${layout || "dashboard"}${child.path || ""}`;
+                        const childLabel = t(`sidenav.${child.name}`) || child.name;
+                        return (
+                          <NavLink key={to} to={to}>
+                            {({ isActive }) => (
+                              <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
+                                {child.icon && React.cloneElement(child.icon, { className: "ank-nav-icon" })}
+                                <span>{childLabel}</span>
+                              </div>
+                            )}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </nav>
+
+        {/* Footer */}
+        <div className="px-3 py-3" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
+          <Link to="/dashboard/home">
+            <div className="ank-nav-item">
+              <svg className="ank-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+              </svg>
+              <span>Dashboard</span>
+            </div>
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 }
 
 Sidenav.defaultProps = {
-  brandImg: "/img/logo-ct.png",
+  brandImg: "/img/logoanko.png",
   brandName: APP_NAME,
 };
 
 Sidenav.propTypes = {
-  brandImg: PropTypes.string,
-  brandName: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 

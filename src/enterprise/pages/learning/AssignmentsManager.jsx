@@ -1,0 +1,485 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  PlusIcon, ClockIcon, CheckCircleIcon, PlayIcon,
+  ExclamationCircleIcon, UserGroupIcon, UsersIcon,
+  ArrowPathIcon, CheckIcon, XMarkIcon, RectangleStackIcon,
+} from "@heroicons/react/24/outline";
+import { learningApi, companyApi, teamsApi } from "../../api/enterpriseApi";
+import { useEnterprise } from "../../context/enterprise-context";
+
+// ─── Status config ────────────────────────────────────────────────────────────
+
+const STATUS = {
+  pending:     { bg: "rgba(255,255,255,0.08)", text: "#8B8B9C",  label: "Pendiente",     Icon: ClockIcon },
+  in_progress: { bg: "rgba(94,106,210,0.15)",  text: "#8B9CF4",  label: "En progreso",   Icon: PlayIcon },
+  completed:   { bg: "rgba(74,222,128,0.12)",  text: "#4ade80",  label: "Completado",    Icon: CheckCircleIcon },
+  overdue:     { bg: "rgba(239,68,68,0.12)",   text: "#f87171",  label: "Vencido",       Icon: ExclamationCircleIcon },
+};
+
+function StatusPill({ status }) {
+  const s = STATUS[status] || STATUS.pending;
+  const { Icon } = s;
+  return (
+    <span style={{ background: s.bg, color: s.text, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <Icon style={{ width: 10, height: 10 }} /> {s.label}
+    </span>
+  );
+}
+
+function ProgressBar({ value }) {
+  const pct = Math.max(0, Math.min(100, value || 0));
+  return (
+    <div style={{ height: 4, background: "var(--bg-elevated)", borderRadius: 2, overflow: "hidden", width: "100%" }}>
+      <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "#4ade80" : "var(--accent)", borderRadius: 2, transition: "width 300ms" }} />
+    </div>
+  );
+}
+
+// ─── Filter chip ──────────────────────────────────────────────────────────────
+
+function FilterChip({ label, active, onClick }) {
+  return (
+    <button onClick={onClick} style={{ padding: "4px 10px", borderRadius: 5, fontSize: 11, fontWeight: 600, cursor: "pointer", background: active ? "var(--accent)" : "var(--bg-elevated)", color: active ? "#fff" : "var(--text-secondary)", border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`, transition: "all 150ms" }}>
+      {label}
+    </button>
+  );
+}
+
+// ─── New Assignment Modal ─────────────────────────────────────────────────────
+
+function NewAssignmentModal({ companyId, onCreated, onClose }) {
+  const [step, setStep] = useState(1);
+  const [contentType, setContentType] = useState("path"); // "path" | "module"
+  const [paths, setPaths] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState(null); // path or module
+  const [tab, setTab] = useState("user");
+  const [search, setSearch] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [dueDate, setDueDate] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      learningApi.getPaths().then((d) => d.results || d || []),
+      learningApi.getModules().then((d) => d.results || d || []),
+      companyApi.getMembers(companyId, { status: "active" }).then((d) => d.results || d || []),
+      teamsApi.list({ company_id: companyId }).then((d) => d.results || d || []),
+    ]).then(([p, mod, m, t]) => { setPaths(p); setModules(mod); setMembers(m); setTeams(t); }).catch(() => {}).finally(() => setLoading(false));
+  }, [companyId]);
+
+  const handleAssign = async () => {
+    setSaving(true); setError("");
+    try {
+      const due = dueDate || undefined;
+      const duePay = due ? { due_date: due } : {};
+      if (contentType === "path") {
+        if (tab === "user" && selectedUser)
+          await learningApi.assignPathToUser(selectedItem.id, { user_id: selectedUser.user, ...duePay });
+        else if (tab === "team" && selectedTeam)
+          await learningApi.assignPathToTeam(selectedItem.id, { team_id: selectedTeam.id, ...duePay });
+        else { setError("Selecciona un usuario o equipo."); setSaving(false); return; }
+      } else {
+        if (tab === "user" && selectedUser)
+          await learningApi.assignModuleToUser(selectedItem.id, { user_id: selectedUser.user, ...duePay });
+        else if (tab === "team" && selectedTeam)
+          await learningApi.assignModuleToTeam(selectedItem.id, { team_id: selectedTeam.id, ...duePay });
+        else { setError("Selecciona un usuario o equipo."); setSaving(false); return; }
+      }
+      onCreated();
+      onClose();
+    } catch (err) {
+      setError(err?.detail || err?.non_field_errors?.[0] || "Error al asignar.");
+    } finally { setSaving(false); }
+  };
+
+  const filteredMembers = members.filter((m) => !search || (m.full_name || m.username || m.email || "").toLowerCase().includes(search.toLowerCase()));
+  const filteredTeams   = teams.filter((t)   => !search || t.name.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={onClose}>
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, width: "100%", maxWidth: 500, padding: 22, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", maxHeight: "90vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            {step === 2 && (
+              <button onClick={() => { setStep(1); setSelectedItem(null); setSelectedUser(null); setSelectedTeam(null); }}
+                style={{ color: "var(--text-tertiary)", cursor: "pointer" }}>←</button>
+            )}
+            <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>
+              {step === 1 ? "¿Qué quieres asignar?" : `Asignar: ${selectedItem?.name}`}
+            </p>
+          </div>
+          <button onClick={onClose} style={{ color: "var(--text-tertiary)", fontSize: 20, cursor: "pointer" }}>×</button>
+        </div>
+
+        {/* Step indicator */}
+        <div className="flex items-center gap-2 mb-4">
+          {[1, 2].map((n) => (
+            <React.Fragment key={n}>
+              <div style={{ width: 20, height: 20, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, background: step > n ? "#4ade80" : step === n ? "var(--accent)" : "var(--bg-elevated)", color: step >= n ? "#fff" : "var(--text-tertiary)", border: `1px solid ${step > n ? "#4ade80" : step === n ? "var(--accent)" : "var(--border)"}` }}>
+                {step > n ? <CheckIcon style={{ width: 10, height: 10, strokeWidth: 3 }} /> : n}
+              </div>
+              {n < 2 && <div style={{ flex: 1, height: 1, background: step > n ? "rgba(74,222,128,0.4)" : "var(--border)" }} />}
+            </React.Fragment>
+          ))}
+          <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginLeft: 4 }}>
+            {step === 1 ? "Elige contenido" : "Elige destinatario"}
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10">
+            <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-6 h-6 border-2 rounded-full animate-spin" />
+          </div>
+        ) : step === 1 ? (
+          /* ── Step 1: Pick type + item ── */
+          <div>
+            {/* Type tabs */}
+            <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 14 }}>
+              {[["path", "Learning Path", RectangleStackIcon], ["module", "Proceso", CheckCircleIcon]].map(([key, label, Icon]) => (
+                <button key={key} onClick={() => { setContentType(key); setSelectedItem(null); }}
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderBottom: `2px solid ${contentType === key ? "var(--accent)" : "transparent"}`, color: contentType === key ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: contentType === key ? 600 : 400, fontSize: 12.5, cursor: "pointer", background: "transparent" }}>
+                  <Icon style={{ width: 13, height: 13 }} /> {label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ maxHeight: 280, overflowY: "auto" }} className="space-y-1.5">
+              {contentType === "path" ? (
+                paths.length === 0 ? (
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>Sin Learning Paths creados.</p>
+                ) : paths.map((p) => {
+                  const sel = selectedItem?.id === p.id && contentType === "path";
+                  const sc = { draft: "#8B8B9C", published: "#4ade80", archived: "#f59e0b" }[p.status] || "#8B8B9C";
+                  return (
+                    <button key={p.id} type="button" onClick={() => setSelectedItem(sel ? null : p)}
+                      style={{ width: "100%", textAlign: "left", background: sel ? "var(--bg-accent)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "10px 12px", cursor: "pointer", transition: "all 150ms" }}>
+                      <div className="flex items-center gap-2">
+                        <div style={{ background: sel ? "var(--accent)" : "var(--accent-muted)", borderRadius: 5, padding: 6, flexShrink: 0 }}>
+                          <RectangleStackIcon style={{ width: 12, height: 12, color: sel ? "#fff" : "var(--accent)" }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)" }}>{p.name}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>
+                            {p.module_count ?? 0} procesos · <span style={{ color: sc }}>{p.status}</span>
+                          </p>
+                        </div>
+                        {sel && <CheckIcon style={{ width: 14, height: 14, color: "var(--accent)", flexShrink: 0 }} />}
+                      </div>
+                    </button>
+                  );
+                })
+              ) : (
+                modules.length === 0 ? (
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>Sin Procesos creados.</p>
+                ) : modules.map((mod) => {
+                  const sel = selectedItem?.id === mod.id && contentType === "module";
+                  const typeColors = { document: "#60a5fa", topic: "#a855f7", deck: "#f59e0b", battery: "#f87171" };
+                  const tc = typeColors[mod.process_type] || "var(--text-tertiary)";
+                  return (
+                    <button key={mod.id} type="button" onClick={() => setSelectedItem(sel ? null : mod)}
+                      style={{ width: "100%", textAlign: "left", background: sel ? "var(--bg-accent)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "10px 12px", cursor: "pointer", transition: "all 150ms" }}>
+                      <div className="flex items-center gap-2">
+                        <div style={{ width: 26, height: 26, borderRadius: 5, background: sel ? "var(--accent)" : "var(--bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 10, color: sel ? "#fff" : tc, flexShrink: 0 }}>
+                          {(mod.name || "?").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)" }}>{mod.name}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>
+                            {mod.process_type || "proceso"}
+                            {mod.difficulty ? ` · ${mod.difficulty}` : ""}
+                            {mod.estimated_duration_minutes ? ` · ${mod.estimated_duration_minutes} min` : ""}
+                          </p>
+                        </div>
+                        {sel && <CheckIcon style={{ width: 14, height: 14, color: "var(--accent)", flexShrink: 0 }} />}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+              <button onClick={() => setStep(2)} disabled={!selectedItem} className="ank-btn-accent text-xs" style={{ opacity: !selectedItem ? 0.5 : 1 }}>
+                Siguiente →
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── Step 2: Pick target ── */
+          <div>
+            {/* Tabs user/team */}
+            <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 12 }}>
+              {[["user", "Usuario", UsersIcon], ["team", "Equipo", UserGroupIcon]].map(([key, label, Icon]) => (
+                <button key={key} onClick={() => { setTab(key); setSearch(""); setSelectedUser(null); setSelectedTeam(null); }}
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderBottom: `2px solid ${tab === key ? "var(--accent)" : "transparent"}`, color: tab === key ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: tab === key ? 600 : 400, fontSize: 12.5, cursor: "pointer", background: "transparent" }}>
+                  <Icon style={{ width: 13, height: 13 }} /> {label}
+                </button>
+              ))}
+            </div>
+
+            <input placeholder={tab === "user" ? "Buscar miembro…" : "Buscar equipo…"} value={search} onChange={(e) => setSearch(e.target.value)}
+              style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 11px", color: "var(--text-primary)", fontSize: 12, outline: "none", marginBottom: 10 }}
+              onFocus={(e) => { e.target.style.borderColor = "var(--accent)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }} />
+
+            <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 14 }} className="space-y-1.5">
+              {tab === "user" ? (
+                filteredMembers.length === 0 ? (
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>Sin miembros.</p>
+                ) : filteredMembers.map((m) => {
+                  const sel = selectedUser?.user === m.user;
+                  return (
+                    <button key={m.user} type="button" onClick={() => setSelectedUser(sel ? null : m)}
+                      style={{ width: "100%", textAlign: "left", background: sel ? "var(--bg-accent)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "8px 11px", cursor: "pointer", transition: "all 150ms" }}>
+                      <div className="flex items-center gap-2">
+                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--accent-muted)", color: "var(--accent)", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          {(m.full_name || m.username || "?").charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{m.full_name || m.username}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{m.email}</p>
+                        </div>
+                        {sel && <CheckIcon style={{ width: 13, height: 13, color: "var(--accent)", flexShrink: 0 }} />}
+                      </div>
+                    </button>
+                  );
+                })
+              ) : (
+                filteredTeams.length === 0 ? (
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>Sin equipos.</p>
+                ) : filteredTeams.map((t) => {
+                  const sel = selectedTeam?.id === t.id;
+                  return (
+                    <button key={t.id} type="button" onClick={() => setSelectedTeam(sel ? null : t)}
+                      style={{ width: "100%", textAlign: "left", background: sel ? "var(--bg-accent)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "9px 11px", cursor: "pointer", transition: "all 150ms" }}>
+                      <div className="flex items-center gap-2">
+                        <div style={{ background: sel ? "var(--accent)" : "rgba(59,130,246,0.12)", borderRadius: 5, padding: 5, flexShrink: 0 }}>
+                          <UserGroupIcon style={{ width: 12, height: 12, color: sel ? "#fff" : "#60a5fa" }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{t.name}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t.member_count ?? 0} miembros</p>
+                        </div>
+                        {sel && <CheckIcon style={{ width: 13, height: 13, color: "var(--accent)", flexShrink: 0 }} />}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Due date */}
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 12, marginBottom: 5 }}>
+                Fecha límite <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(opcional)</span>
+              </p>
+              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+                style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "7px 11px", color: "var(--text-primary)", fontSize: 12, outline: "none", colorScheme: "dark" }} />
+            </div>
+
+            {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 10 }}>{error}</p>}
+
+            <div className="flex justify-end gap-2">
+              <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+              <button onClick={handleAssign}
+                disabled={saving || (tab === "user" ? !selectedUser : !selectedTeam)}
+                className="ank-btn-accent text-xs"
+                style={{ opacity: saving || (tab === "user" ? !selectedUser : !selectedTeam) ? 0.6 : 1 }}>
+                {saving ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><UserGroupIcon className="h-3.5 w-3.5" /> Asignar</>}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Assignment Row ───────────────────────────────────────────────────────────
+
+function AssignmentRow({ a, onClick }) {
+  const pct = a.progress?.percent_required ?? a.progress?.percent_total ?? 0;
+  const completedMods = a.progress?.completed_modules ?? 0;
+  const totalMods = a.progress?.total_modules ?? 0;
+  const dueStr = a.due_date ? new Date(a.due_date).toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" }) : null;
+  const isOverdue = a.is_overdue || a.status === "overdue";
+
+  return (
+    <div style={{ background: "var(--bg-surface)", border: `1px solid ${isOverdue ? "rgba(239,68,68,0.3)" : "var(--border)"}`, borderRadius: 7, padding: "12px 16px", cursor: onClick ? "pointer" : "default", transition: "border-color 150ms, background 150ms" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--bg-surface)"; }}
+      onClick={onClick}>
+      <div className="flex items-center gap-3 flex-wrap">
+        {/* Path */}
+        <div style={{ flex: "2 1 160px", minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }} className="truncate">
+            {a.learning_path_name || a.path_name || a.name || "—"}
+          </p>
+          {a.assigned_by_username && (
+            <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>por {a.assigned_by_username}</p>
+          )}
+        </div>
+
+        {/* Assignee */}
+        <div style={{ flex: "2 1 130px", minWidth: 0 }}>
+          {a.user_username || a.user ? (
+            <div className="flex items-center gap-1.5">
+              <UsersIcon style={{ width: 11, height: 11, color: "var(--text-tertiary)" }} />
+              <p style={{ fontSize: 12, color: "var(--text-secondary)" }} className="truncate">{a.full_name || a.user_username || `ID ${a.user}`}</p>
+            </div>
+          ) : a.team_name || a.team ? (
+            <div className="flex items-center gap-1.5">
+              <UserGroupIcon style={{ width: 11, height: 11, color: "#60a5fa" }} />
+              <p style={{ fontSize: 12, color: "var(--text-secondary)" }} className="truncate">{a.team_name || `Equipo ${a.team}`}</p>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Status */}
+        <div style={{ flex: "1 0 100px" }}>
+          <StatusPill status={isOverdue ? "overdue" : a.status} />
+        </div>
+
+        {/* Progress */}
+        {totalMods > 0 && (
+          <div style={{ flex: "2 1 120px" }}>
+            <div className="flex items-center gap-2">
+              <ProgressBar value={pct} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", flexShrink: 0 }}>
+                {completedMods}/{totalMods}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Due date */}
+        {dueStr && (
+          <div style={{ flex: "1 0 90px" }}>
+            <p style={{ fontSize: 11, color: isOverdue ? "#f87171" : "var(--text-tertiary)" }} className="flex items-center gap-1">
+              <ClockIcon style={{ width: 10, height: 10 }} /> {dueStr}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export function AssignmentsManager() {
+  const navigate = useNavigate();
+  const { activeCompanyId, role: myRole, isPlatformAdmin } = useEnterprise();
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    const params = statusFilter ? { status: statusFilter } : {};
+    learningApi.getAssignments(params)
+      .then((d) => setAssignments(d.results || d || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [activeCompanyId, statusFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = assignments;
+
+  const canAssign = ["owner", "admin", "manager", "trainer"].includes(myRole) || isPlatformAdmin;
+
+  return (
+    <div className="w-full space-y-5">
+      {showModal && (
+        <NewAssignmentModal companyId={activeCompanyId} onCreated={load} onClose={() => setShowModal(false)} />
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Asignaciones</h1>
+          <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
+            Gestiona qué Learning Paths están asignados a cada persona o equipo
+          </p>
+        </div>
+        {canAssign && (
+          <button onClick={() => setShowModal(true)} className="ank-btn-accent text-xs">
+            <PlusIcon className="h-3.5 w-3.5" /> Nueva Asignación
+          </button>
+        )}
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <FilterChip label="Todas" active={statusFilter === ""} onClick={() => setStatusFilter("")} />
+        <FilterChip label="Pendiente" active={statusFilter === "pending"} onClick={() => setStatusFilter("pending")} />
+        <FilterChip label="En progreso" active={statusFilter === "in_progress"} onClick={() => setStatusFilter("in_progress")} />
+        <FilterChip label="Completado" active={statusFilter === "completed"} onClick={() => setStatusFilter("completed")} />
+        <FilterChip label="Vencido" active={statusFilter === "overdue"} onClick={() => setStatusFilter("overdue")} />
+      </div>
+
+      {/* Column labels */}
+      {!loading && filtered.length > 0 && (
+        <div style={{ display: "flex", gap: 12, padding: "0 16px" }}>
+          {["Learning Path", "Asignado a", "Estado", "Progreso", "Fecha límite"].map((h) => (
+            <p key={h} style={{ flex: h === "Learning Path" || h === "Asignado a" ? "2 1 130px" : "1 0 90px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              {h}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Content */}
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} style={{ height: 56, background: "var(--bg-elevated)", borderRadius: 7 }} className="animate-pulse" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "48px 24px", textAlign: "center" }}>
+          <div style={{ background: "var(--bg-elevated)", borderRadius: 8, padding: 14, display: "inline-flex", marginBottom: 12 }}>
+            <RectangleStackIcon style={{ width: 24, height: 24, color: "var(--text-tertiary)" }} />
+          </div>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>Sin asignaciones</p>
+          <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4 }}>
+            Asigna Learning Paths a miembros o equipos para iniciar su formación.
+          </p>
+          {canAssign && (
+            <button onClick={() => setShowModal(true)} className="ank-btn-accent text-xs mt-4">
+              <PlusIcon className="h-3.5 w-3.5" /> Nueva Asignación
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((a) => (
+            <AssignmentRow key={a.id} a={a} />
+          ))}
+        </div>
+      )}
+
+      {!loading && filtered.length > 0 && (
+        <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
+          {filtered.length} asignación{filtered.length !== 1 ? "es" : ""}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default AssignmentsManager;

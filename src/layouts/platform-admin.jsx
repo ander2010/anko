@@ -1,0 +1,84 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ChatBubbleLeftEllipsisIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import { IconButton } from "@material-tailwind/react";
+import { Sidenav, DashboardNavbar, Footer } from "@/widgets/layout";
+import { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
+import routes from "@/routes";
+import { useMaterialTailwindController, setOpenConfigurator, setOpenSidenav } from "@/context";
+import { useEnterprise } from "@/enterprise/context/enterprise-context";
+
+import PlatformAdminCompanies from "@/enterprise/pages/platform-admin/PlatformAdminCompanies";
+import PlatformAdminUsers from "@/enterprise/pages/platform-admin/PlatformAdminUsers";
+
+export function PlatformAdmin() {
+  const [controller, dispatch] = useMaterialTailwindController();
+  const { sidenavType, openSidenav } = controller;
+  const { isPlatformAdmin, initialized } = useEnterprise();
+
+  if (initialized && !isPlatformAdmin) {
+    return <Navigate to="/enterprise/dashboard" replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-blue-gray-50/50">
+      <Sidenav
+        routes={routes}
+        brandImg={sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"}
+      />
+
+      <div
+        className={`hidden md:block fixed left-0 z-50 transition-all duration-300 ${
+          openSidenav ? "invisible opacity-0 -translate-x-full" : "visible opacity-100 translate-x-0"
+        }`}
+        style={{ position: "fixed", top: "55px" }}
+      >
+        <IconButton
+          size="lg"
+          color="white"
+          className="rounded-l-none border-l-0 shadow-lg"
+          onClick={() => setOpenSidenav(dispatch, true)}
+        >
+          <ChevronRightIcon className="h-6 w-6 text-blue-gray-900" />
+        </IconButton>
+      </div>
+
+      <div
+        className={`p-4 pb-20 md:pb-4 min-h-screen flex flex-col transition-all duration-300 ${
+          openSidenav ? "xl:ml-80" : ""
+        }`}
+        onClick={() => openSidenav && setOpenSidenav(dispatch, false)}
+      >
+        <div className="hidden md:block">
+          <DashboardNavbar />
+        </div>
+
+        <button
+          className="fixed bottom-[72px] right-4 md:bottom-8 md:right-8 z-40 rounded-full shadow-lg flex items-center justify-center"
+          style={{ width: 48, height: 48, background: "linear-gradient(135deg, #3949AB, #303F9F)", border: "none", cursor: "pointer" }}
+          onClick={() => setOpenConfigurator(dispatch, true)}
+        >
+          <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white" />
+        </button>
+
+        <div className="flex-grow flex flex-col">
+          <Routes>
+            <Route path="companies" element={<PlatformAdminCompanies />} />
+            <Route path="companies/:id/users" element={<PlatformAdminUsers />} />
+            <Route index element={<Navigate to="companies" replace />} />
+            <Route path="*" element={<Navigate to="companies" replace />} />
+          </Routes>
+        </div>
+
+        <div className="hidden md:block text-blue-gray-600 mt-auto">
+          <Footer />
+        </div>
+      </div>
+
+      <MobileTabBar />
+    </div>
+  );
+}
+
+PlatformAdmin.displayName = "/src/layouts/platform-admin.jsx";
+
+export default PlatformAdmin;

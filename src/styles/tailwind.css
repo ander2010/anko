@@ -1,109 +1,272 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── ANK Design System — Color Variables ─── */
+/* ─── Ankard — Linear-inspired Design System ─── */
 :root {
-  --ank-purple:       #3949AB;
-  --ank-purple-light: #E8EAF6;
-  --ank-purple-dark:  #303F9F;
-  --ank-teal:         #1D9E75;
-  --ank-teal-light:   #E1F5EE;
-  --ank-amber:        #BA7517;
-  --ank-amber-light:  #FAEEDA;
-  --ank-green:        #639922;
-  --ank-green-light:  #EAF3DE;
-  --ank-red:          #A32D2D;
-  --ank-red-light:    #FCEBEB;
-  --ank-bg:           #f7f7f7;
-  --ank-border:       rgba(0,0,0,0.10);
-  --ank-text:         #1a1a2e;
-  --ank-muted:        #888888;
+  /* Backgrounds */
+  --bg-app:       #0F0F11;
+  --bg-surface:   #17171A;
+  --bg-elevated:  #1E1E21;
+  --bg-hover:     rgba(255,255,255,0.05);
+  --bg-active:    rgba(255,255,255,0.08);
+  --bg-accent:    rgba(94,106,210,0.15);
+
+  /* Borders */
+  --border:       rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.14);
+  --border-focus: rgba(94,106,210,0.6);
+
+  /* Text */
+  --text-primary:   #E2E2E8;
+  --text-secondary: #8B8B9C;
+  --text-tertiary:  #55555F;
+  --text-accent:    #5E6AD2;
+
+  /* Accent */
+  --accent:        #5E6AD2;
+  --accent-hover:  #6B77DD;
+  --accent-muted:  rgba(94,106,210,0.15);
+
+  /* Status */
+  --success:  #4ADE80;
+  --warning:  #F59E0B;
+  --error:    #EF4444;
+  --info:     #60A5FA;
+
+  /* Sidebar */
+  --sidebar-bg:     #111113;
+  --sidebar-w:      224px;
+  --sidebar-border: rgba(255,255,255,0.07);
 }
 
 @layer base {
   body {
-    @apply font-sans antialiased text-zinc-900 bg-zinc-50;
+    @apply font-sans antialiased;
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.6;
   }
 
-  /* Hide Edge's native password reveal button to avoid duplicate eye icons */
+  * {
+    border-color: var(--border);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
   input[type="password"]::-ms-reveal,
-  input[type="password"]::-ms-clear {
-    display: none;
-  }
+  input[type="password"]::-ms-clear { display: none; }
 }
 
-@layer components {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
-  }
-
-  /* ─── ANK Mobile Cards ─── */
-  .ank-card {
-    background: #fff;
-    border-radius: 14px;
-    border: 0.5px solid var(--ank-border);
-    padding: 11px 13px;
-    margin: 0 12px 8px;
-  }
-
-  /* ─── ANK Pills / Badges ─── */
-  .ank-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 7px;
-    border-radius: 8px;
-    font-size: 9px;
-    font-weight: 600;
-  }
-  .ank-pill-purple { background: var(--ank-purple-light); color: var(--ank-purple-dark); }
-  .ank-pill-green  { background: var(--ank-green-light);  color: #3B6D11; }
-  .ank-pill-amber  { background: var(--ank-amber-light);  color: #854F0B; }
-  .ank-pill-teal   { background: var(--ank-teal-light);   color: #0F6E56; }
-  .ank-pill-red    { background: var(--ank-red-light);    color: var(--ank-red); }
-
-  /* ─── ANK Buttons ─── */
-  .ank-btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 10px;
-    background: var(--ank-purple);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-  }
-  .ank-btn-outline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 9px 12px;
-    border-radius: 10px;
-    background: transparent;
-    color: var(--ank-purple);
-    font-size: 11px;
-    font-weight: 600;
-    border: 1px solid var(--ank-purple);
-    cursor: pointer;
-  }
-
-  /* ─── ANK Progress Bar ─── */
-  .ank-progress-track {
-    height: 4px;
-    border-radius: 2px;
-    background: #f0f0f0;
-    overflow: hidden;
-  }
-  .ank-progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    background: var(--ank-purple);
-  }
+/* ─── Ankard sidebar ─── */
+.ank-sidebar {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  width: var(--sidebar-w);
 }
+
+.ank-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ank-nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ank-nav-item.active {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+.ank-nav-item .ank-nav-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.ank-nav-item:hover .ank-nav-icon,
+.ank-nav-item.active .ank-nav-icon {
+  opacity: 1;
+}
+
+.ank-section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 12px 10px 4px;
+  user-select: none;
+}
+
+.ank-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  user-select: none;
+}
+.ank-group-header:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ─── Ankard content area ─── */
+.ank-content {
+  background: var(--bg-app);
+  color: var(--text-primary);
+}
+
+/* ─── Cards ─── */
+.ank-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* ─── Accent button ─── */
+.ank-btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms;
+  border: none;
+  white-space: nowrap;
+}
+.ank-btn-accent:hover { background: var(--accent-hover); }
+
+.ank-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  border: 1px solid var(--border);
+}
+.ank-btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+/* ─── Global dark overrides — neutralize Material Tailwind light defaults ─── */
+
+/* All white backgrounds become dark surface */
+.bg-white { background-color: var(--bg-surface) !important; }
+.bg-blue-gray-50\/50,
+.bg-blue-gray-50 { background-color: var(--bg-app) !important; }
+
+/* Override white cards with subtle border */
+[class*="bg-white"],
+.shadow-sm[class*="rounded"] {
+  background-color: var(--bg-surface);
+}
+
+/* Typography */
+.text-blue-gray-900,
+.text-blue-gray-800,
+.text-blue-gray-700 { color: var(--text-primary) !important; }
+.text-blue-gray-600,
+.text-blue-gray-500 { color: var(--text-secondary) !important; }
+
+/* Borders */
+.border-blue-gray-50,
+.border-blue-gray-100 { border-color: var(--border) !important; }
+
+/* Override MT Button text variant for dark theme */
+button[class*="text-blue-gray"]:not([class*="gradient"]) {
+  color: var(--text-secondary);
+}
+button[class*="text-blue-gray"]:not([class*="gradient"]):hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Typography component overrides */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+p, span, li {
+  color: inherit;
+}
+
+/* Input fields dark */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+input::placeholder,
+textarea::placeholder { color: var(--text-tertiary) !important; }
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent) !important;
+  outline: none;
+}
+
+/* Table dark */
+table { color: var(--text-primary); }
+thead { background-color: var(--bg-elevated) !important; }
+tbody tr { border-color: var(--border) !important; }
+tbody tr:hover { background-color: var(--bg-hover) !important; }
+th { color: var(--text-tertiary) !important; }
+
+/* ─── Legacy compat ─── */
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.ank-pill         { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.ank-pill-purple  { background: var(--accent-muted); color: var(--accent); }
+.ank-pill-green   { background: rgba(74,222,128,0.12); color: #4ADE80; }
+.ank-pill-amber   { background: rgba(245,158,11,0.12); color: #F59E0B; }
+.ank-pill-teal    { background: rgba(20,184,166,0.12); color: #14B8A6; }
+.ank-pill-red     { background: rgba(239,68,68,0.12); color: #EF4444; }
+
+.ank-progress-track { height: 3px; border-radius: 2px; background: var(--bg-elevated); overflow: hidden; }
+.ank-progress-fill  { height: 100%; border-radius: 2px; background: var(--accent); }
