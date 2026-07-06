@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-    Dialog,
-    DialogHeader,
-    DialogBody,
-    Card,
-    Typography,
-    IconButton,
-    Spinner,
-    Chip,
-} from "@material-tailwind/react";
-import {
     XMarkIcon,
     ChartBarIcon,
     DocumentTextIcon,
@@ -29,11 +19,21 @@ const formatStudyTime = (seconds, language) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = Math.floor(seconds % 60);
-
     if (h > 0) return `${h}h ${m}m`;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
 };
+
+/* ── Design tokens ── */
+const GLASS = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14 };
+const GLASS_SM = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10 };
+const TXT_PRI = "#F1F5F9";
+const TXT_MUT = "#94A3B8";
+const TXT_DIM = "#64748B";
+
+function Spin() {
+    return <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid rgba(255,255,255,0.12)", borderTopColor: "#818CF8" }} className="animate-spin" />;
+}
 
 export function UserStatisticsDialog({ open, handler, userId }) {
     const { language } = useLanguage();
@@ -42,9 +42,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (open) {
-            fetchStats();
-        }
+        if (open) fetchStats();
     }, [open, userId]);
 
     const fetchStats = async () => {
@@ -63,11 +61,10 @@ export function UserStatisticsDialog({ open, handler, userId }) {
 
     if (!open) return null;
 
-    // --- Compact & Professional Chart Configurations ---
     const accuracyDonutOptions = {
-        chart: { type: "donut", fontFamily: "Inter, system-ui, sans-serif" },
+        chart: { type: "donut", fontFamily: "Inter, system-ui, sans-serif", background: "transparent" },
         labels: [language === "es" ? "Correcto" : "Correct", language === "es" ? "Incorrecto" : "Incorrect"],
-        colors: ["#6366f1", "#f1f5f9"],
+        colors: ["#6366f1", "#1E293B"],
         plotOptions: {
             pie: {
                 donut: {
@@ -79,9 +76,9 @@ export function UserStatisticsDialog({ open, handler, userId }) {
                             show: true,
                             fontSize: "22px",
                             fontWeight: 800,
-                            color: "#1e293b",
+                            color: "#F1F5F9",
                             offsetY: 8,
-                            formatter: (val) => `${val}%`
+                            formatter: (val) => `${val}%`,
                         },
                         total: {
                             show: true,
@@ -95,8 +92,8 @@ export function UserStatisticsDialog({ open, handler, userId }) {
         dataLabels: { enabled: false },
         legend: { show: false },
         stroke: { width: 0 },
-        tooltip: { enabled: true, theme: "light" },
-        states: { hover: { filter: { type: "none" } } }
+        tooltip: { enabled: true, theme: "dark" },
+        states: { hover: { filter: { type: "none" } } },
     };
 
     const projectBarOptions = {
@@ -104,14 +101,15 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             type: "bar",
             toolbar: { show: false },
             fontFamily: "Inter, system-ui, sans-serif",
-            stacked: false
+            background: "transparent",
+            stacked: false,
         },
         plotOptions: {
             bar: {
                 borderRadius: 3,
                 horizontal: true,
                 barHeight: "45%",
-                dataLabels: { position: "top" }
+                dataLabels: { position: "top" },
             },
         },
         colors: ["#6366f1", "#10b981"],
@@ -119,7 +117,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             enabled: true,
             formatter: (val) => `${val}%`,
             offsetX: 28,
-            style: { fontSize: "9px", fontWeight: 700, colors: ["#64748b"] },
+            style: { fontSize: "9px", fontWeight: 700, colors: ["#94a3b8"] },
         },
         xaxis: {
             categories: stats?.project_level?.map(p => p.project_name.length > 15 ? p.project_name.substring(0, 15) + "..." : p.project_name) || [],
@@ -129,9 +127,7 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             max: 110,
         },
         yaxis: {
-            labels: {
-                style: { colors: "#94a3b8", fontSize: "10px", fontWeight: 600 }
-            }
+            labels: { style: { colors: "#64748B", fontSize: "10px", fontWeight: 600 } },
         },
         grid: { show: false },
         legend: {
@@ -139,326 +135,303 @@ export function UserStatisticsDialog({ open, handler, userId }) {
             position: "top",
             horizontalAlign: "right",
             fontSize: "10px",
+            labels: { colors: "#94A3B8" },
             itemMargin: { horizontal: 10 },
-            markers: { radius: 4 }
+            markers: { radius: 4 },
         },
-        tooltip: { theme: "light", y: { formatter: (val) => `${val}%` } }
+        tooltip: { theme: "dark", y: { formatter: (val) => `${val}%` } },
     };
 
     const projectBarSeries = [
-        {
-            name: language === "es" ? "Precisión" : "Accuracy",
-            data: stats?.project_level?.map(p => p.percent) || [],
-        },
-        {
-            name: language === "es" ? "Cobertura" : "Coverage",
-            data: stats?.project_level?.map(p => p.avg_coverage_percent || 0) || [],
-        }
+        { name: language === "es" ? "Precisión" : "Accuracy",  data: stats?.project_level?.map(p => p.percent) || [] },
+        { name: language === "es" ? "Cobertura" : "Coverage",  data: stats?.project_level?.map(p => p.avg_coverage_percent || 0) || [] },
     ];
 
     return (
-        <Dialog
-            open={open}
-            handler={handler}
-            size="xl"
-            className="bg-white border border-zinc-200 shadow-xl rounded-2xl overflow-hidden outline-none !mx-3 md:!mx-auto"
-        >
-            {/* Header: Compact & Clean */}
-            <DialogHeader className="flex items-center justify-between px-4 py-3 md:px-8 md:py-5 bg-zinc-50 border-b border-zinc-100">
-                <div className="flex items-center gap-3 md:gap-4">
-                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shrink-0">
-                        <ChartBarIcon className="h-5 w-5 md:h-6 md:w-6" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-zinc-900 tracking-tight leading-none mb-0.5" style={{ fontSize: "14px" }}>
-                            {language === "es" ? "Estadísticas" : "Statistics"}
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
-                                {language === "es" ? "Datos Sincronizados" : "Data Synchronized"}
-                            </Typography>
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "12px", background: "rgba(0,0,0,0.82)", backdropFilter: "blur(6px)" }}
+            onClick={handler}>
+
+            <div style={{ background: "#0A1628", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 22, width: "100%", maxWidth: 900, boxShadow: "0 40px 100px rgba(0,0,0,0.8)", overflow: "hidden", maxHeight: "92vh", display: "flex", flexDirection: "column" }}
+                onClick={(e) => e.stopPropagation()}>
+
+                {/* Top accent strip */}
+                <div style={{ height: 3, background: "linear-gradient(90deg, #6366F1, #818CF8, #A78BFA)", flexShrink: 0 }} />
+
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 18px rgba(99,102,241,0.4)", flexShrink: 0 }}>
+                            <ChartBarIcon style={{ width: 19, height: 19, color: "#fff" }} />
+                        </div>
+                        <div>
+                            <p style={{ fontSize: 14, fontWeight: 800, color: TXT_PRI, letterSpacing: "-0.01em", marginBottom: 3 }}>
+                                {language === "es" ? "Estadísticas" : "Statistics"}
+                            </p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 6px rgba(34,197,94,0.7)" }} />
+                                <span style={{ fontSize: 9, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                                    {language === "es" ? "Datos Sincronizados" : "Data Synchronized"}
+                                </span>
+                            </div>
                         </div>
                     </div>
+                    <button onClick={handler}
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: TXT_DIM, transition: "all 0.15s", flexShrink: 0 }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.09)"; e.currentTarget.style.color = TXT_MUT; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = TXT_DIM; }}>
+                        <XMarkIcon style={{ width: 16, height: 16 }} strokeWidth={2.5} />
+                    </button>
                 </div>
-                <IconButton
-                    variant="text"
-                    color="blue-gray"
-                    onClick={handler}
-                    className="rounded-lg border border-zinc-200 hover:bg-white transition-colors h-8 w-8"
-                >
-                    <XMarkIcon className="h-4 w-4" strokeWidth={2.5} />
-                </IconButton>
-            </DialogHeader>
 
-            <DialogBody className="px-3 py-3 md:px-8 md:py-5 overflow-y-auto max-h-[80vh] md:max-h-[75vh] custom-scrollbar">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32">
-                        <Spinner className="h-8 w-8 text-indigo-500 mb-3" />
-                        <Typography className="font-bold text-zinc-400 uppercase tracking-widest text-[9px]">
-                            {language === "es" ? "Procesando Datos..." : "Processing Data..."}
-                        </Typography>
-                    </div>
-                ) : error ? (
-                    <div className="text-center py-24 bg-red-50/20 rounded-xl border border-red-100/50">
-                        <ExclamationCircleIcon className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                        <Typography color="red" className="text-sm font-bold">
-                            {error}
-                        </Typography>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Section 01: Top Stats Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-5">
-                            <div className="lg:col-span-9 grid grid-cols-3 gap-2 md:gap-5">
-                                {/* Total Questions Card */}
-                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-2 md:mb-4">
-                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
-                                            {language === "es" ? "Preguntas" : "Questions"}
-                                        </p>
-                                        <SparklesIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-indigo-200 shrink-0" />
-                                    </div>
-                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
-                                        {stats.question_level.total_questions}
-                                    </p>
-                                    <div className="mt-2 md:mt-4 pt-2 md:pt-3 border-t border-zinc-50 flex items-center justify-between">
-                                        <p className="text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">100%</p>
-                                        <div className="h-1 flex-1 ml-2 bg-zinc-50 rounded-full">
-                                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: "100%" }} />
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Correct Answers Card */}
-                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-2 md:mb-4">
-                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
-                                            {language === "es" ? "Aciertos" : "Correct"}
-                                        </p>
-                                        <TrophyIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-emerald-200 shrink-0" />
-                                    </div>
-                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
-                                        {stats.question_level.correct_count}
-                                    </p>
-                                    <div className="mt-2 md:mt-4 space-y-1">
-                                        <div className="flex justify-between items-center text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">
-                                            <span>{language === "es" ? "Acc." : "Acc."}</span>
-                                            <span className="text-zinc-600">{stats.question_level.accuracy || 0}%</span>
-                                        </div>
-                                        <div className="h-1 w-full bg-zinc-50 rounded-full">
-                                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${stats.question_level.accuracy || 0}%` }} />
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Activity / Time Card */}
-                                <Card className="p-2.5 md:p-5 border border-zinc-100 bg-white shadow-sm rounded-xl overflow-hidden group">
-                                    <div className="flex justify-between items-center mb-2 md:mb-4">
-                                        <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 uppercase tracking-wider leading-tight">
-                                            {language === "es" ? "Tiempo" : "Time"}
-                                        </p>
-                                        <ArrowTrendingUpIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-orange-200 shrink-0" />
-                                    </div>
-                                    <p className="text-lg md:text-2xl font-extrabold text-zinc-900 leading-none">
-                                        {formatStudyTime(stats.document_level.reduce((acc, doc) => acc + (doc.study_seconds || 0), 0), language)}
-                                    </p>
-                                    <div className="mt-2 md:mt-4 flex items-center gap-2">
-                                        <div className="flex flex-col">
-                                            <p className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-0.5">Proj.</p>
-                                            <p className="text-[10px] md:text-xs font-bold text-zinc-700">{stats.project_level.length}</p>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </div>
-
-                            {/* Center Donut */}
-                            <Card className="hidden md:flex lg:col-span-3 p-4 border border-zinc-100 bg-white shadow-sm flex-col items-center justify-center rounded-xl">
-                                <Typography className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
-                                    {language === "es" ? "Score Global" : "Global Score"}
-                                </Typography>
-                                <div className="w-full max-w-[130px]">
-                                    <Chart
-                                        options={accuracyDonutOptions}
-                                        series={[stats.question_level.accuracy || 0, 100 - (stats.question_level.accuracy || 0)]}
-                                        type="donut"
-                                    />
-                                </div>
-                            </Card>
+                {/* Body */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+                    {loading ? (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", gap: 14 }}>
+                            <Spin />
+                            <span style={{ fontSize: 9, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                                {language === "es" ? "Procesando Datos..." : "Processing Data..."}
+                            </span>
                         </div>
-
-                        {/* Section 02: Analysis Grid */}
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-5 pt-2">
-                            {/* Project Breakdown Chart */}
-                            <div className="hidden md:block xl:col-span-7 bg-white p-6 rounded-xl border border-zinc-100 shadow-sm">
-                                <div className="flex items-center justify-between mb-4">
-                                    <Typography className="text-[9px] font-bold text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                                        <FolderIcon className="h-3.5 w-3.5 text-indigo-500" />
-                                        {language === "es" ? "Análisis por Proyecto" : "Project Performance"}
-                                    </Typography>
-                                    <Chip
-                                        variant="ghost"
-                                        size="sm"
-                                        value={language === "es" ? "Comparativa" : "Benchmarks"}
-                                        className="rounded-full text-[8px] font-bold bg-zinc-50 text-zinc-500"
-                                    />
-                                </div>
-                                <Chart
-                                    options={projectBarOptions}
-                                    series={projectBarSeries}
-                                    type="bar"
-                                    height={240}
-                                />
-                            </div>
-
-                            {/* Dense Project List */}
-                            <div className="xl:col-span-5 space-y-2 md:space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-thin">
-                                {stats.project_level.map((proj) => (
-                                    <div
-                                        key={proj.project_id}
-                                        className="p-3 rounded-lg bg-zinc-50/30 border border-zinc-100 flex items-center justify-between hover:bg-white hover:shadow-sm transition-all"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="h-7 w-7 flex-shrink-0 flex items-center justify-center rounded bg-white text-zinc-400 font-bold text-[9px] border border-zinc-100 shadow-xs">
-                                                {proj.project_id}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <Typography className="text-xs font-bold text-zinc-800 leading-tight truncate">
-                                                    {proj.project_name}
-                                                </Typography>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <Typography className="text-[8px] text-zinc-400 font-medium whitespace-nowrap">
-                                                        {proj.documents_count} Docs
-                                                    </Typography>
-                                                    <div className="h-1 w-1 rounded-full bg-zinc-200" />
-                                                    <Typography className="text-[8px] text-zinc-400 font-medium whitespace-nowrap">
-                                                        {proj.docs_with_attempts} Active
-                                                    </Typography>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-right">
-                                            <div>
-                                                <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-1">Coverage</Typography>
-                                                <Typography className="text-[10px] font-black text-emerald-600 leading-none">
-                                                    {proj.avg_coverage_percent || 0}%
-                                                </Typography>
-                                            </div>
-                                            <div className="h-6 w-px bg-zinc-100" />
-                                            <div>
-                                                <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-1">Acc.</Typography>
-                                                <Typography className="text-[10px] font-black text-indigo-600 leading-none">
-                                                    {proj.percent}%
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    ) : error ? (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 0", gap: 10, background: "rgba(239,68,68,0.06)", borderRadius: 14, border: "1px solid rgba(239,68,68,0.15)" }}>
+                            <ExclamationCircleIcon style={{ width: 32, height: 32, color: "#F87171" }} />
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#FCA5A5" }}>{error}</span>
                         </div>
+                    ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-                        {/* Section 03: Dense Document Analysis */}
-                        <div className="pt-2">
-                            <div className="flex items-center justify-between mb-4">
-                                <Typography className="text-[9px] font-bold text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                                    <DocumentTextIcon className="h-3.5 w-3.5 text-indigo-500" />
-                                    {language === "es" ? "Detalle por Documento" : "Document Analytics"}
-                                </Typography>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                        <Typography className="text-[8px] font-bold text-zinc-400 uppercase">Coverage</Typography>
+                            {/* Section 01: Top Stats Grid */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 14, alignItems: "start" }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                                    {/* Total Questions */}
+                                    <div style={{ ...GLASS, padding: "14px 16px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                                                {language === "es" ? "Preguntas" : "Questions"}
+                                            </span>
+                                            <SparklesIcon style={{ width: 13, height: 13, color: "rgba(99,102,241,0.5)" }} />
+                                        </div>
+                                        <p style={{ fontSize: 26, fontWeight: 900, color: TXT_PRI, lineHeight: 1 }}>
+                                            {stats.question_level.total_questions}
+                                        </p>
+                                        <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 8 }}>
+                                            <span style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>100%</span>
+                                            <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 99 }}>
+                                                <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, #6366F1, #818CF8)", borderRadius: 99 }} />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        <Typography className="text-[8px] font-bold text-zinc-400 uppercase">Accuracy</Typography>
+
+                                    {/* Correct Answers */}
+                                    <div style={{ ...GLASS, padding: "14px 16px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                                                {language === "es" ? "Aciertos" : "Correct"}
+                                            </span>
+                                            <TrophyIcon style={{ width: 13, height: 13, color: "rgba(34,197,94,0.5)" }} />
+                                        </div>
+                                        <p style={{ fontSize: 26, fontWeight: 900, color: TXT_PRI, lineHeight: 1 }}>
+                                            {stats.question_level.correct_count}
+                                        </p>
+                                        <div style={{ marginTop: 10 }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                                <span style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>Acc.</span>
+                                                <span style={{ fontSize: 7, fontWeight: 700, color: "#4ADE80" }}>{stats.question_level.accuracy || 0}%</span>
+                                            </div>
+                                            <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 99 }}>
+                                                <div style={{ height: "100%", width: `${stats.question_level.accuracy || 0}%`, background: "#22C55E", borderRadius: 99 }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Time */}
+                                    <div style={{ ...GLASS, padding: "14px 16px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                                                {language === "es" ? "Tiempo" : "Time"}
+                                            </span>
+                                            <ArrowTrendingUpIcon style={{ width: 13, height: 13, color: "rgba(251,146,60,0.5)" }} />
+                                        </div>
+                                        <p style={{ fontSize: 26, fontWeight: 900, color: TXT_PRI, lineHeight: 1 }}>
+                                            {formatStudyTime(stats.document_level.reduce((acc, doc) => acc + (doc.study_seconds || 0), 0), language)}
+                                        </p>
+                                        <div style={{ marginTop: 12 }}>
+                                            <span style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>Proyectos </span>
+                                            <span style={{ fontSize: 11, fontWeight: 800, color: TXT_MUT }}>{stats.project_level.length}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Donut */}
+                                <div style={{ ...GLASS, padding: "14px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: 160 }}>
+                                    <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>
+                                        {language === "es" ? "Score Global" : "Global Score"}
+                                    </span>
+                                    <div style={{ width: 130 }}>
+                                        <Chart
+                                            options={accuracyDonutOptions}
+                                            series={[stats.question_level.accuracy || 0, 100 - (stats.question_level.accuracy || 0)]}
+                                            type="donut"
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-4">
-                                {stats.document_level.map((doc) => (
-                                    <div
-                                        key={doc.document_id}
-                                        className="bg-white border border-zinc-100 rounded-xl p-4 shadow-sm hover:border-indigo-100 transition-colors group"
-                                    >
-                                        <div className="flex justify-between items-start mb-2.5">
-                                            <Typography className="text-[7px] font-black text-indigo-400 uppercase tracking-tight truncate max-w-[80px]">
-                                                {doc.project_name}
-                                            </Typography>
-                                            <div className="text-right">
-                                                <Typography className="text-xs font-black text-zinc-900 leading-none">{doc.final_percent}%</Typography>
-                                                <Typography className="text-[7px] font-bold text-zinc-300 uppercase">Score</Typography>
-                                            </div>
-                                        </div>
+                            {/* Section 02: Analysis Grid */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                {/* Bar chart */}
+                                <div style={{ ...GLASS, padding: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                                        <span style={{ fontSize: 9, fontWeight: 700, color: TXT_MUT, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6 }}>
+                                            <FolderIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+                                            {language === "es" ? "Análisis por Proyecto" : "Project Performance"}
+                                        </span>
+                                        <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 999, padding: "3px 9px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                            {language === "es" ? "Comparativa" : "Benchmarks"}
+                                        </span>
+                                    </div>
+                                    <Chart options={projectBarOptions} series={projectBarSeries} type="bar" height={220} />
+                                </div>
 
-                                        <Typography
-                                            className="text-[10px] font-bold text-zinc-800 leading-tight mb-3 line-clamp-2 min-h-[2.5em]"
-                                            title={doc.document_name}
-                                        >
-                                            {doc.document_name}
-                                        </Typography>
-
-                                        <div className="grid grid-cols-2 gap-3 mb-4">
-                                            <div className="bg-zinc-50/50 p-1.5 rounded border border-zinc-100/50">
-                                                <Typography className="text-[7px] text-zinc-400 font-black uppercase leading-none mb-1">Time</Typography>
-                                                <Typography className="text-[9px] font-bold text-zinc-700">{formatStudyTime(doc.study_seconds, language)}</Typography>
-                                            </div>
-                                            <div className="bg-zinc-50/50 p-1.5 rounded border border-zinc-100/50">
-                                                <Typography className="text-[7px] text-zinc-400 font-black uppercase leading-none mb-1">Attempts</Typography>
-                                                <Typography className="text-[9px] font-bold text-zinc-700">{doc.attempts_count}</Typography>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3 mb-4">
-                                            <div>
-                                                <div className="flex justify-between items-center text-[8px] font-bold text-zinc-400 uppercase mb-1">
-                                                    <span>Coverage</span>
-                                                    <span>{doc.coverage_percent}%</span>
+                                {/* Project list */}
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 280, overflowY: "auto" }}>
+                                    {stats.project_level.map((proj) => (
+                                        <div key={proj.project_id}
+                                            style={{ ...GLASS_SM, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.15s, border-color 0.15s", cursor: "default" }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.25)"; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = GLASS_SM.background; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                                                <div style={{ width: 26, height: 26, flexShrink: 0, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#818CF8" }}>
+                                                    {proj.project_id}
                                                 </div>
-                                                <div className="h-1 w-full bg-zinc-50 rounded-full">
-                                                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${doc.coverage_percent}%` }} />
+                                                <div style={{ minWidth: 0 }}>
+                                                    <p style={{ fontSize: 11, fontWeight: 700, color: TXT_PRI, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2 }}>
+                                                        {proj.project_name}
+                                                    </p>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                        <span style={{ fontSize: 8, color: TXT_DIM }}>{proj.documents_count} Docs</span>
+                                                        <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.15)", flexShrink: 0 }} />
+                                                        <span style={{ fontSize: 8, color: TXT_DIM }}>{proj.docs_with_attempts} Active</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <div className="flex justify-between items-center text-[8px] font-bold text-zinc-400 uppercase mb-1">
-                                                    <span>Accuracy</span>
-                                                    <span>{doc.accuracy}%</span>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                                                <div style={{ textAlign: "right" }}>
+                                                    <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", marginBottom: 2 }}>Coverage</p>
+                                                    <p style={{ fontSize: 11, fontWeight: 800, color: "#4ADE80" }}>{proj.avg_coverage_percent || 0}%</p>
                                                 </div>
-                                                <div className="h-1 w-full bg-zinc-50 rounded-full">
-                                                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${doc.accuracy}%` }} />
+                                                <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.08)" }} />
+                                                <div style={{ textAlign: "right" }}>
+                                                    <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", marginBottom: 2 }}>Acc.</p>
+                                                    <p style={{ fontSize: 11, fontWeight: 800, color: "#818CF8" }}>{proj.percent}%</p>
                                                 </div>
                                             </div>
                                         </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                                        <div className="flex items-center justify-between pt-2.5 border-t border-zinc-50 mt-auto">
-                                            <div className="flex flex-col">
-                                                <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-0.5">Score</Typography>
-                                                <Typography className="text-[9px] font-bold text-zinc-500">{doc.correct_count}/{doc.total_questions}</Typography>
-                                            </div>
-                                            <div className="flex flex-col text-right">
-                                                <Typography className="text-[7px] font-black text-zinc-300 uppercase leading-none mb-0.5">Tags</Typography>
-                                                <Typography className="text-[9px] font-bold text-zinc-500">{doc.doc_distinct_tags}/{doc.doc_total_tags}</Typography>
-                                            </div>
+                            {/* Section 03: Document Cards */}
+                            <div>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                                    <span style={{ fontSize: 9, fontWeight: 700, color: TXT_MUT, textTransform: "uppercase", letterSpacing: "0.06em", display: "flex", alignItems: "center", gap: 6 }}>
+                                        <DocumentTextIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+                                        {language === "es" ? "Detalle por Documento" : "Document Analytics"}
+                                    </span>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366F1" }} />
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>Coverage</span>
+                                        </div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>Accuracy</span>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
+                                    {stats.document_level.map((doc) => (
+                                        <div key={doc.document_id}
+                                            style={{ ...GLASS, padding: "14px", display: "flex", flexDirection: "column", transition: "border-color 0.15s, background 0.15s" }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.055)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)"; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = GLASS.background; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                                                <span style={{ fontSize: 7, fontWeight: 700, color: "#818CF8", textTransform: "uppercase", letterSpacing: "0.05em", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                    {doc.project_name}
+                                                </span>
+                                                <div style={{ textAlign: "right" }}>
+                                                    <p style={{ fontSize: 13, fontWeight: 900, color: TXT_PRI, lineHeight: 1 }}>{doc.final_percent}%</p>
+                                                    <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>Score</p>
+                                                </div>
+                                            </div>
+
+                                            <p style={{ fontSize: 10, fontWeight: 700, color: TXT_MUT, lineHeight: 1.4, marginBottom: 12, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}
+                                                title={doc.document_name}>
+                                                {doc.document_name}
+                                            </p>
+
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 10 }}>
+                                                {[
+                                                    { label: "Time", value: formatStudyTime(doc.study_seconds, language) },
+                                                    { label: "Attempts", value: doc.attempts_count },
+                                                ].map(({ label, value }) => (
+                                                    <div key={label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 7, padding: "7px 8px" }}>
+                                                        <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
+                                                        <p style={{ fontSize: 10, fontWeight: 700, color: TXT_MUT }}>{value}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 10 }}>
+                                                {[
+                                                    { label: "Coverage", pct: doc.coverage_percent, color: "#6366F1" },
+                                                    { label: "Accuracy", pct: doc.accuracy, color: "#22C55E" },
+                                                ].map(({ label, pct, color }) => (
+                                                    <div key={label}>
+                                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                                            <span style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase" }}>{label}</span>
+                                                            <span style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM }}>{pct}%</span>
+                                                        </div>
+                                                        <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 99 }}>
+                                                            <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 99 }} />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "auto" }}>
+                                                <div>
+                                                    <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", marginBottom: 2 }}>Score</p>
+                                                    <p style={{ fontSize: 9, fontWeight: 700, color: TXT_MUT }}>{doc.correct_count}/{doc.total_questions}</p>
+                                                </div>
+                                                <div style={{ textAlign: "right" }}>
+                                                    <p style={{ fontSize: 7, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", marginBottom: 2 }}>Tags</p>
+                                                    <p style={{ fontSize: 9, fontWeight: 700, color: TXT_MUT }}>{doc.doc_distinct_tags}/{doc.doc_total_tags}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </DialogBody>
+                    )}
+                </div>
 
-            <div className="px-4 py-3 md:px-8 md:py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
-                <span className="flex items-center gap-2">
-                    {APP_NAME} Intelligence <div className="h-1 w-1 rounded-full bg-zinc-300" /> {new Date().toLocaleDateString()}
-                </span>
-                <span className="flex items-center gap-1.5 text-zinc-500">
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    Secure Engine Active
-                </span>
+                {/* Footer */}
+                <div style={{ padding: "10px 20px", background: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: TXT_DIM, textTransform: "uppercase", letterSpacing: "0.07em", display: "flex", alignItems: "center", gap: 6 }}>
+                        {APP_NAME} Intelligence
+                        <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "inline-block" }} />
+                        {new Date().toLocaleDateString()}
+                    </span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: "#4ADE80", textTransform: "uppercase", letterSpacing: "0.07em", display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 6px rgba(34,197,94,0.7)", display: "inline-block" }} />
+                        Secure Engine Active
+                    </span>
+                </div>
             </div>
-        </Dialog>
+        </div>
     );
 }
 

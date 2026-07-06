@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Typography, Button, Input, Select, Option } from "@material-tailwind/react";
 import {
   ArrowLeftIcon, UserPlusIcon, EllipsisHorizontalIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -16,14 +15,77 @@ const STAGES = [
   { value: "former_employee", label: "Ex-empleado" },
 ];
 
-const ROLE_COLORS = {
-  owner:    "bg-purple-100 text-purple-700",
-  admin:    "bg-red-100 text-red-700",
-  manager:  "bg-blue-100 text-blue-700",
-  trainer:  "bg-green-100 text-green-700",
-  employee: "bg-zinc-100 text-zinc-600",
-  auditor:  "bg-amber-100 text-amber-700",
+/* ── Design tokens ── */
+const INPUT_S = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 10,
+  padding: "11px 14px",
+  fontSize: 13,
+  color: "#F1F5F9",
+  width: "100%",
+  outline: "none",
+  fontFamily: "inherit",
+  transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
 };
+const focusIn  = (e) => { e.target.style.borderColor = "rgba(99,102,241,0.7)"; e.target.style.background = "rgba(99,102,241,0.06)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; };
+const focusOut = (e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.boxShadow = "none"; };
+const LABEL_S = { fontSize: 11, fontWeight: 700, color: "#94A3B8", display: "block", marginBottom: 6, letterSpacing: "0.02em" };
+
+const MODAL_BACKDROP = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)" };
+const MODAL_CARD = { background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, width: "100%", maxWidth: 440, boxShadow: "0 32px 80px rgba(0,0,0,0.6)" };
+
+const ROLE_STYLES = {
+  owner:    { background: "rgba(168,85,247,0.12)", color: "#C084FC", border: "1px solid rgba(168,85,247,0.25)" },
+  admin:    { background: "rgba(239,68,68,0.1)",   color: "#F87171", border: "1px solid rgba(239,68,68,0.22)" },
+  manager:  { background: "rgba(59,130,246,0.1)",  color: "#60A5FA", border: "1px solid rgba(59,130,246,0.22)" },
+  trainer:  { background: "rgba(34,197,94,0.09)",  color: "#4ADE80", border: "1px solid rgba(34,197,94,0.2)" },
+  employee: { background: "rgba(148,163,184,0.1)", color: "#94A3B8", border: "1px solid rgba(148,163,184,0.2)" },
+  auditor:  { background: "rgba(251,191,36,0.1)",  color: "#FCD34D", border: "1px solid rgba(251,191,36,0.22)" },
+};
+
+const STATUS_STYLES = {
+  active:    { background: "rgba(34,197,94,0.09)",  color: "#4ADE80", border: "1px solid rgba(34,197,94,0.2)" },
+  invited:   { background: "rgba(59,130,246,0.1)",  color: "#60A5FA", border: "1px solid rgba(59,130,246,0.22)" },
+  suspended: { background: "rgba(251,191,36,0.1)",  color: "#FCD34D", border: "1px solid rgba(251,191,36,0.22)" },
+  removed:   { background: "rgba(148,163,184,0.08)", color: "#64748B", border: "1px solid rgba(148,163,184,0.15)" },
+};
+
+function Spin() {
+  return <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.25)", borderTopColor: "#fff", flexShrink: 0 }} className="animate-spin" />;
+}
+
+function PrimaryBtn({ children, disabled, loading, type = "button", onClick }) {
+  return (
+    <button type={type} disabled={disabled || loading} onClick={onClick}
+      style={{
+        position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        padding: "10px 20px", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 700,
+        background: (disabled || loading) ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg, #6366F1 0%, #818CF8 100%)",
+        color: "#fff", cursor: (disabled || loading) ? "default" : "pointer", overflow: "hidden",
+        boxShadow: (disabled || loading) ? "none" : "0 4px 16px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+        transition: "all 0.2s",
+      }}
+      onMouseEnter={(e) => { if (!disabled && !loading) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.15)"; } }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = (!disabled && !loading) ? "0 4px 16px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)" : "none"; }}
+      onMouseDown={(e) => { if (!disabled && !loading) e.currentTarget.style.transform = "scale(0.985)"; }}
+      onMouseUp={(e) => { if (!disabled && !loading) e.currentTarget.style.transform = "translateY(-1px)"; }}>
+      <span style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 55%)", pointerEvents: "none", borderRadius: 10 }} />
+      <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{children}</span>
+    </button>
+  );
+}
+
+function DarkSelect({ value, onChange, children }) {
+  return (
+    <select value={value} onChange={onChange}
+      style={{ ...INPUT_S, appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 36 }}
+      onFocus={focusIn} onBlur={focusOut}>
+      {children}
+    </select>
+  );
+}
 
 /* ── Add User Modal ── */
 function AddUserModal({ companyId, onClose, onAdded }) {
@@ -37,9 +99,7 @@ function AddUserModal({ companyId, onClose, onAdded }) {
     setSaving(true); setError("");
     try {
       const result = await companyApi.addUser(companyId, {
-        email: form.email.trim(),
-        role: form.role,
-        employee_stage: form.employee_stage,
+        email: form.email.trim(), role: form.role, employee_stage: form.employee_stage,
       });
       onAdded(result);
     } catch (err) {
@@ -49,48 +109,57 @@ function AddUserModal({ companyId, onClose, onAdded }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <Typography className="font-extrabold text-zinc-900">Agregar usuario</Typography>
-          <button onClick={onClose}><XMarkIcon className="h-5 w-5 text-zinc-400 hover:text-zinc-600" /></button>
+    <div style={MODAL_BACKDROP} onClick={onClose}>
+      <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Agregar usuario</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+            <XMarkIcon style={{ width: 18, height: 18 }} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <Input label="Email *" type="email" value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            <Typography variant="small" className="text-zinc-400 mt-1">
-              Si el usuario no tiene cuenta, se creará automáticamente.
-              Recomiéndale usar "Olvidé mi contraseña" para activar su acceso.
-            </Typography>
+            <label style={LABEL_S}>Email *</label>
+            <input type="email" style={INPUT_S} placeholder="usuario@empresa.com" value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })} required onFocus={focusIn} onBlur={focusOut} />
+            <p style={{ fontSize: 11, color: "#64748B", marginTop: 6, lineHeight: 1.55 }}>
+              Si el usuario no tiene cuenta, se creará automáticamente. Recomiéndale usar "Olvidé mi contraseña" para activar su acceso.
+            </p>
           </div>
 
-          <Select label="Rol *" value={form.role} onChange={(v) => setForm({ ...form, role: v })}>
-            {ROLES.map((r) => (
-              <Option key={r} value={r} className="capitalize">{r}</Option>
-            ))}
-          </Select>
+          <div>
+            <label style={LABEL_S}>Rol *</label>
+            <DarkSelect value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+              {ROLES.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
+            </DarkSelect>
+          </div>
 
-          <Select label="Etapa del empleado *" value={form.employee_stage}
-            onChange={(v) => setForm({ ...form, employee_stage: v })}>
-            {STAGES.map((s) => <Option key={s.value} value={s.value}>{s.label}</Option>)}
-          </Select>
+          <div>
+            <label style={LABEL_S}>Etapa del empleado *</label>
+            <DarkSelect value={form.employee_stage} onChange={(e) => setForm({ ...form, employee_stage: e.target.value })}>
+              {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </DarkSelect>
+          </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-              <Typography variant="small" className="text-red-600">{error}</Typography>
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, padding: "10px 14px" }}>
+              <p style={{ fontSize: 12, color: "#FCA5A5" }}>{error}</p>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-1">
-            <Button variant="text" color="blue-gray" className="normal-case" onClick={onClose} type="button">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 4 }}>
+            <button type="button" onClick={onClose}
+              style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
               Cancelar
-            </Button>
-            <Button type="submit" color="indigo" className="normal-case flex items-center gap-2" loading={saving}>
-              <UserPlusIcon className="h-4 w-4" /> Agregar →
-            </Button>
+            </button>
+            <PrimaryBtn type="submit" loading={saving}>
+              {saving ? <><Spin /> Agregando...</> : <><UserPlusIcon style={{ width: 15, height: 15 }} /> Agregar →</>}
+            </PrimaryBtn>
           </div>
         </form>
       </div>
@@ -105,8 +174,7 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
   const [error, setError] = useState("");
 
   const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true); setError("");
+    e.preventDefault(); setSaving(true); setError("");
     try {
       await companyApi.changeMemberRole(companyId, { membership_id: member.id, role });
       onSaved(member.id, role);
@@ -116,25 +184,39 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4"
-        onClick={(e) => e.stopPropagation()}>
-        <Typography className="font-bold text-zinc-900">Cambiar rol</Typography>
-        <Typography variant="small" className="text-zinc-400">
-          Usuario: <strong>{member.full_name || member.email}</strong>
-        </Typography>
-        <form onSubmit={handleSave} className="space-y-4">
-          <Select label="Nuevo rol" value={role} onChange={setRole}>
-            {ROLES.map((r) => (
-              <Option key={r} value={r} className="capitalize">{r}</Option>
-            ))}
-          </Select>
-          {error && <Typography variant="small" className="text-red-500">{error}</Typography>}
-          <div className="flex justify-end gap-3">
-            <Button variant="text" color="blue-gray" className="normal-case" onClick={onClose} type="button">
+    <div style={MODAL_BACKDROP} onClick={onClose}>
+      <div style={{ ...MODAL_CARD, maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Cambiar rol</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+            <XMarkIcon style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
+        <form onSubmit={handleSave} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <p style={{ fontSize: 13, color: "#94A3B8" }}>
+            Usuario: <strong style={{ color: "#F1F5F9" }}>{member.full_name || member.email}</strong>
+          </p>
+          <div>
+            <label style={LABEL_S}>Nuevo rol</label>
+            <DarkSelect value={role} onChange={(e) => setRole(e.target.value)}>
+              {ROLES.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
+            </DarkSelect>
+          </div>
+          {error && (
+            <p style={{ fontSize: 12, color: "#F87171" }}>{error}</p>
+          )}
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 4 }}>
+            <button type="button" onClick={onClose}
+              style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
               Cancelar
-            </Button>
-            <Button type="submit" color="indigo" className="normal-case" loading={saving}>Guardar</Button>
+            </button>
+            <PrimaryBtn type="submit" loading={saving}>
+              {saving ? <><Spin /> Guardando...</> : "Guardar"}
+            </PrimaryBtn>
           </div>
         </form>
       </div>
@@ -164,21 +246,14 @@ export function PlatformAdminUsers() {
       companyApi.getCompany(companyId),
       companyApi.getMembers(companyId, { status: statusFilter }),
     ])
-      .then(([co, mems]) => {
-        setCompany(co);
-        setMembers(mems.results || mems || []);
-      })
+      .then(([co, mems]) => { setCompany(co); setMembers(mems.results || mems || []); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [companyId, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleAdded = (result) => {
-    setShowAdd(false);
-    showToast("✓ Usuario agregado. Ya tiene acceso a la empresa.");
-    load();
-  };
+  const handleAdded = () => { setShowAdd(false); showToast("✓ Usuario agregado. Ya tiene acceso a la empresa."); load(); };
 
   const handleRoleSaved = (memberId, newRole) => {
     setMembers((prev) => prev.map((m) => m.id === memberId ? { ...m, role: newRole } : m));
@@ -198,138 +273,144 @@ export function PlatformAdminUsers() {
     } finally { setActing(false); setMenuOpen(null); }
   };
 
-  const statusColor = (s) => ({
-    active:  "bg-green-100 text-green-700",
-    invited: "bg-blue-100 text-blue-700",
-    suspended: "bg-amber-100 text-amber-700",
-    removed: "bg-zinc-100 text-zinc-500",
-  })[s] || "bg-zinc-100 text-zinc-500";
+  const roleStyle = (r) => ROLE_STYLES[r] || ROLE_STYLES.employee;
+  const statusStyle = (s) => STATUS_STYLES[s] || STATUS_STYLES.removed;
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div style={{ maxWidth: 900 }}>
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl">
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 60, background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.1)", color: "#F1F5F9", fontSize: 13, fontWeight: 600, padding: "12px 22px", borderRadius: 12, backdropFilter: "blur(12px)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)", whiteSpace: "nowrap" }}>
           {toast}
         </div>
       )}
 
-      {showAdd && (
-        <AddUserModal companyId={companyId} onClose={() => setShowAdd(false)} onAdded={handleAdded} />
-      )}
-
-      {changeRole && (
-        <ChangeRoleModal member={changeRole} companyId={companyId}
-          onClose={() => setChangeRole(null)} onSaved={handleRoleSaved} />
-      )}
+      {showAdd && <AddUserModal companyId={companyId} onClose={() => setShowAdd(false)} onAdded={handleAdded} />}
+      {changeRole && <ChangeRoleModal member={changeRole} companyId={companyId} onClose={() => setChangeRole(null)} onSaved={handleRoleSaved} />}
 
       {/* Header */}
-      <div>
+      <div style={{ marginBottom: 28 }}>
         <button onClick={() => navigate("/platform-admin/companies")}
-          className="flex items-center gap-1 text-sm text-zinc-400 hover:text-indigo-600 mb-3">
-          <ArrowLeftIcon className="h-4 w-4" /> Volver a empresas
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#475569", background: "none", border: "none", cursor: "pointer", marginBottom: 16, padding: 0, transition: "color 0.15s" }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#818CF8"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "#475569"}>
+          <ArrowLeftIcon style={{ width: 14, height: 14 }} /> Volver a empresas
         </button>
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-black rounded uppercase tracking-wide">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ padding: "3px 8px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#F87171", fontSize: 10, fontWeight: 800, borderRadius: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 Platform Admin
-              </div>
+              </span>
             </div>
-            <Typography variant="h5" className="font-extrabold text-zinc-900">
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.02em", marginBottom: 4 }}>
               {company?.name || `Empresa #${companyId}`} — Usuarios
-            </Typography>
-            <Typography variant="small" className="text-zinc-400">
+            </h1>
+            <p style={{ fontSize: 13, color: "#64748B" }}>
               {members.length} miembro{members.length !== 1 ? "s" : ""} {statusFilter !== "all" ? `(${statusFilter})` : ""}
-            </Typography>
+            </p>
           </div>
-          <Button color="indigo" className="normal-case flex items-center gap-2"
-            onClick={() => setShowAdd(true)}>
-            <UserPlusIcon className="h-4 w-4" /> Agregar usuario
-          </Button>
+          <PrimaryBtn onClick={() => setShowAdd(true)}>
+            <UserPlusIcon style={{ width: 15, height: 15 }} /> Agregar usuario
+          </PrimaryBtn>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-1 bg-zinc-100 rounded-xl p-1 w-fit">
-        {["active", "all"].map((s) => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-semibold capitalize transition-colors
-              ${statusFilter === s ? "bg-white shadow-sm text-zinc-900" : "text-zinc-400 hover:text-zinc-600"}`}>
-            {s === "active" ? "Activos" : "Todos"}
+      {/* Filter tabs */}
+      <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 4, width: "fit-content", marginBottom: 20 }}>
+        {[{ key: "active", label: "Activos" }, { key: "all", label: "Todos" }].map(({ key, label }) => (
+          <button key={key} onClick={() => setStatusFilter(key)}
+            style={{
+              padding: "7px 18px", borderRadius: 9, fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", transition: "all 0.15s",
+              background: statusFilter === key ? "rgba(99,102,241,0.15)" : "none",
+              color: statusFilter === key ? "#818CF8" : "#64748B",
+              boxShadow: statusFilter === key ? "inset 0 0 0 1px rgba(99,102,241,0.3)" : "none",
+            }}>
+            {label}
           </button>
         ))}
       </div>
 
       {/* Table */}
       {loading ? (
-        <div className="space-y-2">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-zinc-200/60 p-4 animate-pulse">
-              <div className="h-4 bg-zinc-100 rounded w-1/4 mb-1" />
-              <div className="h-3 bg-zinc-100 rounded w-1/3" />
+            <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "16px 20px" }} className="animate-pulse">
+              <div style={{ height: 13, background: "rgba(255,255,255,0.06)", borderRadius: 5, width: "25%", marginBottom: 8 }} />
+              <div style={{ height: 10, background: "rgba(255,255,255,0.04)", borderRadius: 5, width: "35%" }} />
             </div>
           ))}
         </div>
       ) : members.length === 0 ? (
-        <div className="text-center py-16 text-zinc-400">
-          <UserPlusIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
-          <Typography className="font-semibold">No hay usuarios</Typography>
-          <Typography variant="small">Agrega el primer usuario a esta empresa.</Typography>
+        <div style={{ textAlign: "center", padding: "60px 0" }}>
+          <UserPlusIcon style={{ width: 48, height: 48, margin: "0 auto 12px", opacity: 0.3, color: "#64748B" }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: "#475569", marginBottom: 4 }}>No hay usuarios</p>
+          <p style={{ fontSize: 13, color: "#334155" }}>Agrega el primer usuario a esta empresa.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 border-b border-zinc-200">
-              <tr>
+        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, overflow: "hidden" }}>
+          <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}>
                 {["Nombre", "Email", "Rol", "Etapa", "Estado", ""].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wide">{h}</th>
+                  <th key={h} style={{ textAlign: "left", padding: "12px 16px", fontSize: 10, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => (
-                <tr key={m.id} className="border-b border-zinc-50 hover:bg-zinc-50">
-                  <td className="px-4 py-3 font-semibold text-zinc-800">
+              {members.map((m, idx) => (
+                <tr key={m.id}
+                  style={{ borderBottom: idx < members.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "none"}>
+                  <td style={{ padding: "13px 16px", fontWeight: 700, color: "#F1F5F9" }}>
                     {m.full_name || m.username || "—"}
                   </td>
-                  <td className="px-4 py-3 text-zinc-500 text-xs">{m.email || "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${ROLE_COLORS[m.role] || "bg-zinc-100 text-zinc-500"}`}>
+                  <td style={{ padding: "13px 16px", color: "#64748B", fontSize: 12 }}>{m.email || "—"}</td>
+                  <td style={{ padding: "13px 16px" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 6, textTransform: "capitalize", ...roleStyle(m.role) }}>
                       {m.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-400 text-xs capitalize">
+                  <td style={{ padding: "13px 16px", color: "#64748B", fontSize: 12, textTransform: "capitalize" }}>
                     {STAGES.find((s) => s.value === m.employee_stage)?.label || m.employee_stage || "—"}
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusColor(m.status)}`}>
+                  <td style={{ padding: "13px 16px" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 6, ...statusStyle(m.status) }}>
                       {m.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="relative">
+                  <td style={{ padding: "13px 16px" }}>
+                    <div style={{ position: "relative" }}>
                       <button
                         onClick={() => setMenuOpen(menuOpen === m.id ? null : m.id)}
-                        className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600">
-                        <EllipsisHorizontalIcon className="h-4 w-4" />
+                        style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", borderRadius: 7, cursor: "pointer", color: "#475569", transition: "color 0.15s, background 0.15s" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+                        <EllipsisHorizontalIcon style={{ width: 16, height: 16 }} />
                       </button>
                       {menuOpen === m.id && (
-                        <div className="absolute right-0 top-full z-20 bg-white rounded-xl shadow-xl border border-zinc-200 w-44 py-1">
+                        <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 20, background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, width: 160, padding: "4px 0", boxShadow: "0 16px 48px rgba(0,0,0,0.5)" }}>
                           <button
-                            className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+                            style={{ width: "100%", textAlign: "left", padding: "9px 14px", fontSize: 13, color: "#94A3B8", background: "none", border: "none", cursor: "pointer", transition: "background 0.12s, color 0.12s" }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#F1F5F9"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94A3B8"; }}
                             onClick={() => { setChangeRole(m); setMenuOpen(null); }}>
                             Cambiar rol
                           </button>
                           {m.role !== "owner" && (
                             <button
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              style={{ width: "100%", textAlign: "left", padding: "9px 14px", fontSize: 13, color: "#F87171", background: "none", border: "none", cursor: "pointer", transition: "background 0.12s" }}
+                              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.07)"}
+                              onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                               onClick={() => handleRemove(m)}>
                               Dar de baja
                             </button>
                           )}
                           <button
-                            className="w-full text-left px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-50"
+                            style={{ width: "100%", textAlign: "left", padding: "9px 14px", fontSize: 13, color: "#475569", background: "none", border: "none", cursor: "pointer", transition: "background 0.12s" }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
+                            onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                             onClick={() => setMenuOpen(null)}>
                             Cerrar
                           </button>

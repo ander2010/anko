@@ -11,6 +11,8 @@ import { ForgotPassword, ResetPassword, EmailVerification } from "@/pages/auth";
 import { AccessAction } from "@/pages/dashboard";
 import { PublicVerification } from "@/enterprise/pages/certifications/PublicVerification";
 import { NoCompany } from "@/enterprise/pages/NoCompany";
+import { JoinPage } from "@/pages/join/JoinPage";
+import { WaitingPage } from "@/pages/waiting/WaitingPage";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="/faq" element={<PublicFaq />} />
       <Route path="/privacidad" element={<Privacidad />} />
       <Route path="/terminos" element={<Terminos />} />
+      <Route path="/join" element={<JoinPage />} />
+      <Route path="/waiting" element={<RequireAuth><WaitingPage /></RequireAuth>} />
       <Route path="/dashboard/*" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/enterprise/*" element={<RequireAuth><Enterprise /></RequireAuth>} />
       <Route path="/platform-admin/*" element={<RequireAuth><PlatformAdmin /></RequireAuth>} />

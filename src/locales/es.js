@@ -69,7 +69,13 @@ export const es = {
         "ent-analytics-learning": "Tendencias Aprendizaje",
         "ent-analytics-health": "Salud Empresa",
         "ent-members": "Miembros",
-        "ent-settings": "Configuración"
+        "ent-settings": "Configuración",
+        "admin-area": "Área de Admin",
+        "global-process": "Procesos Globales",
+        "global-learning-path": "Rutas de Aprendizaje",
+        "ent-invitations": "Invitaciones",
+        "pa-invitations": "Invitaciones",
+        "companies": "Empresas"
     },
     navbar: {
         welcome: "Bienvenido"

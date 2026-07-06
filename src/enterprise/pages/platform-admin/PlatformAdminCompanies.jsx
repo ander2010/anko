@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typography, Button } from "@material-tailwind/react";
 import {
   PlusIcon, MagnifyingGlassIcon, BuildingOffice2Icon,
   UsersIcon, PencilIcon, TrashIcon, XMarkIcon,
@@ -34,8 +33,63 @@ function slugify(text) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-const inputCls = "w-full px-3 py-2.5 text-sm border border-zinc-300 rounded-xl outline-none focus:border-indigo-500 bg-white text-zinc-800 transition-colors";
-const labelCls = "block text-xs font-semibold text-zinc-500 mb-1";
+/* ── Design tokens ── */
+const INPUT_S = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 10,
+  padding: "11px 14px",
+  fontSize: 13,
+  color: "#F1F5F9",
+  width: "100%",
+  outline: "none",
+  fontFamily: "inherit",
+  transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
+};
+
+const focusIn  = (e) => { e.target.style.borderColor = "rgba(99,102,241,0.7)"; e.target.style.background = "rgba(99,102,241,0.06)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; };
+const focusOut = (e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.boxShadow = "none"; };
+
+const LABEL_S = { fontSize: 11, fontWeight: 700, color: "#94A3B8", display: "block", marginBottom: 6, letterSpacing: "0.02em" };
+
+const MODAL_BACKDROP = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)" };
+const MODAL_CARD = { background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, width: "100%", maxWidth: 440, boxShadow: "0 32px 80px rgba(0,0,0,0.6)" };
+
+function PrimaryBtn({ children, disabled, loading, type = "button", onClick, style }) {
+  return (
+    <button type={type} disabled={disabled} onClick={onClick}
+      style={{
+        position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        padding: "10px 20px", borderRadius: 10, border: "none", fontSize: 13, fontWeight: 700,
+        background: (disabled || loading) ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg, #6366F1 0%, #818CF8 100%)",
+        color: "#fff", cursor: (disabled || loading) ? "default" : "pointer", overflow: "hidden",
+        boxShadow: (disabled || loading) ? "none" : "0 4px 16px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+        transition: "all 0.2s", ...style,
+      }}
+      onMouseEnter={(e) => { if (!disabled && !loading) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.15)"; } }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = (!disabled && !loading) ? "0 4px 16px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)" : "none"; }}
+      onMouseDown={(e) => { if (!disabled && !loading) e.currentTarget.style.transform = "scale(0.985)"; }}
+      onMouseUp={(e) => { if (!disabled && !loading) e.currentTarget.style.transform = "translateY(-1px)"; }}>
+      <span style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 55%)", pointerEvents: "none", borderRadius: 10 }} />
+      <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{children}</span>
+    </button>
+  );
+}
+
+function Spin() {
+  return <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.25)", borderTopColor: "#fff", flexShrink: 0 }} className="animate-spin" />;
+}
+
+function DarkSelect({ value, onChange, children }) {
+  return (
+    <select value={value} onChange={onChange}
+      style={{ ...INPUT_S, appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 36 }}
+      onFocus={focusIn} onBlur={focusOut}>
+      {children}
+    </select>
+  );
+}
 
 /* ── Create Company Modal ── */
 function CreateCompanyModal({ onClose, onCreate }) {
@@ -48,27 +102,16 @@ function CreateCompanyModal({ onClose, onCreate }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Auto-generate slug from name unless the user manually edited it
-  const handleNameChange = (value) => {
-    setName(value);
-    if (!slugEdited) setSlug(slugify(value));
-  };
-
-  const handleSlugChange = (value) => {
-    setSlug(value);
-    setSlugEdited(true);
-  };
+  const handleNameChange = (value) => { setName(value); if (!slugEdited) setSlug(slugify(value)); };
+  const handleSlugChange = (value) => { setSlug(value); setSlugEdited(true); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !slug.trim()) {
-      setError("Nombre y slug son obligatorios."); return;
-    }
+    if (!name.trim() || !slug.trim()) { setError("Nombre y slug son obligatorios."); return; }
     setSaving(true); setError("");
     try {
       const payload = {
-        name: name.trim(),
-        slug: slug.trim(),
+        name: name.trim(), slug: slug.trim(),
         ...(industry && { industry }),
         ...(companySize && { company_size: companySize }),
         ...(website.trim() && { website: website.trim() }),
@@ -76,110 +119,79 @@ function CreateCompanyModal({ onClose, onCreate }) {
       const created = await companyApi.createCompany(payload);
       onCreate(created);
     } catch (err) {
-      // interceptor already unwraps response.data
-      setError(
-        err?.name?.[0] || err?.slug?.[0] || err?.detail ||
-        err?.non_field_errors?.[0] || "No se pudo crear la empresa."
-      );
+      setError(err?.name?.[0] || err?.slug?.[0] || err?.detail || err?.non_field_errors?.[0] || "No se pudo crear la empresa.");
     } finally { setSaving(false); }
   };
 
-  // Prevent modal close when clicking inside
-  const stopClose = (e) => e.stopPropagation();
-
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
-        onClick={stopClose}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-zinc-100">
-          <Typography className="font-extrabold text-zinc-900 text-lg">Nueva Empresa</Typography>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600">
-            <XMarkIcon className="h-5 w-5" />
+    <div style={MODAL_BACKDROP} onClick={onClose}>
+      <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Nueva Empresa</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+            <XMarkIcon style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          {/* Nombre */}
+        <form onSubmit={handleSubmit} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label className={labelCls}>Nombre *</label>
-            <input
-              className={inputCls}
-              placeholder="Acme Corp"
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              required
-              autoFocus
-            />
+            <label style={LABEL_S}>Nombre *</label>
+            <input style={INPUT_S} placeholder="Acme Corp" value={name} onChange={(e) => handleNameChange(e.target.value)} required autoFocus onFocus={focusIn} onBlur={focusOut} />
           </div>
 
-          {/* Slug */}
           <div>
-            <label className={labelCls}>Identificador único (slug) *</label>
-            <div className="flex items-center border border-zinc-300 rounded-xl overflow-hidden focus-within:border-indigo-500 transition-colors">
-              <span className="px-3 py-2.5 bg-zinc-50 text-zinc-400 text-sm border-r border-zinc-200 whitespace-nowrap select-none">
+            <label style={LABEL_S}>Identificador único (slug) *</label>
+            <div style={{ display: "flex", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, overflow: "hidden", background: "rgba(255,255,255,0.05)", transition: "border-color 0.2s, box-shadow 0.2s" }}
+              onFocusCapture={(e) => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.7)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; }}
+              onBlurCapture={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}>
+              <span style={{ padding: "11px 12px", background: "rgba(255,255,255,0.04)", color: "#64748B", fontSize: 12, borderRight: "1px solid rgba(255,255,255,0.08)", whiteSpace: "nowrap", userSelect: "none" }}>
                 ankard.io/
               </span>
-              <input
-                className="flex-1 px-3 py-2.5 text-sm text-zinc-800 outline-none"
-                placeholder="acme-corp"
-                value={slug}
-                onChange={(e) => handleSlugChange(e.target.value)}
-                required
-              />
+              <input style={{ flex: 1, padding: "11px 14px", fontSize: 13, color: "#F1F5F9", background: "none", border: "none", outline: "none", fontFamily: "inherit" }}
+                placeholder="acme-corp" value={slug} onChange={(e) => handleSlugChange(e.target.value)} required />
             </div>
           </div>
 
-          {/* Industria + Tamaño */}
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label className={labelCls}>Industria</label>
-              <select className={inputCls} value={industry} onChange={(e) => setIndustry(e.target.value)}>
+              <label style={LABEL_S}>Industria</label>
+              <DarkSelect value={industry} onChange={(e) => setIndustry(e.target.value)}>
                 <option value="">Seleccionar...</option>
                 {INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}
-              </select>
+              </DarkSelect>
             </div>
             <div>
-              <label className={labelCls}>Tamaño</label>
-              <select className={inputCls} value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
+              <label style={LABEL_S}>Tamaño</label>
+              <DarkSelect value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
                 <option value="">Seleccionar...</option>
                 {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
+              </DarkSelect>
             </div>
           </div>
 
-          {/* Sitio web */}
           <div>
-            <label className={labelCls}>Sitio web</label>
-            <input
-              className={inputCls}
-              type="url"
-              placeholder="https://acme.com"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-            />
+            <label style={LABEL_S}>Sitio web</label>
+            <input type="url" style={INPUT_S} placeholder="https://acme.com" value={website} onChange={(e) => setWebsite(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
 
-          {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-              <Typography variant="small" className="text-red-600">{error}</Typography>
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, padding: "10px 14px" }}>
+              <p style={{ fontSize: 12, color: "#FCA5A5" }}>{error}</p>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-zinc-100">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 4 }}>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-700 rounded-xl hover:bg-zinc-100 transition-colors">
+              style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
               Cancelar
             </button>
-            <button type="submit" disabled={saving}
-              className="px-5 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-60 flex items-center gap-2 transition-colors">
-              {saving ? (
-                <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Creando...</>
-              ) : "Crear empresa →"}
-            </button>
+            <PrimaryBtn type="submit" disabled={saving} loading={saving}>
+              {saving ? <><Spin /> Creando...</> : "Crear empresa →"}
+            </PrimaryBtn>
           </div>
         </form>
       </div>
@@ -197,12 +209,10 @@ function EditCompanyModal({ company, onClose, onSaved }) {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true); setError("");
+    e.preventDefault(); setSaving(true); setError("");
     try {
       const updated = await companyApi.updateCompany(company.id, {
-        name: name.trim(),
-        website: website.trim(),
+        name: name.trim(), website: website.trim(),
         ...(industry && { industry }),
         ...(companySize && { company_size: companySize }),
       });
@@ -213,58 +223,56 @@ function EditCompanyModal({ company, onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-zinc-100">
-          <Typography className="font-extrabold text-zinc-900 text-lg">Editar empresa</Typography>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-400">
-            <XMarkIcon className="h-5 w-5" />
+    <div style={MODAL_BACKDROP} onClick={onClose}>
+      <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Editar empresa</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+            <XMarkIcon style={{ width: 18, height: 18 }} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label className={labelCls}>Nombre</label>
-            <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
+            <label style={LABEL_S}>Nombre</label>
+            <input style={INPUT_S} value={name} onChange={(e) => setName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
           <div>
-            <label className={labelCls}>Sitio web</label>
-            <input className={inputCls} type="url" placeholder="https://" value={website}
-              onChange={(e) => setWebsite(e.target.value)} />
+            <label style={LABEL_S}>Sitio web</label>
+            <input type="url" style={INPUT_S} placeholder="https://" value={website} onChange={(e) => setWebsite(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label className={labelCls}>Industria</label>
-              <select className={inputCls} value={industry} onChange={(e) => setIndustry(e.target.value)}>
+              <label style={LABEL_S}>Industria</label>
+              <DarkSelect value={industry} onChange={(e) => setIndustry(e.target.value)}>
                 <option value="">Seleccionar...</option>
                 {INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}
-              </select>
+              </DarkSelect>
             </div>
             <div>
-              <label className={labelCls}>Tamaño</label>
-              <select className={inputCls} value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
+              <label style={LABEL_S}>Tamaño</label>
+              <DarkSelect value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
                 <option value="">Seleccionar...</option>
                 {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
+              </DarkSelect>
             </div>
           </div>
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-              <Typography variant="small" className="text-red-600">{error}</Typography>
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, padding: "10px 14px" }}>
+              <p style={{ fontSize: 12, color: "#FCA5A5" }}>{error}</p>
             </div>
           )}
-          <div className="flex justify-end gap-3 pt-2 border-t border-zinc-100">
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 4 }}>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-zinc-500 hover:text-zinc-700 rounded-xl hover:bg-zinc-100 transition-colors">
+              style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
               Cancelar
             </button>
-            <button type="submit" disabled={saving}
-              className="px-5 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-60 flex items-center gap-2 transition-colors">
-              {saving ? (
-                <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Guardando...</>
-              ) : "Guardar"}
-            </button>
+            <PrimaryBtn type="submit" disabled={saving} loading={saving}>
+              {saving ? <><Spin /> Guardando...</> : "Guardar"}
+            </PrimaryBtn>
           </div>
         </form>
       </div>
@@ -288,7 +296,6 @@ export function PlatformAdminCompanies() {
 
   const load = useCallback(() => {
     setLoading(true);
-    // Platform admin can see all companies — no company_id filter needed
     companyApi.myCompanies()
       .then((d) => setCompanies(d.results || d || []))
       .catch(() => {})
@@ -301,7 +308,6 @@ export function PlatformAdminCompanies() {
     setShowCreate(false);
     showToast(`✓ "${company.name}" creada exitosamente.`);
     load();
-    // Go directly to user management for this new company
     navigate(`/platform-admin/companies/${company.id}/users`);
   };
 
@@ -329,10 +335,10 @@ export function PlatformAdminCompanies() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div style={{ maxWidth: 860 }}>
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl">
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 60, background: "rgba(15,23,42,0.95)", border: "1px solid rgba(255,255,255,0.1)", color: "#F1F5F9", fontSize: 13, fontWeight: 600, padding: "12px 22px", borderRadius: 12, backdropFilter: "blur(12px)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)", whiteSpace: "nowrap" }}>
           {toast}
         </div>
       )}
@@ -343,125 +349,141 @@ export function PlatformAdminCompanies() {
 
       {/* Delete confirm */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-            <Typography className="font-bold text-zinc-900">Eliminar empresa</Typography>
-            <Typography variant="small" className="text-zinc-500">
-              ¿Estás seguro de que quieres eliminar <strong>{deleteTarget.name}</strong>?
-              Esta acción no se puede deshacer.
-            </Typography>
-            <div className="flex justify-end gap-3">
-              <Button variant="text" color="blue-gray" className="normal-case" onClick={() => setDeleteTarget(null)}>
+        <div style={MODAL_BACKDROP}>
+          <div style={{ ...MODAL_CARD, maxWidth: 380, padding: 28 }}>
+            <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", marginBottom: 12 }}>Eliminar empresa</p>
+            <p style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.65, marginBottom: 24 }}>
+              ¿Estás seguro de que quieres eliminar <strong style={{ color: "#F1F5F9" }}>{deleteTarget.name}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button onClick={() => setDeleteTarget(null)}
+                style={{ padding: "10px 18px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
                 Cancelar
-              </Button>
-              <Button color="red" className="normal-case" loading={deleting} onClick={handleDelete}>
-                Eliminar
-              </Button>
+              </button>
+              <button onClick={handleDelete} disabled={deleting}
+                style={{ padding: "10px 20px", fontSize: 13, fontWeight: 700, background: deleting ? "rgba(239,68,68,0.3)" : "linear-gradient(135deg, #EF4444, #F87171)", color: "#fff", border: "none", borderRadius: 9, cursor: deleting ? "default" : "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: deleting ? "none" : "0 4px 16px rgba(239,68,68,0.35)" }}>
+                {deleting ? <><Spin /> Eliminando...</> : "Eliminar"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 28 }}>
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-black rounded uppercase tracking-wide">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ padding: "3px 8px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#F87171", fontSize: 10, fontWeight: 800, borderRadius: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Platform Admin
-            </div>
+            </span>
           </div>
-          <Typography variant="h5" className="font-extrabold text-zinc-900">
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.02em", marginBottom: 4 }}>
             Administración de Plataforma
-          </Typography>
-          <Typography variant="small" className="text-zinc-400">
+          </h1>
+          <p style={{ fontSize: 13, color: "#64748B" }}>
             {companies.length} empresa{companies.length !== 1 ? "s" : ""} en el sistema
-          </Typography>
+          </p>
         </div>
-        <Button color="indigo" className="normal-case flex items-center gap-2"
-          onClick={() => setShowCreate(true)}>
-          <PlusIcon className="h-4 w-4" /> Nueva Empresa
-        </Button>
+        <PrimaryBtn onClick={() => setShowCreate(true)}>
+          <PlusIcon style={{ width: 16, height: 16 }} /> Nueva Empresa
+        </PrimaryBtn>
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <MagnifyingGlassIcon className="h-4 w-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <div style={{ position: "relative", marginBottom: 20 }}>
+        <MagnifyingGlassIcon style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#475569", pointerEvents: "none" }} />
         <input
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-zinc-200 rounded-xl focus:outline-none focus:border-indigo-400 bg-white"
+          style={{ ...INPUT_S, paddingLeft: 40, borderRadius: 12 }}
           placeholder="Buscar empresa..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onFocus={focusIn} onBlur={focusOut}
         />
       </div>
 
       {/* Company List */}
       {loading ? (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 animate-pulse">
-              <div className="h-4 bg-zinc-100 rounded w-1/3 mb-2" />
-              <div className="h-3 bg-zinc-100 rounded w-1/2" />
+            <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 20 }} className="animate-pulse">
+              <div style={{ height: 14, background: "rgba(255,255,255,0.06)", borderRadius: 6, width: "33%", marginBottom: 10 }} />
+              <div style={{ height: 11, background: "rgba(255,255,255,0.04)", borderRadius: 6, width: "50%" }} />
             </div>
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-zinc-400">
-          <BuildingOffice2Icon className="h-12 w-12 mx-auto mb-3 opacity-40" />
-          <Typography className="font-semibold">
+        <div style={{ textAlign: "center", padding: "60px 0" }}>
+          <BuildingOffice2Icon style={{ width: 48, height: 48, margin: "0 auto 12px", opacity: 0.3, color: "#64748B" }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: "#475569" }}>
             {search ? "No se encontraron empresas" : "No hay empresas registradas"}
-          </Typography>
+          </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.map((company) => (
             <div key={company.id}
-              className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 flex items-center justify-between gap-4 flex-wrap hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center flex-shrink-0">
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", transition: "border-color 0.2s, background 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.25)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+
+              {/* Info */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 900, color: "#fff", flexShrink: 0, boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}>
                   {company.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0">
-                  <Typography className="font-bold text-zinc-900">{company.name}</Typography>
-                  <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", marginBottom: 3 }}>{company.name}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     {company.company_size && (
-                      <span className="text-xs text-zinc-400">{SIZE_LABELS[company.company_size] || company.company_size}</span>
+                      <span style={{ fontSize: 11, color: "#64748B" }}>{SIZE_LABELS[company.company_size] || company.company_size}</span>
                     )}
-                    {company.company_size && company.industry && <span className="text-zinc-300">·</span>}
+                    {company.company_size && company.industry && <span style={{ fontSize: 11, color: "#334155" }}>·</span>}
                     {company.industry && (
-                      <span className="text-xs text-zinc-400 capitalize">{INDUSTRY_LABELS[company.industry] || company.industry}</span>
+                      <span style={{ fontSize: 11, color: "#64748B", textTransform: "capitalize" }}>{INDUSTRY_LABELS[company.industry] || company.industry}</span>
                     )}
                     {company.member_count != null && (
                       <>
-                        <span className="text-zinc-300">·</span>
-                        <span className="flex items-center gap-1 text-xs text-zinc-400">
-                          <UsersIcon className="h-3 w-3" />
+                        <span style={{ fontSize: 11, color: "#334155" }}>·</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#64748B" }}>
+                          <UsersIcon style={{ width: 11, height: 11 }} />
                           {company.member_count} usuario{company.member_count !== 1 ? "s" : ""}
                         </span>
                       </>
                     )}
                     {!company.is_active && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-semibold">Inactiva</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}>Inactiva</span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 flex-shrink-0">
-                <Button size="sm" variant="outlined" color="blue-gray" className="normal-case text-xs"
-                  onClick={() => navigate(`/enterprise/dashboard`)}>
+              {/* Actions */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <button onClick={() => navigate(`/enterprise/dashboard`)}
+                  style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#94A3B8", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.background = "rgba(255,255,255,0.09)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}>
                   Ver
-                </Button>
-                <Button size="sm" color="indigo" variant="outlined" className="normal-case text-xs flex items-center gap-1"
-                  onClick={() => navigate(`/platform-admin/companies/${company.id}/users`)}>
-                  <UsersIcon className="h-3.5 w-3.5" /> Usuarios
-                </Button>
+                </button>
+                <button onClick={() => navigate(`/platform-admin/companies/${company.id}/users`)}
+                  style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#818CF8", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.4)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.25)"; }}>
+                  <UsersIcon style={{ width: 13, height: 13 }} /> Usuarios
+                </button>
                 <button onClick={() => setEditTarget(company)}
-                  className="p-2 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                  <PencilIcon className="h-4 w-4" />
+                  style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", borderRadius: 8, cursor: "pointer", color: "#475569", transition: "color 0.15s, background 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#818CF8"; e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+                  <PencilIcon style={{ width: 15, height: 15 }} />
                 </button>
                 <button onClick={() => setDeleteTarget(company)}
-                  className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                  <TrashIcon className="h-4 w-4" />
+                  style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", borderRadius: 8, cursor: "pointer", color: "#475569", transition: "color 0.15s, background 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#F87171"; e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
+                  <TrashIcon style={{ width: 15, height: 15 }} />
                 </button>
               </div>
             </div>

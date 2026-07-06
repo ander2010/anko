@@ -1,30 +1,18 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import {
-    Dialog,
-    DialogHeader,
-    DialogBody,
-    DialogFooter,
-    Button,
-    Typography,
-    IconButton,
-    Spinner,
-} from "@material-tailwind/react";
+import { Dialog } from "@material-tailwind/react";
 import {
     XMarkIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
     ArrowPathIcon,
     LightBulbIcon,
-    DocumentTextIcon,
-    HandThumbUpIcon,
-    HandThumbDownIcon,
+    CheckCircleIcon,
+    ChevronRightIcon,
+    ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import projectService from "@/services/projectService";
 import { API_BASE } from "@/services/api";
 import { useLanguage } from "@/context/language-context";
 
-// Build full URL for relative media paths returned by ws-pull-card
 const MEDIA_BASE = API_BASE.replace(/\/api\/?$/, "");
 const resolveImageUrl = (path) => {
     if (!path) return null;
@@ -32,12 +20,13 @@ const resolveImageUrl = (path) => {
     return `${MEDIA_BASE}/media/${path}`;
 };
 
-export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
+export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle, jobId: initialJobId }) {
     const { t, language } = useLanguage();
     const [card, setCard] = useState(null);
     const [isFlipped, setIsFlipped] = useState(false);
     const [loading, setLoading] = useState(false);
     const [finished, setFinished] = useState(false);
+    const [errorMsg, setErrorMsg] = useState(null);
     const [seq, setSeq] = useState(0);
     const [jobId, setJobId] = useState(null);
     const [startTime, setStartTime] = useState(Date.now());
@@ -46,6 +35,7 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
         if (open && deckId) {
             setCard(null);
             setFinished(false);
+            setErrorMsg(null);
             setSeq(0);
             setJobId(null);
             loadNextCard(0);
@@ -55,26 +45,17 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
     const loadNextCard = async (lastSeq) => {
         try {
             setLoading(true);
-            // Assuming pullFlashcard returns { card: {...}, seq: ... } or just the card object
-            // Adjust based on actual API response structure.
-            // If the user code returns generic JSON, I'll assume it returns the card directly or inside a wrapper.
-            // Safe bet: The API generally returns the card data directly or 204/null if done.
-            const data = await projectService.wsPullCard({ deckId, lastSeq });
-
-            // Backend returns: { message_type: "card", card: { ... }, seq: ..., job_id: ... }
+            const resolvedJobId = jobId || initialJobId || null;
+            const data = await projectService.wsPullCard({ deckId, jobId: resolvedJobId, lastSeq });
             if (!data || !data.card) {
-                setFinished(true);
+                if (data?.message_type === "done") {
+                    setFinished(true);
+                } else {
+                    const detail = data?.detail?.detail || data?.detail || data?.message_type || "No hay tarjetas disponibles.";
+                    setErrorMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+                }
                 setCard(null);
             } else {
-                console.log("[LearnDialog] full API response:", JSON.stringify(data));
-                console.log("[LearnDialog] card fields:", Object.keys(data.card));
-                console.log("[LearnDialog] image-related fields:", {
-                    backImageUrl: data.card.backImageUrl,
-                    back_image_url: data.card.back_image_url,
-                    back_image: data.card.back_image,
-                    image: data.card.image,
-                    image_url: data.card.image_url,
-                });
                 const cardData = { ...data.card, seq: data.seq };
                 setCard(cardData);
                 setIsFlipped(false);
@@ -84,8 +65,8 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
             }
         } catch (err) {
             console.error("Error pulling flashcard:", err);
-            // If error 404 or empty, maybe finished?
-            setFinished(true);
+            const msg = err?.detail || err?.message || err?.error || "Error al conectar con el servidor.";
+            setErrorMsg(typeof msg === "string" ? msg : JSON.stringify(msg));
         } finally {
             setLoading(false);
         }
@@ -94,168 +75,219 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
     const handleRate = async (rating) => {
         if (!card) return;
         const timeToAnswer = Date.now() - startTime;
-
         try {
-            // Optimistic update: loading state while fetching next
             setLoading(true);
-
             await projectService.wsPushFeedback({
-                deckId,
-                jobId,
-                seq: card.seq || seq, // Use card's seq if available
+                deckId, jobId,
+                seq: card.seq || seq,
                 cardId: card.id,
                 rating,
-                timeToAnswerMs: timeToAnswer
+                timeToAnswerMs: timeToAnswer,
             });
-
-            // Fetch next
             await loadNextCard(card.seq || seq);
-
         } catch (err) {
             console.error("Error pushing feedback:", err);
-            setLoading(false); // Stop loading if error, let user retry
+            setLoading(false);
         }
     };
 
-    const handleFlip = () => {
-        setIsFlipped(!isFlipped);
+    const handleFlip = () => setIsFlipped(f => !f);
+
+    const handleShuffle = async () => {
+        try {
+            setLoading(true);
+            await projectService.shuffleDeckCards(deckId);
+            setFinished(false);
+            setErrorMsg(null);
+            setSeq(0);
+            setJobId(null);
+            await loadNextCard(0);
+        } catch (err) {
+            console.error("Shuffle failed:", err);
+            setLoading(false);
+        }
     };
 
     return (
-        <Dialog open={open} handler={onClose} size="xl" className="bg-transparent shadow-none">
-            <div className="flex flex-col h-[85vh] max-h-[700px] bg-white rounded-xl overflow-hidden">
-                <DialogHeader className="flex justify-between items-center border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-                    <div>
-                        <Typography variant="h5" color="blue-gray">
-                            {deckTitle}
-                        </Typography>
-                        <Typography variant="small" color="gray" className="font-normal flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                            {language === "es" ? "Modo Aprendizaje" : "Learning Mode"}
-                        </Typography>
-                    </div>
-                    <IconButton variant="text" color="blue-gray" onClick={onClose} className="rounded-full">
-                        <XMarkIcon className="h-6 w-6" />
-                    </IconButton>
-                </DialogHeader>
+        <Dialog
+            open={open}
+            handler={onClose}
+            size="xl"
+            className="bg-transparent shadow-none !mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-3xl md:!h-auto"
+        >
+            <div style={{ display: "flex", flexDirection: "column", background: "#060D1A", border: "1px solid rgba(255,255,255,0.08)" }}
+                className="h-[100dvh] md:h-[85vh] md:max-h-[700px] md:rounded-2xl overflow-hidden">
 
-                <DialogBody className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 md:p-12 overflow-hidden relative bg-gray-50/50">
-                    {loading && !card ? (
-                        <div className="flex flex-col items-center gap-4">
-                            <Spinner className="h-10 w-10 text-indigo-500" />
-                            <Typography color="gray" className="italic font-medium">
-                                {language === "es" ? "Cargando siguiente..." : "Loading next..."}
-                            </Typography>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }}>
+                    <div style={{ minWidth: 0 }}>
+                        <p style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 16, margin: 0 }} className="truncate">{deckTitle}</p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block" }} className="animate-pulse" />
+                            <p style={{ color: "#4ade80", fontSize: 11, fontWeight: 600, margin: 0 }}>
+                                {language === "es" ? "Modo Aprendizaje" : "Learning Mode"}
+                            </p>
                         </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: 6, cursor: "pointer", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 150ms" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#F1F5F9"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94A3B8"; }}
+                    >
+                        <XMarkIcon style={{ width: 18, height: 18 }} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px", overflow: "hidden" }}>
+
+                    {/* Loading (initial) */}
+                    {loading && !card ? (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(99,102,241,0.25)", borderTopColor: "#6366F1" }} className="animate-spin" />
+                            <p style={{ color: "#94A3B8", fontSize: 13, fontStyle: "italic", margin: 0 }}>
+                                {language === "es" ? "Cargando siguiente…" : "Loading next…"}
+                            </p>
+                        </div>
+
+                    ) : errorMsg ? (
+                        /* Error state */
+                        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, maxWidth: 380 }}>
+                            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <ExclamationTriangleIcon style={{ width: 26, height: 26, color: "#f87171" }} />
+                            </div>
+                            <div>
+                                <p style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 16, margin: "0 0 8px" }}>
+                                    {language === "es" ? "No se pudieron cargar las tarjetas" : "Could not load cards"}
+                                </p>
+                                <p style={{ color: "#64748B", fontSize: 12, margin: 0, lineHeight: 1.6 }}>{errorMsg}</p>
+                            </div>
+                            <button
+                                onClick={onClose}
+                                style={{ padding: "10px 24px", borderRadius: 10, background: "transparent", border: "1px solid rgba(99,102,241,0.3)", color: "#818CF8", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                            >
+                                {language === "es" ? "Cerrar" : "Close"}
+                            </button>
+                        </div>
+
                     ) : finished ? (
-                        <div className="text-center">
-                            <Typography variant="h4" color="blue-gray" className="mb-2">
-                                {language === "es" ? "¡Sesión Completada!" : "Session Complete!"}
-                            </Typography>
-                            <Typography color="gray" className="mb-6">
-                                {language === "es" ? "No hay más fichas por ahora." : "No more cards for now."}
-                            </Typography>
-                            <div className="flex justify-center gap-4">
-                                <Button color="indigo" onClick={onClose} variant="outlined">
-                                    {language === "es" ? "Volver" : "Back"}
-                                </Button>
-                                <Button
-                                    color="indigo"
-                                    onClick={async () => {
-                                        try {
-                                            setLoading(true);
-                                            await projectService.shuffleDeckCards(deckId);
-                                            setFinished(false);
-                                            setSeq(0);
-                                            setJobId(null);
-                                            await loadNextCard(0);
-                                        } catch (error) {
-                                            console.error("Shuffle failed:", error);
-                                            setLoading(false);
-                                        }
-                                    }}
-                                    className="flex items-center gap-2"
+                        /* Finished state */
+                        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+                            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <CheckCircleIcon style={{ width: 32, height: 32, color: "#4ade80" }} />
+                            </div>
+                            <div>
+                                <p style={{ color: "#F1F5F9", fontWeight: 800, fontSize: 20, margin: "0 0 6px" }}>
+                                    {language === "es" ? "¡Sesión Completada!" : "Session Complete!"}
+                                </p>
+                                <p style={{ color: "#64748B", fontSize: 13, margin: 0 }}>
+                                    {language === "es" ? "No hay más fichas por ahora." : "No more cards for now."}
+                                </p>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                                <button
+                                    onClick={onClose}
+                                    style={{ padding: "10px 20px", borderRadius: 10, background: "transparent", border: "1px solid rgba(99,102,241,0.3)", color: "#818CF8", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 150ms" }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                                 >
-                                    <ArrowPathIcon className="h-4 w-4" />
+                                    {language === "es" ? "Volver" : "Back"}
+                                </button>
+                                <button
+                                    onClick={handleShuffle}
+                                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "opacity 150ms" }}
+                                    onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
+                                    onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                                >
+                                    <ArrowPathIcon style={{ width: 14, height: 14 }} />
                                     {language === "es" ? "Barajar" : "Shuffle"}
-                                </Button>
+                                </button>
                             </div>
                         </div>
+
                     ) : card ? (
-                        <div className="w-full max-w-3xl h-full flex flex-col items-center justify-center perspective-1000">
-                            {/* Card Container with Flip Animation */}
+                        <div style={{ width: "100%", maxWidth: 680, height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}
+                            className="perspective-1000">
+
+                            {/* Card with flip */}
                             <div
-                                className={`relative w-full aspect-[3/2] md:aspect-[16/9] transition-transform duration-700 transform-style-3d cursor-pointer ${isFlipped ? "rotate-y-180" : ""}`}
-                                onClick={handleFlip}
+                                style={{ position: "relative", width: "100%", cursor: "pointer", opacity: loading ? 0.6 : 1, transition: "opacity 200ms" }}
+                                className={`aspect-[3/2] md:aspect-[16/9] transition-transform duration-700 transform-style-3d ${isFlipped ? "rotate-y-180" : ""}`}
+                                onClick={!loading ? handleFlip : undefined}
                             >
-                                {/* Front Side */}
-                                <div className="absolute inset-0 backface-hidden bg-white rounded-3xl shadow-2xl hover:shadow-indigo-500/10 transition-shadow duration-300 flex flex-col p-5 md:p-12 items-center justify-center text-center border border-zinc-100">
-                                    <div className="absolute top-4 left-5 md:top-6 md:left-8">
-                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-50 border border-zinc-100">
-                                            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                                            <Typography variant="small" className="font-bold uppercase tracking-widest text-[10px] text-zinc-500">
-                                                {t("global.actions.front")}
-                                            </Typography>
-                                        </div>
+                                {/* Front */}
+                                <div style={{
+                                    position: "absolute", inset: 0,
+                                    background: "#0F172A",
+                                    border: "1px solid rgba(99,102,241,0.25)",
+                                    borderRadius: 20,
+                                    display: "flex", flexDirection: "column",
+                                    alignItems: "center", justifyContent: "center",
+                                    textAlign: "center", padding: "52px 32px 40px",
+                                    boxShadow: "0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.08) inset",
+                                }} className="backface-hidden">
+                                    <div style={{ position: "absolute", top: 16, left: 20, display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.22)" }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#818CF8", display: "inline-block" }} className="animate-pulse" />
+                                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#818CF8", textTransform: "uppercase" }}>
+                                            {t("global.actions.front") || "FRONT"}
+                                        </span>
                                     </div>
-                                    <Typography className="text-lg md:text-3xl text-zinc-800 font-bold leading-tight break-words overflow-y-auto max-h-full">
+
+                                    <p style={{ fontSize: "clamp(17px, 3vw, 26px)", fontWeight: 700, color: "#F1F5F9", lineHeight: 1.45, wordBreak: "break-word", overflowY: "auto", maxHeight: "100%", margin: 0 }}>
                                         {card.front || card.question}
-                                    </Typography>
-                                    <div className="absolute bottom-4 md:bottom-6 text-zinc-400 flex items-center gap-2 animate-bounce-slow">
-                                        <ArrowPathIcon className="h-4 w-4" />
-                                        <Typography variant="small" className="font-medium text-[11px]">
+                                    </p>
+
+                                    <div style={{ position: "absolute", bottom: 16, display: "flex", alignItems: "center", gap: 6, color: "#334155" }}>
+                                        <ArrowPathIcon style={{ width: 12, height: 12 }} />
+                                        <span style={{ fontSize: 10, fontWeight: 500 }}>
                                             {language === "es" ? "Clic para girar" : "Click to flip"}
-                                        </Typography>
+                                        </span>
                                     </div>
                                 </div>
 
-                                {/* Back Side */}
-                                <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-3xl shadow-2xl border border-indigo-100/50 flex flex-col overflow-hidden">
-                                    <div className="absolute top-4 left-5 md:top-6 md:left-8 z-10">
-                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-indigo-100 shadow-sm">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                            <Typography variant="small" className="font-bold uppercase tracking-widest text-[10px] text-indigo-900/60">
-                                                {t("global.actions.back")}
-                                            </Typography>
-                                        </div>
+                                {/* Back */}
+                                <div style={{
+                                    position: "absolute", inset: 0,
+                                    background: "linear-gradient(135deg, #0a1628 0%, #0d1a35 100%)",
+                                    border: "1px solid rgba(74,222,128,0.22)",
+                                    borderRadius: 20,
+                                    display: "flex", flexDirection: "column",
+                                    overflow: "hidden",
+                                    boxShadow: "0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,222,128,0.06) inset",
+                                }} className="backface-hidden rotate-y-180">
+                                    <div style={{ position: "absolute", top: 16, left: 20, zIndex: 1, display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.22)" }}>
+                                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block" }} />
+                                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: "#4ade80", textTransform: "uppercase" }}>
+                                            {t("global.actions.back") || "BACK"}
+                                        </span>
                                     </div>
 
                                     {resolveImageUrl(card.back_image) ? (
-                                        /* Rich card: image top, text bottom */
-                                        <div className="flex flex-col h-full pt-12">
-                                            <div className="flex-1 flex items-center justify-center px-6 overflow-hidden min-h-0">
-                                                <img
-                                                    src={resolveImageUrl(card.back_image)}
-                                                    alt="back"
-                                                    className="max-h-full max-w-full object-contain rounded-xl"
-                                                />
+                                        <div style={{ display: "flex", flexDirection: "column", height: "100%", paddingTop: 52 }}>
+                                            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px", overflow: "hidden", minHeight: 0 }}>
+                                                <img src={resolveImageUrl(card.back_image)} alt="back" style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain", borderRadius: 12 }} />
                                             </div>
                                             {card.back && (
-                                                <div className="flex-shrink-0 px-8 pb-6 pt-3 text-center border-t border-indigo-100/50">
-                                                    <Typography variant="h5" className="text-zinc-800 font-semibold leading-snug break-words">
-                                                        {card.back}
-                                                    </Typography>
+                                                <div style={{ flexShrink: 0, padding: "12px 32px 20px", textAlign: "center", borderTop: "1px solid rgba(74,222,128,0.1)" }}>
+                                                    <p style={{ fontSize: 16, fontWeight: 600, color: "#F1F5F9", lineHeight: 1.4, wordBreak: "break-word", margin: 0 }}>{card.back}</p>
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
-                                        /* Text-only card */
-                                        <div className="flex-1 flex flex-col items-center justify-center p-5 md:p-12 text-center">
-                                            <Typography className="text-base md:text-2xl text-zinc-800 font-semibold leading-snug break-words overflow-y-auto max-h-full mb-4 md:mb-6">
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 32px 24px", textAlign: "center" }}>
+                                            <p style={{ fontSize: "clamp(15px, 2.5vw, 22px)", fontWeight: 600, color: "#F1F5F9", lineHeight: 1.5, wordBreak: "break-word", overflowY: "auto", maxHeight: "55%", margin: "0 0 16px" }}>
                                                 {card.back || card.answer}
-                                            </Typography>
-
+                                            </p>
                                             {card.explanation && (
-                                                <div className="mt-2 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-50/50 w-full overflow-y-auto max-h-[120px] shadow-sm">
-                                                    <div className="flex items-center gap-2 mb-2 justify-center text-amber-500">
-                                                        <LightBulbIcon className="h-4 w-4" />
-                                                        <Typography variant="small" className="font-bold text-[10px] uppercase tracking-wide text-amber-600/80">
-                                                            {t("global.actions.explanation")}
-                                                        </Typography>
+                                                <div style={{ padding: "12px 16px", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 12, width: "100%", overflowY: "auto", maxHeight: 100 }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginBottom: 6 }}>
+                                                        <LightBulbIcon style={{ width: 12, height: 12, color: "#f59e0b" }} />
+                                                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", color: "#f59e0b", textTransform: "uppercase" }}>
+                                                            {t("global.actions.explanation") || "Explanation"}
+                                                        </span>
                                                     </div>
-                                                    <Typography variant="small" className="text-zinc-600 text-xs leading-relaxed">
-                                                        {card.explanation}
-                                                    </Typography>
+                                                    <p style={{ fontSize: 11, color: "#CBD5E1", lineHeight: 1.6, margin: 0 }}>{card.explanation}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -263,68 +295,53 @@ export function FlashcardLearnDialog({ open, onClose, deckId, deckTitle }) {
                                 </div>
                             </div>
 
-                            {/* Response / Feedback Actions */}
-                            {/* Response / Feedback Actions */}
-                            <div className="mt-4 md:mt-10 flex items-center gap-3 justify-center min-h-[52px]">
+                            {/* Rating buttons */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center", minHeight: 48 }}>
                                 {!isFlipped ? (
-                                    <Button
-                                        size="md"
-                                        color="indigo"
-                                        variant="gradient"
-                                        className="rounded-full px-8 md:px-12 shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:scale-105 normal-case"
-                                        onClick={(e) => { e.stopPropagation(); handleRate(2); }}
+                                    <button
+                                        onClick={e => { e.stopPropagation(); handleRate(2); }}
+                                        disabled={loading}
+                                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 32px", borderRadius: 30, background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "default" : "pointer", boxShadow: "0 8px 24px rgba(99,102,241,0.35)", transition: "opacity 150ms", opacity: loading ? 0.6 : 1 }}
+                                        onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = "0.85"; }}
+                                        onMouseLeave={e => { e.currentTarget.style.opacity = loading ? "0.6" : "1"; }}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <span>{language === "es" ? "Siguiente" : "Next"}</span>
-                                            <ChevronRightIcon className="h-4 w-4 stroke-2" />
-                                        </div>
-                                    </Button>
+                                        {language === "es" ? "Siguiente" : "Next"}
+                                        <ChevronRightIcon style={{ width: 15, height: 15 }} />
+                                    </button>
                                 ) : (
                                     <>
-                                        <Button
-                                            size="md"
-                                            color="red"
-                                            variant="gradient"
-                                            className="rounded-full px-6 md:px-8 shadow-md hover:shadow-red-500/20 transition-all transform hover:scale-105 normal-case"
-                                            onClick={(e) => { e.stopPropagation(); handleRate(0); }}
+                                        <button
+                                            onClick={e => { e.stopPropagation(); handleRate(0); }}
+                                            disabled={loading}
+                                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 28px", borderRadius: 30, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", fontSize: 14, fontWeight: 700, cursor: loading ? "default" : "pointer", transition: "all 150ms", opacity: loading ? 0.5 : 1 }}
+                                            onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = "rgba(248,113,113,0.18)"; e.currentTarget.style.borderColor = "rgba(248,113,113,0.5)"; } }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = "rgba(248,113,113,0.1)"; e.currentTarget.style.borderColor = "rgba(248,113,113,0.3)"; }}
                                         >
                                             {language === "es" ? "Difícil" : "Hard"}
-                                        </Button>
-                                        <Button
-                                            size="md"
-                                            color="green"
-                                            variant="gradient"
-                                            className="rounded-full px-6 md:px-8 shadow-md hover:shadow-green-500/20 transition-all transform hover:scale-105 normal-case"
-                                            onClick={(e) => { e.stopPropagation(); handleRate(1); }}
+                                        </button>
+                                        <button
+                                            onClick={e => { e.stopPropagation(); handleRate(1); }}
+                                            disabled={loading}
+                                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 28px", borderRadius: 30, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", color: "#4ade80", fontSize: 14, fontWeight: 700, cursor: loading ? "default" : "pointer", transition: "all 150ms", opacity: loading ? 0.5 : 1 }}
+                                            onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = "rgba(74,222,128,0.18)"; e.currentTarget.style.borderColor = "rgba(74,222,128,0.5)"; } }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = "rgba(74,222,128,0.1)"; e.currentTarget.style.borderColor = "rgba(74,222,128,0.3)"; }}
                                         >
                                             {language === "es" ? "Bien" : "Good"}
-                                        </Button>
+                                        </button>
                                     </>
                                 )}
                             </div>
                         </div>
                     ) : null}
-                </DialogBody>
+                </div>
             </div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                .perspective-1000 {
-                    perspective: 1000px;
-                }
-                .transform-style-3d {
-                    transform-style: preserve-3d;
-                }
-                .backface-hidden {
-                    backface-visibility: hidden;
-                }
-                .rotate-y-180 {
-                    transform: rotateY(180deg);
-                }
-                .animate-bounce-slow {
-                    animation: bounce 3s infinite;
-                }
-            `}} />
+            <style dangerouslySetInnerHTML={{ __html: `
+                .perspective-1000 { perspective: 1000px; }
+                .transform-style-3d { transform-style: preserve-3d; }
+                .backface-hidden { backface-visibility: hidden; }
+                .rotate-y-180 { transform: rotateY(180deg); }
+            ` }} />
         </Dialog>
     );
 }
@@ -334,6 +351,7 @@ FlashcardLearnDialog.propTypes = {
     onClose: PropTypes.func.isRequired,
     deckId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     deckTitle: PropTypes.string,
+    jobId: PropTypes.string,
 };
 
 export default FlashcardLearnDialog;

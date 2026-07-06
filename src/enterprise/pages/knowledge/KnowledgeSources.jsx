@@ -2,9 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   PlusIcon, BookOpenIcon, AcademicCapIcon,
-  ClockIcon, TrashIcon, ArrowPathIcon,
+  ClockIcon, TrashIcon, ArrowPathIcon, ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import { learningApi } from "../../api/enterpriseApi";
+import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -67,19 +67,70 @@ function EmptyProcesos({ onNew }) {
   );
 }
 
+// ─── Confirm Delete Dialog ────────────────────────────────────────────────────
+
+function ConfirmDeleteDialog({ mod, onConfirm, onCancel, deleting }) {
+  if (!mod) return null;
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.7)", backdropFilter: "blur(5px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }}>
+      <div style={{
+        background: "#0F172A", border: "1px solid rgba(239,68,68,0.25)",
+        borderRadius: 16, padding: "28px 24px", maxWidth: 440, width: "100%",
+        boxShadow: "0 25px 60px rgba(0,0,0,0.7)",
+        animation: "fadeIn 0.15s ease",
+      }}>
+        {/* Icon */}
+        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
+          <ExclamationTriangleIcon style={{ width: 24, height: 24, color: "#EF4444" }} />
+        </div>
+        {/* Title */}
+        <p style={{ fontSize: 17, fontWeight: 800, color: "#F1F5F9", marginBottom: 8 }}>
+          Eliminar proceso
+        </p>
+        {/* Process name */}
+        <p style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", marginBottom: 10, padding: "9px 13px", background: "rgba(255,255,255,0.05)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
+          {mod.title}
+        </p>
+        {/* Warning */}
+        <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 6 }}>
+          Esta acción eliminará permanentemente:
+        </p>
+        <ul style={{ fontSize: 12, color: "#64748B", lineHeight: 1.8, marginBottom: 22, paddingLeft: 16 }}>
+          <li>Todas las baterías de preguntas generadas</li>
+          <li>Todos los decks de flashcards generados</li>
+          <li>Historial de intentos y resultados</li>
+          <li>Asociaciones con Learning Paths</li>
+        </ul>
+        <p style={{ fontSize: 11, color: "#EF4444", fontWeight: 600, marginBottom: 20 }}>
+          Esta acción no se puede deshacer.
+        </p>
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onCancel} disabled={deleting}
+            style={{ flex: 1, padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.5 : 1, transition: "opacity 0.15s" }}>
+            Cancelar
+          </button>
+          <button onClick={onConfirm} disabled={deleting}
+            style={{ flex: 1, padding: "11px", borderRadius: 10, background: deleting ? "rgba(239,68,68,0.3)" : "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "opacity 0.15s" }}>
+            {deleting
+              ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />Eliminando...</>
+              : <><TrashIcon style={{ width: 14, height: 14 }} />Eliminar todo</>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Module Row ───────────────────────────────────────────────────────────────
 
-function ModuleRow({ mod, onDelete }) {
+function ModuleRow({ mod, onDeleteRequest }) {
   const navigate = useNavigate();
-  const [deleting, setDeleting] = useState(false);
-
-  const handleDelete = async (e) => {
-    e.stopPropagation();
-    if (!confirm(`¿Eliminar el proceso "${mod.name}"? Esta acción no se puede deshacer.`)) return;
-    setDeleting(true);
-    try { await learningApi.deleteModule(mod.id); onDelete(mod.id); }
-    catch { setDeleting(false); }
-  };
 
   return (
     <div
@@ -99,7 +150,7 @@ function ModuleRow({ mod, onDelete }) {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>{mod.name}</p>
+              <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>{mod.title}</p>
               <TypePill type={mod.process_type} />
               <DifficultyPill difficulty={mod.difficulty} />
               {mod.is_required && (
@@ -142,16 +193,12 @@ function ModuleRow({ mod, onDelete }) {
         {/* Actions */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
-            onClick={handleDelete}
-            disabled={deleting}
-            style={{ color: "var(--text-tertiary)", padding: 5, borderRadius: 5, transition: "color 150ms, background 150ms" }}
+            onClick={(e) => { e.stopPropagation(); onDeleteRequest(mod); }}
+            style={{ color: "var(--text-tertiary)", padding: 5, borderRadius: 5, transition: "color 150ms, background 150ms", background: "none", border: "none", cursor: "pointer" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#f87171"; e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-tertiary)"; e.currentTarget.style.background = "transparent"; }}
           >
-            {deleting
-              ? <ArrowPathIcon style={{ width: 14, height: 14 }} className="animate-spin" />
-              : <TrashIcon style={{ width: 14, height: 14 }} />
-            }
+            <TrashIcon style={{ width: 14, height: 14 }} />
           </button>
         </div>
       </div>
@@ -184,13 +231,15 @@ export function KnowledgeSources() {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [diffFilter, setDiffFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
     const params = {};
     if (typeFilter) params.process_type = typeFilter;
     if (diffFilter) params.difficulty = diffFilter;
-    learningApi.getModules(params)
+    knowledgeApi.list(params)
       .then((d) => setItems(d.results || d || []))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
@@ -198,7 +247,19 @@ export function KnowledgeSources() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleDelete = (id) => setItems((prev) => prev.filter((m) => m.id !== id));
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await knowledgeApi.remove(deleteTarget.id);
+      setItems((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch {
+      // keep dialog open on error
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filtered = items; // server-filtered already
 
@@ -247,7 +308,7 @@ export function KnowledgeSources() {
       ) : (
         <div className="space-y-2">
           {filtered.map((mod) => (
-            <ModuleRow key={mod.id} mod={mod} onDelete={handleDelete} />
+            <ModuleRow key={mod.id} mod={mod} onDeleteRequest={setDeleteTarget} />
           ))}
         </div>
       )}
@@ -258,6 +319,13 @@ export function KnowledgeSources() {
           {filtered.length} proceso{filtered.length !== 1 ? "s" : ""}
         </p>
       )}
+
+      <ConfirmDeleteDialog
+        mod={deleteTarget}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        deleting={deleting}
+      />
     </div>
   );
 }

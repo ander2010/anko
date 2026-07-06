@@ -1,685 +1,666 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-    Typography,
-    Card,
-    CardHeader,
-    CardBody,
-    CardFooter,
-    Button,
-    Chip,
-} from "@material-tailwind/react";
+  DocumentArrowUpIcon,
+  SparklesIcon,
+  AcademicCapIcon,
+  ShieldCheckIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  ClockIcon,
+  BoltIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  LockClosedIcon,
+  BuildingOffice2Icon,
+  BookOpenIcon,
+  RocketLaunchIcon,
+  Bars3Icon,
+  XMarkIcon,
+  CheckBadgeIcon,
+  EnvelopeIcon,
+} from "@heroicons/react/24/outline";
+import supportService from "@/services/supportService";
 
-import { useNavigate, Link } from "react-router-dom";
-import {
-    TagIcon,
-    ClipboardDocumentCheckIcon,
-    BoltIcon,
-    CheckCircleIcon,
-    RocketLaunchIcon,
-    AcademicCapIcon,
-    QuestionMarkCircleIcon,
-    DocumentArrowUpIcon,
-    SparklesIcon,
-} from "@heroicons/react/24/solid";
+// ─── Demo / Contact Modal ─────────────────────────────────────────────────────
 
-import { useLanguage } from "@/context/language-context";
-import { APP_NAME } from "@/config/app";
-import { LandingNavbar, Footer } from "@/widgets/layout";
+function DemoModal({ onClose }) {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null); // "success" | "error"
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus(null);
+    try {
+      await supportService.sendSupportRequest({ ...form, source: "enterprise_demo_request" });
+      setStatus("success");
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch (err) {
+      let msg = "Ocurrió un error. Por favor intenta de nuevo.";
+      try {
+        const raw = Array.isArray(err) ? err[0] : (err?.message?.[0] ?? err?.non_field_errors?.[0] ?? null);
+        if (raw) { const p = JSON.parse(raw); msg = p.es ?? p.en ?? msg; }
+      } catch (_) {}
+      setErrorMsg(msg);
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Close on backdrop click
+  const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+  return (
+    <div onClick={handleBackdrop} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "#0F172A", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 18, padding: "32px 28px", maxWidth: 520, width: "100%", boxShadow: "0 30px 80px rgba(0,0,0,0.7)", position: "relative" }}>
+        {/* Close */}
+        <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "rgba(255,255,255,0.05)", border: "none", borderRadius: 7, padding: 6, cursor: "pointer", color: "#64748B", transition: "color 0.15s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#F1F5F9")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#64748B")}>
+          <XMarkIcon className="h-5 w-5" />
+        </button>
+
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <EnvelopeIcon className="h-5 w-5" style={{ color: "#818CF8" }} />
+          </div>
+          <div>
+            <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9" }}>Solicitar demo de Ankard</p>
+            <p style={{ fontSize: 12, color: "#64748B", marginTop: 1 }}>Te contactamos en menos de 24 horas</p>
+          </div>
+        </div>
+
+        {/* Success state */}
+        {status === "success" ? (
+          <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.28)", borderRadius: 12, padding: "24px", textAlign: "center" }}>
+            <CheckCircleIcon className="h-10 w-10 mx-auto mb-3" style={{ color: "#22C55E" }} />
+            <p style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", marginBottom: 6 }}>Mensaje enviado</p>
+            <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>Recibimos tu solicitud. Nuestro equipo te escribirá pronto para agendar una demo personalizada.</p>
+            <button onClick={onClose} style={{ marginTop: 18, fontSize: 13, fontWeight: 700, color: "#22C55E", background: "none", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 8, padding: "9px 20px", cursor: "pointer" }}>
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {status === "error" && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.22)", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#EF4444" }}>
+                {errorMsg}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", display: "block", marginBottom: 6 }}>Nombre completo *</label>
+                <input name="name" value={form.name} onChange={handleChange} required
+                  style={{ width: "100%", background: "#1E293B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", transition: "border-color 0.15s", boxSizing: "border-box" }}
+                  onFocus={(e) => (e.target.style.borderColor = "rgba(99,102,241,0.6)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  placeholder="Juan García" />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", display: "block", marginBottom: 6 }}>Correo electrónico *</label>
+                <input name="email" type="email" value={form.email} onChange={handleChange} required
+                  style={{ width: "100%", background: "#1E293B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", transition: "border-color 0.15s", boxSizing: "border-box" }}
+                  onFocus={(e) => (e.target.style.borderColor = "rgba(99,102,241,0.6)")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  placeholder="juan@empresa.com" />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", display: "block", marginBottom: 6 }}>Teléfono / WhatsApp</label>
+              <input name="phone" value={form.phone} onChange={handleChange}
+                style={{ width: "100%", background: "#1E293B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", transition: "border-color 0.15s", boxSizing: "border-box" }}
+                onFocus={(e) => (e.target.style.borderColor = "rgba(99,102,241,0.6)")}
+                onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                placeholder="+52 55 1234 5678" />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", display: "block", marginBottom: 6 }}>Cuéntanos sobre tu empresa *</label>
+              <textarea name="message" value={form.message} onChange={handleChange} required rows={4}
+                style={{ width: "100%", background: "#1E293B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", transition: "border-color 0.15s", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box" }}
+                onFocus={(e) => (e.target.style.borderColor = "rgba(99,102,241,0.6)")}
+                onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                placeholder="¿Cuántos empleados? ¿Qué tipo de capacitación necesitan? ¿Tienen documentos listos?" />
+            </div>
+
+            <button type="submit" disabled={loading}
+              style={{ width: "100%", fontSize: 14, fontWeight: 700, color: "#fff", background: loading ? "rgba(99,102,241,0.5)" : "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 10, padding: "13px", cursor: loading ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "opacity 0.15s" }}
+              onMouseEnter={(e) => { if (!loading) e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              {loading
+                ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />Enviando...</>
+                : <>Enviar solicitud de demo <ArrowRightIcon className="h-4 w-4" /></>
+              }
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
+
+function Navbar({ onDemoOpen }) {
+  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  const links = [
+    { label: "Producto", href: "#features" },
+    { label: "Cómo funciona", href: "#how" },
+    { label: "Casos de uso", href: "#roles" },
+    { label: "Seguridad", href: "#security" },
+  ];
+
+  return (
+    <nav style={{
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+      background: scrolled ? "rgba(2,6,23,0.95)" : "transparent",
+      backdropFilter: scrolled ? "blur(12px)" : "none",
+      borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+      transition: "all 0.25s ease",
+    }}>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16">
+        <a href="/" className="flex items-center gap-2.5" style={{ textDecoration: "none" }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <BoltIcon className="h-5 w-5 text-white" />
+          </div>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.02em" }}>Ankard</span>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(99,102,241,0.18)", color: "#818CF8", letterSpacing: "0.05em" }}>
+            ENTERPRISE
+          </span>
+        </a>
+
+        <div className="hidden md:flex items-center gap-8">
+          {links.map(({ label, href }) => (
+            <a key={href} href={href}
+              style={{ fontSize: 13, fontWeight: 500, color: "#94A3B8", textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={(e) => (e.target.style.color = "#F1F5F9")}
+              onMouseLeave={(e) => (e.target.style.color = "#94A3B8")}>
+              {label}
+            </a>
+          ))}
+        </div>
+
+        <div className="hidden md:flex items-center gap-3">
+          <button onClick={() => navigate("/auth/sign-in")}
+            style={{ fontSize: 13, fontWeight: 600, color: "#94A3B8", background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "7px 16px", cursor: "pointer", transition: "all 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.28)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}>
+            Iniciar sesión
+          </button>
+          <button onClick={onDemoOpen}
+            style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", transition: "opacity 0.15s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+            Solicitar demo
+          </button>
+        </div>
+
+        <button className="md:hidden" onClick={() => setMobileOpen((p) => !p)}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "#94A3B8", padding: 6 }}>
+          {mobileOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <div style={{ background: "rgba(2,6,23,0.98)", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "16px 20px 24px" }}>
+          {links.map(({ label, href }) => (
+            <a key={href} href={href} onClick={() => setMobileOpen(false)}
+              style={{ display: "block", fontSize: 14, fontWeight: 500, color: "#94A3B8", textDecoration: "none", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+              {label}
+            </a>
+          ))}
+          <div className="flex flex-col gap-3 mt-5">
+            <button onClick={() => { navigate("/auth/sign-in"); setMobileOpen(false); }}
+              style={{ fontSize: 14, fontWeight: 600, color: "#94A3B8", background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "12px", cursor: "pointer" }}>
+              Iniciar sesión
+            </button>
+            <button onClick={() => { onDemoOpen(); setMobileOpen(false); }}
+              style={{ fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 8, padding: "12px", cursor: "pointer" }}>
+              Solicitar demo
+            </button>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+
+function Hero({ onDemoOpen }) {
+  const navigate = useNavigate();
+
+  return (
+    <section style={{ background: "linear-gradient(180deg, #020617 0%, #0F172A 60%, #020617 100%)", paddingTop: 120, paddingBottom: 80, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 800, height: 400, background: "radial-gradient(ellipse, rgba(99,102,241,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+      <div className="max-w-6xl mx-auto px-4 md:px-8 text-center relative">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 mb-6"
+          style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.28)", borderRadius: 999, padding: "6px 14px" }}>
+          <SparklesIcon className="h-3.5 w-3.5" style={{ color: "#818CF8" }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#818CF8", letterSpacing: "0.04em" }}>
+            IA para Capacitación Corporativa
+          </span>
+        </div>
+
+        <h1 style={{ fontSize: "clamp(30px, 5.5vw, 58px)", fontWeight: 900, color: "#F1F5F9", lineHeight: 1.08, letterSpacing: "-0.03em", maxWidth: 860, margin: "0 auto 20px" }}>
+          Convierte tus documentos internos{" "}
+          <span style={{ background: "linear-gradient(135deg, #6366F1, #C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            en programas de capacitación
+          </span>
+          , en minutos
+        </h1>
+
+        <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#94A3B8", lineHeight: 1.75, maxWidth: 660, margin: "0 auto 36px", fontWeight: 400 }}>
+          Sube tus PDFs, manuales y políticas internas. La IA de Ankard genera automáticamente flashcards y quizzes listos para asignar a tu equipo — sin intervención manual, sin semanas de trabajo.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <button onClick={onDemoOpen}
+            style={{ fontSize: 15, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 12, padding: "14px 28px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 0 32px rgba(99,102,241,0.35)", transition: "all 0.2s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 0 48px rgba(99,102,241,0.5)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 0 32px rgba(99,102,241,0.35)"; }}>
+            Solicitar demo gratuita
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+          <a href="#how"
+            style={{ fontSize: 14, fontWeight: 600, color: "#94A3B8", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, transition: "color 0.15s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#F1F5F9")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#94A3B8")}>
+            Ver cómo funciona
+            <ArrowRightIcon className="h-4 w-4" />
+          </a>
+        </div>
+
+        {/* Dashboard mockup */}
+        <div style={{ maxWidth: 880, margin: "0 auto", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 40px 100px rgba(0,0,0,0.55)", background: "#0F172A" }}>
+          <div style={{ background: "#1E293B", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {["#EF4444","#F59E0B","#22C55E"].map((c) => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
+            </div>
+            <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 5, padding: "4px 12px", fontSize: 11, color: "#64748B", textAlign: "center" }}>
+              app.ankard.com/enterprise/dashboard
+            </div>
+          </div>
+          <div style={{ padding: 20, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+            {[
+              { label: "Procesos", value: "12", icon: BookOpenIcon, color: "#6366F1" },
+              { label: "Empleados", value: "148", icon: UserGroupIcon, color: "#22C55E" },
+              { label: "Completados", value: "89%", icon: CheckBadgeIcon, color: "#F59E0B" },
+              { label: "En progreso", value: "34", icon: ChartBarIcon, color: "#C084FC" },
+            ].map(({ label, value, icon: Icon, color }) => (
+              <div key={label} style={{ background: "#1E293B", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "14px 12px" }}>
+                <div style={{ width: 26, height: 26, borderRadius: 7, background: `${color}1A`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                  <Icon className="h-3.5 w-3.5" style={{ color }} />
+                </div>
+                <p style={{ fontSize: 20, fontWeight: 800, color: "#F1F5F9", lineHeight: 1 }}>{value}</p>
+                <p style={{ fontSize: 10, color: "#64748B", marginTop: 4 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "0 20px 20px", display: "grid", gridTemplateColumns: "2fr 1fr", gap: 10 }}>
+            <div style={{ background: "#1E293B", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: 14 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Procesos recientes</p>
+              {["Manual de Onboarding", "Política de Seguridad IT", "Procedimiento de Ventas"].map((name, i) => (
+                <div key={name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                  <span style={{ fontSize: 11, color: "#94A3B8" }}>{name}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "rgba(34,197,94,0.1)", color: "#22C55E" }}>Listo</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.14), rgba(192,132,252,0.08))", border: "1px solid rgba(99,102,241,0.22)", borderRadius: 10, padding: 16, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: 8 }}>
+              <SparklesIcon className="h-6 w-6" style={{ color: "#818CF8" }} />
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9" }}>IA generando</p>
+              <p style={{ fontSize: 10, color: "#818CF8" }}>Compliance 2025.pdf</p>
+              <div style={{ width: "100%", height: 4, background: "rgba(255,255,255,0.07)", borderRadius: 2 }}>
+                <div style={{ height: "100%", width: "68%", background: "linear-gradient(90deg, #6366F1, #818CF8)", borderRadius: 2 }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
+function Stats() {
+  const stats = [
+    { value: "3 min", label: "Para convertir un documento en curso completo" },
+    { value: "100%", label: "Privado — los datos de tu empresa nunca se comparten" },
+    { value: "10×", label: "Más rápido que crear contenido manualmente" },
+    { value: "0", label: "Horas de trabajo manual de contenido requeridas" },
+  ];
+  return (
+    <section style={{ background: "#0F172A", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "44px 0" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {stats.map(({ value, label }) => (
+          <div key={value}>
+            <p style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 900, lineHeight: 1, marginBottom: 8, background: "linear-gradient(135deg, #6366F1, #C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{value}</p>
+            <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, maxWidth: 160, margin: "0 auto" }}>{label}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── How it works ─────────────────────────────────────────────────────────────
+
+function HowItWorks() {
+  const steps = [
+    { n: "01", icon: DocumentArrowUpIcon, color: "#6366F1", title: "Sube tus documentos", desc: "PDFs, manuales, políticas, procedimientos internos — cualquier documento que tu empresa ya tiene. Sin formatos especiales ni configuración." },
+    { n: "02", icon: SparklesIcon, color: "#818CF8", title: "La IA genera el contenido", desc: "Ankard analiza el documento y genera automáticamente flashcards para repasar y quizzes de evaluación. Sin trabajo manual de ningún tipo." },
+    { n: "03", icon: UserGroupIcon, color: "#C084FC", title: "Tu equipo aprende y es evaluado", desc: "Asigna los programas a equipos o empleados. Mide el progreso y el cumplimiento en tiempo real con reportes completos." },
+  ];
+  return (
+    <section id="how" style={{ background: "#020617", padding: "100px 0" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="text-center mb-16">
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#6366F1", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Cómo funciona</p>
+          <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            De documento a curso completo<br />
+            <span style={{ color: "#818CF8" }}>en 3 pasos</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {steps.map(({ n, icon: Icon, color, title, desc }) => (
+            <div key={n} style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "28px 24px", position: "relative", transition: "border-color 0.2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${color}40`)}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}>
+              <p style={{ fontSize: 11, fontWeight: 800, color, letterSpacing: "0.05em", marginBottom: 16 }}>{n}</p>
+              <div style={{ width: 42, height: 42, borderRadius: 11, background: `${color}18`, border: `1px solid ${color}28`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <Icon className="h-5 w-5" style={{ color }} />
+              </div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", marginBottom: 10 }}>{title}</h3>
+              <p style={{ fontSize: 13, color: "#64748B", lineHeight: 1.7 }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Features ─────────────────────────────────────────────────────────────────
+
+function Features() {
+  const features = [
+    { icon: BoltIcon, color: "#F59E0B", title: "Generación instantánea de quizzes", desc: "Sube un PDF y en minutos tienes un banco de preguntas categorizado por dificultad listo para evaluar a tu equipo." },
+    { icon: BookOpenIcon, color: "#6366F1", title: "Flashcards automáticas", desc: "El sistema extrae conceptos clave y genera flashcards interactivos que facilitan la retención del conocimiento." },
+    { icon: AcademicCapIcon, color: "#22C55E", title: "Learning Paths personalizados", desc: "Organiza el contenido en rutas de aprendizaje estructuradas y asígnalas a equipos o roles específicos." },
+    { icon: ChartBarIcon, color: "#C084FC", title: "Trazabilidad de compliance", desc: "Sabe exactamente quién completó qué y cuándo. Reportes para auditorías y regulaciones internas." },
+    { icon: UserGroupIcon, color: "#38BDF8", title: "Multi-equipo y multi-rol", desc: "Estructura tu empresa por business units. Cada grupo recibe el contenido relevante para su área." },
+    { icon: LockClosedIcon, color: "#EF4444", title: "Datos 100% privados", desc: "Los documentos de tu empresa permanecen en tu silo. Nunca se comparten ni entrenan modelos de terceros." },
+  ];
+  return (
+    <section id="features" style={{ background: "#0F172A", padding: "100px 0" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="text-center mb-16">
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#6366F1", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Funcionalidades</p>
+          <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            Todo lo que necesitas para capacitar<br />
+            <span style={{ color: "#818CF8" }}>a tu equipo sin esfuerzo</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {features.map(({ icon: Icon, color, title, desc }) => (
+            <div key={title}
+              style={{ background: "#162032", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 22, transition: "border-color 0.2s, transform 0.2s", cursor: "default" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${color}38`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = ""; }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                <Icon className="h-5 w-5" style={{ color }} />
+              </div>
+              <h3 style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", marginBottom: 8 }}>{title}</h3>
+              <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7 }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Roles ────────────────────────────────────────────────────────────────────
+
+function Roles() {
+  const [active, setActive] = useState(0);
+  const roles = [
+    {
+      tab: "HR Manager",
+      icon: BuildingOffice2Icon,
+      color: "#22C55E",
+      headline: "Onboarding de empleados en días, no semanas",
+      body: "Sube el manual de incorporación, las políticas y el código de conducta. Ankard genera el programa de onboarding completo. Nuevos empleados llegan preparados desde el primer día.",
+      bullets: ["Programa de onboarding automatizado", "Seguimiento de quién lo completó", "Certificación digital de comprensión", "Reutilizable para cada nueva contratación"],
+    },
+    {
+      tab: "L&D Lead",
+      icon: AcademicCapIcon,
+      color: "#6366F1",
+      headline: "Crea cursos corporativos sin ser diseñador instruccional",
+      body: "El equipo de Learning & Development puede convertir cualquier contenido técnico en material de aprendizaje estructurado sin conocimientos de diseño educativo ni herramientas costosas de autoría.",
+      bullets: ["Sin curva de aprendizaje de herramientas", "Contenido actualizable en minutos", "Múltiples formatos: flashcards + quizzes", "Learning paths por rol y departamento"],
+    },
+    {
+      tab: "CTO / IT",
+      icon: ShieldCheckIcon,
+      color: "#C084FC",
+      headline: "Compliance técnico y seguridad sin fricción",
+      body: "Convierte tus políticas de seguridad, procedimientos técnicos y guías de infraestructura en evaluaciones medibles. Demuestra que tu equipo conoce los protocolos.",
+      bullets: ["Documentación técnica → quizzes automatizados", "Control de acceso por equipo y rol", "Datos en tu infraestructura, no en la nube compartida", "Auditoría completa de completaciones"],
+    },
+  ];
+  const r = roles[active];
+
+  return (
+    <section id="roles" style={{ background: "#020617", padding: "100px 0" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="text-center mb-14">
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#6366F1", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>Casos de uso</p>
+          <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            Diseñado para quienes toman<br /><span style={{ color: "#818CF8" }}>decisiones de capacitación</span>
+          </h2>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mb-10 flex-wrap">
+          {roles.map(({ tab }, i) => (
+            <button key={tab} onClick={() => setActive(i)}
+              style={{ fontSize: 13, fontWeight: 700, padding: "8px 20px", borderRadius: 999, cursor: "pointer", transition: "all 0.2s", background: active === i ? "linear-gradient(135deg, #6366F1, #818CF8)" : "rgba(255,255,255,0.04)", border: active === i ? "none" : "1px solid rgba(255,255,255,0.08)", color: active === i ? "#fff" : "#94A3B8" }}>
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "40px 36px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48 }}
+          className="flex-col md:grid">
+          <div>
+            <div style={{ width: 46, height: 46, borderRadius: 12, background: `${r.color}18`, border: `1px solid ${r.color}28`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
+              <r.icon className="h-6 w-6" style={{ color: r.color }} />
+            </div>
+            <h3 style={{ fontSize: "clamp(17px, 2.5vw, 24px)", fontWeight: 800, color: "#F1F5F9", lineHeight: 1.2, marginBottom: 12 }}>{r.headline}</h3>
+            <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.75 }}>{r.body}</p>
+          </div>
+          <div className="flex flex-col justify-center gap-4">
+            {r.bullets.map((b) => (
+              <div key={b} className="flex items-start gap-3">
+                <CheckCircleIcon className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: r.color }} />
+                <p style={{ fontSize: 14, color: "#94A3B8", lineHeight: 1.5 }}>{b}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Security ─────────────────────────────────────────────────────────────────
+
+function Security() {
+  const items = [
+    { icon: LockClosedIcon, title: "Datos aislados por empresa", desc: "Cada empresa tiene su propio silo. Ningún dato se comparte entre clientes." },
+    { icon: ShieldCheckIcon, title: "Trazabilidad de compliance", desc: "Log completo de quién completó qué y cuándo. Listo para auditorías regulatorias." },
+    { icon: CheckBadgeIcon, title: "Certificaciones digitales", desc: "Genera evidencia verificable de que tus empleados completaron la capacitación." },
+    { icon: ClockIcon, title: "Historial de intentos", desc: "Cada sesión de estudio queda registrada. Visibilidad total del progreso individual." },
+  ];
+  return (
+    <section id="security" style={{ background: "#0F172A", padding: "100px 0" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#6366F1", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>Seguridad y Compliance</p>
+            <h2 style={{ fontSize: "clamp(22px, 3.5vw, 36px)", fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 16 }}>
+              Diseñado para industrias reguladas
+            </h2>
+            <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.8, marginBottom: 28 }}>
+              Finanzas, salud, industria, retail — en cualquier sector donde el cumplimiento es obligatorio, Ankard te da la trazabilidad que necesitas para demostrar que tu equipo está capacitado.
+            </p>
+            <button
+              style={{ fontSize: 14, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 10, padding: "12px 24px", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+              Hablar con ventas <ArrowRightIcon className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {items.map(({ icon: Icon, title, desc }) => (
+              <div key={title} style={{ background: "#162032", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 18 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <Icon className="h-4 w-4" style={{ color: "#818CF8" }} />
+                </div>
+                <h4 style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", marginBottom: 6 }}>{title}</h4>
+                <p style={{ fontSize: 11, color: "#64748B", lineHeight: 1.65 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── CTA ─────────────────────────────────────────────────────────────────────
+
+function CTASection({ onDemoOpen }) {
+  const navigate = useNavigate();
+  return (
+    <section style={{ background: "#020617", padding: "100px 0" }}>
+      <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
+        <div style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.11), rgba(192,132,252,0.07))", border: "1px solid rgba(99,102,241,0.18)", borderRadius: 24, padding: "60px 36px", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 300, background: "radial-gradient(ellipse, rgba(99,102,241,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+          <RocketLaunchIcon className="h-11 w-11 mx-auto mb-6" style={{ color: "#818CF8" }} />
+          <h2 style={{ fontSize: "clamp(22px, 4vw, 40px)", fontWeight: 900, color: "#F1F5F9", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 14 }}>
+            Empieza hoy — tu primer documento<br />
+            <span style={{ color: "#818CF8" }}>convertido en curso en minutos</span>
+          </h2>
+          <p style={{ fontSize: 15, color: "#64748B", lineHeight: 1.7, maxWidth: 480, margin: "0 auto 32px" }}>
+            Sin tarjeta de crédito. Sin instalación. Sin semanas de configuración. Solo sube tu primer documento y ve la magia.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={onDemoOpen}
+              style={{ fontSize: 15, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", borderRadius: 12, padding: "14px 30px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 0 40px rgba(99,102,241,0.38)", transition: "opacity 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              Solicitar demo gratuita <ArrowRightIcon className="h-4 w-4" />
+            </button>
+            <button onClick={() => navigate("/auth/sign-in")}
+              style={{ fontSize: 14, fontWeight: 600, color: "#94A3B8", background: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "13px 22px", cursor: "pointer", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.24)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
+              Ya tengo cuenta
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+
+function Footer() {
+  return (
+    <footer style={{ background: "#0F172A", borderTop: "1px solid rgba(255,255,255,0.05)", padding: "48px 0 32px" }}>
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-10 mb-10">
+          <div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <BoltIcon className="h-4 w-4 text-white" />
+              </div>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#F1F5F9" }}>Ankard Enterprise</span>
+            </div>
+            <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.7, maxWidth: 240 }}>
+              Capacitación corporativa automatizada con IA. Convierte documentos internos en programas de aprendizaje en minutos.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+            {[
+              { title: "Producto", links: ["Características", "Cómo funciona", "Seguridad", "Precios"] },
+              { title: "Empresa", links: ["Sobre nosotros", "Blog", "Casos de éxito", "Contacto"] },
+              { title: "Legal", links: ["Términos de uso", "Privacidad", "Cookies"] },
+            ].map(({ title, links }) => (
+              <div key={title}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{title}</p>
+                {links.map((l) => (
+                  <p key={l} style={{ fontSize: 12, color: "#64748B", marginBottom: 8, cursor: "pointer", transition: "color 0.15s" }}
+                    onMouseEnter={(e) => (e.target.style.color = "#94A3B8")}
+                    onMouseLeave={(e) => (e.target.style.color = "#64748B")}>
+                    {l}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 22, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+          <p style={{ fontSize: 11, color: "#334155" }}>© 2026 Ankard Enterprise. Todos los derechos reservados.</p>
+          <p style={{ fontSize: 10, color: "#1E293B" }}>Capacitación corporativa · LMS con IA · Compliance training · Onboarding digital · Flashcards automáticas</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function LandingPage() {
-    const { t, language } = useLanguage();
-    const navigate = useNavigate();
+  const [demoOpen, setDemoOpen] = useState(false);
 
-    const howItWorks = [
-        {
-            title: t("home.how_it_works.step1.title"),
-            desc: t("home.how_it_works.step1.desc"),
-            img: "https://cdn.pixabay.com/photo/2015/01/09/11/11/office-594132_1280.jpg",
-            icon: DocumentArrowUpIcon,
-        },
-        {
-            title: t("home.how_it_works.step2.title"),
-            desc: t("home.how_it_works.step2.desc"),
-            img: "https://cdn.pixabay.com/photo/2017/07/20/03/53/homework-2521144_1280.jpg",
-            icon: ClipboardDocumentCheckIcon,
-        },
-        {
-            title: t("home.how_it_works.step3.title"),
-            desc: t("home.how_it_works.step3.desc"),
-            img: "https://cdn.pixabay.com/photo/2015/07/17/22/43/student-849825_1280.jpg",
-            icon: SparklesIcon,
-        },
-    ];
-
-    const benefits = [
-        {
-            title: t("home.benefits.b1.title"),
-            desc: t("home.benefits.b1.desc"),
-            icon: QuestionMarkCircleIcon,
-        },
-        {
-            title: t("home.benefits.b2.title"),
-            desc: t("home.benefits.b2.desc"),
-            icon: AcademicCapIcon,
-        },
-        {
-            title: t("home.benefits.b3.title"),
-            desc: t("home.benefits.b3.desc"),
-            icon: TagIcon,
-        },
-        {
-            title: t("home.benefits.b4.title"),
-            desc: t("home.benefits.b4.desc"),
-            icon: BoltIcon,
-        },
-    ];
-
-    const plans = [
-        {
-            name: t("home.pricing.plans.free.name"),
-            price: t("home.pricing.plans.free.price"),
-            color: "blue-gray",
-            features: t("home.pricing.plans.free.features"),
-            button: t("landing.pricing.cta_free"),
-            onClick: () => navigate("/auth/sign-up"),
-        },
-        {
-            name: t("home.pricing.plans.premium.name"),
-            price: t("home.pricing.plans.premium.price"),
-            color: "amber",
-            recommended: true,
-            features: t("home.pricing.plans.premium.features"),
-            button: t("landing.pricing.cta_pro"),
-            onClick: () => navigate("/auth/sign-up"),
-        },
-        {
-            name: t("home.pricing.plans.team.name"),
-            price: t("home.pricing.plans.team.price"),
-            color: "blue-gray",
-            features: t("home.pricing.plans.team.features"),
-            button: t("landing.pricing.cta_team"),
-            onClick: () => navigate("/dashboard/contact-us"),
-        },
-    ];
-
-    const faqs = [
-        { q: t("home.faq.q1.q"), a: t("home.faq.q1.a") },
-        { q: t("home.faq.q2.q"), a: t("home.faq.q2.a") },
-        { q: t("home.faq.q3.q"), a: t("home.faq.q3.a") },
-        { q: t("home.faq.q4.q"), a: t("home.faq.q4.a") },
-        { q: t("home.faq.q5.q"), a: t("home.faq.q5.a") },
-    ];
-
-    return (
-        <>
-
-        {/* ══════════════════════════════════════════════
-            MOBILE LANDING
-        ══════════════════════════════════════════════ */}
-        <div className="md:hidden" style={{ fontFamily: "'DM Sans', sans-serif", background: "#fff", color: "#0f172a", overflowX: "hidden" }}>
-
-            {/* NAV */}
-            <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.90)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderBottom: "1px solid #e2e8f0", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 58 }}>
-                <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 800, color: "#0f172a", textDecoration: "none" }}>
-                    <div style={{ width: 30, height: 30, background: "#0f172a", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "#fff", strokeWidth: 2, fill: "none" }}>
-                            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                        </svg>
-                    </div>
-                    Ankard
-                </Link>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Link to="/auth/sign-in" style={{ fontSize: 13, fontWeight: 600, color: "#475569", textDecoration: "none", padding: "6px 10px" }}>Sign in</Link>
-                    <Link to="/auth/sign-up" style={{ padding: "8px 16px", borderRadius: 10, background: "#0f172a", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Register</Link>
-                </div>
-            </nav>
-
-            {/* HERO */}
-            <section style={{ background: "#0f172a", padding: "44px 22px 40px", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 420, height: 420, background: "radial-gradient(circle, rgba(57,73,171,.6) 0%, transparent 60%)", top: -160, right: -140 }} />
-                <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 250, height: 250, background: "radial-gradient(circle, rgba(139,92,246,.25) 0%, transparent 65%)", bottom: -80, left: -60 }} />
-                <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px)", backgroundSize: "36px 36px", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 2 }}>
-                    {/* pills */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 22 }}>
-                        {[{ label: "Flashcards", hi: true }, { label: "Questions", hi: false }, { label: "Real progress", hi: false }].map((p, i) => (
-                            <span key={i} style={{ padding: "4px 12px", borderRadius: 20, fontSize: 10, fontWeight: 600, letterSpacing: ".8px", textTransform: "uppercase", background: p.hi ? "rgba(57,73,171,.3)" : "rgba(255,255,255,.08)", border: `1px solid ${p.hi ? "rgba(99,102,241,.4)" : "rgba(255,255,255,.13)"}`, color: p.hi ? "#a5b4fc" : "rgba(255,255,255,.6)" }}>{p.label}</span>
-                        ))}
-                    </div>
-                    <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 800, color: "#fff", letterSpacing: "-1.2px", lineHeight: 1.05, marginBottom: 16 }}>
-                        {language === "es" ? <>Aprende con <em style={{ fontStyle: "normal", color: "#818cf8" }}>IA.</em><br />Domina con práctica.</> : <>Learn with <em style={{ fontStyle: "normal", color: "#818cf8" }}>AI.</em><br />Master with practice.</>}
-                    </h2>
-                    <p style={{ fontSize: 15, color: "rgba(255,255,255,.52)", lineHeight: 1.7, marginBottom: 28 }}>
-                        <strong style={{ color: "rgba(255,255,255,.82)", fontWeight: 600 }}>Ankard</strong> {language === "es" ? "usa inteligencia artificial para convertir tus documentos en flashcards y cuestionarios — practica de verdad, mide tu progreso y mejora cada día." : "uses AI to turn your documents into flashcards and quizzes — practice for real, measure progress, improve every day."}
-                    </p>
-                    {/* CTAs */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-                        <Link to="/auth/sign-up" style={{ padding: "15px 24px", borderRadius: 14, background: "rgb(57,73,171)", color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", boxShadow: "0 8px 24px rgba(57,73,171,.45)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}>
-                            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "#fff", strokeWidth: 2.5, fill: "none" }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                            {language === "es" ? "Empezar gratis" : "Get started — it's free"}
-                        </Link>
-                        <a href="#how-mobile" style={{ padding: "14px 24px", borderRadius: 14, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", color: "rgba(255,255,255,.75)", fontSize: 15, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "currentColor", strokeWidth: 2, fill: "none" }}><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-                            {language === "es" ? "Ver cómo funciona" : "See how it works"}
-                        </a>
-                    </div>
-                    {/* flow pill */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.09)", borderRadius: 12, padding: "10px 14px", marginBottom: 24 }}>
-                        {["Project","Rules","Questions","Progress"].map((step, i, arr) => (
-                            <React.Fragment key={step}>
-                                <span style={{ fontSize: 11, fontWeight: 600, color: i < 3 ? "#a5b4fc" : "rgba(255,255,255,.4)" }}>{step}</span>
-                                {i < arr.length - 1 && <span style={{ color: "rgba(57,73,171,.7)", fontWeight: 700, fontSize: 13 }}>→</span>}
-                            </React.Fragment>
-                        ))}
-                    </div>
-                    {/* social proof */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-                        <div style={{ display: "flex" }}>
-                            {[["#3949ab","A"],["#0891b2","M"],["#7c3aed","R"],["#059669","K"]].map(([bg, letter], i) => (
-                                <div key={i} style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #0f172a", marginLeft: i === 0 ? 0 : -7, background: bg, fontSize: 11, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>{letter}</div>
-                            ))}
-                        </div>
-                        <span style={{ fontSize: 12, color: "rgba(255,255,255,.42)" }}><strong style={{ color: "rgba(255,255,255,.72)", fontWeight: 600 }}>+1,000 students</strong> {language === "es" ? "nos confían" : "trust us"}</span>
-                    </div>
-                    {/* mini app preview */}
-                    <div style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 20, padding: 14, backdropFilter: "blur(12px)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
-                            {[["#f87171"],["#fbbf24"],["#34d399"]].map(([bg], i) => <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: bg }} />)}
-                            <div style={{ flex: 1, background: "rgba(255,255,255,.07)", borderRadius: 6, padding: "4px 10px", fontSize: 10, color: "rgba(255,255,255,.3)", marginLeft: 6 }}>ankard.app/dashboard</div>
-                        </div>
-                        <div style={{ background: "#1e293b", borderRadius: 12, overflow: "hidden" }}>
-                            <div style={{ background: "#0f172a", padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-                                <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 12, fontWeight: 700, color: "#fff" }}>Harry Potter — English</span>
-                                <span style={{ background: "rgba(52,211,153,.15)", border: "1px solid rgba(52,211,153,.3)", color: "#34d399", fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>Active</span>
-                            </div>
-                            <div style={{ padding: "12px 14px" }}>
-                                <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                                    {[["Batteries","10","#818cf8"],["Progress","72%","#34d399"],["Streak","7d","#fff"]].map(([lbl, val, col], i) => (
-                                        <div key={i} style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 9, padding: "9px 10px" }}>
-                                            <div style={{ fontSize: 9, color: "rgba(255,255,255,.3)", textTransform: "uppercase", letterSpacing: ".7px", marginBottom: 4 }}>{lbl}</div>
-                                            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: col }}>{val}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div style={{ fontSize: 9, color: "rgba(255,255,255,.3)", textTransform: "uppercase", letterSpacing: ".7px", marginBottom: 7 }}>Today&apos;s questions</div>
-                                {["Dursley family dynamics","Bizarre occurrences"].map((title, i) => (
-                                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 8, padding: "8px 10px", marginBottom: 6 }}>
-                                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgb(57,73,171)", fontSize: 9, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i+1}</div>
-                                        <div style={{ fontSize: 11, color: "rgba(255,255,255,.6)", flex: 1 }}>{title}</div>
-                                        <div style={{ fontSize: 8, background: "rgba(57,73,171,.25)", color: "#818cf8", padding: "2px 6px", borderRadius: 20, fontWeight: 700 }}>SECTION</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* HOW IT WORKS */}
-            <section id="how-mobile" style={{ padding: "64px 20px", background: "#f8fafc" }} aria-label={language === "es" ? "Cómo funciona" : "How it works"}>
-                <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", color: "rgb(57,73,171)", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 12px", borderRadius: 20, marginBottom: 12 }}>
-                    {language === "es" ? "Cómo funciona" : "How it works"}
-                </div>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#0f172a", letterSpacing: "-.8px", lineHeight: 1.1, marginBottom: 10 }}>
-                    {language === "es" ? "Del documento al dominio" : "From document to mastery"}
-                </h2>
-                <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.7, marginBottom: 36 }}>
-                    {language === "es" ? "Contenido → reglas → práctica → resultados." : "Content → rules → practice → results."}
-                </p>
-                {[
-                    { gradient: "linear-gradient(135deg,#f59e0b,#fbbf24)", num: "01", bigIcon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>, smallIcon: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></>, title: language === "es" ? "Crea un proyecto y sube documentos" : "Create a project & upload your docs", desc: language === "es" ? "Organiza contenido por proyectos y temas. Empieza con PDFs o notas." : "Organize content by projects and topics. Start with PDFs or notes and build your study base." },
-                    { gradient: "linear-gradient(135deg,rgb(57,73,171),#818cf8)", num: "02", bigIcon: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>, smallIcon: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></>, title: language === "es" ? "Define las reglas de preguntas" : "Define question rules", desc: language === "es" ? "Elige tipos de preguntas, cantidad por tema y lógica de puntuación." : "Choose question types, quantity per topic, and scoring logic to practice with intent." },
-                    { gradient: "linear-gradient(135deg,#059669,#34d399)", num: "03", bigIcon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>, smallIcon: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>, title: language === "es" ? "Practica con flashcards y mejora" : "Practice with flashcards & improve", desc: language === "es" ? "Simula exámenes, revisa resultados y enfócate donde más lo necesitas." : "Simulate exams, review results, and focus on where you really need to improve." },
-                ].map((step, i) => (
-                    <div key={i} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", overflow: "hidden", marginBottom: 16 }}>
-                        <div style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", background: step.gradient }}>
-                            <svg style={{ width: 60, height: 60, fill: "none", strokeWidth: 1.5, stroke: "rgba(255,255,255,.8)" }} viewBox="0 0 24 24">{step.bigIcon}</svg>
-                            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(15,23,42,.55) 100%)" }} />
-                            <span style={{ position: "absolute", bottom: 12, left: 16, fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,.85)" }}>{step.num}</span>
-                        </div>
-                        <div style={{ padding: "18px 18px 20px" }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(57,73,171,.10)", border: "1.5px solid rgba(57,73,171,.22)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-                                <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "rgb(57,73,171)", strokeWidth: 1.8, fill: "none" }}>{step.smallIcon}</svg>
-                            </div>
-                            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 7 }}>{step.title}</h3>
-                            <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{step.desc}</p>
-                        </div>
-                    </div>
-                ))}
-            </section>
-
-            {/* FEATURES */}
-            <section id="features-mobile" style={{ padding: "64px 20px", background: "#0f172a", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 400, height: 400, background: "radial-gradient(circle, rgba(57,73,171,.45) 0%, transparent 60%)", top: -140, right: -120 }} />
-                <div style={{ position: "absolute", borderRadius: "50%", pointerEvents: "none", width: 250, height: 250, background: "radial-gradient(circle, rgba(139,92,246,.2) 0%, transparent 65%)", bottom: -80, left: -60 }} />
-                <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)", backgroundSize: "36px 36px", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 1 }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(57,73,171,.25)", border: "1px solid rgba(99,102,241,.3)", color: "#a5b4fc", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 12px", borderRadius: 20, marginBottom: 12 }}>
-                        {language === "es" ? "Por qué Ankard" : "Why Ankard"}
-                    </div>
-                    <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: "-.8px", lineHeight: 1.1, marginBottom: 10 }}>
-                        {language === "es" ? "Menos lectura pasiva." : "Less passive reading."}<br />{language === "es" ? "Más aprendizaje real." : "More real learning."}
-                    </h2>
-                    <p style={{ fontSize: 15, color: "rgba(255,255,255,.45)", lineHeight: 1.7, marginBottom: 36 }}>
-                        {language === "es" ? "Diseñado para aprender respondiendo, practicando y mejorando." : "Designed for you to learn by answering, practicing, and improving."}
-                    </p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        {[
-                            { ico: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>, bg: "rgba(57,73,171,.25)", border: "1px solid rgba(99,102,241,.35)", stroke: "#818cf8", title: language === "es" ? "Aprendizaje activo" : "Active learning", desc: language === "es" ? "Descubre qué dominas de verdad con preguntas reales." : "Discover what you truly master with real questions." },
-                            { ico: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>, bg: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.25)", stroke: "#34d399", title: "Flashcards", desc: language === "es" ? "Práctica rápida y repetible para mejor retención." : "Fast, repeatable practice for better retention." },
-                            { ico: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>, bg: "rgba(251,191,36,.10)", border: "1px solid rgba(251,191,36,.22)", stroke: "#fbbf24", title: language === "es" ? "Progreso por tema" : "Topic progress", desc: language === "es" ? "Estudia donde más lo necesitas." : "Study where you need it most." },
-                            { ico: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>, bg: "rgba(248,113,113,.10)", border: "1px solid rgba(248,113,113,.22)", stroke: "#f87171", title: language === "es" ? "Simulacro de examen" : "Exam simulation", desc: language === "es" ? "Ritmo, puntuación y resultados reales." : "Real exam rhythm, scoring, and results." },
-                        ].map((feat, i) => (
-                            <div key={i} style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 16, padding: 16 }}>
-                                <div style={{ width: 36, height: 36, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, background: feat.bg, border: feat.border }}>
-                                    <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "none", strokeWidth: 1.8, stroke: feat.stroke }}>{feat.ico}</svg>
-                                </div>
-                                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6, lineHeight: 1.3 }}>{feat.title}</h3>
-                                <p style={{ fontSize: 11, color: "rgba(255,255,255,.4)", lineHeight: 1.55 }}>{feat.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <Link to="/auth/sign-up" style={{ display: "block", marginTop: 28, padding: 13, borderRadius: 13, background: "rgba(255,255,255,.08)", border: "1.5px solid rgba(255,255,255,.14)", color: "rgba(255,255,255,.8)", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "center", textDecoration: "none" }}>
-                        {language === "es" ? "Explorar todos los beneficios" : "Explore all benefits"}
-                    </Link>
-                </div>
-            </section>
-
-            {/* PRICING */}
-            <section id="pricing-mobile" style={{ padding: "64px 20px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(57,73,171,.10)", border: "1px solid rgba(57,73,171,.22)", color: "rgb(57,73,171)", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 12px", borderRadius: 20, marginBottom: 12 }}>
-                    {language === "es" ? "Precios" : "Pricing"}
-                </div>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#0f172a", letterSpacing: "-.8px", lineHeight: 1.1, marginBottom: 10 }}>
-                    {language === "es" ? "Empieza gratis," : "Start free,"}<br />{language === "es" ? "actualiza cuando estés listo" : "upgrade when ready"}
-                </h2>
-                <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.7, marginBottom: 36 }}>
-                    {language === "es" ? "Sube de nivel cuando tus estudios lo requieran." : "Level up when your studies demand it."}
-                </p>
-                {/* Free */}
-                {[
-                    { dark: false, badge: null, tier: "Free", amount: "$0", period: language === "es" ? "siempre gratis" : "forever", features: language === "es" ? ["1–2 proyectos de estudio","Preguntas básicas (MC, V/F)","Límite de práctica diaria","Resultados simples","Progreso básico"] : ["1–2 study projects","Basic questions (MC, T/F)","Daily practice limit","Simple results","Basic progress"], btnLabel: language === "es" ? "Empezar gratis" : "Start free", btnStyle: { background: "transparent", border: "1.5px solid #e2e8f0", color: "#0f172a" }, onClick: () => navigate("/auth/sign-up") },
-                    { dark: true, badge: language === "es" ? "Más popular" : "Most popular", tier: "Premium", amount: "$15", period: language === "es" ? "facturado mensualmente" : "billed monthly", perMo: true, features: language === "es" ? ["Todo en Free +","Proyectos ilimitados","Práctica ilimitada","Repetición inteligente","Favoritos + temporizador","Sin anuncios"] : ["Everything in Free +","Unlimited projects","Unlimited practice","Smart repetition","Favorites + timer","No ads"], btnLabel: language === "es" ? "Obtener Premium" : "Get Premium", btnStyle: { background: "rgb(57,73,171)", border: "none", color: "#fff", boxShadow: "0 4px 16px rgba(57,73,171,.4)" }, onClick: () => navigate("/auth/sign-up") },
-                    { dark: false, badge: null, tier: "Pro Team", amount: "$25", period: language === "es" ? "por usuario, mensual" : "per user, billed monthly", perMo: true, features: language === "es" ? ["Todo en Premium +","Comparte sets / proyectos","Importación avanzada","Analíticas avanzadas","Exportar resultados (PDF/Excel)"] : ["Everything in Premium +","Share sets / projects","Advanced import","Advanced analytics","Export results (PDF/Excel)"], btnLabel: language === "es" ? "Contactar" : "Contact us", btnStyle: { background: "transparent", border: "1.5px solid #e2e8f0", color: "#0f172a" }, onClick: () => navigate("/dashboard/contact-us") },
-                ].map((plan, i) => (
-                    <div key={i} style={{ background: plan.dark ? "#0f172a" : "#f8fafc", borderRadius: 20, padding: 24, border: plan.dark ? "1.5px solid rgba(99,102,241,.3)" : "1.5px solid #e2e8f0", marginBottom: 14, position: "relative", boxShadow: plan.dark ? "0 12px 36px rgba(57,73,171,.25)" : "none" }}>
-                        {plan.badge && <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "rgb(57,73,171)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 14px", borderRadius: 20, whiteSpace: "nowrap" }}>{plan.badge}</div>}
-                        <h3 style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: plan.dark ? "#818cf8" : "#94a3b8", marginBottom: 10 }}>{plan.tier}</h3>
-                        <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 40, fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 4, color: plan.dark ? "#fff" : "#0f172a" }}>
-                            <span style={{ fontSize: 18, fontWeight: 500, verticalAlign: "top", marginTop: 6, display: "inline-block" }}>$</span>
-                            {plan.amount.replace("$","")}
-                            {plan.perMo && <span style={{ fontSize: 15, fontWeight: 400, color: plan.dark ? "rgba(255,255,255,.38)" : "#94a3b8" }}>/mo</span>}
-                        </div>
-                        <div style={{ fontSize: 12, color: plan.dark ? "rgba(255,255,255,.38)" : "#94a3b8", marginBottom: 20 }}>{plan.period}</div>
-                        <div style={{ height: 1, background: plan.dark ? "rgba(255,255,255,.1)" : "#e2e8f0", marginBottom: 18 }} />
-                        <ul style={{ listStyle: "none", padding: 0, marginBottom: 24 }}>
-                            {plan.features.map((f, j) => (
-                                <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13, color: plan.dark ? "rgba(255,255,255,.65)" : "#475569", padding: "4px 0" }}>
-                                    <span style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }}>
-                                        <svg viewBox="0 0 24 24" style={{ width: "100%", height: "100%", strokeWidth: 2.5, fill: "none", stroke: plan.dark ? "#34d399" : "rgb(57,73,171)" }}><polyline points="20 6 9 17 4 12"/></svg>
-                                    </span>
-                                    {f}
-                                </li>
-                            ))}
-                        </ul>
-                        <button onClick={plan.onClick} style={{ width: "100%", padding: 13, borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: "pointer", ...plan.btnStyle }}>{plan.btnLabel}</button>
-                    </div>
-                ))}
-            </section>
-
-            {/* FAQ */}
-            <section style={{ padding: "64px 20px", background: "#f8fafc" }}>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#0f172a", letterSpacing: "-.8px", lineHeight: 1.1, marginBottom: 10 }}>
-                    {language === "es" ? "Preguntas Frecuentes" : "Frequently Asked Questions"}
-                </h2>
-                <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.7, marginBottom: 36 }}>
-                    {language === "es" ? "Todo lo que necesitas saber antes de empezar." : "Everything you need to know before starting."}
-                </p>
-                {faqs.map((item, i) => (
-                    <div key={i} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid #e2e8f0", padding: 18, marginBottom: 10, position: "relative", overflow: "hidden" }}>
-                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: "rgb(57,73,171)", borderRadius: "14px 0 0 14px" }} />
-                        <h3 style={{ fontSize: 14, fontWeight: 600, color: "#0f172a", marginBottom: 7 }}>{item.q}</h3>
-                        <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{item.a}</div>
-                    </div>
-                ))}
-                <p style={{ textAlign: "center", fontSize: 14, color: "#94a3b8", marginTop: 8 }}>
-                    {language === "es" ? "¿Más preguntas? " : "Still have questions? "}
-                    <Link to="/faq" style={{ color: "rgb(57,73,171)", fontWeight: 600, textDecoration: "none" }}>
-                        {language === "es" ? "Ver todas las FAQs →" : "View all FAQs →"}
-                    </Link>
-                </p>
-            </section>
-
-            {/* CTA */}
-            <section style={{ background: "#0f172a", padding: "64px 20px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", width: 400, height: 400, background: "radial-gradient(circle, rgba(57,73,171,.45) 0%, transparent 60%)", top: "50%", left: "50%", transform: "translate(-50%,-50%)", borderRadius: "50%", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)", backgroundSize: "36px 36px", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 2 }}>
-                    <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: "-.8px", marginBottom: 12, lineHeight: 1.1 }}>
-                        {language === "es" ? "Empieza a aprender más inteligente hoy" : "Start learning smarter today"}
-                    </h2>
-                    <p style={{ fontSize: 15, color: "rgba(255,255,255,.45)", marginBottom: 32, lineHeight: 1.6 }}>
-                        {language === "es" ? "Únete a 1,000+ estudiantes que transforman sus documentos en dominio real." : "Join 1,000+ students turning their documents into real mastery."}
-                    </p>
-                    <Link to="/auth/sign-up" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 24px", borderRadius: 14, background: "rgb(57,73,171)", color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, boxShadow: "0 8px 24px rgba(57,73,171,.45)", textDecoration: "none", maxWidth: 320, width: "100%" }}>
-                        <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "#fff", strokeWidth: 2.5, fill: "none" }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        {language === "es" ? "Empezar gratis" : "Get started — it's free"}
-                    </Link>
-                </div>
-            </section>
-
-            {/* FOOTER */}
-            <footer style={{ background: "#070e1a", padding: "44px 20px 32px", borderTop: "1px solid rgba(255,255,255,.05)" }}>
-                <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Syne', sans-serif", fontSize: 17, fontWeight: 800, color: "#fff", textDecoration: "none", marginBottom: 10 }}>
-                    <div style={{ width: 30, height: 30, background: "#0f172a", borderRadius: 9, border: "1px solid rgba(255,255,255,.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <svg viewBox="0 0 24 24" style={{ width: 15, height: 15, stroke: "#fff", strokeWidth: 2, fill: "none" }}>
-                            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                        </svg>
-                    </div>
-                    Ankard
-                </Link>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,.32)", lineHeight: 1.65, marginBottom: 32 }}>
-                    {language === "es" ? "Transforma tus documentos en flashcards y cuestionarios. Practica mejor. Progresa más rápido." : "Turn your documents into flashcards and quizzes. Practice smarter. Progress faster."}
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 36 }}>
-                    {[
-                        { title: language === "es" ? "Producto" : "Product", links: [[language === "es" ? "Cómo funciona" : "How it works","#how-mobile"],[language === "es" ? "Características" : "Features","#features-mobile"],[language === "es" ? "Precios" : "Pricing","#pricing-mobile"],[language === "es" ? "Hoja de ruta" : "Roadmap","#"]] },
-                        { title: language === "es" ? "Empresa" : "Company", links: [["FAQ","/faq"],[language === "es" ? "Contacto" : "Contact","/dashboard/contact-us"],[language === "es" ? "Privacidad" : "Privacy","/privacidad"],[language === "es" ? "Términos" : "Terms","/terminos"]] },
-                    ].map((col, i) => (
-                        <div key={i}>
-                            <h4 style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "rgba(255,255,255,.3)", marginBottom: 12 }}>{col.title}</h4>
-                            {col.links.map(([label, href], j) => (
-                                href.startsWith("/") ? (
-                                    <Link key={j} to={href} style={{ display: "block", fontSize: 13, color: "rgba(255,255,255,.45)", textDecoration: "none", marginBottom: 8 }}>{label}</Link>
-                                ) : (
-                                    <a key={j} href={href} style={{ display: "block", fontSize: 13, color: "rgba(255,255,255,.45)", textDecoration: "none", marginBottom: 8 }}>{label}</a>
-                                )
-                            ))}
-                        </div>
-                    ))}
-                </div>
-                <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 20, textAlign: "center" }}>
-                    <span style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,.22)", marginBottom: 4 }}>© 2026 Ankard. All rights reserved.</span>
-                    <span style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,.22)" }}>Built for learners who mean it.</span>
-                </div>
-            </footer>
-
-        </div>
-
-        {/* ══════════════════════════════════════════════
-            DESKTOP LANDING (unchanged)
-        ══════════════════════════════════════════════ */}
-        <div className="hidden md:flex md:flex-col min-h-screen bg-blue-gray-50/50">
-            <LandingNavbar />
-
-            <main className="flex-grow container mx-auto px-4 pb-20 pt-10">
-                {/* HERO */}
-                <section className="relative overflow-hidden rounded-3xl border border-blue-gray-100 bg-white shadow-sm mb-20">
-                    <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-                        <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#60a5fa] to-[#1d4ed8] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"></div>
-                    </div>
-
-                    <div className="relative px-6 py-10 lg:px-10 lg:py-14">
-                        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
-                            {/* Left: copy */}
-                            <div>
-                                <div className="mb-4 flex flex-wrap gap-2">
-                                    <Chip value={t("home.hero.tags.flashcards")} variant="outlined" color="blue-gray" />
-                                    <Chip value={t("home.hero.tags.questions")} variant="outlined" color="blue-gray" />
-                                    <Chip value={t("home.hero.tags.progress")} variant="outlined" color="blue-gray" />
-                                </div>
-                                <Typography variant="h1" color="blue-gray" className="leading-tight text-3xl lg:text-5xl font-black">
-                                    {t("home.hero.title_1")}
-                                    <br />
-                                    <span className="text-blue-gray-700">{t("home.hero.title_2")}</span>
-                                </Typography>
-
-                                <Typography variant="lead" className="mt-3 text-blue-gray-500 max-w-xl">
-                                    <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_prefix")}</span> {t("home.hero.subtitle_mid1")}{" "}
-                                    <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_flashcards")}</span> {t("home.hero.subtitle_mid2")}{" "}
-                                    <span className="font-semibold text-blue-gray-700">{t("home.hero.subtitle_questions")}</span> {t("home.hero.subtitle_suffix")}
-                                </Typography>
-
-                                <Typography className="mt-2 text-sm text-blue-gray-400">
-                                    {t("home.hero.ideal_for")}
-                                </Typography>
-
-                                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                                    <Link to="/auth/sign-up">
-                                        <Button
-                                            size="lg"
-                                            color="blue-gray"
-                                            className="shadow-md hover:shadow-lg transition-all rounded-xl w-full sm:w-auto"
-                                        >
-                                            {t("landing.hero.cta_primary")}
-                                        </Button>
-                                    </Link>
-                                    <Button
-                                        variant="outlined"
-                                        size="lg"
-                                        color="blue-gray"
-                                        className="rounded-xl w-full sm:w-auto"
-                                        onClick={() => {
-                                            const el = document.getElementById("como-funciona");
-                                            el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                                        }}
-                                    >
-                                        {t("home.hero.btn_how_it_works")}
-                                    </Button>
-                                </div>
-
-                                {/* Ribbon */}
-                                <div className="mt-8 inline-flex items-center gap-2 rounded-xl border border-blue-gray-100 bg-blue-gray-50 px-4 py-3">
-                                    <BoltIcon className="h-5 w-5 text-blue-gray-700" />
-                                    <Typography className="text-sm text-blue-gray-700 font-medium">
-                                        {t("home.hero.ribbon")}
-                                    </Typography>
-                                </div>
-
-                                <div className="mt-8 flex items-center gap-4">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <img key={i} src={`/img/avatar${i > 3 ? 1 : i}.png`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" alt={language === "es" ? `Estudiante de Ankard ${i}` : `Ankard student ${i}`} />
-                                        ))}
-                                    </div>
-                                    <Typography variant="small" className="text-blue-gray-600 font-medium">
-                                        {t("landing.hero.social_proof")}
-                                    </Typography>
-                                </div>
-                            </div>
-
-                            {/* Right: mockup */}
-                            <div className="relative">
-                                <div className="absolute -inset-6 rounded-3xl bg-blue-gray-50/70 blur-2xl" />
-                                <div className="relative rounded-2xl border border-blue-gray-100 bg-white shadow-xl overflow-hidden">
-                                    <img
-                                        src="/img/anko-hero.png"
-                                        alt={language === "es" ? "Ankard — interfaz de la plataforma de estudio con inteligencia artificial: flashcards y cuestionarios" : "Ankard — AI-powered study platform interface: flashcards and quiz generator"}
-                                        className="h-[320px] w-full object-cover lg:h-[420px]"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                                </div>
-
-                                {/* Mini cards flotantes */}
-                                <div className="absolute -top-10 -left-8 hidden w-64 rounded-2xl border border-blue-gray-100 bg-white p-4 shadow-xl lg:block transform -translate-x-1/4 hover:-translate-y-1 transition-transform z-10">
-                                    <div className="flex items-start gap-3">
-                                        <div className="rounded-lg bg-blue-gray-50 p-2">
-                                            <QuestionMarkCircleIcon className="h-5 w-5 text-blue-gray-700" />
-                                        </div>
-                                        <div>
-                                            <Typography className="text-sm font-bold text-blue-gray-900">
-                                                {t("home.hero.floating_learn.title")}
-                                            </Typography>
-                                            <Typography className="text-xs text-blue-gray-500 mt-1">
-                                                {t("home.hero.floating_learn.desc")}
-                                            </Typography>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="absolute -bottom-10 -right-8 hidden w-64 rounded-2xl border border-blue-gray-100 bg-white p-4 shadow-xl lg:block transform translate-x-1/4 hover:-translate-y-1 transition-transform z-10">
-                                    <div className="flex items-start gap-3">
-                                        <div className="rounded-lg bg-blue-gray-50 p-2">
-                                            <TagIcon className="h-5 w-5 text-blue-gray-700" />
-                                        </div>
-                                        <div>
-                                            <Typography className="text-sm font-bold text-blue-gray-900">
-                                                {t("home.hero.floating_progress.title")}
-                                            </Typography>
-                                            <Typography className="text-xs text-blue-gray-500 mt-1">
-                                                {t("home.hero.floating_progress.desc")}
-                                            </Typography>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* FEATURES (How it Works) */}
-                <section id="como-funciona" className="mb-20 scroll-mt-24">
-                    <div className="text-center mb-12">
-                        <Typography variant="h2" color="blue-gray" className="mb-4">
-                            {t("home.how_it_works.title")}
-                        </Typography>
-                        <Typography variant="lead" className="text-blue-gray-500 max-w-2xl mx-auto">
-                            {t("home.how_it_works.subtitle")}
-                        </Typography>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {howItWorks.map((step, idx) => (
-                            <Card key={idx} className="border border-blue-gray-50 shadow-sm hover:scale-[1.02] transition-transform duration-300">
-                                <CardHeader floated={false} shadow={false} className="m-0 h-48">
-                                    <img src={step.img} alt={step.title} className="w-full h-full object-cover" />
-                                </CardHeader>
-                                <CardBody className="p-6">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="p-2 bg-blue-gray-50 rounded-lg">
-                                            {React.createElement(step.icon, { className: "h-6 w-6 text-blue-gray-700" })}
-                                        </div>
-                                        <Typography variant="h3" color="blue-gray" className="text-xl font-bold">
-                                            {step.title}
-                                        </Typography>
-                                    </div>
-                                    <Typography className="text-blue-gray-600">
-                                        {step.desc}
-                                    </Typography>
-                                </CardBody>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                {/* BENEFITS */}
-                <section className="bg-blue-gray-900 rounded-3xl p-10 lg:p-16 mb-20 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-blue-gray-700 blur-[100px] opacity-20"></div>
-                    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                        <div>
-                            <Typography variant="h2" color="white" className="mb-6">
-                                {t("home.benefits.title")}
-                            </Typography>
-                            <Typography variant="lead" className="text-white/70 mb-10">
-                                {t("home.benefits.subtitle")}
-                            </Typography>
-                            <Link to="/auth/sign-up">
-                                <Button color="white" className="text-blue-gray-900 px-8 py-3 rounded-xl shadow-lg">
-                                    {t("landing.benefits.cta")}
-                                </Button>
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {benefits.map((b, idx) => (
-                                <div key={idx} className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
-                                    <div className="p-2 bg-blue-gray-100 rounded-lg w-fit mb-4">
-                                        {React.createElement(b.icon, { className: "h-6 w-6 text-blue-gray-700" })}
-                                    </div>
-                                    <Typography variant="h3" color="white" className="mb-2 text-lg font-bold">
-                                        {b.title}
-                                    </Typography>
-                                    <Typography variant="small" className="text-white/60">
-                                        {b.desc}
-                                    </Typography>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                {/* PRICING */}
-                <section className="mb-20">
-                    <div className="text-center mb-12">
-                        <Typography variant="h2" color="blue-gray" className="mb-4">
-                            {t("home.pricing.title")}
-                        </Typography>
-                        <Typography variant="lead" className="text-blue-gray-500">
-                            {t("home.pricing.subtitle")}
-                        </Typography>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {plans.map((plan, idx) => (
-                            <Card key={idx} className={`border ${plan.recommended ? "border-amber-500 shadow-xl scale-105" : "border-blue-gray-50 shadow-sm"}`}>
-                                <CardHeader floated={false} shadow={false} className="p-6 text-center border-b border-blue-gray-50 bg-blue-gray-50/50">
-                                    <Typography variant="small" className="uppercase font-bold tracking-widest text-blue-gray-400 mb-2">
-                                        {plan.name}
-                                    </Typography>
-                                    <Typography variant="h3" color="blue-gray" className="font-black">
-                                        {plan.price}
-                                    </Typography>
-                                </CardHeader>
-                                <CardBody className="p-6">
-                                    <ul className="space-y-4">
-                                        {plan.features.map((f, i) => (
-                                            <li key={i} className="flex items-center gap-3">
-                                                <CheckCircleIcon className="h-5 w-5 text-blue-gray-400" />
-                                                <Typography className="text-blue-gray-600 text-sm">{f}</Typography>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </CardBody>
-                                <CardFooter className="p-6 pt-0">
-                                    <Button fullWidth color={plan.color} onClick={plan.onClick} className="rounded-xl h-12">
-                                        {plan.button}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                {/* FAQ */}
-                <section className="max-w-4xl mx-auto mb-20 text-center">
-                    <Typography variant="h2" color="blue-gray" className="mb-10">
-                        {t("home.faq.title")}
-                    </Typography>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                        {faqs.map((f, idx) => (
-                            <Card key={idx} className="border border-blue-gray-50 p-6 shadow-sm">
-                                <Typography variant="h3" color="blue-gray" className="mb-2 text-base font-bold">
-                                    {f.q}
-                                </Typography>
-                                <Typography variant="small" className="text-blue-gray-600">
-                                    {f.a}
-                                </Typography>
-                            </Card>
-                        ))}
-                    </div>
-                    <Link to="/faq">
-                        <Button variant="text" color="blue-gray" className="mt-10 px-8 flex items-center gap-2 mx-auto">
-                            {t("landing.faq.cta")} <RocketLaunchIcon className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                </section>
-            </main>
-            <div className="bg-white/50 py-6 border-t border-blue-gray-100">
-                <div className="container mx-auto px-4">
-                    <Footer />
-                </div>
-            </div>
-        </div>
-
-        </>
-    );
+  return (
+    <div style={{ background: "#020617", minHeight: "100vh" }}>
+      {demoOpen && <DemoModal onClose={() => setDemoOpen(false)} />}
+      <Navbar onDemoOpen={() => setDemoOpen(true)} />
+      <Hero onDemoOpen={() => setDemoOpen(true)} />
+      <Stats />
+      <HowItWorks />
+      <Features />
+      <Roles />
+      <Security />
+      <CTASection onDemoOpen={() => setDemoOpen(true)} />
+      <Footer />
+    </div>
+  );
 }
 
 export default LandingPage;

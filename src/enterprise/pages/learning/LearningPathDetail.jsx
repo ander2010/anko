@@ -6,7 +6,7 @@ import {
   CheckIcon, XMarkIcon, ChevronUpIcon, ChevronDownIcon,
   RectangleStackIcon, UserGroupIcon, UsersIcon,
 } from "@heroicons/react/24/outline";
-import { learningApi, companyApi, teamsApi } from "../../api/enterpriseApi";
+import { learningApi, companyApi, teamsApi, knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -40,26 +40,36 @@ function AddProcesoModal({ pathId, currentModuleIds, onAdded, onClose }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    learningApi.getModules()
+    knowledgeApi.list()
       .then((d) => setModules(d.results || d || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   const available = modules.filter((m) =>
-    !currentModuleIds.includes(m.id) &&
-    (!search || m.name.toLowerCase().includes(search.toLowerCase()))
+    (!search || (m.title || "").toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleAdd = async () => {
     if (!selectedId) return;
     setSaving(true); setError("");
     try {
-      await learningApi.addModule(pathId, { module_id: selectedId, order });
+      const ks = modules.find((m) => m.id === selectedId);
+      const companyId = parseInt(localStorage.getItem("enterprise_company_id")) || null;
+      const newModule = await learningApi.createModule({
+        company: companyId,
+        name: ks.title,
+        description: ks.description || "",
+        process_type: ks.process_type || "course",
+        difficulty: ks.difficulty || "medium",
+        order,
+      });
+      await learningApi.addModule(pathId, { module_id: newModule.id, order });
       onAdded();
       onClose();
     } catch (err) {
-      setError(err?.detail || "No se pudo agregar el proceso.");
+      const detail = err?.detail || err?.module_id?.[0] || err?.name?.[0] || "No se pudo agregar el proceso.";
+      setError(typeof detail === "string" ? detail : JSON.stringify(detail));
     } finally { setSaving(false); }
   };
 
@@ -105,7 +115,7 @@ function AddProcesoModal({ pathId, currentModuleIds, onAdded, onClose }) {
                     <div style={{ width: 16, height: 16, borderRadius: 3, flexShrink: 0, background: selected ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${selected ? "var(--accent)" : "var(--border)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {selected && <CheckIcon style={{ width: 10, height: 10, color: "#fff", strokeWidth: 3 }} />}
                     </div>
-                    <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)", flex: 1 }}>{mod.name}</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)", flex: 1 }}>{mod.title}</span>
                     <span style={{ background: tc.bg, color: tc.text, fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 3 }}>
                       {TYPE_LABELS[mod.process_type] || mod.process_type}
                     </span>

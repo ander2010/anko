@@ -1,20 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Button,
-  Typography,
-  Card,
-  CardBody,
-  Checkbox,
-  Radio,
-  Progress,
-  IconButton,
-  Alert,
-  Spinner,
-} from "@material-tailwind/react";
+import { Dialog, IconButton } from "@material-tailwind/react";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -22,11 +7,38 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DocumentIcon,
+  XMarkIcon,
+  TrophyIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/solid";
 
 import projectService from "@/services/projectService";
 import { useLanguage } from "@/context/language-context";
 import { DocumentViewerDialog } from "./document-viewer-dialog";
+
+// ─── Dark theme tokens ────────────────────────────────────────────────────────
+const T = {
+  bg:          "#0F172A",
+  bgElevated:  "#1E293B",
+  bgCard:      "#162032",
+  border:      "rgba(255,255,255,0.07)",
+  borderStrong:"rgba(255,255,255,0.12)",
+  textPrimary: "#F1F5F9",
+  textMuted:   "#94A3B8",
+  textDim:     "#64748B",
+  accent:      "#6366F1",
+  accentBg:    "rgba(99,102,241,0.12)",
+  accentBorder:"rgba(99,102,241,0.35)",
+  green:       "#22C55E",
+  greenBg:     "rgba(34,197,94,0.10)",
+  greenBorder: "rgba(34,197,94,0.35)",
+  red:         "#EF4444",
+  redBg:       "rgba(239,68,68,0.10)",
+  redBorder:   "rgba(239,68,68,0.35)",
+  amber:       "#F59E0B",
+  amberBg:     "rgba(245,158,11,0.08)",
+  amberBorder: "rgba(245,158,11,0.25)",
+};
 
 const isMultiSelect = (type) => {
   if (!type) return false;
@@ -34,42 +46,54 @@ const isMultiSelect = (type) => {
   return t === "multiselect" || t === "multiple_choice" || t === "multiple" || t === "checkbox";
 };
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function Spinner() {
+  return (
+    <div style={{ width: 36, height: 36, borderRadius: "50%", border: `3px solid ${T.border}`, borderTopColor: T.accent }}
+      className="animate-spin" />
+  );
+}
+
+function DarkBadge({ children, color = T.accent, bg = T.accentBg }) {
+  return (
+    <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: bg, color, letterSpacing: "0.05em" }}>
+      {children}
+    </span>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   if (!initialBattery) return null;
 
-  // -------------------- Attempt state --------------------
-  const [attempt, setAttempt] = useState(null);
+  // ── Attempt state ──
+  const [attempt, setAttempt]           = useState(null);
   const [savingAttempt, setSavingAttempt] = useState(false);
-  const [battery, setBattery] = useState(initialBattery);
+  const [battery, setBattery]           = useState(initialBattery);
   const [loadingBattery, setLoadingBattery] = useState(false);
 
-  // guards contra doble llamada (StrictMode / re-render)
-  const startKeyRef = useRef(null);
-  const startingRef = useRef(false);
+  const startKeyRef  = useRef(null);
+  const startingRef  = useRef(false);
   const didFinishRef = useRef(false);
 
-  // -------------------- Exam state --------------------
-  const [activeStep, setActiveStep] = useState(0);
+  // ── Exam state ──
+  const [activeStep, setActiveStep]   = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
+  const [showAnswer, setShowAnswer]   = useState(false);
+  const [isFinished, setIsFinished]   = useState(false);
 
-  const questions = useMemo(() => battery?.questions || [], [battery]);
+  const questions      = useMemo(() => battery?.questions || [], [battery]);
   const totalQuestions = questions.length;
   const currentQuestion = questions[activeStep];
 
-
-
-
-  // key estable por cada vez que se abre el dialog con esa batería
   const startKey = useMemo(() => {
     if (!open || !battery?.id) return null;
-    // 1 attempt por "apertura" del dialog
     return `${battery?.id}-opened`;
   }, [open, battery?.id]);
 
-  // -------------------- Cargar Batería + Preguntas --------------------
+  // ── Cargar batería + preguntas ──
   useEffect(() => {
     if (open && initialBattery) {
       setLoadingBattery(true);
@@ -77,8 +101,8 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
         projectService.getBattery(initialBattery.id),
         projectService.getBatteryQuestions(initialBattery.id),
       ])
-        .then(([fullData, questions]) => {
-          const questionList = Array.isArray(questions) ? questions : questions?.results || [];
+        .then(([fullData, qs]) => {
+          const questionList = Array.isArray(qs) ? qs : qs?.results || [];
           setBattery({ ...fullData, questions: questionList });
         })
         .catch(() => setBattery(initialBattery))
@@ -86,126 +110,87 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
     }
   }, [open, initialBattery, language]);
 
-  // -------------------- Reset cuando se cierra --------------------
+  // ── Reset al cerrar ──
   useEffect(() => {
     if (open) return;
-
-    // reset total al cerrar
     setActiveStep(0);
     setUserAnswers({});
     setShowAnswer(false);
     setIsFinished(false);
-
     setAttempt(null);
     setSavingAttempt(false);
-
-    startKeyRef.current = null;
-    startingRef.current = false;
+    startKeyRef.current  = null;
+    startingRef.current  = false;
     didFinishRef.current = false;
   }, [open]);
 
-  // -------------------- Start attempt cuando abre (SIN duplicar) --------------------
+  // ── Start attempt ──
   useEffect(() => {
     const run = async () => {
       if (!startKey) return;
       if (!battery?.id) return;
-
-      // ya arrancado en esta apertura
       if (startKeyRef.current === startKey) return;
-
-      // evita requests simultáneos
       if (startingRef.current) return;
       startingRef.current = true;
-
       try {
         const created = await projectService.startBatteryAttempt(battery.id);
         setAttempt(created);
-
-        // marca como arrancado
-        startKeyRef.current = startKey;
-        // este attempt todavía no está finalizado
+        startKeyRef.current  = startKey;
         didFinishRef.current = false;
       } catch (e) {
         console.error("start_attempt failed", e);
         setAttempt(null);
-        // no marques startKey, para permitir reintento
         startKeyRef.current = null;
       } finally {
         startingRef.current = false;
       }
     };
-
     run();
   }, [startKey, battery?.id]);
 
-  // -------------------- Helpers --------------------
+  // ── Helpers ──
   const handleNext = () => {
     if (activeStep < totalQuestions - 1) {
-      setActiveStep((cur) => cur + 1);
+      setActiveStep((c) => c + 1);
       setShowAnswer(false);
     } else {
       setIsFinished(true);
     }
   };
 
-  const [viewingDocument, setViewingDocument] = useState(null);
-  const [viewingPage, setViewingPage] = useState(null);
-
-  const handleOpenViewer = (docId, page) => {
-    console.log("handleOpenViewer called with:", docId, page);
-    // Si no tenemos un docId específico en la pregunta, intentamos usar el de la batería
-    const finalDocId = docId || battery.document_id || (battery.documents && battery.documents[0]?.id);
-    if (finalDocId) {
-      setViewingDocument({ id: finalDocId });
-      setViewingPage(page);
+  const handlePrev = () => {
+    if (activeStep > 0) {
+      setActiveStep((c) => c - 1);
+      setShowAnswer(false);
     }
   };
 
-  const handlePrev = () => {
-    if (activeStep > 0) {
-      setActiveStep((cur) => cur - 1);
-      setShowAnswer(false);
-    }
+  const [viewingDocument, setViewingDocument] = useState(null);
+  const [viewingPage, setViewingPage]         = useState(null);
+
+  const handleOpenViewer = (docId, page) => {
+    const finalDocId = docId || battery.document_id || (battery.documents && battery.documents[0]?.id);
+    if (finalDocId) { setViewingDocument({ id: finalDocId }); setViewingPage(page); }
   };
 
   const handleOptionSelect = async (questionId, optionId, type) => {
     if (showAnswer) return;
     if (!attempt?.id) return;
-
     let newVal;
     const currentVal = userAnswers[questionId];
-
     if (isMultiSelect(type)) {
-      const currentSelected = Array.isArray(currentVal) ? currentVal : [];
-      if (currentSelected.includes(optionId)) {
-        newVal = currentSelected.filter((id) => id !== optionId);
-      } else {
-        newVal = [...currentSelected, optionId];
-      }
+      const curr = Array.isArray(currentVal) ? currentVal : [];
+      newVal = curr.includes(optionId) ? curr.filter((id) => id !== optionId) : [...curr, optionId];
     } else {
       newVal = optionId;
     }
-
-    // Update local state
     setUserAnswers((prev) => ({ ...prev, [questionId]: newVal }));
-
-    // Update backend in real-time
     try {
-      const payload = {
-        attempt_id: attempt.id,
-        question_id: questionId,
-      };
-
-      if (isMultiSelect(type)) {
-        payload.selected_option_ids = newVal;
-      } else {
-        payload.selected_option_id = newVal;
-      }
-
+      const payload = { attempt_id: attempt.id, question_id: questionId };
+      if (isMultiSelect(type)) payload.selected_option_ids = newVal;
+      else payload.selected_option_id = newVal;
       await projectService.answerBatteryQuestion(battery.id, payload);
-    } catch (err) {
-      console.error("Error saving answer in real-time:", err);
-    }
+    } catch (err) { console.error("Error saving answer:", err); }
   };
 
   const isOptionSelected = (qId, optId, type) => {
@@ -216,373 +201,312 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
   };
 
   const calculateScore = () => {
-    let totalScore = 0;
-    let maxScore = 0;
-    let correctCount = 0;
-
+    let totalScore = 0, maxScore = 0, correctCount = 0;
     (questions || []).forEach((q) => {
-      const qPoints = Number(q?.points ?? 0);
-      maxScore += qPoints;
-
+      const qPts = Number(q?.points ?? 0);
+      maxScore += qPts;
       const userAnswer = userAnswers[q.id];
       if (userAnswer == null) return;
-
       if (isMultiSelect(q.type)) {
-        const correctOptionIds = (q.options || [])
-          .filter((o) => o.correct)
-          .map((o) => o.id)
-          .slice()
-          .sort();
-
-        const userSelectedIds = (Array.isArray(userAnswer) ? userAnswer : [])
-          .slice()
-          .sort();
-
-        const isCorrect =
-          correctOptionIds.length === userSelectedIds.length &&
-          correctOptionIds.every((id, idx) => id === userSelectedIds[idx]);
-
-        if (isCorrect) {
-          totalScore += qPoints;
-          correctCount += 1;
+        const correctIds = (q.options || []).filter((o) => o.correct).map((o) => o.id).slice().sort();
+        const userIds    = (Array.isArray(userAnswer) ? userAnswer : []).slice().sort();
+        if (correctIds.length === userIds.length && correctIds.every((id, i) => id === userIds[i])) {
+          totalScore += qPts; correctCount += 1;
         }
       } else {
-        const selectedOption = (q.options || []).find((o) => o.id === userAnswer);
-        if (selectedOption?.correct) {
-          totalScore += qPoints;
-          correctCount += 1;
-        }
+        const sel = (q.options || []).find((o) => o.id === userAnswer);
+        if (sel?.correct) { totalScore += qPts; correctCount += 1; }
       }
     });
-
-    totalScore = Number.isFinite(totalScore) ? totalScore : 0;
-    maxScore = Number.isFinite(maxScore) ? maxScore : 0;
-    correctCount = Number.isFinite(correctCount) ? correctCount : 0;
-
-    return { totalScore, maxScore, correctCount };
+    return {
+      totalScore:   Number.isFinite(totalScore)   ? totalScore   : 0,
+      maxScore:     Number.isFinite(maxScore)      ? maxScore     : 0,
+      correctCount: Number.isFinite(correctCount)  ? correctCount : 0,
+    };
   };
 
   const finishAttempt = async () => {
-    if (!battery?.id) return;
-    if (!attempt?.id) return;
-
+    if (!battery?.id || !attempt?.id) return;
     const { totalScore, maxScore, correctCount } = calculateScore();
-
-    const payload = {
-      attempt_id: attempt.id,
-      total_score: totalScore,
-      max_score: maxScore,
-      correct_count: correctCount,
-      total_questions: totalQuestions,
-    };
-
-    await projectService.finishBatteryAttempt(battery.id, payload);
+    await projectService.finishBatteryAttempt(battery.id, {
+      attempt_id: attempt.id, total_score: totalScore,
+      max_score: maxScore, correct_count: correctCount, total_questions: totalQuestions,
+    });
   };
 
-  // -------------------- finish_attempt una sola vez al finalizar --------------------
   useEffect(() => {
     const run = async () => {
-      if (!open) return;
-      if (!isFinished) return;
-      if (!attempt?.id) return;
-
-      // evita doble finish
+      if (!open || !isFinished || !attempt?.id) return;
       if (didFinishRef.current) return;
       didFinishRef.current = true;
-
       setSavingAttempt(true);
-      try {
-        await finishAttempt();
-      } catch (e) {
-        console.error("finish_attempt failed", e);
-        // si falla y quieres permitir reintentar, descomenta:
-        // didFinishRef.current = false;
-      } finally {
-        setSavingAttempt(false);
-      }
+      try { await finishAttempt(); }
+      catch (e) { console.error("finish_attempt failed", e); }
+      finally { setSavingAttempt(false); }
     };
-
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isFinished, attempt?.id]);
 
   const resetExam = () => {
-    setActiveStep(0);
-    setUserAnswers({});
-    setShowAnswer(false);
-    setIsFinished(false);
-
-    // Importante: NO creamos otro attempt en Retry (para no duplicar).
-    // Si quieres que Retry cree un attempt NUEVO, hazlo explícito:
-    // 1) setAttempt(null)
-    // 2) startKeyRef.current = null
-    // 3) didFinishRef.current = false
-    // y vuelve a abrir/forzar start_attempt
+    setActiveStep(0); setUserAnswers({}); setShowAnswer(false); setIsFinished(false);
   };
 
-  // -------------------- Guardrail si no hay preguntas --------------------
+  // ─── Dialog base classes ───────────────────────────────────────────────────
+  const dialogCls = [
+    "overflow-hidden",
+    "!mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh]",
+    "md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-3xl md:!h-auto md:!w-auto",
+    `!bg-[${T.bg}]`,
+  ].join(" ");
+
+  // ─── Loading ──────────────────────────────────────────────────────────────
   if (loadingBattery) {
     return (
-      <Dialog open={open} handler={handler} size="lg">
-        <DialogBody className="flex flex-col items-center justify-center py-20">
-          <Spinner className="h-10 w-10 text-indigo-500 mb-4" />
-          <Typography color="blue-gray" className="font-medium">
+      <Dialog open={open} handler={handler} size="lg" className={`!bg-[#0F172A] !rounded-2xl`}>
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Spinner />
+          <p style={{ fontSize: 14, color: T.textMuted, fontWeight: 500 }}>
             {language === "es" ? "Cargando examen..." : "Loading exam..."}
-          </Typography>
-        </DialogBody>
+          </p>
+        </div>
       </Dialog>
     );
   }
 
-  if (!currentQuestion) {
+  // ─── Empty ────────────────────────────────────────────────────────────────
+  if (!currentQuestion && !isFinished) {
     return (
-      <Dialog open={open} handler={handler} size="lg">
-        <DialogHeader className="justify-center">{language === "es" ? "Simulador de Examen" : "Exam Simulator"}</DialogHeader>
-        <DialogBody className="text-center">
-          <Typography color="blue-gray">{language === "es" ? "Esta batería aún no tiene preguntas." : "This battery has no questions yet."}</Typography>
-        </DialogBody>
-        <DialogFooter className="justify-center">
-          <Button color="blue" onClick={handler}>
+      <Dialog open={open} handler={handler} size="lg" className="!bg-[#0F172A] !rounded-2xl">
+        <div className="flex flex-col items-center justify-center py-20 px-6 gap-5">
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: T.accentBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <LightBulbIcon className="h-7 w-7" style={{ color: T.accent }} />
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 700, color: T.textPrimary, textAlign: "center" }}>
+            {language === "es" ? "Esta batería aún no tiene preguntas." : "This battery has no questions yet."}
+          </p>
+          <button onClick={handler} style={{ padding: "10px 28px", borderRadius: 10, background: T.accent, color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer" }}>
             {language === "es" ? "Cerrar" : "Close"}
-          </Button>
-        </DialogFooter>
+          </button>
+        </div>
       </Dialog>
     );
   }
 
-  // -------------------- Result Screen --------------------
+  // ─── Results screen ───────────────────────────────────────────────────────
   if (isFinished) {
-    const { totalScore, maxScore } = calculateScore();
+    const { totalScore, maxScore, correctCount } = calculateScore();
     const percent = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+    const passed  = percent >= 60;
 
-    const passed = percent >= 60;
-    const scoreColor = passed ? "#3B6D11" : "#9B1C1C";
-    const scoreBg   = passed ? "#EAF3DE" : "#FEF2F2";
-    const barColor  = passed ? "#4CAF50" : "#EF4444";
+    const scoreAccent = passed ? T.green : T.red;
+    const scoreBg     = passed ? T.greenBg : T.redBg;
+    const scoreBorder = passed ? T.greenBorder : T.redBorder;
 
     return (
       <Dialog open={open} handler={handler} size="lg"
-        className="!mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-lg md:!h-auto">
-        <div className="flex flex-col h-[100dvh] md:h-auto bg-white md:rounded-2xl overflow-hidden">
+        className="!bg-[#0F172A] !mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-lg md:!h-auto">
+        <div className="flex flex-col h-[100dvh] md:h-auto" style={{ background: T.bg }}>
 
-          {/* Mobile header */}
-          <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
-            <button onClick={handler} className="flex items-center gap-1 text-sm font-semibold"
-              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple, #3949AB)", padding: 0 }}>
-              <ChevronLeftIcon className="h-4 w-4" />
-              <span className="truncate max-w-[160px]">{battery?.name || battery?.title}</span>
+          {/* Header */}
+          <div style={{ borderBottom: `1px solid ${T.border}`, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: T.textPrimary }}>
+              {language === "es" ? "Resultados del Examen" : "Exam Results"}
+            </p>
+            <button onClick={handler} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 4, borderRadius: 6 }}
+              className="hover:bg-white/5 transition-colors">
+              <XMarkIcon className="h-5 w-5" />
             </button>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#E8EAF6", color: "#3949AB" }}>
-              {language === "es" ? "Resultados" : "Results"}
-            </span>
           </div>
 
-          {/* Desktop header */}
-          <DialogHeader className="hidden md:flex justify-center border-b border-gray-100">
-            {language === "es" ? "Resultados del Examen" : "Exam Results"}
-          </DialogHeader>
-
           {/* Body */}
-          <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col items-center gap-5">
+          <div className="flex-1 overflow-y-auto" style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Score circle area */}
-            <div className="w-full rounded-2xl py-7 px-4 flex flex-col items-center" style={{ background: scoreBg }}>
-              <span className="text-6xl font-black leading-none mb-2" style={{ color: scoreColor }}>{percent}%</span>
-              <span className="text-sm font-semibold" style={{ color: scoreColor }}>
+            {/* Score hero */}
+            <div style={{ background: scoreBg, border: `1px solid ${scoreBorder}`, borderRadius: 16, padding: "28px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <TrophyIcon className="h-9 w-9 mb-1" style={{ color: scoreAccent }} />
+              <p style={{ fontSize: 56, fontWeight: 900, lineHeight: 1, color: scoreAccent }}>{percent}%</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: scoreAccent }}>
                 {passed
                   ? (language === "es" ? "¡Aprobado!" : "Passed!")
                   : (language === "es" ? "No aprobado" : "Not passed")}
-              </span>
-              <span className="text-xs mt-1 font-medium" style={{ color: scoreColor, opacity: 0.7 }}>
-                {Number(totalScore || 0).toFixed(2)} / {Number(maxScore || 0).toFixed(2)} {language === "es" ? "pts" : "pts"}
-              </span>
+              </p>
+              <p style={{ fontSize: 12, color: scoreAccent, opacity: 0.7, marginTop: 2 }}>
+                {Number(totalScore || 0).toFixed(2)} / {Number(maxScore || 0).toFixed(2)} pts
+              </p>
             </div>
 
             {/* Progress bar */}
-            <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: "#f0f0f0" }}>
-              <div style={{ height: "100%", width: `${percent}%`, background: barColor, borderRadius: 999, transition: "width 0.4s ease" }} />
+            <div style={{ height: 8, borderRadius: 999, background: T.border, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${percent}%`, background: scoreAccent, borderRadius: 999, transition: "width 0.5s ease" }} />
             </div>
 
-            {/* Stats grid */}
-            <div className="w-full grid grid-cols-2 gap-3">
-              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
-                  {language === "es" ? "Batería" : "Battery"}
-                </p>
-                <p className="text-sm font-semibold text-blue-gray-800 leading-tight break-words">{battery?.name || "—"}</p>
-              </div>
-              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
-                  {language === "es" ? "Preguntas" : "Questions"}
-                </p>
-                <p className="text-sm font-semibold text-blue-gray-800">{totalQuestions}</p>
-              </div>
-              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
-                  {language === "es" ? "Puntuación" : "Score"}
-                </p>
-                <p className="text-sm font-semibold text-blue-gray-800">{Number(totalScore || 0).toFixed(2)} / {Number(maxScore || 0).toFixed(2)}</p>
-              </div>
-              <div className="rounded-xl p-3.5" style={{ background: "#f5f5f8" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: "#888" }}>
-                  {language === "es" ? "Intento" : "Attempt"}
-                </p>
-                <p className="text-sm font-semibold text-blue-gray-800">#{(battery?.attempts_count || 0) + 1}</p>
-              </div>
+            {/* Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {[
+                { label: language === "es" ? "Batería" : "Battery",      value: battery?.name || "—" },
+                { label: language === "es" ? "Preguntas" : "Questions",   value: totalQuestions },
+                { label: language === "es" ? "Correctas" : "Correct",     value: correctCount },
+                { label: language === "es" ? "Puntuación" : "Score",      value: `${Number(totalScore || 0).toFixed(1)} / ${Number(maxScore || 0).toFixed(1)}` },
+              ].map(({ label, value }) => (
+                <div key={label} style={{ background: T.bgElevated, border: `1px solid ${T.border}`, borderRadius: 12, padding: "12px 14px" }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: T.textDim, marginBottom: 4 }}>{label}</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: T.textPrimary, wordBreak: "break-word" }}>{value}</p>
+                </div>
+              ))}
             </div>
 
             {savingAttempt && (
-              <p className="text-xs text-center" style={{ color: "#aaa" }}>
+              <p style={{ fontSize: 11, color: T.textDim, textAlign: "center" }}>
                 {language === "es" ? "Guardando intento..." : "Saving attempt..."}
               </p>
             )}
           </div>
 
-          {/* Mobile footer */}
-          <div className="md:hidden flex gap-2 px-4 pt-3 border-t border-gray-100 flex-shrink-0"
-            style={{ paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
+          {/* Footer */}
+          <div style={{ borderTop: `1px solid ${T.border}`, padding: "14px 18px", paddingBottom: "max(14px, env(safe-area-inset-bottom, 14px))", display: "flex", gap: 10, flexShrink: 0 }}>
             <button onClick={resetExam} disabled={savingAttempt}
-              className="flex-1 py-3 rounded-xl text-sm font-bold"
-              style={{ background: "#E8EAF6", color: "#3949AB", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              style={{ flex: 1, padding: "11px", borderRadius: 10, background: T.accentBg, border: `1px solid ${T.accentBorder}`, color: T.accent, fontWeight: 700, fontSize: 13, cursor: savingAttempt ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: savingAttempt ? 0.5 : 1, transition: "opacity 0.15s" }}>
+              <ArrowPathIcon className="h-4 w-4" />
               {language === "es" ? "Reintentar" : "Retry"}
             </button>
             <button onClick={handler} disabled={savingAttempt}
-              className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, var(--ank-purple, #3949AB), #303F9F)", border: "none", cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1 }}>
+              style={{ flex: 1, padding: "11px", borderRadius: 10, background: `linear-gradient(135deg, ${T.accent} 0%, #818CF8 100%)`, border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: savingAttempt ? "default" : "pointer", opacity: savingAttempt ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {language === "es" ? "Cerrar" : "Close"}
             </button>
           </div>
-
-          {/* Desktop footer */}
-          <DialogFooter className="hidden md:flex justify-center gap-3 flex-wrap border-t border-gray-100">
-            <Button variant="outlined" color="blue-gray" onClick={resetExam} disabled={savingAttempt} className="normal-case">
-              {language === "es" ? "Reintentar" : "Retry"}
-            </Button>
-            <Button variant="gradient" color="green" onClick={handler} disabled={savingAttempt} className="normal-case">
-              {language === "es" ? "Cerrar" : "Close"}
-            </Button>
-          </DialogFooter>
         </div>
       </Dialog>
     );
   }
 
-  // -------------------- Question Screen --------------------
+  // ─── Question screen ──────────────────────────────────────────────────────
   const progressPct = totalQuestions > 0 ? ((activeStep + 1) / totalQuestions) * 100 : 0;
+  const qType = currentQuestion.type === "trueFalse"
+    ? (language === "es" ? "Verdadero / Falso" : "True / False")
+    : isMultiSelect(currentQuestion.type)
+      ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
+      : (language === "es" ? "Opción Única" : "Single Choice");
 
   return (
-    <Dialog open={open} handler={handler} size="xl"
-      className="overflow-hidden !mx-0 !my-0 !rounded-none !max-w-full !w-full !h-[100dvh] md:!mx-auto md:!my-8 md:!rounded-2xl md:!max-w-3xl md:!h-auto md:!w-auto">
-      <div className="flex flex-col h-full">
+    <Dialog open={open} handler={handler} size="xl" className={dialogCls}>
+      <div className="flex flex-col h-full" style={{ background: T.bg }}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 flex-shrink-0">
-          {/* Mobile: back button */}
-          <button onClick={handler} className="md:hidden flex items-center gap-1" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ank-purple)", fontSize: "13px", fontWeight: 600 }}>
-            <ChevronLeftIcon className="h-4 w-4" />
-            <span className="truncate max-w-[120px]">{battery?.name || battery?.title}</span>
-          </button>
-          {/* Desktop: full title */}
-          <Typography variant="h5" color="blue-gray" className="hidden md:block">
-            {language === "es" ? "Pregunta" : "Question"} {activeStep + 1}
-            <span className="text-sm text-gray-500 font-normal ml-1">{language === "es" ? "de" : "of"} {totalQuestions}</span>
-          </Typography>
-
+        {/* ── Header ── */}
+        <div style={{ borderBottom: `1px solid ${T.border}`, padding: "13px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div className="flex items-center gap-3">
+            {/* Mobile back */}
+            <button onClick={handler} className="md:hidden flex items-center gap-1"
+              style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 0 }}>
+              <ChevronLeftIcon className="h-4 w-4" />
+            </button>
+            <div>
+              <p style={{ fontSize: 12, color: T.textDim, fontWeight: 600, letterSpacing: "0.04em" }}>
+                {battery?.name || battery?.title}
+              </p>
+              <p style={{ fontSize: 15, fontWeight: 800, color: T.textPrimary, lineHeight: 1.2 }}>
+                {language === "es" ? "Pregunta" : "Question"}{" "}
+                <span style={{ color: T.accent }}>{activeStep + 1}</span>
+                <span style={{ color: T.textDim, fontWeight: 500, fontSize: 13 }}> / {totalQuestions}</span>
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold md:hidden" style={{ color: "#888" }}>{activeStep + 1}/{totalQuestions}</span>
-            <span className="text-xs px-2 py-1 rounded-full font-bold" style={{ background: "#FAEEDA", color: "#854F0B" }}>
+            <DarkBadge color={T.amber} bg={T.amberBg}>
               {currentQuestion.points} pts
-            </span>
-            <IconButton variant="text" color="blue-gray" onClick={handler} className="hidden md:flex">
-              <XCircleIcon className="h-6 w-6" />
-            </IconButton>
+            </DarkBadge>
+            <button onClick={handler}
+              style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 4, borderRadius: 6 }}
+              className="hover:bg-white/5 transition-colors">
+              <XMarkIcon className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
-        {/* Thin progress strip */}
-        <div style={{ height: 3, background: "#f0f0f0", flexShrink: 0 }}>
-          <div style={{ height: "100%", width: `${progressPct}%`, background: "var(--ank-purple)", borderRadius: 2, transition: "width 0.3s" }} />
+        {/* ── Progress strip ── */}
+        <div style={{ height: 3, background: T.border, flexShrink: 0 }}>
+          <div style={{ height: "100%", width: `${progressPct}%`, background: T.accent, borderRadius: 2, transition: "width 0.3s ease" }} />
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-white md:bg-gray-50">
+        {/* ── Body ── */}
+        <div className="flex-1 overflow-y-auto" style={{ padding: "20px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
 
-          {/* Question card — purple on mobile, white on desktop */}
-          <div className="mb-4 md:mb-6 p-3 md:p-4 rounded-xl md:rounded-lg border md:shadow-sm"
-            style={{ background: "#E8EAF6", borderColor: "#9FA8DA" }}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#303F9F" }}>
-              {currentQuestion.type === "trueFalse"
-                ? (language === "es" ? "Verdadero / Falso" : "True / False")
-                : isMultiSelect(currentQuestion.type)
-                  ? (language === "es" ? "Selección Múltiple" : "Multiple Selection")
-                  : (language === "es" ? "Opción Única" : "Single Choice")}
+          {/* Question card */}
+          <div style={{ background: T.accentBg, border: `1px solid ${T.accentBorder}`, borderRadius: 14, padding: "16px 18px" }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: T.accent, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              {qType}
               {currentQuestion.topicName && (
-                <span className="ml-2 normal-case font-medium opacity-70">· {currentQuestion.topicName}</span>
+                <span style={{ color: T.textDim, fontWeight: 500, textTransform: "none", letterSpacing: 0 }}>· {currentQuestion.topicName}</span>
               )}
             </p>
-            <p className="text-sm md:text-base font-medium leading-snug" style={{ color: "#3949AB" }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: T.textPrimary, lineHeight: 1.55 }}>
               {currentQuestion.question}
             </p>
           </div>
 
           {/* Options */}
-          <div className="space-y-2 md:space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {(currentQuestion.options || []).map((option) => {
               const isSelected = isOptionSelected(currentQuestion.id, option.id, currentQuestion.type);
-              const isCorrect = !!option.correct;
+              const isCorrect  = !!option.correct;
 
-              let borderCol = "#e5e7eb";
-              let bgCol = "#fff";
+              let borderCol = T.border;
+              let bgCol     = T.bgElevated;
+              let textCol   = T.textPrimary;
+
               if (showAnswer) {
-                if (isCorrect) { borderCol = "#22c55e"; bgCol = "#f0fdf4"; }
-                else if (isSelected && !isCorrect) { borderCol = "#ef4444"; bgCol = "#fef2f2"; }
+                if (isCorrect)              { borderCol = T.greenBorder; bgCol = T.greenBg; }
+                else if (isSelected)        { borderCol = T.redBorder;   bgCol = T.redBg;   }
               } else if (isSelected) {
-                borderCol = "var(--ank-purple)";
-                bgCol = "#E8EAF6";
+                borderCol = T.accentBorder; bgCol = T.accentBg;
               }
 
               return (
-                <div
-                  key={option.id}
+                <div key={option.id}
                   onClick={() => handleOptionSelect(currentQuestion.id, option.id, currentQuestion.type)}
-                  style={{ border: `1px solid ${borderCol}`, background: bgCol, borderRadius: 12, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "all 0.15s" }}
-                >
-                  {/* Custom radio/checkbox dot */}
+                  style={{ border: `1px solid ${borderCol}`, background: bgCol, borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 11, cursor: "pointer", transition: "all 0.15s" }}
+                  className="hover:brightness-110">
+                  {/* Radio/checkbox */}
                   <div style={{
-                    width: 16, height: 16, borderRadius: isMultiSelect(currentQuestion.type) ? 4 : "50%",
-                    border: `2px solid ${isSelected ? "var(--ank-purple)" : "#ccc"}`,
-                    background: isSelected ? "var(--ank-purple)" : "transparent",
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                    width: 17, height: 17,
+                    borderRadius: isMultiSelect(currentQuestion.type) ? 5 : "50%",
+                    border: `2px solid ${isSelected ? T.accent : T.borderStrong}`,
+                    background: isSelected ? T.accent : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    transition: "all 0.15s",
                   }}>
                     {isSelected && <div style={{ width: 6, height: 6, borderRadius: isMultiSelect(currentQuestion.type) ? 2 : "50%", background: "#fff" }} />}
                   </div>
-                  <span style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 500, flex: 1 }}>{option.text}</span>
-                  {showAnswer && isCorrect && <CheckCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: "#22c55e" }} />}
-                  {showAnswer && isSelected && !isCorrect && <XCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: "#ef4444" }} />}
+                  <span style={{ fontSize: 13, color: textCol, fontWeight: 500, flex: 1, lineHeight: 1.4 }}>{option.text}</span>
+                  {showAnswer && isCorrect   && <CheckCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: T.green }} />}
+                  {showAnswer && isSelected && !isCorrect && <XCircleIcon className="h-5 w-5 flex-shrink-0" style={{ color: T.red }} />}
                 </div>
               );
             })}
           </div>
 
+          {/* Explanation */}
           {showAnswer && (
-            <div className="mt-4 p-3 rounded-xl border" style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}>
-              <div className="flex items-center gap-2 mb-1">
-                <LightBulbIcon className="h-4 w-4" style={{ color: "#D97706" }} />
-                <p className="text-xs font-bold uppercase" style={{ color: "#92400E" }}>{language === "es" ? "Explicación" : "Explanation"}</p>
+            <div style={{ background: T.amberBg, border: `1px solid ${T.amberBorder}`, borderRadius: 12, padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
+                <LightBulbIcon className="h-4 w-4 flex-shrink-0" style={{ color: T.amber }} />
+                <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: T.amber }}>
+                  {language === "es" ? "Explicación" : "Explanation"}
+                </p>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "#78350F" }}>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: "#FCD34D" }}>
                 {currentQuestion.explanation || (language === "es" ? "No se proporcionó explicación." : "No explanation provided.")}
               </p>
               {currentQuestion.page_reference && (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-xs font-bold italic" style={{ color: "#92400E" }}>
+                <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: T.amber, fontStyle: "italic" }}>
                     {language === "es" ? "Pág:" : "Page:"} {currentQuestion.page_reference}
                   </span>
                   {(currentQuestion.source_document_id || currentQuestion.document_id || battery.document_id) && (
-                    <IconButton size="sm" variant="text" color="amber"
-                      onClick={() => handleOpenViewer(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document, currentQuestion.page_reference)}>
-                      <DocumentIcon className="h-3 w-3" />
-                    </IconButton>
+                    <button onClick={() => handleOpenViewer(currentQuestion.source_document_id || currentQuestion.document_id || currentQuestion.document, currentQuestion.page_reference)}
+                      style={{ background: T.amberBg, border: `1px solid ${T.amberBorder}`, borderRadius: 6, padding: "3px 7px", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                      <DocumentIcon className="h-3.5 w-3.5" style={{ color: T.amber }} />
+                    </button>
                   )}
                 </div>
               )}
@@ -590,43 +514,36 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
           )}
         </div>
 
-        {/* Footer */}
-        {/* Mobile footer */}
-        <div className="md:hidden flex gap-2 px-3 pt-3 border-t border-gray-100 flex-shrink-0" style={{ background: "#fff", paddingBottom: "max(25px, env(safe-area-inset-bottom, 25px))" }}>
+        {/* ── Footer ── */}
+        <div style={{ borderTop: `1px solid ${T.border}`, padding: "13px 18px", paddingBottom: "max(13px, env(safe-area-inset-bottom, 13px))", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          {/* Prev */}
           <button onClick={handlePrev} disabled={activeStep === 0}
-            style={{ flex: 1, padding: "10px", borderRadius: 10, background: activeStep === 0 ? "#f5f5f7" : "#E8EAF6", color: activeStep === 0 ? "#ccc" : "var(--ank-purple)", border: "none", fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer" }}>
-            ← {language === "es" ? "Anterior" : "Prev"}
+            style={{ padding: "10px 16px", borderRadius: 10, background: activeStep === 0 ? "transparent" : T.bgElevated, border: `1px solid ${activeStep === 0 ? T.border : T.borderStrong}`, color: activeStep === 0 ? T.textDim : T.textMuted, fontWeight: 700, fontSize: 13, cursor: activeStep === 0 ? "default" : "pointer", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s", flexShrink: 0 }}>
+            <ChevronLeftIcon className="h-4 w-4" />
+            <span className="hidden md:inline">{language === "es" ? "Anterior" : "Prev"}</span>
           </button>
+
+          {/* Show answer */}
           {!showAnswer && (
             <button onClick={() => setShowAnswer(true)}
-              style={{ flex: 1, padding: "10px", borderRadius: 10, background: "#FAEEDA", color: "#854F0B", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              {language === "es" ? "Respuesta" : "Answer"}
+              style={{ flex: 1, padding: "10px", borderRadius: 10, background: T.amberBg, border: `1px solid ${T.amberBorder}`, color: T.amber, fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "opacity 0.15s" }}
+              className="hover:brightness-110">
+              <LightBulbIcon className="h-4 w-4" />
+              <span className="hidden md:inline">{language === "es" ? "Mostrar Respuesta" : "Show Answer"}</span>
+              <span className="md:hidden">{language === "es" ? "Respuesta" : "Answer"}</span>
             </button>
           )}
+
+          {/* Next / Finish */}
           <button onClick={handleNext} disabled={savingAttempt}
-            style={{ flex: 2, padding: "10px", borderRadius: 10, background: "var(--ank-purple)", color: "#fff", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            {activeStep === totalQuestions - 1 ? (language === "es" ? "Finalizar" : "Finish") : (language === "es" ? "Siguiente →" : "Next →")}
+            style={{ flex: showAnswer ? 1 : "none", minWidth: 110, padding: "10px 20px", borderRadius: 10, background: `linear-gradient(135deg, ${T.accent} 0%, #818CF8 100%)`, border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: savingAttempt ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: savingAttempt ? 0.6 : 1, transition: "opacity 0.15s" }}
+            className="hover:brightness-110">
+            {activeStep === totalQuestions - 1
+              ? (language === "es" ? "Finalizar" : "Finish")
+              : (language === "es" ? "Siguiente" : "Next")}
+            {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
           </button>
         </div>
-
-        {/* Desktop footer */}
-        <DialogFooter className="hidden md:flex justify-between border-t border-gray-100 p-4 flex-wrap gap-2">
-          <Button variant="text" onClick={handlePrev} disabled={activeStep === 0} className="flex items-center gap-1 text-sm normal-case">
-            <ChevronLeftIcon className="h-4 w-4" /> {language === "es" ? "Anterior" : "Prev"}
-          </Button>
-          <div className="flex gap-2">
-            {!showAnswer && (
-              <Button variant="outlined" color="amber" onClick={() => setShowAnswer(true)} className="flex items-center gap-1 text-sm normal-case">
-                <LightBulbIcon className="h-4 w-4" /> {language === "es" ? "Mostrar Respuesta" : "Show Answer"}
-              </Button>
-            )}
-            <Button variant="gradient" color="blue" onClick={handleNext} disabled={savingAttempt} className="flex items-center gap-1 text-sm normal-case">
-              {activeStep === totalQuestions - 1 ? (language === "es" ? "Finalizar" : "Finish") : (language === "es" ? "Siguiente" : "Next")}
-              {activeStep !== totalQuestions - 1 && <ChevronRightIcon className="h-4 w-4" />}
-            </Button>
-          </div>
-        </DialogFooter>
-
       </div>
 
       <DocumentViewerDialog

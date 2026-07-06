@@ -30,6 +30,7 @@ export * from "@/pages/dashboard/global-saved-decks";
 export * from "@/pages/dashboard/global-users";
 export * from "@/pages/dashboard/global-projects";
 export * from "@/pages/dashboard/global-support-requests";
+export * from "@/pages/dashboard/global-learning-paths";
 export * from "@/pages/dashboard/my-decks";
 export * from "@/pages/dashboard/my-batteries";
 export * from "@/pages/dashboard/public-decks";

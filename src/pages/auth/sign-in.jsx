@@ -1,17 +1,90 @@
-import {
-  Typography,
-  Spinner,
-} from "@material-tailwind/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, BoltIcon } from "@heroicons/react/24/outline";
 import authService from "../../services/authService";
 import { useAuth } from "@/context/auth-context";
 import { useLanguage } from "@/context/language-context";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useLocation } from "react-router-dom";
 import { APP_NAME } from "@/config/app";
 
+// ─── Shared design tokens ─────────────────────────────────────────────────────
+
+const INPUT = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 12,
+  padding: "13px 16px",
+  fontSize: 14,
+  color: "#F1F5F9",
+  width: "100%",
+  outline: "none",
+  fontFamily: "inherit",
+  transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s",
+  boxSizing: "border-box",
+};
+const focusInput  = (e) => { e.target.style.borderColor = "rgba(99,102,241,0.7)"; e.target.style.background = "rgba(99,102,241,0.06)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; };
+const blurInput   = (e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.boxShadow = "none"; };
+
+function Field({ label, required, extra, children }) {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#CBD5E1", letterSpacing: "0.01em" }}>
+          {label}{required && <span style={{ color: "#818CF8", marginLeft: 3 }}>*</span>}
+        </label>
+        {extra}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Spin() {
+  return <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.25)", borderTopColor: "#fff", flexShrink: 0 }} className="animate-spin" />;
+}
+
+// ─── Right decorative panel ───────────────────────────────────────────────────
+
+function Panel({ language }) {
+  return (
+    <div className="hidden lg:flex lg:flex-1 flex-col justify-center items-center p-12 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #0B1120 0%, #0F172A 50%, #0B1120 100%)" }}>
+      <div style={{ position: "absolute", top: "30%", left: "50%", transform: "translateX(-50%)", width: 500, height: 500, background: "radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+      <div className="relative z-10 max-w-sm w-full text-center">
+        <div style={{ width: 56, height: 56, borderRadius: 14, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", boxShadow: "0 0 40px rgba(99,102,241,0.45)" }}>
+          <BoltIcon className="h-7 w-7 text-white" />
+        </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 999, padding: "4px 14px", marginBottom: 22 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#818CF8", letterSpacing: "0.1em" }}>ANKARD ENTERPRISE</span>
+        </div>
+        <h2 style={{ fontSize: 28, fontWeight: 900, color: "#F1F5F9", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 14 }}>
+          {language === "es" ? "Convierte documentos en capacitación en minutos" : "Turn documents into training in minutes"}
+        </h2>
+        <p style={{ fontSize: 14, color: "#64748B", lineHeight: 1.75, marginBottom: 36 }}>
+          {language === "es"
+            ? "IA que transforma tus manuales y políticas internas en quizzes y flashcards listos para tu equipo."
+            : "AI that transforms your internal manuals and policies into quizzes and flashcards for your team."}
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { v: "3 min", l: language === "es" ? "por documento" : "per document" },
+            { v: "100%", l: language === "es" ? "privado" : "private" },
+            { v: "10×", l: language === "es" ? "más rápido" : "faster" },
+            { v: "0", l: language === "es" ? "trabajo manual" : "manual work" },
+          ].map(({ v, l }) => (
+            <div key={v} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "14px 10px" }}>
+              <p style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, marginBottom: 4, background: "linear-gradient(135deg, #6366F1, #C084FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{v}</p>
+              <p style={{ fontSize: 10, color: "#475569" }}>{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sign In ──────────────────────────────────────────────────────────────────
 
 export function SignIn() {
   const { language } = useLanguage();
@@ -22,335 +95,165 @@ export function SignIn() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, socialLogin } = useAuth(); // hook
+  const { login, socialLogin } = useAuth();
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-
-      setLoading(true);
-      setError(null);
+      setLoading(true); setError(null);
       try {
-
         await socialLogin("google", tokenResponse.access_token);
-
         const from = location.state?.from?.pathname || "/dashboard/home";
         navigate(from, { replace: true });
       } catch (err) {
         console.error("Social login catch block error:", err);
         setError(err?.error || "Google login failed");
-      } finally {
-        setLoading(false);
-      }
+      } finally { setLoading(false); }
     },
     onError: (error) => {
       console.error("Google useGoogleLogin onError callback:", error);
-      setError("Google Login Failed");
-      setLoading(false);
+      setError("Google Login Failed"); setLoading(false);
     },
   });
 
   const handleSocialLogin = async (provider) => {
-    if (provider === "google") {
-      loginWithGoogle();
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    try {
-
-      setError(`Please integrate the ${provider} SDK to get the access_token first.`);
-    } catch (err) {
-      console.error(err);
-      setError(`Social login failed: ${err.error || "Unknown error"}`);
-    } finally {
-      setLoading(false);
-    }
+    if (provider === "google") { loginWithGoogle(); return; }
+    setError(null); setLoading(true);
+    try { setError(`Please integrate the ${provider} SDK to get the access_token first.`); }
+    catch (err) { setError(`Social login failed: ${err.error || "Unknown error"}`); }
+    finally { setLoading(false); }
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault(); setError(null); setLoading(true);
     try {
       await login({ username, password });
       const from = location.state?.from?.pathname || "/dashboard/home";
       navigate(from, { replace: true });
     } catch (err) {
-      console.error(err);
-      setError(err?.error || "Login failed");
-    } finally {
-      setLoading(false);
-    }
+      console.error(err); setError(err?.error || "Login failed");
+    } finally { setLoading(false); }
   };
 
   return (
-    <section className="min-h-screen flex flex-col lg:flex-row lg:items-stretch" style={{ background: '#1a1730' }}>
+    <section style={{ minHeight: "100vh", display: "flex", background: "#060D1A" }}>
+      {/* ── Left: form panel ── */}
+      <div style={{ width: "100%", maxWidth: 520, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "40px 24px", background: "linear-gradient(180deg, #060D1A 0%, #080F1E 100%)", position: "relative" }}>
+        {/* Subtle grid texture */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(99,102,241,0.06) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
 
-      {/* ── Mobile hero ── */}
-      <div className="lg:hidden relative flex flex-col items-center px-7 pt-12 pb-14 flex-shrink-0 overflow-hidden" style={{ background: '#1a1730' }}>
-        {/* decorative circles */}
-        <div className="absolute top-5 right-7 w-14 h-14 rounded-full" style={{ background: 'rgba(57,73,171,0.18)' }} />
-        <div className="absolute top-12 right-16 w-7 h-7 rounded-full" style={{ background: 'rgba(57,73,171,0.12)' }} />
+        {/* Back link */}
+        <a href="/" style={{ position: "absolute", top: 28, left: 28, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#94A3B8")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          {language === "es" ? "Volver al inicio" : "Back to home"}
+        </a>
 
-        <div className="w-16 h-16 rounded-[20px] flex items-center justify-center mb-5 shadow-lg"
-          style={{ background: '#3949AB', boxShadow: '0 8px 24px rgba(57,73,171,0.45)' }}>
-          <span className="text-white font-black text-3xl leading-none">A</span>
-        </div>
-        <h1 className="text-white font-extrabold text-2xl tracking-tight mb-1.5">
-          {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
-        </h1>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          {language === "es" ? "Ingresa para seguir aprendiendo" : "Sign in to continue learning"}
-        </p>
-      </div>
-
-      {/* ── Form panel (mobile: overlapping card, desktop: left column) ── */}
-      <div className="
-        bg-white flex flex-col flex-1
-        rounded-t-[28px] -mt-6
-        lg:mt-0 lg:rounded-none lg:justify-center lg:px-8 lg:max-w-lg lg:w-full
-      ">
-        {/* drag handle — mobile only */}
-        <div className="lg:hidden w-10 h-1 rounded-full mx-auto mt-4 mb-6" style={{ background: 'rgba(0,0,0,0.10)' }} />
-
-        {/* Desktop header */}
-        <div className="hidden lg:flex flex-col items-center mb-10">
-          <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-lg mb-5"
-            style={{ background: '#3949AB', boxShadow: '0 8px 24px rgba(57,73,171,0.4)' }}>
-            <span className="text-white font-black text-3xl leading-none">A</span>
+        {/* Card */}
+        <div style={{ width: "100%", maxWidth: 400, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", boxShadow: "0 24px 60px rgba(0,0,0,0.4)", position: "relative" }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 20px rgba(99,102,241,0.4)", flexShrink: 0 }}>
+              <BoltIcon className="h-5 w-5 text-white" />
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Ankard</span>
           </div>
-          <Typography variant="h3" className="font-bold tracking-tight text-zinc-900 leading-tight text-center">
+
+          {/* Heading */}
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.025em", lineHeight: 1.2, marginBottom: 6 }}>
             {language === "es" ? "Bienvenido de nuevo" : "Welcome back"}
-          </Typography>
-          <Typography className="text-zinc-500 font-medium mt-2 text-center">
-            {language === "es" ? `Ingresa a tu cuenta de ${APP_NAME}` : `Log in to your ${APP_NAME} account`}
-          </Typography>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-6 lg:px-0 lg:mx-auto lg:w-full lg:max-w-sm space-y-4 pb-8">
-          {/* Username */}
-          <div>
-            <label className="block text-xs font-bold mb-2" style={{ color: '#1a1a2e' }}>
-              {language === "es" ? "Nombre de usuario" : "Username"}
-            </label>
-            <input
-              type="text"
-              placeholder={language === "es" ? "Tu usuario" : "Your username"}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
-              autoComplete="username"
-              className="w-full rounded-[14px] px-4 py-3.5 text-sm outline-none transition-all"
-              style={{
-                background: '#f5f5f8',
-                border: '1.5px solid transparent',
-                color: '#1a1a2e',
-                fontFamily: 'inherit',
-              }}
-              onFocus={e => { e.target.style.borderColor = '#3949AB'; e.target.style.background = '#E8EAF6'; }}
-              onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold" style={{ color: '#1a1a2e' }}>
-                {language === "es" ? "Contraseña" : "Password"}
-              </label>
-              <Link to="/auth/forgot-password" className="text-xs font-semibold" style={{ color: '#3949AB' }}>
-                {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
-              </Link>
-            </div>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                autoComplete="current-password"
-                className="w-full rounded-[14px] px-4 py-3.5 pr-12 text-sm outline-none transition-all"
-                style={{
-                  background: '#f5f5f8',
-                  border: '1.5px solid transparent',
-                  color: '#1a1a2e',
-                  fontFamily: 'inherit',
-                }}
-                onFocus={e => { e.target.style.borderColor = 'var(--ank-purple, #3949AB)'; e.target.style.background = '#E8EAF6'; }}
-                onBlur={e => { e.target.style.borderColor = 'transparent'; e.target.style.background = '#f5f5f8'; }}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2"
-                style={{ color: '#bbb', background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}
-              >
-                {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Sign in button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="relative w-full rounded-2xl py-4 text-white font-extrabold text-base mt-2 overflow-hidden group"
-            style={{
-              background: loading
-                ? 'linear-gradient(135deg, #7986CB, #5C6BC0)'
-                : 'linear-gradient(135deg, #3949AB 0%, #3949AB 100%)',
-              border: 'none',
-              cursor: loading ? 'default' : 'pointer',
-              fontFamily: 'inherit',
-              letterSpacing: '0.3px',
-              boxShadow: loading ? 'none' : '0 4px 20px rgba(57,73,171,0.45), 0 1px 4px rgba(57,73,171,0.3)',
-              transition: 'box-shadow 0.2s, transform 0.15s',
-            }}
-            onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 6px 28px rgba(57,73,171,0.55), 0 2px 8px rgba(57,73,171,0.4)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(57,73,171,0.45), 0 1px 4px rgba(57,73,171,0.3)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'translateY(0) scale(0.98)'; }}
-            onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px) scale(1)'; }}
-          >
-            {/* shine overlay */}
-            <span className="absolute inset-0 rounded-2xl pointer-events-none"
-              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%)' }} />
-
-            {loading ? (
-              <span className="relative flex items-center justify-center gap-2">
-                <Spinner className="h-4 w-4" />
-                {language === "es" ? "Validando..." : "Signing in..."}
-              </span>
-            ) : (
-              <span className="relative flex items-center justify-center gap-2">
-                {language === "es" ? "Entrar" : "Sign in"}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.85 }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            )}
-          </button>
-
-          {/* Error */}
-          {error && (
-            <div className="p-3 rounded-xl mt-1" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
-              <p className="text-center text-xs font-medium text-red-600">
-                {typeof error === 'string' ? error : JSON.stringify(error)}
-              </p>
-              {typeof error === 'string' && error.toLowerCase().includes('not verified') && (
-                <div className="mt-2 text-center">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await authService.resendVerification(username);
-                        setError(language === 'es' ? 'Email de verificación re-enviado' : 'Verification email resent');
-                      } catch (err) {
-                        setError(err?.error || (language === 'es' ? 'Error al re-enviar email' : 'Error resending email'));
-                      }
-                    }}
-                    className="text-xs font-bold hover:underline cursor-pointer"
-                    style={{ color: '#3949AB', background: 'none', border: 'none' }}
-                  >
-                    {language === 'es' ? 'Re-enviar email de verificación' : 'Resend verification email'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Divider — comentado junto al botón de Google
-          <div className="flex items-center gap-3 py-1">
-            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
-            <span className="text-xs font-medium" style={{ color: '#bbb' }}>
-              {language === "es" ? "o continúa con" : "or continue with"}
-            </span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleSocialLogin('google')}
-            disabled={loading}
-            className="w-full rounded-[14px] py-3.5 flex items-center justify-center gap-2.5 text-sm font-semibold transition-all"
-            style={{
-              background: '#fff',
-              border: '1.5px solid rgba(0,0,0,0.08)',
-              color: '#1a1a2e',
-              cursor: loading ? 'default' : 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            {language === "es" ? "Continuar con Google" : "Continue with Google"}
-          </button>
-          */}
-
-          {/* Register link */}
-          <p className="text-center text-sm mt-2" style={{ color: '#888' }}>
-            {language === "es" ? "¿No tienes cuenta?" : "Not registered?"}{" "}
-            <Link to="/auth/sign-up" className="font-bold" style={{ color: '#3949AB' }}>
-              {language === "es" ? "Crea una aquí" : "Create account"}
-            </Link>
+          </h1>
+          <p style={{ fontSize: 13, color: "#64748B", marginBottom: 28, lineHeight: 1.5 }}>
+            {language === "es" ? `Ingresa a tu cuenta de ${APP_NAME}` : `Sign in to your ${APP_NAME} account`}
           </p>
 
-          {/* Back to home */}
-          <a href="/" className="flex items-center justify-center gap-1.5 mt-2 text-xs transition-colors" style={{ color: '#bbb', textDecoration: 'none' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            {language === "es" ? "Volver al inicio" : "Back to home"}
-          </a>
-        </form>
-      </div>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <Field label={language === "es" ? "Nombre de usuario" : "Username"}>
+              <input type="text" placeholder={language === "es" ? "Tu usuario" : "Your username"}
+                value={username} onChange={(e) => setUsername(e.target.value)}
+                disabled={loading} autoComplete="username"
+                style={INPUT} onFocus={focusInput} onBlur={blurInput} />
+            </Field>
 
-      {/* ── Desktop right decorative panel ── */}
-      <div className="hidden lg:block lg:flex-1 p-6">
-        <div className="relative h-full w-full rounded-3xl overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-zinc-950"></div>
-          <div className="absolute inset-0 bg-[url('/img/pattern.png')] opacity-10 mix-blend-overlay"></div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
-            <div className="max-w-md text-white">
-              <Typography variant="h2" className="font-bold tracking-tight mb-6 text-white">
-                {language === "es"
-                  ? "Convierte tus documentos en conocimiento de forma inteligente."
-                  : "Turn your documents into knowledge intelligently."}
-              </Typography>
-              <Typography className="text-white/70 text-lg font-medium">
-                {language === "es"
-                  ? `Únete a miles de estudiantes que ya están potenciando su aprendizaje con ${APP_NAME}.`
-                  : `Join thousands of students who are already powering their learning with ${APP_NAME}.`}
-              </Typography>
-              <div className="mt-12 grid grid-cols-2 gap-6 w-full max-w-sm">
-                <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 text-left">
-                  <Typography className="text-white font-bold text-2xl mb-1">20k+</Typography>
-                  <Typography className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Proyectos</Typography>
-                </div>
-                <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/10 text-left">
-                  <Typography className="text-white font-bold text-2xl mb-1">500k+</Typography>
-                  <Typography className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Flashcards</Typography>
-                </div>
+            <Field
+              label={language === "es" ? "Contraseña" : "Password"}
+              extra={
+                <Link to="/auth/forgot-password" style={{ fontSize: 11, fontWeight: 600, color: "#6366F1", textDecoration: "none" }}>
+                  {language === "es" ? "¿Olvidaste tu contraseña?" : "Forgot password?"}
+                </Link>
+              }>
+              <div style={{ position: "relative" }}>
+                <input type={showPassword ? "text" : "password"} placeholder="••••••••"
+                  value={password} onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading} autoComplete="current-password"
+                  style={{ ...INPUT, paddingRight: 48 }} onFocus={focusInput} onBlur={blurInput} />
+                <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#475569", display: "flex", padding: 4, transition: "color 0.15s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#94A3B8")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}>
+                  {showPassword ? <EyeSlashIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
+                </button>
               </div>
+            </Field>
+
+            {/* Error */}
+            {error && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "11px 14px" }}>
+                <p style={{ fontSize: 12, color: "#FCA5A5", textAlign: "center", lineHeight: 1.5 }}>
+                  {typeof error === "string" ? error : JSON.stringify(error)}
+                </p>
+                {typeof error === "string" && error.toLowerCase().includes("not verified") && (
+                  <div style={{ marginTop: 8, textAlign: "center" }}>
+                    <button type="button"
+                      onClick={async () => {
+                        try { await authService.resendVerification(username); setError(language === "es" ? "Email de verificación re-enviado" : "Verification email resent"); }
+                        catch (err) { setError(err?.error || (language === "es" ? "Error al re-enviar email" : "Error resending email")); }
+                      }}
+                      style={{ fontSize: 11, fontWeight: 700, color: "#818CF8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+                      {language === "es" ? "Re-enviar email de verificación" : "Resend verification email"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Submit */}
+            <button type="submit" disabled={loading} style={{ position: "relative", width: "100%", padding: "14px", borderRadius: 12, border: "none", background: loading ? "rgba(99,102,241,0.4)" : "linear-gradient(135deg, #6366F1 0%, #818CF8 100%)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, letterSpacing: "0.01em", overflow: "hidden", boxShadow: loading ? "none" : "0 4px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.15)", transition: "all 0.2s", marginTop: 4 }}
+              onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(99,102,241,0.55), inset 0 1px 0 rgba(255,255,255,0.15)"; } }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = loading ? "none" : "0 4px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"; }}
+              onMouseDown={(e) => { if (!loading) e.currentTarget.style.transform = "translateY(0) scale(0.985)"; }}
+              onMouseUp={(e) => { if (!loading) e.currentTarget.style.transform = "translateY(-1px)"; }}>
+              {/* shine overlay */}
+              <span style={{ position: "absolute", inset: 0, borderRadius: 12, background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 55%)", pointerEvents: "none" }} />
+              {loading
+                ? <><Spin />{language === "es" ? "Validando..." : "Signing in..."}</>
+                : <span style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
+                    {language === "es" ? "Entrar" : "Sign in"}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </span>
+              }
+            </button>
+
+            {/* Divider */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
+              <span style={{ fontSize: 11, color: "#334155", fontWeight: 500 }}>{language === "es" ? "o" : "or"}</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
             </div>
-          </div>
-          <div className="absolute bottom-10 left-10 p-4 flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-8 w-8 rounded-full border-2 border-indigo-600 bg-zinc-800 overflow-hidden shadow-xl">
-                  <img src={`https://i.pravatar.cc/150?u=${i}`} alt="" />
-                </div>
-              ))}
-            </div>
-            <Typography className="text-white/60 text-[10px] font-bold">Trusted by 5,000+ happy users</Typography>
-          </div>
+
+            {/* Register link */}
+            <p style={{ fontSize: 13, color: "#475569", textAlign: "center" }}>
+              {language === "es" ? "¿No tienes cuenta?" : "Not registered?"}{" "}
+              <Link to="/auth/sign-up" style={{ fontWeight: 700, color: "#818CF8", textDecoration: "none", transition: "color 0.15s" }}>
+                {language === "es" ? "Crea una aquí" : "Create account"}
+              </Link>
+            </p>
+          </form>
         </div>
       </div>
+
+      {/* ── Right panel ── */}
+      <Panel language={language} />
     </section>
   );
 }

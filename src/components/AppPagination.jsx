@@ -1,141 +1,85 @@
 import React from "react";
-import {
-    Pagination,
-    Select,
-    MenuItem,
-    Typography,
-    Stack,
-    Box,
-    FormControl,
-} from "@mui/material";
 import { useLanguage } from "@/context/language-context";
 
-/**
- * Shared Pagination Component using MUI.
- * @param {number} page - Current page (1-indexed).
- * @param {number} pageSize - Number of items per page.
- * @param {number} totalCount - Total number of items across all pages.
- * @param {function} onPageChange - Callback when page changes (newPage).
- * @param {function} onPageSizeChange - Callback when page size changes (newPageSize).
- * @param {boolean} disabled - Whether the controls should be disabled.
- */
-export function AppPagination({
-    page,
-    pageSize,
-    totalCount,
-    onPageChange,
-    onPageSizeChange,
-    disabled = false,
-}) {
-    const { language } = useLanguage();
+function getPageNumbers(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set([1, total]);
+  for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) pages.add(i);
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result = [];
+  let prev = null;
+  for (const p of sorted) {
+    if (prev !== null && p - prev > 1) result.push("...");
+    result.push(p);
+    prev = p;
+  }
+  return result;
+}
 
-    const totalPages = Math.ceil(totalCount / pageSize);
-    const from = (page - 1) * pageSize + 1;
-    const to = Math.min(page * pageSize, totalCount);
+const pageBtn = (active, isDisabled) => ({
+  width: 32, height: 32, borderRadius: 8, border: "none",
+  background: active ? "linear-gradient(135deg, #6366F1, #818CF8)" : isDisabled ? "transparent" : "rgba(255,255,255,0.05)",
+  color: active ? "#fff" : isDisabled ? "#334155" : "#94A3B8",
+  fontSize: 13, fontWeight: 700, cursor: isDisabled ? "default" : "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  transition: "all 0.15s", flexShrink: 0,
+  boxShadow: active ? "0 2px 12px rgba(99,102,241,0.4)" : "none",
+  outline: "none",
+});
 
-    const handlePageChange = (event, value) => {
-        onPageChange(value);
-    };
+export function AppPagination({ page, pageSize, totalCount, onPageChange, onPageSizeChange, disabled = false }) {
+  const { language } = useLanguage();
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const from = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, totalCount);
+  const pages = getPageNumbers(page, totalPages);
 
-    const handlePageSizeChange = (event) => {
-        onPageSizeChange(event.target.value);
-    };
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", width: "100%" }}>
 
-    return (
-        <>
-            {/* ── MOBILE: compact pagination ── */}
-            <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", justifyContent: "center", gap: 1.5, mt: 2, mb: 1 }}>
-                <button
-                    onClick={() => onPageChange(page - 1)}
-                    disabled={disabled || page <= 1}
-                    style={{
-                        width: 28, height: 28, borderRadius: "50%", border: "0.5px solid rgba(0,0,0,0.12)",
-                        background: page <= 1 ? "#f5f5f5" : "#fff", color: page <= 1 ? "#ccc" : "#3949AB",
-                        fontSize: 14, fontWeight: 600, cursor: page <= 1 ? "default" : "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                >
-                    ‹
-                </button>
-                <span style={{ fontSize: "11px", color: "#888", fontWeight: 500 }}>
-                    {page} / {totalPages}
-                </span>
-                <button
-                    onClick={() => onPageChange(page + 1)}
-                    disabled={disabled || page >= totalPages}
-                    style={{
-                        width: 28, height: 28, borderRadius: "50%", border: "0.5px solid rgba(0,0,0,0.12)",
-                        background: page >= totalPages ? "#f5f5f5" : "#3949AB", color: page >= totalPages ? "#ccc" : "#fff",
-                        fontSize: 14, fontWeight: 600, cursor: page >= totalPages ? "default" : "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                >
-                    ›
-                </button>
-                <span style={{ fontSize: "9px", color: "#bbb", marginLeft: 4 }}>
-                    {totalCount} {language === "es" ? "total" : "total"}
-                </span>
-            </Box>
+      {/* Count info */}
+      <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", whiteSpace: "nowrap" }}>
+        {totalCount === 0
+          ? (language === "es" ? "Sin resultados" : "No results")
+          : (language === "es" ? `${from}–${to} de ${totalCount}` : `${from}–${to} of ${totalCount}`)}
+      </span>
 
-            {/* ── DESKTOP: full pagination ── */}
-            <Box
-                sx={{
-                    display: { xs: "none", md: "flex" },
-                    width: "100%",
-                    mt: 4,
-                    p: 2,
-                    backgroundColor: "white",
-                    borderRadius: "16px",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 2,
-                }}
-            >
-                <Typography variant="body2" sx={{ color: "zinc.500", fontWeight: 500, fontFamily: "inherit" }}>
-                    {language === "es"
-                        ? `Mostrando ${from}–${to} de ${totalCount}`
-                        : `Showing ${from}–${to} of ${totalCount}`}
-                </Typography>
+      {/* Page buttons */}
+      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+        <button onClick={() => !disabled && page > 1 && onPageChange(page - 1)}
+          disabled={disabled || page <= 1} style={pageBtn(false, disabled || page <= 1)}>
+          ‹
+        </button>
 
-                <Pagination
-                    count={totalPages}
-                    page={page}
-                    onChange={handlePageChange}
-                    disabled={disabled || totalPages <= 1}
-                    color="primary"
-                    size="medium"
-                    sx={{ "& .MuiPaginationItem-root": { borderRadius: "8px" } }}
-                />
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span key={`el-${i}`} style={{ fontSize: 12, color: "#334155", padding: "0 2px" }}>…</span>
+          ) : (
+            <button key={p} onClick={() => !disabled && onPageChange(p)} disabled={disabled}
+              style={pageBtn(p === page, false)}>
+              {p}
+            </button>
+          )
+        )}
 
-                <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="body2" sx={{ color: "zinc.500", fontWeight: 500, fontFamily: "inherit" }}>
-                        {language === "es" ? "Por página:" : "Per page:"}
-                    </Typography>
-                    <FormControl size="small" sx={{ minWidth: 70 }}>
-                        <Select
-                            value={pageSize}
-                            onChange={handlePageSizeChange}
-                            disabled={disabled}
-                            sx={{
-                                borderRadius: "10px",
-                                backgroundColor: "zinc.50",
-                                "& .MuiSelect-select": { py: 1, fontSize: "0.875rem", fontWeight: 500 },
-                            }}
-                        >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Stack>
-            </Box>
-        </>
-    );
+        <button onClick={() => !disabled && page < totalPages && onPageChange(page + 1)}
+          disabled={disabled || page >= totalPages} style={pageBtn(false, disabled || page >= totalPages)}>
+          ›
+        </button>
+      </div>
+
+      {/* Per page */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", whiteSpace: "nowrap" }}>
+          {language === "es" ? "Por página:" : "Per page:"}
+        </span>
+        <select value={pageSize} onChange={(e) => onPageSizeChange(e.target.value)} disabled={disabled}
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "5px 10px", fontSize: 12, fontWeight: 600, color: "#94A3B8", cursor: disabled ? "default" : "pointer", outline: "none", fontFamily: "inherit" }}>
+          {[10, 25, 50, 100].map(v => <option key={v} value={v} style={{ background: "#0F172A", color: "#F1F5F9" }}>{v}</option>)}
+        </select>
+      </div>
+    </div>
+  );
 }
 
 export default AppPagination;

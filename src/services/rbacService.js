@@ -1,10 +1,6 @@
 // src/services/rbacService.js
 import api from "./api";
 
-/**
- * Fetches allowed routes and user permissions from the backend.
- * Returns { allowed_routes: [...], is_admin, roles, etc. }
- */
 export async function fetchAllowedRoutes() {
     try {
         const res = await api.get("/rbac/me/allowed-routes/");
@@ -15,8 +11,30 @@ export async function fetchAllowedRoutes() {
     }
 }
 
+export async function fetchRolePermissions(role) {
+    const keys = new Set();
+    let url = `/api/permissions/?role=${encodeURIComponent(role)}`;
+    while (url) {
+        const res = await api.get(url);
+        const data = res.data;
+        (data.results || []).forEach((p) => keys.add(p.resourceKey));
+        if (data.next) {
+            try {
+                const u = new URL(data.next);
+                url = u.pathname + u.search;
+            } catch {
+                url = null;
+            }
+        } else {
+            url = null;
+        }
+    }
+    return keys;
+}
+
 const rbacService = {
     fetchAllowedRoutes,
+    fetchRolePermissions,
 };
 
 export default rbacService;

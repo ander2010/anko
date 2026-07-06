@@ -1,9 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
-import { Sidenav, ChatPanel } from "@/widgets/layout";
+import { Sidenav, DashboardNavbar, ChatPanel } from "@/widgets/layout";
 import { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useAuth } from "@/context/auth-context";
 
 import KnowledgeSources from "@/enterprise/pages/knowledge/KnowledgeSources";
 import KnowledgeSourceNew from "@/enterprise/pages/knowledge/KnowledgeSourceNew";
@@ -42,21 +43,48 @@ import BusinessUnits from "@/enterprise/pages/settings/BusinessUnits";
 import Teams from "@/enterprise/pages/settings/Teams";
 import Members from "@/enterprise/pages/settings/Members";
 import InviteUser from "@/enterprise/pages/settings/InviteUser";
+import EnterpriseInvitations from "@/enterprise/pages/invitations/EnterpriseInvitations";
 import EnterpriseProfile from "@/enterprise/pages/profile/EnterpriseProfile";
 import OnboardingCompany from "@/enterprise/pages/onboarding/OnboardingCompany";
 import OnboardingInvite from "@/enterprise/pages/onboarding/OnboardingInvite";
 
 export function Enterprise() {
   const [, dispatch] = useMaterialTailwindController();
+  const { loading, hasCompany, enterprisePermissions } = useAuth();
+
+  if (loading) return null;
+
+  if (!hasCompany) {
+    return <Navigate to="/waiting" replace />;
+  }
+
+  const filteredRoutes = routes.map((section) => ({
+    ...section,
+    pages: (section.pages || []).map((page) => {
+      if (page.name !== "enterprise" || !page.children) return page;
+      return {
+        ...page,
+        children: page.children.filter((child) => {
+          if (!child.name) return true;
+          if (!enterprisePermissions || enterprisePermissions.size === 0) return true;
+          return enterprisePermissions.has(`enterprise.${child.name}`);
+        }),
+      };
+    }),
+  }));
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-app)" }}>
-      <Sidenav routes={routes} />
+      <Sidenav routes={filteredRoutes} />
 
       <div
         className="min-h-screen flex flex-col transition-all duration-200"
         style={{ marginLeft: "var(--sidebar-w)" }}
       >
+        <div className="hidden md:block">
+          <DashboardNavbar />
+        </div>
+
         <ChatPanel />
 
         <button
@@ -103,6 +131,7 @@ export function Enterprise() {
             <Route path="analytics/compliance" element={<ComplianceTrends />} />
             <Route path="analytics/learning" element={<LearningTrends />} />
             <Route path="analytics/health" element={<CompanyHealth />} />
+            <Route path="invitations" element={<EnterpriseInvitations />} />
             <Route path="settings" element={<CompanySettings />} />
             <Route path="settings/units" element={<BusinessUnits />} />
             <Route path="settings/teams" element={<Teams />} />

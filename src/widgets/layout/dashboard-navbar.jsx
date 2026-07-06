@@ -6,12 +6,6 @@ import {
   IconButton,
   Breadcrumbs,
   Input,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Avatar,
-  Chip,
 } from "@material-tailwind/react";
 import {
   UserCircleIcon,
@@ -58,6 +52,7 @@ export function DashboardNavbar() {
   const { language, changeLanguage, t } = useLanguage();
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const [openStatsDialog, setOpenStatsDialog] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notifLoading, setNotifLoading] = useState(false);
@@ -206,136 +201,180 @@ export function DashboardNavbar() {
             </Button>
 
             {/* Notification Bell */}
-            <Menu
-              placement="bottom-end"
-              open={notifOpen}
-              handler={(val) => {
-                setNotifOpen(val);
-                if (val && !notifLoading) fetchNotifications();
-              }}
-            >
-              <MenuHandler>
-                <IconButton variant="text" size="sm" className="relative rounded-full text-zinc-600 hover:bg-zinc-100">
-                  <BellIcon className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </IconButton>
-              </MenuHandler>
-              <MenuList className="w-80 p-2 border-zinc-200/60 shadow-xl rounded-xl max-h-96 overflow-y-auto">
-                <div className="px-3 py-2 mb-2 flex items-center justify-between">
-                  <Typography variant="small" className="font-bold text-zinc-900">
-                    {language === "es" ? "Notificaciones" : "Notifications"}
-                  </Typography>
-                  {unreadCount > 0 && (
-                    <Chip value={String(unreadCount)} size="sm" color="indigo" className="rounded-full px-2 py-0.5 text-[10px]" />
-                  )}
-                </div>
-                <hr className="border-zinc-100 mb-2" />
-
-                {notifLoading && (
-                  <div className="py-6 text-center">
-                    <Typography variant="small" className="text-zinc-400 text-xs">
-                      {language === "es" ? "Cargando..." : "Loading..."}
-                    </Typography>
-                  </div>
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => { setNotifOpen(v => { if (!v && !notifLoading) fetchNotifications(); return !v; }); }}
+                style={{ position: "relative", width: 36, height: 36, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8", transition: "background 0.15s, color 0.15s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#F1F5F9"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94A3B8"; }}>
+                <BellIcon className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span style={{ position: "absolute", top: 0, right: 0, minWidth: 16, height: 16, borderRadius: 999, background: "#EF4444", color: "#fff", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", boxShadow: "0 0 6px rgba(239,68,68,0.6)" }}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
+              </button>
 
-                {!notifLoading && notifications.length === 0 && (
-                  <div className="py-6 text-center">
-                    <BellIcon className="h-8 w-8 text-zinc-300 mx-auto mb-2" />
-                    <Typography variant="small" className="text-zinc-400 text-xs">
-                      {language === "es" ? "Sin notificaciones" : "No notifications"}
-                    </Typography>
-                  </div>
-                )}
+              {notifOpen && (
+                <>
+                  <div style={{ position: "fixed", inset: 0, zIndex: 40 }} onClick={() => setNotifOpen(false)} />
+                  <div style={{ position: "absolute", right: 0, top: 46, zIndex: 50, background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, width: 320, boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.08)", overflow: "hidden" }}>
+                    {/* Top accent strip */}
+                    <div style={{ height: 2, background: "linear-gradient(90deg, #6366F1, #818CF8, #A78BFA)" }} />
 
-                {!notifLoading && notifications.map((notif) => {
-                  const title  = notif.notification?.title || notif.title || "";
-                  const body   = notif.notification?.body  || notif.body  || notif.message || "";
-                  const level  = (notif.notification?.level || notif.level || "info").toLowerCase().trim();
-                  const date   = notif.created_at || notif.notification?.created_at;
-                  // API uses read_at (null = unread), fallback to is_read boolean
-                  const isRead = notif.is_read !== undefined ? notif.is_read : notif.read_at !== null;
-                  // Inline color bypasses Tailwind purge
-                  const dotColor = level === "success" ? "#10b981"
-                                 : level === "error"   ? "#ef4444"
-                                 : level === "warning" ? "#f59e0b"
-                                 :                       "#6366f1";
-                  return (
-                    <div
-                      key={notif.id}
-                      className={`group flex items-start gap-3 px-3 py-3 rounded-xl mb-1 cursor-pointer transition-colors ${!isRead ? "bg-indigo-50/70" : "hover:bg-zinc-50"}`}
-                      onClick={() => { if (!isRead) markRead(notif.id); }}
-                    >
-                      <span className="mt-1.5 h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
-                      <div className="flex-1 min-w-0">
-                        {title && (
-                          <p className={`text-[11px] font-semibold leading-tight ${!isRead ? "text-zinc-900" : "text-zinc-500"}`}>
-                            {title}
-                          </p>
-                        )}
-                        {body && (
-                          <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">{body}</p>
-                        )}
-                        {date && (
-                          <p className="text-[10px] text-zinc-400 mt-1">
-                            {new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        )}
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <BellIcon style={{ width: 15, height: 15, color: "#818CF8" }} />
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#F1F5F9" }}>
+                          {language === "es" ? "Notificaciones" : "Notifications"}
+                        </span>
                       </div>
-                      <IconButton
-                        size="sm"
-                        variant="text"
-                        className="h-6 w-6 rounded-full text-zinc-300 hover:text-red-400 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                        onClick={(e) => { e.stopPropagation(); dismissNotif(notif.id); }}
-                      >
-                        <XMarkIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
-                      </IconButton>
+                      {unreadCount > 0 && (
+                        <span style={{ minWidth: 20, height: 20, borderRadius: 999, background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.35)", color: "#818CF8", fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 6px" }}>
+                          {unreadCount}
+                        </span>
+                      )}
                     </div>
-                  );
-                })}
 
-              </MenuList>
-            </Menu>
+                    {/* Body */}
+                    <div style={{ maxHeight: 340, overflowY: "auto", padding: "6px" }}>
+                      {notifLoading && (
+                        <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 22, height: 22, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "#818CF8" }} className="animate-spin" />
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                            {language === "es" ? "Cargando..." : "Loading..."}
+                          </span>
+                        </div>
+                      )}
+
+                      {!notifLoading && notifications.length === 0 && (
+                        <div style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                          <BellIcon style={{ width: 28, height: 28, color: "#334155" }} />
+                          <span style={{ fontSize: 11, color: "#475569" }}>
+                            {language === "es" ? "Sin notificaciones" : "No notifications"}
+                          </span>
+                        </div>
+                      )}
+
+                      {!notifLoading && notifications.map((notif) => {
+                        const title  = notif.notification?.title || notif.title || "";
+                        const body   = notif.notification?.body  || notif.body  || notif.message || "";
+                        const level  = (notif.notification?.level || notif.level || "info").toLowerCase().trim();
+                        const date   = notif.created_at || notif.notification?.created_at;
+                        const isRead = notif.is_read !== undefined ? notif.is_read : notif.read_at !== null;
+                        const dotColor = level === "success" ? "#22C55E"
+                                       : level === "error"   ? "#EF4444"
+                                       : level === "warning" ? "#F59E0B"
+                                       :                       "#6366F1";
+                        return (
+                          <div
+                            key={notif.id}
+                            style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 10, marginBottom: 2, cursor: "pointer", transition: "background 0.15s", background: !isRead ? "rgba(99,102,241,0.08)" : "transparent", border: !isRead ? "1px solid rgba(99,102,241,0.15)" : "1px solid transparent", position: "relative" }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = !isRead ? "rgba(99,102,241,0.13)" : "rgba(255,255,255,0.04)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = !isRead ? "rgba(99,102,241,0.08)" : "transparent"; }}
+                            onClick={() => { if (!isRead) markRead(notif.id); }}
+                          >
+                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: dotColor, flexShrink: 0, marginTop: 4, boxShadow: `0 0 6px ${dotColor}80` }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              {title && (
+                                <p style={{ fontSize: 11, fontWeight: !isRead ? 700 : 500, color: !isRead ? "#E2E8F0" : "#94A3B8", lineHeight: 1.4, marginBottom: 2 }}>
+                                  {title}
+                                </p>
+                              )}
+                              {body && (
+                                <p style={{ fontSize: 11, color: "#64748B", lineHeight: 1.4, marginBottom: 3 }}>{body}</p>
+                              )}
+                              {date && (
+                                <p style={{ fontSize: 10, color: "#334155" }}>
+                                  {new Date(date).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              style={{ width: 22, height: 22, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#334155", flexShrink: 0, transition: "background 0.15s, color 0.15s", opacity: 0.7 }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; e.currentTarget.style.color = "#F87171"; e.currentTarget.style.opacity = "1"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#334155"; e.currentTarget.style.opacity = "0.7"; }}
+                              onClick={(e) => { e.stopPropagation(); dismissNotif(notif.id); }}
+                            >
+                              <XMarkIcon style={{ width: 13, height: 13 }} strokeWidth={2.5} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* User profile */}
             {user ? (
-              <Menu placement="bottom-end">
-                <MenuHandler>
-                  <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-zinc-100 transition-all">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs border border-white/20 shadow-sm">
-                      {user.first_name?.[0] || user.username?.[0] || "U"}
-                    </div>
-                    <ChevronDownIcon strokeWidth={3} className="h-3 w-3 text-zinc-400" />
-                  </button>
-                </MenuHandler>
-                <MenuList className="w-56 p-2 border-zinc-200/60 shadow-xl rounded-xl">
-                  <div className="px-3 py-2 mb-2">
-                    <Typography variant="small" className="font-bold text-zinc-900">
-                      {user.first_name || user.username}
-                    </Typography>
-                    <Typography variant="small" className="text-[11px] text-zinc-500 truncate">
-                      {user.email}
-                    </Typography>
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => setShowUserMenu(v => !v)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px", borderRadius: 999, background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "none"}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #A78BFA)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 12, border: "1px solid rgba(255,255,255,0.2)", boxShadow: "0 0 12px rgba(99,102,241,0.4)", flexShrink: 0 }}>
+                    {user.first_name?.[0] || user.username?.[0] || "U"}
                   </div>
-                  <hr className="my-1 border-zinc-100" />
-                  <MenuItem className="flex items-center gap-3 py-2 rounded-lg text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900" onClick={() => setOpenProfileDialog(true)}>
-                    <PencilSquareIcon className="h-4 w-4" />
-                    <Typography variant="small" className="font-medium">{t("sidenav.profile") || "Profile"}</Typography>
-                  </MenuItem>
-                  <MenuItem className="flex items-center gap-3 py-2 rounded-lg text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900" onClick={() => setOpenStatsDialog(true)}>
-                    <ChartBarIcon className="h-4 w-4" />
-                    <Typography variant="small" className="font-medium">{language === "es" ? "Estadística" : "Statistics"}</Typography>
-                  </MenuItem>
-                  <MenuItem className="flex items-center gap-3 py-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700" onClick={logout}>
-                    <PowerIcon className="h-4 w-4" />
-                    <Typography variant="small" className="font-medium">{t("sidenav.signout") || "Sign Out"}</Typography>
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+                  <ChevronDownIcon strokeWidth={3} style={{ width: 12, height: 12, color: "#64748B", transition: "transform 0.2s", transform: showUserMenu ? "rotate(180deg)" : "rotate(0deg)" }} />
+                </button>
+
+                {showUserMenu && (
+                  <>
+                    <div style={{ position: "fixed", inset: 0, zIndex: 40 }} onClick={() => setShowUserMenu(false)} />
+                    <div style={{ position: "absolute", right: 0, top: 46, zIndex: 50, background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden", minWidth: 210, boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.08)" }}>
+                      {/* Top accent strip */}
+                      <div style={{ height: 2, background: "linear-gradient(90deg, #6366F1, #818CF8, #A78BFA)" }} />
+
+                      {/* User info */}
+                      <div style={{ padding: "14px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #A78BFA)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                            {user.first_name?.[0] || user.username?.[0] || "U"}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 12, fontWeight: 800, color: "#F1F5F9", marginBottom: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {user.first_name || user.username}
+                            </p>
+                            <p style={{ fontSize: 10, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu items */}
+                      <div style={{ padding: "6px" }}>
+                        {[
+                          { label: t("sidenav.profile") || "Profile",    icon: PencilSquareIcon, action: () => { setShowUserMenu(false); setOpenProfileDialog(true); } },
+                          { label: language === "es" ? "Estadística" : "Statistics", icon: ChartBarIcon, action: () => { setShowUserMenu(false); setOpenStatsDialog(true); } },
+                        ].map(({ label, icon: Icon, action }) => (
+                          <button key={label} onClick={action}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: "none", border: "none", cursor: "pointer", color: "#94A3B8", fontSize: 13, fontWeight: 600, textAlign: "left", transition: "background 0.15s, color 0.15s" }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; e.currentTarget.style.color = "#C7D2FE"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94A3B8"; }}>
+                            <Icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                            {label}
+                          </button>
+                        ))}
+
+                        <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "4px 6px" }} />
+
+                        <button onClick={() => { setShowUserMenu(false); logout(); }}
+                          style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: "none", border: "none", cursor: "pointer", color: "#F87171", fontSize: 13, fontWeight: 600, textAlign: "left", transition: "background 0.15s, color 0.15s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; e.currentTarget.style.color = "#FCA5A5"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#F87171"; }}>
+                          <PowerIcon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                          {t("sidenav.signout") || "Sign Out"}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <Link to="/auth/sign-in">
                 <Button variant="gradient" color="indigo" size="sm" className="hidden items-center gap-2 xl:flex normal-case shadow-md shadow-indigo-500/20">

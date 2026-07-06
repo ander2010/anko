@@ -1,6 +1,5 @@
 import GlobalCrudPage from "@/widgets/GlobalCrudPage";
 import { useLanguage } from "@/context/language-context";
-import { IconButton } from "@material-tailwind/react";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
 import { UserStatisticsDialog } from "@/widgets/dialogs/user-statistics-dialog";
 import { useState } from "react";
@@ -60,16 +59,14 @@ export function GlobalUsers() {
                     { name: "password", label: t("global.pages.users.fields.password"), type: "password", excludeOnUpdate: true },
                 ]}
                 extraActions={(item) => (
-                    <IconButton
-                        variant="text"
-                        color="indigo"
-                        onClick={() => {
-                            setSelectedUser(item);
-                            setOpenStats(true);
-                        }}
-                    >
-                        <ChartBarIcon className="h-4 w-4" />
-                    </IconButton>
+                    <button
+                        onClick={() => { setSelectedUser(item); setOpenStats(true); }}
+                        title="Statistics"
+                        style={{ width: 30, height: 30, borderRadius: 8, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B", transition: "all 0.15s" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.15)"; e.currentTarget.style.color = "#818CF8"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
+                        <ChartBarIcon style={{ width: 14, height: 14 }} />
+                    </button>
                 )}
             />
 

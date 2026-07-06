@@ -110,6 +110,33 @@ const authService = {
       throw err?.response?.data || { error: "Password change failed" };
     }
   },
+
+  async meContext() {
+    try {
+      const res = await api.get(`${BASE}me/context/`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Unable to fetch context" };
+    }
+  },
+
+  async validateInvitation(token) {
+    try {
+      const res = await api.get(`/enterprise/invitations/validate/?token=${token}`);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Invalid invitation" };
+    }
+  },
+
+  async acceptInvitation(token) {
+    try {
+      const res = await api.post(`/enterprise/invitations/accept/`, { token });
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to accept invitation" };
+    }
+  },
 };
 
 export default authService;

@@ -188,6 +188,19 @@ export const knowledgeApi = {
   generateTraining: (id) => enterpriseApi.post(`/enterprise/knowledge-sources/${id}/generate-training/`, {}, { params: cp() }).then((r) => r.data),
   detectChanges: (id) => enterpriseApi.post(`/enterprise/knowledge-sources/${id}/detect-changes/`, {}, { params: cp() }).then((r) => r.data),
 
+  // Upload a file and link it to an existing KnowledgeSource.
+  // Returns updated KnowledgeSource with the new document in its `documents` list.
+  addDocument: (id, file, versionNote = "") => {
+    const form = new FormData();
+    form.append("file", file);
+    if (versionNote) form.append("version_note", versionNote);
+    return enterpriseApi.post(
+      `/enterprise/knowledge-sources/${id}/add-document/`,
+      form,
+      { params: cp(), headers: { "Content-Type": "multipart/form-data" } }
+    ).then((r) => r.data);
+  },
+
   getProcedures: (p) => enterpriseApi.get("/enterprise/procedures/", { params: cp(p) }).then((r) => r.data),
   getProcedure: (id) => enterpriseApi.get(`/enterprise/procedures/${id}/`, { params: cp() }).then((r) => r.data),
 
@@ -197,6 +210,7 @@ export const knowledgeApi = {
   applyImpact: (id) => enterpriseApi.post(`/enterprise/change-impact/${id}/apply/`, {}, { params: cp() }).then((r) => r.data),
 
   getGraph: (p) => enterpriseApi.get("/enterprise/knowledge-graph/graph/", { params: cp(p) }).then((r) => r.data),
+  getResults: (id) => enterpriseApi.get(`/enterprise/knowledge-sources/${id}/results/`, { params: cp() }).then((r) => r.data),
   getNodes: (p) => enterpriseApi.get("/enterprise/knowledge-graph/nodes/", { params: cp(p) }).then((r) => r.data),
   getRelationships: (p) => enterpriseApi.get("/enterprise/knowledge-graph/relationships/", { params: cp(p) }).then((r) => r.data),
 };
@@ -221,6 +235,22 @@ export const certApi = {
   revoke: (id, reason) => enterpriseApi.post(`/enterprise/certifications/${id}/revoke/`, { reason }, { params: cp() }).then((r) => r.data),
 
   verifyPublic: (identifier) => axios.get(`${API_BASE}/enterprise/verify/${identifier}/`).then((r) => r.data),
+};
+
+// ─── Collections & TagGroups ──────────────────────────────────────────────────
+// Collection == KnowledgeSource (same ID). Uses /api/ base (no /enterprise/ prefix).
+export const collectionApi = {
+  get: (id) => enterpriseApi.get(`/collections/${id}/`).then((r) => r.data),
+  getTagGroups: (collectionId) =>
+    enterpriseApi.get(`/tag-groups/`, { params: { collection: collectionId } }).then((r) => r.data),
+  getTagGroupDecks: (tagGroupId) =>
+    enterpriseApi.get(`/decks/`, { params: { tag_group: tagGroupId } }).then((r) => r.data),
+  getTagGroupBatteries: (tagGroupId) =>
+    enterpriseApi.get(`/batteries/`, { params: { tag_group: tagGroupId } }).then((r) => r.data),
+  reorderDecks: (tagGroupId, orderedIds) =>
+    enterpriseApi.post(`/decks/reorder/`, { tag_group_id: tagGroupId, ordered_ids: orderedIds }).then((r) => r.data),
+  reorderBatteries: (tagGroupId, orderedIds) =>
+    enterpriseApi.post(`/batteries/reorder/`, { tag_group_id: tagGroupId, ordered_ids: orderedIds }).then((r) => r.data),
 };
 
 export default enterpriseApi;

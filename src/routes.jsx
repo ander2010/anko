@@ -1,7 +1,6 @@
 import {
   HomeIcon,
   UserCircleIcon,
-  TableCellsIcon,
   ServerStackIcon,
   RectangleStackIcon,
   FolderIcon,
@@ -25,7 +24,7 @@ import {
   Home, Projects, GlobalTopics, GlobalRules, GlobalBatteries, GlobalSections, Billing, Faqs, AboutUs, ContactPage,
   GlobalResources, GlobalPermissions, GlobalRoles, GlobalPlans, GlobalPlanLimits, GlobalSubscriptions,
   GlobalBatteryShares, GlobalSavedBatteries, GlobalInvites, GlobalDecks, GlobalFlashcards, GlobalDeckShares, GlobalSavedDecks,
-  GlobalUsers, GlobalProjects, GlobalSupportRequests, MyDecks, MyBatteries, PublicDecks, PublicBatteries
+  GlobalUsers, GlobalProjects, GlobalSupportRequests, GlobalLearningPaths, MyDecks, MyBatteries, PublicDecks, PublicBatteries
 } from "@/pages/dashboard";
 import { SignIn, SignUp, EmailVerification, ForgotPassword, ResetPassword } from "@/pages/auth";
 
@@ -66,41 +65,29 @@ export const routes = [
       { name: "deck-shares",      path: "/deck-shares",       element: <GlobalDeckShares />,     hidden: true },
       { name: "saved-decks",      path: "/saved-decks",       element: <GlobalSavedDecks />,     hidden: true },
       { name: "global-projects",  path: "/global-projects",   element: <GlobalProjects />,       hidden: true },
-      { name: "support-requests", path: "/support-requests",  element: <GlobalSupportRequests />,hidden: true },
+      { name: "support-requests",    path: "/support-requests",     element: <GlobalSupportRequests />,  hidden: true },
+      { name: "global-learning-paths", path: "/global-learning-paths", element: <GlobalLearningPaths />, hidden: true },
 
-      // ─── DASHBOARD group (collapsible) ───────────────────────────────────────────
+      // ─── ADMIN AREA group (collapsible) ─────────────────────────────────────────
       {
-        icon: <HomeIcon {...icon} />,
-        name: "dashboard",
+        icon: <ShieldCheckIcon {...icon} />,
+        name: "admin-area",
         children: [
-          { icon: <HomeIcon {...icon} />,                   name: "home",              path: "/home" },
-          { icon: <FolderIcon {...icon} />,                 name: "projects",          path: "/projects" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "my-decks",          path: "/my-decks" },
-          { icon: <BoltIcon {...icon} />,                   name: "my-batteries",      path: "/my-batteries" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "public-decks",      path: "/public-decks" },
-          { icon: <BoltIcon {...icon} />,                   name: "public-batteries",  path: "/public-batteries" },
-          { icon: <TagIcon {...icon} />,                    name: "topics",            path: "/topics" },
-          { icon: <ClipboardDocumentCheckIcon {...icon} />, name: "rules",             path: "/rules" },
-          { icon: <BoltIcon {...icon} />,                   name: "batteries",         path: "/batteries" },
-          { icon: <TableCellsIcon {...icon} />,             name: "sections",          path: "/sections" },
-          { icon: <CreditCardIcon {...icon} />,             name: "billing",           path: "/billing" },
-          // Admin items (flattened)
-          { icon: <UserCircleIcon {...icon} />,             name: "users",             path: "/users" },
-          { icon: <ServerStackIcon {...icon} />,            name: "resources",         path: "/resources" },
-          { icon: <TagIcon {...icon} />,                    name: "permissions",       path: "/permissions" },
-          { icon: <UserCircleIcon {...icon} />,             name: "roles",             path: "/roles" },
-          { icon: <CreditCardIcon {...icon} />,             name: "plans",             path: "/plans" },
-          { icon: <ClipboardDocumentCheckIcon {...icon} />, name: "plan-limits",       path: "/plan-limits" },
-          { icon: <CreditCardIcon {...icon} />,             name: "subscriptions",     path: "/subscriptions" },
-          { icon: <BoltIcon {...icon} />,                   name: "battery-shares",    path: "/battery-shares" },
-          { icon: <BoltIcon {...icon} />,                   name: "saved-batteries",   path: "/saved-batteries" },
-          { icon: <EnvelopeIcon {...icon} />,               name: "invites",           path: "/invites" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "decks",             path: "/decks" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "flashcards",        path: "/flashcards" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "deck-shares",       path: "/deck-shares" },
-          { icon: <RectangleStackIcon {...icon} />,         name: "saved-decks",       path: "/saved-decks" },
-          { icon: <FolderIcon {...icon} />,                 name: "global-projects",   path: "/global-projects" },
-          { icon: <EnvelopeIcon {...icon} />,               name: "support-requests",  path: "/support-requests" },
+          { icon: <UsersIcon {...icon} />,                  name: "users",                path: "/users" },
+          { icon: <ServerStackIcon {...icon} />,            name: "resources",            path: "/resources" },
+          { icon: <ShieldCheckIcon {...icon} />,            name: "permissions",          path: "/permissions" },
+          { icon: <UserCircleIcon {...icon} />,             name: "roles",                path: "/roles" },
+          { icon: <CreditCardIcon {...icon} />,             name: "plans",                path: "/plans" },
+          { icon: <ClipboardDocumentCheckIcon {...icon} />, name: "plan-limits",          path: "/plan-limits" },
+          { icon: <TagIcon {...icon} />,                    name: "subscriptions",        path: "/subscriptions" },
+          { icon: <RectangleStackIcon {...icon} />,         name: "decks",                path: "/decks" },
+          { icon: <BoltIcon {...icon} />,                   name: "batteries",            path: "/batteries" },
+          { icon: <RectangleStackIcon {...icon} />,         name: "flashcards",           path: "/flashcards" },
+          { icon: <EnvelopeIcon {...icon} />,               name: "support-requests",     path: "/support-requests" },
+          { icon: <FolderIcon {...icon} />,                 name: "global-process",       path: "/global-projects" },
+          { icon: <BookOpenIcon {...icon} />,               name: "global-learning-path", path: "/global-learning-paths" },
+          { icon: <BuildingOffice2Icon {...icon} />,        name: "companies",            href: "/platform-admin/companies" },
+          { icon: <EnvelopeIcon {...icon} />,               name: "pa-invitations",       href: "/platform-admin/invitations" },
         ],
       },
 
@@ -133,7 +120,7 @@ export const routes = [
           { icon: <ChartBarIcon {...icon} />,               name: "ent-analytics-compliance",href: "/enterprise/analytics/compliance" },
           { icon: <ChartBarIcon {...icon} />,               name: "ent-analytics-learning",  href: "/enterprise/analytics/learning" },
           { icon: <ChartBarIcon {...icon} />,               name: "ent-analytics-health",    href: "/enterprise/analytics/health" },
-          { icon: <UsersIcon {...icon} />,                  name: "ent-members",             href: "/enterprise/settings/members" },
+          { icon: <EnvelopeIcon {...icon} />,               name: "ent-invitations",         href: "/enterprise/invitations" },
           { icon: <Cog6ToothIcon {...icon} />,              name: "ent-settings",            href: "/enterprise/settings" },
         ],
       },
@@ -141,12 +128,13 @@ export const routes = [
   },
   {
     layout: "auth",
+    hidden: true,
     pages: [
-      { path: "/sign-in",                    element: <SignIn /> },
-      { path: "/sign-up",                    element: <SignUp /> },
-      { path: "/email-verification",         element: <EmailVerification /> },
-      { path: "/forgot-password",            element: <ForgotPassword /> },
-      { path: "/reset-password/:uid/:token", element: <ResetPassword /> },
+      { path: "/sign-in",                    element: <SignIn />,         hidden: true },
+      { path: "/sign-up",                    element: <SignUp />,         hidden: true },
+      { path: "/email-verification",         element: <EmailVerification />, hidden: true },
+      { path: "/forgot-password",            element: <ForgotPassword />, hidden: true },
+      { path: "/reset-password/:uid/:token", element: <ResetPassword />, hidden: true },
     ],
   },
 ];
