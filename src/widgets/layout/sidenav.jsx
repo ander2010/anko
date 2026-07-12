@@ -105,7 +105,7 @@ export function Sidenav({ routes }) {
               if (!hasChildren) {
                 const to = href || `/${layout || "dashboard"}${path || ""}`;
                 return (
-                  <NavLink key={`${layout}-${name}`} to={to}>
+                  <NavLink key={`${layout}-${name}`} to={to} end>
                     {({ isActive }) => (
                       <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
                         {icon && React.cloneElement(icon, { className: "ank-nav-icon" })}
@@ -125,7 +125,7 @@ export function Sidenav({ routes }) {
                         const to = child.href || `/${layout || "dashboard"}${child.path || ""}`;
                         const childLabel = t(`sidenav.${child.name}`) || child.name;
                         return (
-                          <NavLink key={to} to={to}>
+                          <NavLink key={to} to={to} end>
                             {({ isActive }) => (
                               <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
                                 {child.icon && React.cloneElement(child.icon, { className: "ank-nav-icon" })}
@@ -163,7 +163,7 @@ export function Sidenav({ routes }) {
                         const to = child.href || `/${layout || "dashboard"}${child.path || ""}`;
                         const childLabel = t(`sidenav.${child.name}`) || child.name;
                         return (
-                          <NavLink key={to} to={to}>
+                          <NavLink key={to} to={to} end>
                             {({ isActive }) => (
                               <div className={`ank-nav-item ${isActive ? "active" : ""}`}>
                                 {child.icon && React.cloneElement(child.icon, { className: "ank-nav-icon" })}

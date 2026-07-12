@@ -1,13 +1,115 @@
 import React, { useEffect, useState } from "react";
-import { PlusIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, AcademicCapIcon, XMarkIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { certApi } from "../../api/enterpriseApi";
+import { certApi, companyApi } from "../../api/enterpriseApi";
+import { useEnterprise } from "../../context/enterprise-context";
 import { EmptyState } from "../../components/EmptyState";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
+
+const INPUT = {
+  width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", boxSizing: "border-box",
+};
+
+function IssueCertModal({ template, onClose, onIssued }) {
+  const { activeCompanyId } = useEnterprise();
+  const [members, setMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [score, setScore] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    companyApi.getMembers(activeCompanyId, { status: "active" })
+      .then((d) => setMembers(d.results || d || []))
+      .catch(() => setMembers([]))
+      .finally(() => setLoadingMembers(false));
+  }, [activeCompanyId]);
+
+  const handleIssue = async () => {
+    if (!selectedUserId) { setError("Selecciona un usuario."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const payload = { user_id: selectedUserId };
+      if (template.requires_score && score !== "") payload.score = score;
+      await certApi.issueCert(template.id, payload);
+      setSuccess("Certificado emitido correctamente.");
+      onIssued?.();
+      setTimeout(onClose, 1200);
+    } catch (err) {
+      setError(err?.detail || err?.score?.[0] || err?.user_id?.[0] || "No se pudo emitir el certificado.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, width: "100%", maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ height: 2, background: "linear-gradient(90deg, #6366F1, #818CF8, #A78BFA)" }} />
+        <div style={{ padding: "18px 20px" }} className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>Emitir Certificado</p>
+              <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>{template.name}</p>
+            </div>
+            <button onClick={onClose} style={{ color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}><XMarkIcon className="h-5 w-5" /></button>
+          </div>
+
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 6 }}>Usuario</label>
+            {loadingMembers ? (
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "8px 0" }}>Cargando miembros…</div>
+            ) : (
+              <div style={{ maxHeight: 200, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
+                {members.map((m) => {
+                  const sel = selectedUserId === m.user;
+                  return (
+                    <button key={m.id} type="button" onClick={() => setSelectedUserId(m.user)}
+                      style={{ width: "100%", textAlign: "left", padding: "9px 12px", background: sel ? "rgba(99,102,241,0.12)" : "transparent", border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 12, fontWeight: sel ? 700 : 500, color: sel ? "#C7D2FE" : "var(--text-secondary)" }}>
+                        {m.full_name || m.username}
+                      </span>
+                      {sel && <CheckBadgeIcon style={{ width: 14, height: 14, color: "#818CF8" }} />}
+                    </button>
+                  );
+                })}
+                {members.length === 0 && <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "10px 12px" }}>Sin miembros activos.</p>}
+              </div>
+            )}
+          </div>
+
+          {template.requires_score && (
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 6 }}>
+                Nota (mínimo requerido: {template.minimum_score}%)
+              </label>
+              <input style={INPUT} type="number" min="0" max="100" value={score} onChange={(e) => setScore(e.target.value)} />
+            </div>
+          )}
+
+          {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
+          {success && <p style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>{success}</p>}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+            <button type="button" onClick={handleIssue} disabled={saving || !selectedUserId} className="ank-btn-accent text-xs" style={{ opacity: saving || !selectedUserId ? 0.6 : 1 }}>
+              {saving ? "Emitiendo…" : "Emitir"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function CertificateTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [issuingTemplate, setIssuingTemplate] = useState(null);
   const navigate = useNavigate();
 
   const load = () => {
@@ -66,7 +168,7 @@ export function CertificateTemplates() {
                         <button style={{ ...btn, color: t.is_active ? "var(--text-tertiary)" : "#4ade80" }} onClick={() => toggle(t)}>
                           {t.is_active ? "Deactivate" : "Activate"}
                         </button>
-                        <button style={{ ...btn, color: "#818CF8" }}>Issue</button>
+                        <button style={{ ...btn, color: "#818CF8" }} onClick={() => setIssuingTemplate(t)}>Issue</button>
                       </div>
                     </td>
                   </tr>
@@ -75,6 +177,14 @@ export function CertificateTemplates() {
             </table>
           </div>
         </div>
+      )}
+
+      {issuingTemplate && (
+        <IssueCertModal
+          template={issuingTemplate}
+          onClose={() => setIssuingTemplate(null)}
+          onIssued={load}
+        />
       )}
     </div>
   );

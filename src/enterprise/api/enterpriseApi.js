@@ -229,6 +229,12 @@ export const certApi = {
   issueCert: (id, data) => enterpriseApi.post(`/enterprise/certificate-templates/${id}/issue/`, data, { params: cp() }).then((r) => r.data),
   checkEligibility: (id, userId) => enterpriseApi.get(`/enterprise/certificate-templates/${id}/check-eligibility/`, { params: cp({ user_id: userId }) }).then((r) => r.data),
 
+  // Requirements — what a template needs auto-completed to auto-issue (see CertificationRequirement)
+  getRequirements: (templateId) => enterpriseApi.get("/enterprise/certification-requirements/", { params: cp({ template_id: templateId }) }).then((r) => r.data),
+  createRequirement: (data) => enterpriseApi.post("/enterprise/certification-requirements/", data, { params: cp() }).then((r) => r.data),
+  updateRequirement: (id, data) => enterpriseApi.patch(`/enterprise/certification-requirements/${id}/`, data, { params: cp() }).then((r) => r.data),
+  deleteRequirement: (id) => enterpriseApi.delete(`/enterprise/certification-requirements/${id}/`, { params: cp() }).then((r) => r.data),
+
   myCertifications: (p) => enterpriseApi.get("/enterprise/certifications/my-certifications/", { params: cp(p) }).then((r) => r.data),
   myStats: (p) => enterpriseApi.get("/enterprise/certifications/my-stats/", { params: cp(p) }).then((r) => r.data),
   companyStats: (p) => enterpriseApi.get("/enterprise/certifications/company-stats/", { params: cp(p) }).then((r) => r.data),
