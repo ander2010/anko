@@ -366,7 +366,7 @@ function Step3({ ksId, companyId, onFinish }) {
 
 export function KnowledgeSourceNew() {
   const navigate = useNavigate();
-  const { activeCompanyId } = useEnterprise();
+  const { activeCompanyId, activeCompany } = useEnterprise();
 
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -473,7 +473,7 @@ export function KnowledgeSourceNew() {
         className="flex items-center justify-between"
       >
         <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          Empresa: <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>ID {activeCompanyId}</span>
+          Empresa: <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{activeCompany?.company_name || `ID ${activeCompanyId}`}</span>
         </p>
         {createdKsId && (
           <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>

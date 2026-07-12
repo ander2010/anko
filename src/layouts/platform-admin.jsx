@@ -5,6 +5,7 @@ import { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 import { useEnterprise } from "@/enterprise/context/enterprise-context";
+import { useAuth } from "@/context/auth-context";
 
 import PlatformAdminCompanies from "@/enterprise/pages/platform-admin/PlatformAdminCompanies";
 import PlatformAdminUsers from "@/enterprise/pages/platform-admin/PlatformAdminUsers";
@@ -13,14 +14,33 @@ import PlatformAdminInvitations from "@/enterprise/pages/platform-admin/Platform
 export function PlatformAdmin() {
   const [, dispatch] = useMaterialTailwindController();
   const { isPlatformAdmin, initialized } = useEnterprise();
+  const { allowedRoutes } = useAuth();
 
   if (initialized && !isPlatformAdmin) {
     return <Navigate to="/enterprise/dashboard" replace />;
   }
 
+  // "enterprise" children here are only ever shown to the extent this
+  // platform admin ALSO has real company access (same allowedRoutes-based
+  // filter used in layouts/enterprise.jsx) — "admin-area" itself is never
+  // filtered here, since reaching this layout already implies isPlatformAdmin.
+  const filteredRoutes = routes.map((section) => ({
+    ...section,
+    pages: (section.pages || []).map((page) => {
+      if (page.name !== "enterprise" || !page.children) return page;
+      return {
+        ...page,
+        children: page.children.filter((child) => {
+          if (!child.name) return true;
+          return allowedRoutes.includes(`enterprise.${child.name}`);
+        }),
+      };
+    }),
+  }));
+
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-app)" }}>
-      <Sidenav routes={routes} />
+      <Sidenav routes={filteredRoutes} />
 
       <div
         className="min-h-screen flex flex-col transition-all duration-200"
