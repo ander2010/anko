@@ -916,6 +916,18 @@ const projectService = {
     }
   },
 
+  // Modern deck generation endpoint: project is optional (inferred from
+  // document_ids/section_ids/tag_group_ids), and tag_group_ids is supported —
+  // unlike the legacy create-with-cards endpoint below.
+  async startGenerateDeck(payload) {
+    try {
+      const res = await api.post("/decks/start-generate/", payload);
+      return res.data;
+    } catch (err) {
+      throw err?.response?.data || { error: "Failed to start deck generation" };
+    }
+  },
+
   async createDeckWithCards(payload) {
     try {
       const res = await api.post("/decks/create-with-cards/", payload);

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Button, Select, Option } from "@material-tailwind/react";
 import { PlusIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { complianceApi } from "../../api/enterpriseApi";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -24,23 +23,24 @@ export function CompliancePrograms() {
   const activate = async (id) => { await complianceApi.activateProgram(id); load(); };
   const archive = async (id) => { await complianceApi.archiveProgram(id); load(); };
 
+  const btn = { fontSize: 11, fontWeight: 700, background: "none", border: "none", cursor: "pointer", padding: "4px 8px" };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <Typography variant="h5" className="font-extrabold text-zinc-900">Compliance Programs</Typography>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Compliance Programs</h1>
         <div className="flex gap-2 items-center flex-wrap">
-          <div className="w-36">
-            <Select label="Status" value={statusFilter} onChange={setStatusFilter}>
-              <Option value="">All</Option>
-              <Option value="active">Active</Option>
-              <Option value="draft">Draft</Option>
-              <Option value="archived">Archived</Option>
-            </Select>
-          </div>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 10px", color: "var(--text-secondary)", outline: "none", cursor: "pointer" }}>
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
           {canEdit && (
-            <Button color="indigo" className="normal-case flex items-center gap-2">
-              <PlusIcon className="h-4 w-4" /> New Program
-            </Button>
+            <button className="ank-btn-accent text-xs">
+              <PlusIcon className="h-3.5 w-3.5" /> New Program
+            </button>
           )}
         </div>
       </div>
@@ -48,44 +48,46 @@ export function CompliancePrograms() {
       {loading ? <TableSkeleton rows={5} cols={6} /> : programs.length === 0 ? (
         <EmptyState icon={ShieldCheckIcon} title="No compliance programs" message={canEdit ? "Create your first compliance program." : "No programs available."} />
       ) : (
-        <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 border-b border-zinc-200">
-              <tr>
-                {["Code", "Name", "Type", "Frequency", "Status", "Mandatory", ...(canEdit ? ["Actions"] : [])].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-bold text-zinc-400 uppercase">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {programs.map((p) => (
-                <tr key={p.id} className="border-b border-zinc-50 hover:bg-zinc-50">
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-500">{p.code}</td>
-                  <td className="px-4 py-3 font-semibold text-zinc-800">{p.name}</td>
-                  <td className="px-4 py-3 text-zinc-500 capitalize">{p.compliance_type}</td>
-                  <td className="px-4 py-3 text-zinc-500 capitalize">{p.frequency}</td>
-                  <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
-                  <td className="px-4 py-3">
-                    {p.is_mandatory ? (
-                      <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">Required</span>
-                    ) : (
-                      <span className="text-xs text-zinc-400">Optional</span>
-                    )}
-                  </td>
-                  {canEdit && (
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1 flex-wrap">
-                        <Button size="sm" variant="text" color="indigo" className="normal-case text-xs py-1 px-2">Edit</Button>
-                        {p.status === "draft" && <Button size="sm" variant="text" color="green" className="normal-case text-xs py-1 px-2" onClick={() => activate(p.id)}>Activate</Button>}
-                        {p.status === "active" && <Button size="sm" variant="text" color="zinc" className="normal-case text-xs py-1 px-2" onClick={() => archive(p.id)}>Archive</Button>}
-                        <Button size="sm" variant="text" color="indigo" className="normal-case text-xs py-1 px-2">Assign User</Button>
-                      </div>
-                    </td>
-                  )}
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
+              <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
+                <tr>
+                  {["Code", "Name", "Type", "Frequency", "Status", "Mandatory", ...(canEdit ? ["Actions"] : [])].map((h) => (
+                    <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {programs.map((p) => (
+                  <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: "var(--text-tertiary)" }}>{p.code}</td>
+                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{p.name}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)", textTransform: "capitalize" }}>{p.compliance_type}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)", textTransform: "capitalize" }}>{p.frequency}</td>
+                    <td style={{ padding: "12px 16px" }}><StatusBadge status={p.status} /></td>
+                    <td style={{ padding: "12px 16px" }}>
+                      {p.is_mandatory ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>Required</span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Optional</span>
+                      )}
+                    </td>
+                    {canEdit && (
+                      <td style={{ padding: "12px 16px" }}>
+                        <div className="flex gap-1 flex-wrap">
+                          <button style={{ ...btn, color: "#818CF8" }}>Edit</button>
+                          {p.status === "draft" && <button style={{ ...btn, color: "#4ade80" }} onClick={() => activate(p.id)}>Activate</button>}
+                          {p.status === "active" && <button style={{ ...btn, color: "var(--text-tertiary)" }} onClick={() => archive(p.id)}>Archive</button>}
+                          <button style={{ ...btn, color: "#818CF8" }}>Assign User</button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

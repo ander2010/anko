@@ -50,7 +50,7 @@ import OnboardingInvite from "@/enterprise/pages/onboarding/OnboardingInvite";
 
 export function Enterprise() {
   const [, dispatch] = useMaterialTailwindController();
-  const { loading, hasCompany, enterprisePermissions } = useAuth();
+  const { loading, hasCompany, allowedRoutes, isAdmin } = useAuth();
 
   if (loading) return null;
 
@@ -60,14 +60,19 @@ export function Enterprise() {
 
   const filteredRoutes = routes.map((section) => ({
     ...section,
-    pages: (section.pages || []).map((page) => {
+    pages: (section.pages || [])
+      // "admin-area" is platform-wide (Users, Roles, Companies, ...) — never
+      // shown here just because the viewer is a company owner/admin; that's
+      // gated purely by isAdmin (is_staff/is_superuser/global "admin" role),
+      // completely independent of any CompanyMembership role.
+      .filter((page) => page.name !== "admin-area" || isAdmin)
+      .map((page) => {
       if (page.name !== "enterprise" || !page.children) return page;
       return {
         ...page,
         children: page.children.filter((child) => {
           if (!child.name) return true;
-          if (!enterprisePermissions || enterprisePermissions.size === 0) return true;
-          return enterprisePermissions.has(`enterprise.${child.name}`);
+          return allowedRoutes.includes(`enterprise.${child.name}`);
         }),
       };
     }),

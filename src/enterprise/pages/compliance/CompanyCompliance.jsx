@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardBody } from "@material-tailwind/react";
 import ReactApexChart from "react-apexcharts";
 import { complianceApi, analyticsApi } from "../../api/enterpriseApi";
 import { KPICard } from "../../components/KPICard";
@@ -27,68 +26,68 @@ export function CompanyCompliance() {
   if (loading) return <DashboardSkeleton />;
 
   const barOptions = {
-    chart: { type: "bar", toolbar: { show: false }, fontFamily: "inherit" },
+    chart: { type: "bar", toolbar: { show: false }, fontFamily: "inherit", background: "transparent" },
     plotOptions: { bar: { borderRadius: 4, columnWidth: "60%" } },
-    colors: trends.map((t) => t.compliance_rate >= 80 ? "#16a34a" : t.compliance_rate >= 60 ? "#d97706" : "#dc2626"),
-    xaxis: { categories: trends.map((t) => t.month || t.date), labels: { style: { fontSize: "11px" } } },
-    yaxis: { max: 100, labels: { formatter: (v) => `${v}%` } },
+    colors: trends.map((t) => t.compliance_rate >= 80 ? "#4ade80" : t.compliance_rate >= 60 ? "#f59e0b" : "#f87171"),
+    xaxis: { categories: trends.map((t) => t.month || t.date), labels: { style: { fontSize: "11px", colors: "#64748B" } } },
+    yaxis: { max: 100, labels: { formatter: (v) => `${v}%`, style: { colors: "#64748B" } } },
     dataLabels: { enabled: false },
-    grid: { borderColor: "#f3f4f6" },
-    tooltip: { y: { formatter: (v) => `${v}%` } },
+    grid: { borderColor: "rgba(255,255,255,0.07)" },
+    tooltip: { theme: "dark", y: { formatter: (v) => `${v}%` } },
   };
 
   return (
-      <div className="space-y-6">
-        <Typography variant="h5" className="font-extrabold text-zinc-900">Company Compliance</Typography>
+    <div className="space-y-5">
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Company Compliance</h1>
 
-        {data && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <KPICard title="Avg Compliance Rate" value={`${data.avg_compliance_rate ?? 0}%`} color="green" />
-            <KPICard title="Non-Compliant" value={data.non_compliant_count ?? 0} color="red" urgent={(data.non_compliant_count ?? 0) > 0} />
-            <KPICard title="Expiring ≤30d" value={data.expiring_count ?? 0} color="amber" />
-          </div>
+      {data && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <KPICard title="Avg Compliance Rate" value={`${data.avg_compliance_rate ?? 0}%`} color="green" />
+          <KPICard title="Non-Compliant" value={data.non_compliant_count ?? 0} color="red" urgent={(data.non_compliant_count ?? 0) > 0} />
+          <KPICard title="Expiring ≤30d" value={data.expiring_count ?? 0} color="amber" />
+        </div>
+      )}
+
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 18 }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>Compliance Trend (90d)</p>
+        {trends.length === 0 ? <EmptyState title="No trend data yet" /> : (
+          <ReactApexChart
+            options={barOptions}
+            series={[{ name: "Compliance Rate", data: trends.map((t) => t.compliance_rate ?? 0) }]}
+            type="bar" height={240}
+          />
         )}
+      </div>
 
-        <Card className="border border-zinc-200/60 shadow-sm">
-          <CardBody className="p-5">
-            <Typography variant="h6" className="font-bold text-zinc-900 mb-4">Compliance Trend (90d)</Typography>
-            {trends.length === 0 ? <EmptyState title="No trend data yet" /> : (
-              <ReactApexChart
-                options={barOptions}
-                series={[{ name: "Compliance Rate", data: trends.map((t) => t.compliance_rate ?? 0) }]}
-                type="bar" height={240}
-              />
-            )}
-          </CardBody>
-        </Card>
-
-        {expiring.length > 0 && (
-          <div>
-            <Typography variant="h6" className="font-bold text-zinc-900 mb-3">Expiring Assignments (next 30 days)</Typography>
-            <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-amber-50 border-b border-amber-100">
+      {expiring.length > 0 && (
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>Expiring Assignments (next 30 days)</p>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
+                <thead style={{ background: "rgba(245,158,11,0.08)", borderBottom: "1px solid rgba(245,158,11,0.2)" }}>
                   <tr>
                     {["User", "Program", "Expires", "Status"].map((h) => (
-                      <th key={h} className="text-left px-4 py-3 text-xs font-bold text-amber-700 uppercase">{h}</th>
+                      <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "#f59e0b", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {expiring.map((a) => (
-                    <tr key={a.id} className="border-b border-zinc-50 hover:bg-zinc-50">
-                      <td className="px-4 py-3 font-semibold text-zinc-800">{a.user_name}</td>
-                      <td className="px-4 py-3 text-zinc-600">{a.program_name}</td>
-                      <td className="px-4 py-3 text-amber-600 font-semibold text-xs">{a.expires_at}</td>
-                      <td className="px-4 py-3"><span className="text-xs font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full">Expiring</span></td>
+                    <tr key={a.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{a.user_name}</td>
+                      <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{a.program_name}</td>
+                      <td style={{ padding: "12px 16px", color: "#f59e0b", fontWeight: 600, fontSize: 11 }}>{a.expires_at}</td>
+                      <td style={{ padding: "12px 16px" }}><span style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)", padding: "2px 9px", borderRadius: 20 }}>Expiring</span></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }
 

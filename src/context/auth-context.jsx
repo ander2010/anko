@@ -6,6 +6,25 @@ import { setAuthToken } from "../services/api";
 
 const AuthContext = createContext(null);
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A transient failure (429 throttling, brief network hiccup) on the RBAC/context
+// fetch must not permanently blank the sidebar for the rest of the session — this
+// is on the critical path for basic navigation, so retry a couple of times with a
+// short backoff before giving up.
+async function withRetry(fn, { attempts = 3, delayMs = 1500 } = {}) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) await sleep(delayMs * (i + 1));
+    }
+  }
+  throw lastErr;
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,13 +34,37 @@ export function AuthProvider({ children }) {
   const [companies, setCompanies] = useState([]);
   const [hasCompany, setHasCompany] = useState(false);
   const [companyRole, setCompanyRole] = useState(null);
-  const [enterprisePermissions, setEnterprisePermissions] = useState(null);
 
   const applyContext = (ctx) => {
     const list = ctx?.companies || [];
     setCompanies(list);
     setHasCompany(ctx?.has_company ?? list.length > 0);
     setCompanyRole(list[0]?.role || null);
+    return list;
+  };
+
+  // Resolves the enterprise context first (to get the active company_id),
+  // then fetches allowed_routes for that company in one call — this single
+  // endpoint returns both dashboard.* (global User.roles) and enterprise.*
+  // (CompanyMembership.role) keys together.
+  const refreshRbacAndContext = async () => {
+    let companyId = null;
+    try {
+      const ctx = await withRetry(() => authService.meContext());
+      const list = applyContext(ctx);
+      companyId = list?.[0]?.company_id;
+    } catch (err) {
+      console.error("meContext fetch failed", err);
+    }
+
+    try {
+      const rbac = await withRetry(() => rbacService.fetchAllowedRoutes(companyId));
+      setAllowedRoutes(rbac.allowed_routes || []);
+      setIsAdmin(rbac.is_admin || false);
+      setRoles(rbac.roles || []);
+    } catch (err) {
+      console.error("RBAC fetch failed", err);
+    }
   };
 
   useEffect(() => {
@@ -36,40 +79,7 @@ export function AuthProvider({ children }) {
       try {
         setAuthToken(token);
         const me = await authService.me();
-
-        try {
-          const rbac = await rbacService.fetchAllowedRoutes();
-          if (mounted) {
-            setAllowedRoutes(rbac.allowed_routes || []);
-            setIsAdmin(rbac.is_admin || false);
-            setRoles(rbac.roles || []);
-          }
-        } catch (err) {
-          console.error("RBAC init failed", err);
-        }
-
-        try {
-          const ctx = await authService.meContext();
-          if (mounted) {
-            applyContext(ctx);
-            const role = ctx?.companies?.[0]?.role;
-            if (role) {
-              try {
-                const keys = await rbacService.fetchRolePermissions(`enterprise.${role}`);
-                if (mounted) setEnterprisePermissions(keys);
-              } catch (err) {
-                console.error("fetchRolePermissions init failed", err);
-                if (mounted) setEnterprisePermissions(new Set());
-              }
-            } else {
-              setEnterprisePermissions(new Set());
-            }
-          }
-        } catch (err) {
-          console.error("meContext init failed", err);
-          if (mounted) setEnterprisePermissions(new Set());
-        }
-
+        if (mounted) await refreshRbacAndContext();
         if (mounted) setUser(me);
       } catch (err) {
         localStorage.removeItem("token");
@@ -91,36 +101,7 @@ export function AuthProvider({ children }) {
     const { token, user: u } = await authService.login(credentials);
     window.localStorage.setItem("token", token);
     setAuthToken(token);
-
-    try {
-      const rbac = await rbacService.fetchAllowedRoutes();
-      setAllowedRoutes(rbac.allowed_routes || []);
-      setIsAdmin(rbac.is_admin || false);
-      setRoles(rbac.roles || []);
-    } catch (err) {
-      console.error("RBAC login fetch failed", err);
-    }
-
-    try {
-      const ctx = await authService.meContext();
-      applyContext(ctx);
-      const role = ctx?.companies?.[0]?.role;
-      if (role) {
-        try {
-          const keys = await rbacService.fetchRolePermissions(`enterprise.${role}`);
-          setEnterprisePermissions(keys);
-        } catch (err) {
-          console.error("fetchRolePermissions login failed", err);
-          setEnterprisePermissions(new Set());
-        }
-      } else {
-        setEnterprisePermissions(new Set());
-      }
-    } catch (err) {
-      console.error("meContext login fetch failed", err);
-      setEnterprisePermissions(new Set());
-    }
-
+    await refreshRbacAndContext();
     setUser(u);
     return u;
   };
@@ -132,36 +113,7 @@ export function AuthProvider({ children }) {
     if (token) {
       window.localStorage.setItem("token", token);
       setAuthToken(token);
-
-      try {
-        const rbac = await rbacService.fetchAllowedRoutes();
-        setAllowedRoutes(rbac.allowed_routes || []);
-        setIsAdmin(rbac.is_admin || false);
-        setRoles(rbac.roles || []);
-      } catch (err) {
-        console.error("RBAC register fetch failed", err);
-      }
-
-      try {
-        const ctx = await authService.meContext();
-        applyContext(ctx);
-        const role = ctx?.companies?.[0]?.role;
-        if (role) {
-          try {
-            const keys = await rbacService.fetchRolePermissions(`enterprise.${role}`);
-            setEnterprisePermissions(keys);
-          } catch (err) {
-            console.error("fetchRolePermissions register failed", err);
-            setEnterprisePermissions(new Set());
-          }
-        } else {
-          setEnterprisePermissions(new Set());
-        }
-      } catch (err) {
-        console.error("meContext register fetch failed", err);
-        setEnterprisePermissions(new Set());
-      }
-
+      await refreshRbacAndContext();
       setUser(u);
     }
 
@@ -178,28 +130,10 @@ export function AuthProvider({ children }) {
     setCompanies([]);
     setHasCompany(false);
     setCompanyRole(null);
-    setEnterprisePermissions(null);
   };
 
   const refreshContext = async () => {
-    try {
-      const ctx = await authService.meContext();
-      applyContext(ctx);
-      const role = ctx?.companies?.[0]?.role;
-      if (role) {
-        try {
-          const keys = await rbacService.fetchRolePermissions(`enterprise.${role}`);
-          setEnterprisePermissions(keys);
-        } catch (err) {
-          console.error("fetchRolePermissions refresh failed", err);
-          setEnterprisePermissions(new Set());
-        }
-      } else {
-        setEnterprisePermissions(new Set());
-      }
-    } catch (err) {
-      console.error("refreshContext failed", err);
-    }
+    await refreshRbacAndContext();
   };
 
   const updateUser = async (data) => {
@@ -212,36 +146,7 @@ export function AuthProvider({ children }) {
     const { token: jwtToken, user: u } = await authService.socialLogin(provider, token);
     window.localStorage.setItem("token", jwtToken);
     setAuthToken(jwtToken);
-
-    try {
-      const rbac = await rbacService.fetchAllowedRoutes();
-      setAllowedRoutes(rbac.allowed_routes || []);
-      setIsAdmin(rbac.is_admin || false);
-      setRoles(rbac.roles || []);
-    } catch (err) {
-      console.error("RBAC social login fetch failed", err);
-    }
-
-    try {
-      const ctx = await authService.meContext();
-      applyContext(ctx);
-      const role = ctx?.companies?.[0]?.role;
-      if (role) {
-        try {
-          const keys = await rbacService.fetchRolePermissions(`enterprise.${role}`);
-          setEnterprisePermissions(keys);
-        } catch (err) {
-          console.error("fetchRolePermissions socialLogin failed", err);
-          setEnterprisePermissions(new Set());
-        }
-      } else {
-        setEnterprisePermissions(new Set());
-      }
-    } catch (err) {
-      console.error("meContext social login fetch failed", err);
-      setEnterprisePermissions(new Set());
-    }
-
+    await refreshRbacAndContext();
     setUser(u);
     return u;
   };
@@ -256,7 +161,6 @@ export function AuthProvider({ children }) {
     companies,
     hasCompany,
     companyRole,
-    enterprisePermissions,
     login,
     register,
     logout,

@@ -58,6 +58,7 @@ function AddProcesoModal({ pathId, currentModuleIds, onAdded, onClose }) {
       const companyId = parseInt(localStorage.getItem("enterprise_company_id")) || null;
       const newModule = await learningApi.createModule({
         company: companyId,
+        knowledge_source: ks.id,
         name: ks.title,
         description: ks.description || "",
         process_type: ks.process_type || "course",
@@ -186,7 +187,7 @@ function EditHeaderForm({ path, onSaved, onCancel }) {
 
 // ─── Module row ───────────────────────────────────────────────────────────────
 
-function ModuleRow({ mod, index, total, pathId, onRemoved, onMoveUp, onMoveDown }) {
+function ModuleRow({ mod, index, total, pathId, pathName, onRemoved, onMoveUp, onMoveDown }) {
   const navigate = useNavigate();
   const [removing, setRemoving] = useState(false);
 
@@ -196,6 +197,17 @@ function ModuleRow({ mod, index, total, pathId, onRemoved, onMoveUp, onMoveDown 
     setRemoving(true);
     try { await learningApi.removeModule(pathId, { module_id: mod.id }); onRemoved(mod.id); }
     catch { setRemoving(false); }
+  };
+
+  // Only modules created from a real KnowledgeSource (knowledge_source set) can be
+  // opened — older modules created before that link existed can't be resolved back
+  // to a real process, so they stay non-clickable instead of guessing/misrouting.
+  const isLinked = mod.knowledge_source != null;
+  const handleOpen = () => {
+    if (!isLinked) return;
+    navigate(`/enterprise/knowledge/${mod.knowledge_source}`, {
+      state: { from: { type: "learning-path", id: pathId, name: pathName } },
+    });
   };
 
   const tc = TYPE_COLORS[mod.process_type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
@@ -222,7 +234,12 @@ function ModuleRow({ mod, index, total, pathId, onRemoved, onMoveUp, onMoveDown 
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/enterprise/knowledge/${mod.id}`)}>
+        <div
+          className="flex-1 min-w-0"
+          style={{ cursor: isLinked ? "pointer" : "default" }}
+          onClick={handleOpen}
+          title={isLinked ? undefined : "Este módulo no está vinculado a un proceso — creado antes de que ese vínculo existiera."}
+        >
           <div className="flex items-center gap-2 flex-wrap">
             <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{mod.name}</p>
             <span style={{ background: tc.bg, color: tc.text, fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 3 }}>
@@ -233,6 +250,9 @@ function ModuleRow({ mod, index, total, pathId, onRemoved, onMoveUp, onMoveDown 
             )}
             {!mod.is_required && (
               <span style={{ color: "var(--text-tertiary)", fontSize: 9, fontWeight: 700 }}>Optional</span>
+            )}
+            {!isLinked && (
+              <span style={{ color: "var(--text-tertiary)", fontSize: 9, fontWeight: 700, fontStyle: "italic" }}>Sin vincular</span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -583,6 +603,7 @@ export function LearningPathDetail() {
             {modules.map((mod, idx) => (
               <ModuleRow key={mod.id} mod={mod} index={idx} total={modules.length}
                 pathId={id}
+                pathName={path.name}
                 onRemoved={handleRemoveModule}
                 onMoveUp={() => handleMoveUp(idx)}
                 onMoveDown={() => handleMoveDown(idx)} />

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardBody, Button } from "@material-tailwind/react";
 import ReactApexChart from "react-apexcharts";
 import { retentionApi } from "../../api/enterpriseApi";
 import { RetentionScoreGauge } from "../../components/RetentionScoreGauge";
@@ -24,61 +23,55 @@ export function MyRetention() {
   if (!data) return <EmptyState title="No retention data yet" message="Complete assessments to build your retention profile." />;
 
   const areaOptions = {
-    chart: { type: "area", toolbar: { show: false }, fontFamily: "inherit" },
+    chart: { type: "area", toolbar: { show: false }, fontFamily: "inherit", background: "transparent" },
     stroke: { curve: "smooth", width: 2 },
     fill: { type: "gradient", gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
-    colors: ["#4f46e5"],
-    xaxis: { categories: snapshots.map((s) => s.created_at ? new Date(s.created_at).toLocaleDateString() : ""), labels: { style: { fontSize: "10px" } } },
-    yaxis: { min: 0, max: 100, labels: { formatter: (v) => `${v}%` } },
+    colors: ["#818CF8"],
+    xaxis: { categories: snapshots.map((s) => s.created_at ? new Date(s.created_at).toLocaleDateString() : ""), labels: { style: { fontSize: "10px", colors: "#64748B" } } },
+    yaxis: { min: 0, max: 100, labels: { formatter: (v) => `${v}%`, style: { colors: "#64748B" } } },
     dataLabels: { enabled: false },
-    grid: { borderColor: "#f3f4f6" },
-    tooltip: { y: { formatter: (v) => `${v}%` } },
+    grid: { borderColor: "rgba(255,255,255,0.07)" },
+    tooltip: { theme: "dark", y: { formatter: (v) => `${v}%` } },
   };
 
   return (
-    <div className="space-y-6">
-      <Typography variant="h5" className="font-extrabold text-zinc-900">My Retention</Typography>
+    <div className="space-y-5">
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>My Retention</h1>
 
       {/* Score gauges */}
-      <Card className="border border-zinc-200/60 shadow-sm">
-        <CardBody className="p-6">
-          <div className="flex flex-wrap justify-around gap-8">
-            <RetentionScoreGauge score={data.retention_score ?? 0} label="Retention Score" size="lg" />
-            <RetentionScoreGauge score={100 - (data.risk_score ?? 0)} label="Low Risk" size="lg" />
-            <RetentionScoreGauge score={data.confidence_score ?? 0} label="Confidence" size="lg" />
-          </div>
-        </CardBody>
-      </Card>
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 24 }}>
+        <div className="flex flex-wrap justify-around gap-8">
+          <RetentionScoreGauge score={data.retention_score ?? 0} label="Retention Score" size="lg" />
+          <RetentionScoreGauge score={100 - (data.risk_score ?? 0)} label="Low Risk" size="lg" />
+          <RetentionScoreGauge score={data.confidence_score ?? 0} label="Confidence" size="lg" />
+        </div>
+      </div>
 
       {/* Trend chart */}
       {snapshots.length > 0 && (
-        <Card className="border border-zinc-200/60 shadow-sm">
-          <CardBody className="p-5">
-            <Typography variant="h6" className="font-bold text-zinc-900 mb-4">Retention Over Time</Typography>
-            <ReactApexChart
-              options={areaOptions}
-              series={[{ name: "Retention Score", data: snapshots.map((s) => s.retention_score ?? 0) }]}
-              type="area"
-              height={200}
-            />
-          </CardBody>
-        </Card>
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 18 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>Retention Over Time</p>
+          <ReactApexChart
+            options={areaOptions}
+            series={[{ name: "Retention Score", data: snapshots.map((s) => s.retention_score ?? 0) }]}
+            type="area"
+            height={200}
+          />
+        </div>
       )}
 
       {/* Open gaps */}
-      <Card className="border border-zinc-200/60 shadow-sm">
-        <CardBody className="p-5 flex items-center justify-between">
-          <div>
-            <Typography variant="small" className="text-zinc-400 font-semibold">Open Knowledge Gaps</Typography>
-            <div className={`text-3xl font-extrabold ${(data.open_gaps ?? 0) > 0 ? "text-red-600" : "text-green-600"}`}>
-              {data.open_gaps ?? 0}
-            </div>
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 18 }} className="flex items-center justify-between">
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)" }}>Open Knowledge Gaps</p>
+          <div style={{ fontSize: 28, fontWeight: 800, color: (data.open_gaps ?? 0) > 0 ? "#f87171" : "#4ade80" }}>
+            {data.open_gaps ?? 0}
           </div>
-          <Button variant="outlined" color="indigo" className="normal-case" onClick={() => navigate("/enterprise/learning/knowledge-gaps")}>
-            View Gaps
-          </Button>
-        </CardBody>
-      </Card>
+        </div>
+        <button onClick={() => navigate("/enterprise/learning/knowledge-gaps")} className="ank-btn-ghost text-xs">
+          View Gaps
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeftIcon, PlusIcon, DocumentArrowUpIcon,
   SparklesIcon, ViewColumnsIcon, BoltIcon,
@@ -60,6 +60,11 @@ const STAGE_LABELS = {
   generate_battery:      "Generando preguntas…",
   finalize:              "Finalizando…",
   finalize_outputs:      "Finalizando…",
+  // Single-item deck/battery generation (start-generate) step keys
+  prepare_sources:       "Preparando fuentes…",
+  generate_questions:    "Generando preguntas…",
+  finalize_deck:         "Finalizando mazo…",
+  finalize_battery:      "Finalizando batería…",
 };
 
 const TERMINAL_STATUSES = new Set([
@@ -489,8 +494,11 @@ function TopicsTab({ topics, loading }) {
 }
 // ─── Decks / Batteries Tabs ───────────────────────────────────────────────────
 
-function ConfirmDeleteDialog({ battery, onConfirm, onCancel, deleting }) {
-  if (!battery) return null;
+function ConfirmDeleteDialog({ target, onConfirm, onCancel, deleting }) {
+  if (!target) return null;
+  const isDeck = target._kind === "deck";
+  const isTopic = target._kind === "topic";
+  const label = isTopic ? target.label : (target.name || target.title || `${isDeck ? "Deck" : "Battery"} #${target.id}`);
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
@@ -508,17 +516,21 @@ function ConfirmDeleteDialog({ battery, onConfirm, onCancel, deleting }) {
         </div>
         {/* Title */}
         <p style={{ fontSize: 17, fontWeight: 800, color: "#F1F5F9", marginBottom: 8 }}>
-          Eliminar batería
+          {isTopic ? "Eliminar tópico completo" : isDeck ? "Eliminar deck" : "Eliminar batería"}
         </p>
         {/* Body */}
         <p style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.6, marginBottom: 6 }}>
           Vas a eliminar permanentemente:
         </p>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", marginBottom: 6, padding: "8px 12px", background: "rgba(255,255,255,0.05)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
-          {battery.name || `Battery #${battery.id}`}
+          {label}
         </p>
         <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.55, marginBottom: 24 }}>
-          Esto eliminará todas las preguntas, intentos e historial asociado. Esta acción no se puede deshacer.
+          {isTopic
+            ? `Esto eliminará ${target.deckCount} deck${target.deckCount === 1 ? "" : "s"} y ${target.batteryCount} batería${target.batteryCount === 1 ? "" : "s"} de este tópico (automáticos y agregados a mano), con todas sus tarjetas, preguntas e historial. Esta acción no se puede deshacer.`
+            : isDeck
+            ? "Esto eliminará todas las tarjetas, progreso e historial asociado. Esta acción no se puede deshacer."
+            : "Esto eliminará todas las preguntas, intentos e historial asociado. Esta acción no se puede deshacer."}
         </p>
         {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
@@ -811,7 +823,7 @@ function DecksTab({ decks, loading, emptyMessage, onStudy, onLearn }) {
 
 // ─── Drag & Drop: sortable row wrappers ──────────────────────────────────────
 
-function SortableDeckRow({ deck, index, onStudy, onLearn, canReorder, onAddDeck }) {
+function SortableDeckRow({ deck, index, onStudy, onLearn, onDelete, canReorder, onAddDeck, job, onDismissJob }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deck.id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.45 : 1 }}>
@@ -820,14 +832,17 @@ function SortableDeckRow({ deck, index, onStudy, onLearn, canReorder, onAddDeck 
         index={index}
         onStudy={onStudy}
         onLearn={onLearn}
+        onDelete={onDelete}
         dragHandleProps={canReorder ? { ...attributes, ...listeners } : undefined}
         onAddDeck={onAddDeck}
+        job={job}
+        onDismissJob={onDismissJob}
       />
     </div>
   );
 }
 
-function SortableBatteryRow({ battery, index, onSimulate, onDelete, canReorder, onAddBattery }) {
+function SortableBatteryRow({ battery, index, onSimulate, onDelete, canReorder, onAddBattery, job, onDismissJob }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: battery.id });
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.45 : 1 }}>
@@ -838,6 +853,8 @@ function SortableBatteryRow({ battery, index, onSimulate, onDelete, canReorder, 
         onDelete={onDelete}
         dragHandleProps={canReorder ? { ...attributes, ...listeners } : undefined}
         onAddBattery={onAddBattery}
+        job={job}
+        onDismissJob={onDismissJob}
       />
     </div>
   );
@@ -845,7 +862,7 @@ function SortableBatteryRow({ battery, index, onSimulate, onDelete, canReorder, 
 
 // ─── TagGroup section (new Collection/TagGroup system) ────────────────────────
 
-function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, canReorder, onDecksReorder, onBatteriesReorder, onAddDeck, onAddBattery }) {
+function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck, canReorder, onDecksReorder, onBatteriesReorder, onAddDeck, onAddBattery }) {
   const [expanded, setExpanded] = useState(true);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -915,7 +932,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDeckDragEnd}>
                     <SortableContext items={decks.map((d) => d.id)} strategy={verticalListSortingStrategy}>
                       {decks.map((deck, i) => (
-                        <SortableDeckRow key={deck.id} deck={deck} index={i} onStudy={onStudy} onLearn={onLearn} canReorder={canReorder} onAddDeck={() => onAddDeck?.(tagGroup.id)} />
+                        <SortableDeckRow key={deck.id} deck={deck} index={i} onStudy={onStudy} onLearn={onLearn} onDelete={onDeleteDeck} canReorder={canReorder} onAddDeck={() => onAddDeck?.(tagGroup.id)} />
                       ))}
                     </SortableContext>
                   </DndContext>
@@ -1058,124 +1075,246 @@ function DocumentsPanel({ docs, onAdd }) {
 
 // ─── Knowledge Structure Panel components ──────────────────────────────────────
 
-function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck }) {
-  const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
-  const label = deck.title || `Deck ${index + 1}`;
+function ItemJobStrip({ job, accentColor }) {
+  const isFailed = FAILED_STATUSES.has(job.status);
+  const isSuccess = SUCCESS_STATUSES.has(job.status);
+  const isRunning = !isFailed && !isSuccess;
+  const barColor = isFailed ? "#f87171" : isSuccess ? "#4ade80" : accentColor;
+  const label = isFailed
+    ? (job.error || "Ocurrió un error inesperado.")
+    : isSuccess
+    ? "¡Listo!"
+    : (STAGE_LABELS[job.stage] || job.message || "Generando…");
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, minWidth: 0 }}>
-      {dragHandleProps && (
-        <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
-          <Bars3Icon style={{ width: 14, height: 14 }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 8px" }}>
+      {isRunning && <ArrowPathIcon className="animate-spin" style={{ width: 11, height: 11, color: barColor, flexShrink: 0 }} />}
+      {isSuccess && <CheckCircleSolid style={{ width: 11, height: 11, color: barColor, flexShrink: 0 }} />}
+      {isFailed && <ExclamationTriangleIcon style={{ width: 11, height: 11, color: barColor, flexShrink: 0 }} />}
+      <span style={{ fontSize: 10.5, fontWeight: 600, color: barColor, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {label}
+      </span>
+      {!isFailed && (
+        <div style={{ width: 60, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+          <div style={{ height: "100%", width: `${isSuccess ? 100 : Math.max(4, job.progress || 0)}%`, background: barColor, borderRadius: 2, transition: "width 500ms ease" }} />
         </div>
       )}
-      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-        {cardCount} cards
-      </span>
-      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {deck.description || "Conjunto de tarjetas de estudio para este tópico"}
-      </span>
-      <button
-        onClick={() => onLearn?.(deck)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-      >
-        Learn
-      </button>
-      <button
-        onClick={() => onStudy?.(deck)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
-      >
-        Study
-      </button>
-      <button
-        onClick={() => onAddDeck?.()}
-        style={{ padding: "4px 8px", borderRadius: 6, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.18)", color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
-      >
-        + Agregar deck
-      </button>
-      <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0 }}>Más</button>
+      {!isFailed && (
+        <span style={{ fontSize: 10, fontWeight: 700, color: barColor, flexShrink: 0, minWidth: 26, textAlign: "right" }}>
+          {isSuccess ? "100%" : `${Math.round(job.progress || 0)}%`}
+        </span>
+      )}
     </div>
   );
 }
 
-function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps, onAddBattery }) {
+function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck, onDelete, job, onDismissJob }) {
+  const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
+  const label = deck.title || `Deck ${index + 1}`;
+  const isFailed = job && FAILED_STATUSES.has(job.status);
+  const isSuccess = job && SUCCESS_STATUSES.has(job.status);
+  const isRunning = job && !isFailed && !isSuccess;
+  const borderColor = isFailed ? "rgba(239,68,68,0.35)" : isSuccess ? "rgba(74,222,128,0.35)" : isRunning ? "rgba(99,102,241,0.35)" : "rgba(255,255,255,0.06)";
+  return (
+    <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${borderColor}`, borderRadius: 8, marginBottom: 6, minWidth: 0, transition: "border-color 250ms" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", minWidth: 0 }}>
+        {dragHandleProps && (
+          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
+            <Bars3Icon style={{ width: 14, height: 14 }} />
+          </div>
+        )}
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
+        <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : `${cardCount} cards`}
+        </span>
+        <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+          {deck.description || "Conjunto de tarjetas de estudio para este tópico"}
+        </span>
+        <button
+          onClick={() => onLearn?.(deck)}
+          disabled={isRunning}
+          style={{ padding: "4px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: isRunning ? "default" : "pointer", flexShrink: 0, whiteSpace: "nowrap", opacity: isRunning ? 0.4 : 1 }}
+          onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+        >
+          Learn
+        </button>
+        <button
+          onClick={() => onStudy?.(deck)}
+          disabled={isRunning}
+          style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: isRunning ? "default" : "pointer", flexShrink: 0, whiteSpace: "nowrap", opacity: isRunning ? 0.4 : 1 }}
+          onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+        >
+          Study
+        </button>
+        <button
+          onClick={() => onAddDeck?.()}
+          style={{ padding: "4px 8px", borderRadius: 6, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.18)", color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
+        >
+          + Agregar deck
+        </button>
+        <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0 }}>Más</button>
+        <button
+          onClick={() => onDelete?.(deck)}
+          title="Eliminar deck"
+          disabled={isRunning}
+          style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: isRunning ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", opacity: isRunning ? 0.4 : 1 }}
+          onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; }}
+        >
+          <TrashIcon style={{ width: 12, height: 12 }} />
+        </button>
+      </div>
+      {job && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}><ItemJobStrip job={job} accentColor="#818CF8" /></div>
+          {isFailed && onDismissJob && (
+            <button
+              onClick={() => onDismissJob(job.id)}
+              style={{ marginRight: 12, flexShrink: 0, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 5, padding: "2px 8px", cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
+            >
+              Descartar
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps, onAddBattery, job, onDismissJob }) {
   const questionCount = battery.question_count ?? 0;
   const label = battery.name || battery.title || `Battery ${index + 1}`;
   const pct = battery.last_attempt?.percent ?? null;
   const hasAttempt = pct !== null;
   const pctRounded = hasAttempt ? Math.round(pct) : 0;
   const pctColor = pctRounded >= 80 ? "#4ade80" : pctRounded >= 50 ? "#f59e0b" : "#818CF8";
+  const isFailed = job && FAILED_STATUSES.has(job.status);
+  const isSuccess = job && SUCCESS_STATUSES.has(job.status);
+  const isRunning = job && !isFailed && !isSuccess;
+  const borderColor = isFailed ? "rgba(239,68,68,0.35)" : isSuccess ? "rgba(74,222,128,0.35)" : isRunning ? "rgba(94,106,210,0.35)" : "rgba(255,255,255,0.06)";
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, minWidth: 0 }}>
-      {dragHandleProps && (
-        <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
-          <Bars3Icon style={{ width: 14, height: 14 }} />
+    <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${borderColor}`, borderRadius: 8, marginBottom: 6, minWidth: 0, transition: "border-color 250ms" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", minWidth: 0 }}>
+        {dragHandleProps && (
+          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
+            <Bars3Icon style={{ width: 14, height: 14 }} />
+          </div>
+        )}
+        <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(94,106,210,0.12)", border: "1px solid rgba(94,106,210,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
+        <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : `${questionCount} preguntas`}
+        </span>
+        <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+          {battery.description || "Evaluación o práctica relacionada con este tópico"}
+        </span>
+
+        {/* Completion bar */}
+        <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+          <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${hasAttempt ? pctRounded : 0}%`, background: pctColor, borderRadius: 2, transition: "width 400ms ease" }} />
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: hasAttempt ? pctColor : "#334155", minWidth: 28, textAlign: "right" }}>
+            {hasAttempt ? `${pctRounded}%` : "—"}
+          </span>
+        </div>
+
+        <button
+          onClick={() => onSimulate?.(battery)}
+          disabled={isRunning}
+          style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: isRunning ? "default" : "pointer", flexShrink: 0, whiteSpace: "nowrap", opacity: isRunning ? 0.4 : 1 }}
+          onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}
+        >
+          Simular
+        </button>
+        <button
+          onClick={() => onAddBattery?.()}
+          style={{ padding: "4px 8px", borderRadius: 6, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.18)", color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
+        >
+          + Agregar batería
+        </button>
+        <button
+          onClick={() => onDelete?.(battery)}
+          title="Eliminar batería"
+          disabled={isRunning}
+          style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: isRunning ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", opacity: isRunning ? 0.4 : 1 }}
+          onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; }}
+        >
+          <TrashIcon style={{ width: 12, height: 12 }} />
+        </button>
+      </div>
+      {job && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}><ItemJobStrip job={job} accentColor="#818CF8" /></div>
+          {isFailed && onDismissJob && (
+            <button
+              onClick={() => onDismissJob(job.id)}
+              style={{ marginRight: 12, flexShrink: 0, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 5, padding: "2px 8px", cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
+            >
+              Descartar
+            </button>
+          )}
         </div>
       )}
-      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(94,106,210,0.12)", border: "1px solid rgba(94,106,210,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-        {questionCount} preguntas
-      </span>
-      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {battery.description || "Evaluación o práctica relacionada con este tópico"}
-      </span>
-
-      {/* Completion bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-        <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${hasAttempt ? pctRounded : 0}%`, background: pctColor, borderRadius: 2, transition: "width 400ms ease" }} />
-        </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: hasAttempt ? pctColor : "#334155", minWidth: 28, textAlign: "right" }}>
-          {hasAttempt ? `${pctRounded}%` : "—"}
-        </span>
-      </div>
-
-      <button
-        onClick={() => onSimulate?.(battery)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}
-      >
-        Simular
-      </button>
-      <button
-        onClick={() => onAddBattery?.()}
-        style={{ padding: "4px 8px", borderRadius: 6, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.18)", color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
-      >
-        + Agregar batería
-      </button>
-      <button
-        onClick={() => onDelete?.(battery)}
-        title="Eliminar batería"
-        style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; }}
-      >
-        <TrashIcon style={{ width: 12, height: 12 }} />
-      </button>
     </div>
   );
 }
 
-function TopicTreeItem({ topic, index, deck, battery, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, onAddDeck, onAddBattery }) {
+function TopicTreeItem({
+  topic, index, decks, batteries, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck,
+  canReorder, onDecksReorder, onBatteriesReorder, onAddDeck, onAddBattery, onDeleteTopic, itemJobs, onDismissItemJob,
+}) {
   const [expanded, setExpanded] = useState(true);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const tagCount = topic.tags?.length || 0;
   const description = topic.tags?.slice(0, 5).join(", ") || "";
+  const addDeck = () => onAddDeck?.(topic.id);
+  const addBattery = () => onAddBattery?.(topic.id);
+  const deleteTopic = () => onDeleteTopic?.({
+    id: topic.id,
+    _kind: "topic",
+    label: `Tópico ${index + 1}`,
+    deckCount: decks.length,
+    batteryCount: batteries.length,
+  });
+
+  const topicJobs = itemJobs?.filter((j) => j.tagGroupId === String(topic.id)) || [];
+  const jobFor = (kind, resourceId) => topicJobs.find((j) => j.kind === kind && j.resourceId === resourceId);
+  // Covers the brief window between a job starting and its deck/battery row
+  // showing up in `decks`/`batteries` (loadResults hasn't resolved yet).
+  const pendingDeckJobs = topicJobs.filter((j) => j.kind === "deck" && !decks.some((d) => d.id === j.resourceId));
+  const pendingBatteryJobs = topicJobs.filter((j) => j.kind === "battery" && !batteries.some((b) => b.id === j.resourceId));
+
+  const handleDeckDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIdx = decks.findIndex((d) => d.id === active.id);
+    const newIdx = decks.findIndex((d) => d.id === over.id);
+    onDecksReorder?.(topic.id, arrayMove(decks, oldIdx, newIdx).map((d) => d.id));
+  };
+
+  const handleBatteryDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIdx = batteries.findIndex((b) => b.id === active.id);
+    const newIdx = batteries.findIndex((b) => b.id === over.id);
+    onBatteriesReorder?.(topic.id, arrayMove(batteries, oldIdx, newIdx).map((b) => b.id));
+  };
 
   return (
     <div style={{ display: "flex", minWidth: 0 }}>
@@ -1206,15 +1345,55 @@ function TopicTreeItem({ topic, index, deck, battery, isLast, onStudy, onLearn, 
           <span style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
             {description}
           </span>
+          {canReorder && (decks.length + batteries.length) > 1 && (
+            <span style={{ fontSize: 10, color: "#475569", flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
+              <Bars3Icon style={{ width: 11, height: 11 }} /> arrastra para reordenar
+            </span>
+          )}
           <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0, whiteSpace: "nowrap" }}>Más</button>
+          <button
+            onClick={deleteTopic}
+            title="Eliminar tópico completo"
+            style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; }}
+          >
+            <TrashIcon style={{ width: 12, height: 12 }} />
+          </button>
         </div>
 
         {/* Deck + Battery rows */}
         {expanded && (
           <div style={{ marginLeft: 6 }}>
-            {deck && <DeckRowItem deck={deck} index={index} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} />}
-            {battery && <BatteryRowItem battery={battery} index={index} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={onAddBattery} />}
-            {!deck && !battery && (
+            {decks.length > 0 && (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDeckDragEnd}>
+                <SortableContext items={decks.map((d) => d.id)} strategy={verticalListSortingStrategy}>
+                  {decks.map((d, i) => (
+                    <SortableDeckRow key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onDelete={onDeleteDeck}
+                      canReorder={canReorder} onAddDeck={addDeck} job={jobFor("deck", d.id)} onDismissJob={onDismissItemJob} />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+            {pendingDeckJobs.map((j) => (
+              <DeckRowItem key={j.id} deck={{ id: j.resourceId, title: j.title }} index={0} onStudy={onStudy} onLearn={onLearn} onAddDeck={addDeck}
+                job={j} onDismissJob={onDismissItemJob} />
+            ))}
+            {batteries.length > 0 && (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBatteryDragEnd}>
+                <SortableContext items={batteries.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                  {batteries.map((b, i) => (
+                    <SortableBatteryRow key={b.id} battery={b} index={i} onSimulate={onSimulate} onDelete={onDeleteBattery}
+                      canReorder={canReorder} onAddBattery={addBattery} job={jobFor("battery", b.id)} onDismissJob={onDismissItemJob} />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
+            {pendingBatteryJobs.map((j) => (
+              <BatteryRowItem key={j.id} battery={{ id: j.resourceId, name: j.title }} index={0} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={addBattery}
+                job={j} onDismissJob={onDismissItemJob} />
+            ))}
+            {decks.length === 0 && batteries.length === 0 && pendingDeckJobs.length === 0 && pendingBatteryJobs.length === 0 && (
               <p style={{ color: "#334155", fontSize: 12, fontStyle: "italic", padding: "4px 8px", margin: 0 }}>Sin contenido generado para este tópico.</p>
             )}
           </div>
@@ -1228,8 +1407,9 @@ function KnowledgeStructurePanel({
   topics, decks, batteries, loading,
   tagGroups, tagGroupContent, tagGroupsLoading,
   canReorder, onTagGroupDecksReorder, onTagGroupBatteriesReorder,
-  onStudy, onLearn, onSimulate, onDeleteBattery, onAutoGen,
-  onAddDeck, onAddBattery,
+  onTopicDecksReorder, onTopicBatteriesReorder,
+  onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck, onDeleteTopic, onAutoGen,
+  onAddDeck, onAddBattery, itemJobs, onDismissItemJob,
 }) {
   const totalQuestions = batteries.reduce((s, b) => s + (b.question_count ?? 0), 0);
   const totalCards = decks.reduce((s, d) => s + (d.flashcards_count ?? d.cardsCount ?? d.card_count ?? 0), 0);
@@ -1341,6 +1521,7 @@ function KnowledgeStructurePanel({
                     onLearn={onLearn}
                     onSimulate={onSimulate}
                     onDeleteBattery={onDeleteBattery}
+                    onDeleteDeck={onDeleteDeck}
                     canReorder={canReorder}
                     onDecksReorder={onTagGroupDecksReorder}
                     onBatteriesReorder={onTagGroupBatteriesReorder}
@@ -1357,7 +1538,7 @@ function KnowledgeStructurePanel({
                     Sin clasificar
                   </p>
                   {unclassifiedDecks.map((d, i) => (
-                    <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} />
+                    <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} onDelete={onDeleteDeck} />
                   ))}
                   {unclassifiedBatteries.map((b, i) => (
                     <BatteryRowItem key={b.id} battery={b} index={i} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={onAddBattery} />
@@ -1371,29 +1552,44 @@ function KnowledgeStructurePanel({
           {!useTagGroupSystem && (
             <>
               {topics.length > 0 ? (
-                topics.map((topic, i) => (
-                  <TopicTreeItem
-                    key={topic.id}
-                    topic={topic}
-                    index={i}
-                    deck={decks[i]}
-                    battery={batteries[i]}
-                    isLast={i === topics.length - 1}
-                    onStudy={onStudy}
-                    onLearn={onLearn}
-                    onSimulate={onSimulate}
-                    onDeleteBattery={onDeleteBattery}
-                    onAddDeck={onAddDeck}
-                    onAddBattery={onAddBattery}
-                  />
-                ))
+                topics.map((topic, i) => {
+                  // Match by tag_group_id (real association from DeckSourceTagGroup /
+                  // BatterySourceTagGroup), not by array position — positions can diverge
+                  // as soon as a topic has zero or more than one deck/battery.
+                  const topicDecks = decks.filter((d) => String(d.tag_group_id) === String(topic.id));
+                  const topicBatteries = batteries.filter((b) => String(b.tag_group_id) === String(topic.id));
+                  return (
+                    <TopicTreeItem
+                      key={topic.id}
+                      topic={topic}
+                      index={i}
+                      decks={topicDecks}
+                      batteries={topicBatteries}
+                      isLast={i === topics.length - 1}
+                      onStudy={onStudy}
+                      onLearn={onLearn}
+                      onSimulate={onSimulate}
+                      onDeleteBattery={onDeleteBattery}
+                      onDeleteDeck={onDeleteDeck}
+                      onDeleteTopic={onDeleteTopic}
+                      canReorder={canReorder}
+                      onDecksReorder={onTopicDecksReorder}
+                      onBatteriesReorder={onTopicBatteriesReorder}
+                      onAddDeck={onAddDeck}
+                      onAddBattery={onAddBattery}
+                      itemJobs={itemJobs}
+                      onDismissItemJob={onDismissItemJob}
+                    />
+                  );
+                })
               ) : (
                 <div className="space-y-4">
                   {decks.length > 0 && (
                     <div>
                       <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Decks</p>
                       {decks.map((d, i) => (
-                        <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} />
+                        <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} onDelete={onDeleteDeck}
+                          job={itemJobs?.find((j) => j.kind === "deck" && j.resourceId === d.id)} onDismissJob={onDismissItemJob} />
                       ))}
                     </div>
                   )}
@@ -1401,7 +1597,8 @@ function KnowledgeStructurePanel({
                     <div>
                       <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Baterías</p>
                       {batteries.map((b, i) => (
-                        <BatteryRowItem key={b.id} battery={b} index={i} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={onAddBattery} />
+                        <BatteryRowItem key={b.id} battery={b} index={i} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={onAddBattery}
+                          job={itemJobs?.find((j) => j.kind === "battery" && j.resourceId === b.id)} onDismissJob={onDismissItemJob} />
                       ))}
                     </div>
                   )}
@@ -1556,7 +1753,7 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
     setCurrentCard({ front: "", back: "", notes: "" });
     if (projectId) {
       setLoadingSections(true);
-      projectService.getDocumentsWithSections(projectId)
+      knowledgeApi.getDocumentsWithSections(projectId)
         .then(data => setScannedDocuments(data.documents || []))
         .catch(() => setScannedDocuments([]))
         .finally(() => setLoadingSections(false));
@@ -1829,7 +2026,7 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
     setFormData({ rule: "", query_text: "", sections: [], quantity: 10, difficulty: "medium", question_format: "true_false" });
     if (projectId) {
       setLoadingSections(true);
-      projectService.getDocumentsWithSections(projectId)
+      knowledgeApi.getDocumentsWithSections(projectId)
         .then(data => setScannedDocuments(data.documents || []))
         .catch(() => setScannedDocuments([]))
         .finally(() => setLoadingSections(false));
@@ -2020,8 +2217,16 @@ const INIT_GEN = { status: "idle", runId: null, progress: 0, message: "", stage:
 export function ProcessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { activeCompanyId, isPlatformAdmin, hasMinRole } = useEnterprise();
   const { user } = useAuth();
+
+  // A process can be opened directly from the process list, or from a Learning
+  // Path that references it — location.state carries which, so "back" returns
+  // to wherever the user actually came from instead of always the flat list.
+  const cameFromLearningPath = location.state?.from?.type === "learning-path" ? location.state.from : null;
+  const backHref = cameFromLearningPath ? `/enterprise/learning/paths/${cameFromLearningPath.id}` : "/enterprise/knowledge";
+  const backLabel = cameFromLearningPath ? `Volver a ${cameFromLearningPath.name || "Learning Path"}` : "Volver a Procesos";
 
   const INIT_RESULTS = { batteries: [], decks: [], topics: [], run: null };
 
@@ -2044,7 +2249,9 @@ export function ProcessDetail() {
   const [learnDeck, setLearnDeck] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [itemJobs, setItemJobs] = useState([]); // in-flight deck/battery generation jobs, tracked per-topic
   const pollRef = useRef(null);
+  const itemPollRefs = useRef({});
 
   const loadKs = useCallback(async () => {
     try {
@@ -2150,7 +2357,95 @@ export function ProcessDetail() {
     }
   }, []);
 
+  // Reorders decks/batteries within a single topic (real TagGroup id). Used by the
+  // "old topics" fallback tree, which is what Enterprise Knowledge Source processes
+  // actually render (their tag_groups have no Collection, so the newer TagGroupSection
+  // grid never shows — see [[project-ks-project-collection-model]]). Reorders only the
+  // items belonging to this topic; every other deck/battery keeps its relative order.
+  const handleTopicDecksReorder = useCallback(async (tagGroupId, orderedIds) => {
+    setResults((prev) => {
+      const byId = new Map(prev.decks.map((d) => [d.id, d]));
+      const reordered = orderedIds.map((oid) => byId.get(oid)).filter(Boolean);
+      const others = prev.decks.filter((d) => String(d.tag_group_id) !== String(tagGroupId));
+      return { ...prev, decks: [...others, ...reordered] };
+    });
+    try {
+      await collectionApi.reorderDecks(tagGroupId, orderedIds);
+    } catch {
+      loadResults(); // revert to server truth
+    }
+  }, [loadResults]);
+
+  const handleTopicBatteriesReorder = useCallback(async (tagGroupId, orderedIds) => {
+    setResults((prev) => {
+      const byId = new Map(prev.batteries.map((b) => [b.id, b]));
+      const reordered = orderedIds.map((oid) => byId.get(oid)).filter(Boolean);
+      const others = prev.batteries.filter((b) => String(b.tag_group_id) !== String(tagGroupId));
+      return { ...prev, batteries: [...others, ...reordered] };
+    });
+    try {
+      await collectionApi.reorderBatteries(tagGroupId, orderedIds);
+    } catch {
+      loadResults(); // revert to server truth
+    }
+  }, [loadResults]);
+
   useEffect(() => { loadKs(); loadResults(); loadTagGroups(); }, [loadKs, loadResults, loadTagGroups]);
+
+  // ── Per-item (deck/battery) generation progress ──────────────────────────
+  // Deck/battery rows are created synchronously by /start-generate/ — only the
+  // flashcards/questions are filled in async. So the row already appears under
+  // its topic right away (via loadResults); this just tracks the fill-in job
+  // so its card/question count and the "Learn/Study/Simular" actions update
+  // live instead of silently sitting at 0 until the user refreshes.
+  const stopItemPoll = useCallback((jobId) => {
+    const handle = itemPollRefs.current[jobId];
+    if (handle) { clearInterval(handle); delete itemPollRefs.current[jobId]; }
+  }, []);
+
+  const removeItemJob = useCallback((jobId) => {
+    stopItemPoll(jobId);
+    setItemJobs((prev) => prev.filter((j) => j.id !== jobId));
+  }, [stopItemPoll]);
+
+  const pollItemJobOnce = useCallback(async (jobId, runId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/process-runs/${runId}/`, { headers: { Authorization: `Token ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const terminal = TERMINAL_STATUSES.has(data.status);
+      const isSuccess = SUCCESS_STATUSES.has(data.status);
+      setItemJobs((prev) => prev.map((j) => (j.id !== jobId ? j : {
+        ...j,
+        status: data.status,
+        progress: data.progress_percent ?? j.progress,
+        stage: data.current_stage || j.stage,
+        message: data.status_message || j.message,
+        error: FAILED_STATUSES.has(data.status) ? (data.status_message || data.error_payload?.error || "Ocurrió un error inesperado.") : "",
+      })));
+      if (terminal) {
+        stopItemPoll(jobId);
+        loadResults();
+        if (isSuccess) setTimeout(() => removeItemJob(jobId), 1800);
+      }
+    } catch {
+      // transient network error — keep polling on the next tick
+    }
+  }, [loadResults, removeItemJob, stopItemPoll]);
+
+  const trackItemJob = useCallback(({ kind, tagGroupId, resourceId, title, runId }) => {
+    if (!runId) return;
+    const jobId = runId;
+    setItemJobs((prev) => [
+      ...prev.filter((j) => j.id !== jobId),
+      { id: jobId, runId, kind, tagGroupId: tagGroupId != null ? String(tagGroupId) : null, resourceId, title, status: "queued", progress: 5, stage: "", message: "", error: "" },
+    ]);
+    pollItemJobOnce(jobId, runId);
+    itemPollRefs.current[jobId] = setInterval(() => pollItemJobOnce(jobId, runId), 2500);
+  }, [pollItemJobOnce]);
+
+  useEffect(() => () => { Object.values(itemPollRefs.current).forEach(clearInterval); }, []);
 
   const handleOpenAddDeck = useCallback((tagGroupId) => {
     setActiveTagGroupId(tagGroupId || null);
@@ -2165,6 +2460,9 @@ export function ProcessDetail() {
   const handleCreateDeck = async (deckData) => {
     try {
       if (deckData.mode === "manual") {
+        // NOTE: this legacy endpoint still hard-requires a real Project id, which a
+        // KnowledgeSource process doesn't have — manual mode remains broken for
+        // Enterprise Knowledge Source decks until it's ported to start-generate too.
         await projectService.createDeckManual({
           project_id: Number(id),
           title: deckData.title,
@@ -2173,8 +2471,11 @@ export function ProcessDetail() {
           cards: deckData.cards,
         });
       } else {
+        // Uses /decks/start-generate/ (not the legacy /decks/create-with-cards/, which
+        // hard-requires a Project). `id` here is a KnowledgeSource id, not a Project id,
+        // so no project_id is sent — the topic association goes through tag_group_ids.
+        const tagGroupId = activeTagGroupId;
         const payload = {
-          project_id: Number(id),
           title: deckData.title,
           description: deckData.description,
           visibility: deckData.visibility,
@@ -2182,7 +2483,12 @@ export function ProcessDetail() {
           document_ids: deckData.document_ids,
           cards_count: Number(deckData.cards_count || 3),
         };
-        await projectService.createDeckWithCards(payload);
+        if (tagGroupId) payload.tag_group_ids = [Number(tagGroupId)];
+        const result = await projectService.startGenerateDeck(payload);
+        const runId = result?.process_run?.run_id;
+        if (runId) {
+          trackItemJob({ kind: "deck", tagGroupId, resourceId: result?.deck?.id, title: deckData.title, runId });
+        }
       }
       setShowAddDeck(false);
       setActiveTagGroupId(null);
@@ -2197,8 +2503,8 @@ export function ProcessDetail() {
 
   const handleGenerateBattery = async (batteryData) => {
     try {
+      const tagGroupId = activeTagGroupId;
       const payload = {
-        project: Number(id),
         name: batteryData.query_text?.trim() || "Batería",
         query_text: batteryData.query_text,
         sections: batteryData.sections.map((s) => s.id),
@@ -2207,7 +2513,12 @@ export function ProcessDetail() {
         question_format: batteryData.question_format,
       };
       if (batteryData.rule) payload.rule = Number(batteryData.rule);
-      await projectService.startGenerateBattery(payload);
+      if (tagGroupId) payload.tag_group_ids = [Number(tagGroupId)];
+      const result = await projectService.startGenerateBattery(payload);
+      const runId = result?.process_run?.run_id;
+      if (runId) {
+        trackItemJob({ kind: "battery", tagGroupId, resourceId: result?.battery?.id, title: payload.name, runId });
+      }
       setShowAddBattery(false);
       setActiveTagGroupId(null);
       loadResults();
@@ -2223,8 +2534,21 @@ export function ProcessDetail() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await projectService.deleteBattery(deleteTarget.id);
-      setResults((prev) => ({ ...prev, batteries: prev.batteries.filter((b) => b.id !== deleteTarget.id) }));
+      if (deleteTarget._kind === "topic") {
+        await collectionApi.deleteTagGroup(deleteTarget.id);
+        setResults((prev) => ({
+          ...prev,
+          topics: prev.topics.filter((t) => String(t.id) !== String(deleteTarget.id)),
+          decks: prev.decks.filter((d) => String(d.tag_group_id) !== String(deleteTarget.id)),
+          batteries: prev.batteries.filter((b) => String(b.tag_group_id) !== String(deleteTarget.id)),
+        }));
+      } else if (deleteTarget._kind === "deck") {
+        await projectService.deleteDeck(deleteTarget.id);
+        setResults((prev) => ({ ...prev, decks: prev.decks.filter((d) => d.id !== deleteTarget.id) }));
+      } else {
+        await projectService.deleteBattery(deleteTarget.id);
+        setResults((prev) => ({ ...prev, batteries: prev.batteries.filter((b) => b.id !== deleteTarget.id) }));
+      }
       setDeleteTarget(null);
     } catch (err) {
       console.error("Delete failed", err);
@@ -2425,8 +2749,8 @@ export function ProcessDetail() {
   if (!ks) return (
     <div className="flex flex-col items-center py-24 text-center">
       <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>Proceso no encontrado</p>
-      <button onClick={() => navigate("/enterprise/knowledge")} className="ank-btn-ghost text-xs mt-4">
-        <ArrowLeftIcon className="h-3.5 w-3.5" /> Volver a Procesos
+      <button onClick={() => navigate(backHref)} className="ank-btn-ghost text-xs mt-4">
+        <ArrowLeftIcon className="h-3.5 w-3.5" /> {backLabel}
       </button>
     </div>
   );
@@ -2442,10 +2766,10 @@ export function ProcessDetail() {
   return (
     <div className="space-y-0 w-full">
       {/* Back */}
-      <button onClick={() => navigate("/enterprise/knowledge")}
+      <button onClick={() => navigate(backHref)}
         style={{ color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 5, fontSize: 12, marginBottom: 20, cursor: "pointer" }}
         className="hover:opacity-70 transition-opacity">
-        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> Volver a Procesos
+        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> {backLabel}
       </button>
 
       {/* Header */}
@@ -2540,13 +2864,19 @@ export function ProcessDetail() {
           canReorder={canReorder}
           onTagGroupDecksReorder={handleTagGroupDecksReorder}
           onTagGroupBatteriesReorder={handleTagGroupBatteriesReorder}
+          onTopicDecksReorder={handleTopicDecksReorder}
+          onTopicBatteriesReorder={handleTopicBatteriesReorder}
           onStudy={setStudyDeck}
           onLearn={setLearnDeck}
           onSimulate={setSimulationBattery}
-          onDeleteBattery={setDeleteTarget}
+          onDeleteBattery={(b) => setDeleteTarget({ ...b, _kind: "battery" })}
+          onDeleteDeck={(d) => setDeleteTarget({ ...d, _kind: "deck" })}
+          onDeleteTopic={setDeleteTarget}
           onAutoGen={handleAutoGen}
           onAddDeck={handleOpenAddDeck}
           onAddBattery={handleOpenAddBattery}
+          itemJobs={itemJobs}
+          onDismissItemJob={removeItemJob}
         />
       </div>
 
@@ -2582,7 +2912,7 @@ export function ProcessDetail() {
       />
 
       <ConfirmDeleteDialog
-        battery={deleteTarget}
+        target={deleteTarget}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
         deleting={deleting}

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Button, Input, Textarea, Select, Option } from "@material-tailwind/react";
 import { PlusIcon, RectangleStackIcon, XMarkIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { learningApi } from "../../api/enterpriseApi";
@@ -7,10 +6,15 @@ import { useEnterprise } from "../../context/enterprise-context";
 import { EmptyState } from "../../components/EmptyState";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
 
-const STATUS_COLORS = {
-  draft:     "bg-zinc-100 text-zinc-500",
-  published: "bg-green-100 text-green-700",
-  archived:  "bg-amber-100 text-amber-700",
+const STATUS_TONE = {
+  draft:     { bg: "rgba(255,255,255,0.06)", text: "#8B8B9C" },
+  published: { bg: "rgba(74,222,128,0.12)",  text: "#4ade80" },
+  archived:  { bg: "rgba(245,158,11,0.12)",  text: "#f59e0b" },
+};
+
+const INPUT = {
+  width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#F1F5F9", outline: "none", boxSizing: "border-box",
 };
 
 function NewProgramForm({ onCreated, onCancel }) {
@@ -32,19 +36,27 @@ function NewProgramForm({ onCreated, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 space-y-4">
+    <form onSubmit={handleSubmit} style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 12, padding: 20 }} className="space-y-4">
       <div className="flex items-center justify-between">
-        <Typography className="font-bold text-indigo-900">New Training Program</Typography>
-        <button type="button" onClick={onCancel} className="text-indigo-400 hover:text-indigo-600">
+        <p style={{ fontWeight: 700, color: "#C7D2FE", fontSize: 14 }}>New Training Program</p>
+        <button type="button" onClick={onCancel} style={{ color: "#818CF8", background: "none", border: "none", cursor: "pointer" }}>
           <XMarkIcon className="h-5 w-5" />
         </button>
       </div>
-      <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-      <Textarea label="Description (optional)" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-      {error && <Typography variant="small" className="text-red-500">{error}</Typography>}
-      <div className="flex justify-end gap-3">
-        <Button variant="text" color="blue-gray" className="normal-case" onClick={onCancel} type="button">Cancel</Button>
-        <Button type="submit" color="indigo" className="normal-case" loading={saving}>Create Program</Button>
+      <div>
+        <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }}>Name *</label>
+        <input style={INPUT} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+      </div>
+      <div>
+        <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }}>Description (optional)</label>
+        <textarea rows={2} style={{ ...INPUT, resize: "vertical" }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+      </div>
+      {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="ank-btn-ghost text-xs">Cancel</button>
+        <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
+          {saving ? "Creating…" : "Create Program"}
+        </button>
       </div>
     </form>
   );
@@ -78,29 +90,27 @@ function PublishVersionModal({ program, onClose, onPublished }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, width: "100%", maxWidth: 440, padding: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }} className="space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <Typography className="font-bold text-zinc-900">Publish New Version</Typography>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600"><XMarkIcon className="h-5 w-5" /></button>
+          <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>Publish New Version</p>
+          <button onClick={onClose} style={{ color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}><XMarkIcon className="h-5 w-5" /></button>
         </div>
-        <Typography variant="small" className="text-zinc-400">
+        <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
           Select the learning path for this program version. A new version will be created and marked as current.
-        </Typography>
+        </p>
         <form onSubmit={handlePublish} className="space-y-4">
-          <select
-            className="w-full border border-zinc-200 rounded-xl px-3 py-2.5 text-sm text-zinc-700"
-            value={selectedPath} onChange={(e) => setSelectedPath(e.target.value)} required>
+          <select style={{ ...INPUT, cursor: "pointer" }} value={selectedPath} onChange={(e) => setSelectedPath(e.target.value)} required>
             <option value="">Select a published learning path...</option>
             {paths.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <Textarea label="Release notes (optional)" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
-          {error && <Typography variant="small" className="text-red-500">{error}</Typography>}
-          <div className="flex justify-end gap-3">
-            <Button variant="text" color="blue-gray" className="normal-case" onClick={onClose} type="button">Cancel</Button>
-            <Button type="submit" color="green" className="normal-case flex items-center gap-2" loading={saving}>
-              <CheckBadgeIcon className="h-4 w-4" /> Publish Version
-            </Button>
+          <textarea rows={2} placeholder="Release notes (optional)" style={{ ...INPUT, resize: "vertical" }} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancel</button>
+            <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ background: "linear-gradient(135deg, #22C55E, #4ade80)", opacity: saving ? 0.7 : 1 }}>
+              <CheckBadgeIcon className="h-3.5 w-3.5" /> {saving ? "Publishing…" : "Publish Version"}
+            </button>
           </div>
         </form>
       </div>
@@ -112,65 +122,66 @@ function ProgramCard({ program, onPublishVersion }) {
   const hasAI = program.metadata?.knowledge_source_id;
   const currentVersion = program.versions?.find((v) => v.is_current);
   const [expanded, setExpanded] = useState(false);
+  const tone = STATUS_TONE[program.status] || STATUS_TONE.draft;
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3">
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: 18 }}>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="p-2 bg-purple-50 rounded-xl mt-0.5 flex-shrink-0">
-              <RectangleStackIcon className="h-5 w-5 text-purple-600" />
+            <div style={{ padding: 8, background: "rgba(192,132,252,0.12)", borderRadius: 8, marginTop: 2, flexShrink: 0 }}>
+              <RectangleStackIcon style={{ width: 18, height: 18, color: "#C084FC" }} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Typography className="font-bold text-zinc-900">{program.name}</Typography>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[program.status] || "bg-zinc-100 text-zinc-500"}`}>
+                <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>{program.name}</p>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: tone.bg, color: tone.text }}>
                   {program.status}
                 </span>
                 {hasAI && (
-                  <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">
-                    <SparklesIcon className="h-3 w-3" /> AI
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: "rgba(192,132,252,0.12)", color: "#C084FC" }}>
+                    <SparklesIcon style={{ width: 10, height: 10 }} /> AI
                   </span>
                 )}
               </div>
               {program.description && (
-                <Typography variant="small" className="text-zinc-400 mt-0.5">{program.description}</Typography>
+                <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>{program.description}</p>
               )}
-              <div className="flex gap-3 mt-1">
-                <span className="text-xs text-zinc-400">{program.version_count ?? program.versions?.length ?? 0} version(s)</span>
+              <div className="flex gap-3 mt-1.5">
+                <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{program.version_count ?? program.versions?.length ?? 0} version(s)</span>
                 {currentVersion && (
-                  <span className="text-xs text-green-600 font-semibold">Current: v{currentVersion.version_number}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80" }}>Current: v{currentVersion.version_number}</span>
                 )}
               </div>
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <Button size="sm" color="green" variant="outlined" className="normal-case text-xs flex items-center gap-1"
-              onClick={() => onPublishVersion(program)}>
-              <CheckBadgeIcon className="h-3.5 w-3.5" /> New Version
-            </Button>
+            <button onClick={() => onPublishVersion(program)}
+              style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 6, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+              <CheckBadgeIcon style={{ width: 13, height: 13 }} /> New Version
+            </button>
             {program.versions?.length > 0 && (
-              <Button size="sm" variant="text" color="blue-gray" className="normal-case text-xs"
-                onClick={() => setExpanded((v) => !v)}>
+              <button onClick={() => setExpanded((v) => !v)}
+                style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", background: "none", border: "1px solid var(--border)", borderRadius: 6, padding: "6px 10px", cursor: "pointer" }}>
                 History
-              </Button>
+              </button>
             )}
           </div>
         </div>
       </div>
 
       {expanded && program.versions?.length > 0 && (
-        <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
-          <Typography variant="small" className="font-bold text-zinc-500 uppercase tracking-wide mb-2">Version History</Typography>
+        <div style={{ borderTop: "1px solid var(--border)", background: "var(--bg-app)", padding: "12px 18px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Version History</p>
           <div className="space-y-2">
             {program.versions.map((v) => (
-              <div key={v.id} className="flex items-center gap-3 text-sm">
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${v.is_current ? "bg-green-500 text-white" : "bg-zinc-200 text-zinc-500"}`}>
+              <div key={v.id} className="flex items-center gap-3" style={{ fontSize: 12 }}>
+                <span style={{ width: 20, height: 20, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, background: v.is_current ? "#22C55E" : "var(--bg-elevated)", color: v.is_current ? "#fff" : "var(--text-tertiary)" }}>
                   {v.version_number}
                 </span>
-                <span className="text-zinc-600">{v.learning_path_name || "—"}</span>
-                {v.is_current && <span className="text-xs text-green-600 font-semibold">Current</span>}
-                <span className="text-zinc-400 text-xs ml-auto">{v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}</span>
+                <span style={{ color: "var(--text-secondary)" }}>{v.learning_path_name || "—"}</span>
+                {v.is_current && <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80" }}>Current</span>}
+                <span style={{ color: "var(--text-tertiary)", fontSize: 11, marginLeft: "auto" }}>{v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}</span>
               </div>
             ))}
           </div>
@@ -203,7 +214,7 @@ export function TrainingPrograms() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {publishTarget && (
         <PublishVersionModal
           program={publishTarget}
@@ -214,12 +225,12 @@ export function TrainingPrograms() {
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <Typography variant="h5" className="font-extrabold text-zinc-900">Training Programs</Typography>
-          <Typography variant="small" className="text-zinc-400">Programs group learning paths into versioned training packages</Typography>
+          <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Training Programs</h1>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 2 }}>Programs group learning paths into versioned training packages</p>
         </div>
-        <Button color="indigo" className="normal-case flex items-center gap-2" onClick={() => setShowForm(true)}>
-          <PlusIcon className="h-4 w-4" /> New Program
-        </Button>
+        <button onClick={() => setShowForm(true)} className="ank-btn-accent text-xs">
+          <PlusIcon className="h-3.5 w-3.5" /> New Program
+        </button>
       </div>
 
       {showForm && <NewProgramForm onCreated={handleCreated} onCancel={() => setShowForm(false)} />}
@@ -230,7 +241,7 @@ export function TrainingPrograms() {
         <EmptyState icon={RectangleStackIcon} title="No training programs"
           message="Create a training program to bundle learning paths into versioned packages." />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {programs.map((prog) => (
             <ProgramCard key={prog.id} program={prog} onPublishVersion={setPublishTarget} />
           ))}

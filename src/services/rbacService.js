@@ -1,9 +1,10 @@
 // src/services/rbacService.js
 import api from "./api";
 
-export async function fetchAllowedRoutes() {
+export async function fetchAllowedRoutes(companyId) {
     try {
-        const res = await api.get("/rbac/me/allowed-routes/");
+        const params = companyId ? { company_id: companyId } : {};
+        const res = await api.get("/rbac/me/allowed-routes/", { params });
         return res.data;
     } catch (err) {
         console.error("RBAC fetch failed", err);
@@ -11,30 +12,8 @@ export async function fetchAllowedRoutes() {
     }
 }
 
-export async function fetchRolePermissions(role) {
-    const keys = new Set();
-    let url = `/api/permissions/?role=${encodeURIComponent(role)}`;
-    while (url) {
-        const res = await api.get(url);
-        const data = res.data;
-        (data.results || []).forEach((p) => keys.add(p.resourceKey));
-        if (data.next) {
-            try {
-                const u = new URL(data.next);
-                url = u.pathname + u.search;
-            } catch {
-                url = null;
-            }
-        } else {
-            url = null;
-        }
-    }
-    return keys;
-}
-
 const rbacService = {
     fetchAllowedRoutes,
-    fetchRolePermissions,
 };
 
 export default rbacService;

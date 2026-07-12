@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Typography } from "@material-tailwind/react";
 import { retentionApi } from "../../api/enterpriseApi";
 import { EmptyState } from "../../components/EmptyState";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
 
-function scoreStyle(s) {
-  if (s >= 70) return "text-green-700 bg-green-100";
-  if (s >= 40) return "text-amber-700 bg-amber-100";
-  return "text-red-700 bg-red-100";
+function scoreTone(s) {
+  if (s >= 70) return "#4ade80";
+  if (s >= 40) return "#f59e0b";
+  return "#f87171";
 }
 
 export function TeamRetention() {
@@ -19,41 +18,48 @@ export function TeamRetention() {
   }, []);
 
   return (
-      <div className="space-y-6">
-        <Typography variant="h5" className="font-extrabold text-zinc-900">Team Retention</Typography>
+    <div className="space-y-5">
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Team Retention</h1>
 
-        {loading ? <TableSkeleton rows={6} cols={5} /> : members.length === 0 ? (
-          <EmptyState title="No team data" />
-        ) : (
-          <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200">
+      {loading ? <TableSkeleton rows={6} cols={5} /> : members.length === 0 ? (
+        <EmptyState title="No team data" />
+      ) : (
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
+              <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
                   {["Name", "Retention Score", "Risk Score", "Open Gaps", "Last Assessment"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-bold text-zinc-400 uppercase">{h}</th>
+                    <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {members.map((m) => (
-                  <tr key={m.user_id} className="border-b border-zinc-50 hover:bg-zinc-50">
-                    <td className="px-4 py-3 font-semibold text-zinc-800">
-                      {m.name}
-                      {(m.risk_score ?? 0) > 60 && <span className="ml-2 text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full">At Risk</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${scoreStyle(m.retention_score ?? 0)}`}>{m.retention_score ?? 0}%</span>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">{m.risk_score ?? 0}%</td>
-                    <td className="px-4 py-3 text-zinc-600">{m.open_gaps ?? 0}</td>
-                    <td className="px-4 py-3 text-zinc-400 text-xs">{m.last_assessment ? new Date(m.last_assessment).toLocaleDateString() : "—"}</td>
-                  </tr>
-                ))}
+                {members.map((m) => {
+                  const tone = scoreTone(m.retention_score ?? 0);
+                  return (
+                    <tr key={m.user_id} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>
+                        {m.name}
+                        {(m.risk_score ?? 0) > 60 && (
+                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>At Risk</span>
+                        )}
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: `${tone}22`, color: tone }}>{m.retention_score ?? 0}%</span>
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{m.risk_score ?? 0}%</td>
+                      <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{m.open_gaps ?? 0}</td>
+                      <td style={{ padding: "12px 16px", color: "var(--text-tertiary)", fontSize: 11 }}>{m.last_assessment ? new Date(m.last_assessment).toLocaleDateString() : "—"}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }
 

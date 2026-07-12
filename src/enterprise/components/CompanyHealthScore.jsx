@@ -1,12 +1,11 @@
 import React from "react";
 import ReactApexChart from "react-apexcharts";
-import { Typography } from "@material-tailwind/react";
 
 function healthColor(score) {
-  if (score >= 90) return "#16a34a";
-  if (score >= 70) return "#2563eb";
-  if (score >= 50) return "#d97706";
-  return "#dc2626";
+  if (score >= 90) return "#4ade80";
+  if (score >= 70) return "#818CF8";
+  if (score >= 50) return "#f59e0b";
+  return "#f87171";
 }
 
 function healthLabel(score) {
@@ -26,7 +25,7 @@ export function CompanyHealthScore({ score = 0, breakdown = {} }) {
   ];
 
   const options = {
-    chart: { type: "donut", sparkline: { enabled: false } },
+    chart: { type: "donut", sparkline: { enabled: false }, background: "transparent" },
     labels: components.map((c) => c.label),
     colors: [color, `${color}cc`, `${color}99`, `${color}66`],
     plotOptions: {
@@ -39,15 +38,14 @@ export function CompanyHealthScore({ score = 0, breakdown = {} }) {
               show: true,
               label: "Health Score",
               fontSize: "12px",
-              color: "#6b7280",
+              color: "#8B8B9C",
               formatter: () => `${Math.round(score)}`,
               fontWeight: 800,
-              fontsize: "28px",
             },
             value: {
               fontSize: "28px",
               fontWeight: 800,
-              color: "#111827",
+              color: "#F1F5F9",
               formatter: () => `${Math.round(score)}`,
             },
           },
@@ -58,6 +56,7 @@ export function CompanyHealthScore({ score = 0, breakdown = {} }) {
     legend: { show: false },
     stroke: { width: 0 },
     tooltip: {
+      theme: "dark",
       y: { formatter: (v) => `${Math.round(v)}` },
     },
   };
@@ -65,31 +64,31 @@ export function CompanyHealthScore({ score = 0, breakdown = {} }) {
   const series = [40, 30, 20, 10];
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6">
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 24 }}>
       <div className="flex flex-col md:flex-row items-center gap-8">
         <div className="relative">
           <ReactApexChart options={options} series={series} type="donut" width={240} height={240} />
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-4xl font-extrabold text-zinc-900">{Math.round(score)}</span>
-            <span className="text-xs font-bold" style={{ color }}>{healthLabel(score)}</span>
+            <span style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)" }}>{Math.round(score)}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color }}>{healthLabel(score)}</span>
           </div>
         </div>
 
-        <div className="flex-1 space-y-3">
-          <Typography variant="h5" className="font-extrabold text-zinc-900 mb-4">Company Health</Typography>
+        <div className="flex-1 space-y-3 w-full">
+          <p style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)", marginBottom: 12 }}>Company Health</p>
           {components.map((c, i) => (
             <div key={c.label} className="flex items-center gap-3">
-              <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: options.colors[i] }} />
+              <div style={{ width: 10, height: 10, borderRadius: "50%", flexShrink: 0, background: options.colors[i] }} />
               <div className="flex-1">
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm font-semibold text-zinc-700">{c.label}</span>
-                  <span className="text-xs text-zinc-400">{c.weight} weight</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>{c.label}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{c.weight} weight</span>
                 </div>
-                <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${c.value ?? 0}%`, background: options.colors[i] }} />
+                <div style={{ height: 5, background: "var(--bg-elevated)", borderRadius: 20, overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 20, width: `${c.value ?? 0}%`, background: options.colors[i] }} />
                 </div>
               </div>
-              <span className="text-sm font-bold text-zinc-700 w-10 text-right">{c.value ?? "—"}%</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)", width: 40, textAlign: "right" }}>{c.value ?? "—"}%</span>
             </div>
           ))}
         </div>

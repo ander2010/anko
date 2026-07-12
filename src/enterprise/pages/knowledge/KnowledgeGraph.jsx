@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { Typography, Button, Select, Option } from "@material-tailwind/react";
 import { ArrowPathIcon, LinkIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
@@ -162,46 +161,45 @@ export function KnowledgeGraph() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <Typography variant="h5" className="font-extrabold text-zinc-900">Knowledge Graph</Typography>
-          <Typography variant="small" className="text-zinc-400">
+          <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Knowledge Graph</h1>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 2 }}>
             {visibleNodes.length} nodes · {visibleEdges.length} relationships
-          </Typography>
+          </p>
         </div>
-        <Button variant="outlined" color="indigo" size="sm" className="normal-case"
-          loading={loading} onClick={loadGraph}>
-          <ArrowPathIcon className="h-4 w-4 mr-1" /> Refresh
-        </Button>
+        <button onClick={loadGraph} disabled={loading} className="ank-btn-ghost text-xs" style={{ opacity: loading ? 0.6 : 1 }}>
+          <ArrowPathIcon className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap lg:flex-nowrap">
         {/* Filters panel */}
-        <div className="w-52 flex-shrink-0 space-y-4">
-          <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-4 space-y-3">
+        <div style={{ width: 208, flexShrink: 0 }} className="space-y-4">
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }} className="space-y-3">
             <div className="flex items-center gap-2">
-              <FunnelIcon className="h-4 w-4 text-zinc-400" />
-              <Typography variant="small" className="font-bold text-zinc-600 uppercase tracking-wide">Filters</Typography>
+              <FunnelIcon style={{ width: 14, height: 14, color: "var(--text-tertiary)" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Filters</span>
             </div>
 
             <div>
-              <Typography variant="small" className="font-semibold text-zinc-500 mb-2">Node Types</Typography>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>Node Types</p>
               <div className="space-y-1.5">
                 {NODE_TYPES.map((type) => (
                   <label key={type} className="flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" checked={filters.nodeTypes.has(type)}
-                      onChange={() => toggleType(type)} className="rounded border-zinc-300" />
-                    <span className="w-3 h-3 rounded-full" style={{ background: NODE_COLORS[type] }} />
-                    <Typography variant="small" className="text-zinc-600 capitalize">{type}</Typography>
+                      onChange={() => toggleType(type)} style={{ accentColor: NODE_COLORS[type] }} />
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: NODE_COLORS[type], flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)", textTransform: "capitalize" }}>{type}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <Typography variant="small" className="font-semibold text-zinc-500 mb-2">Knowledge Source</Typography>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>Knowledge Source</p>
               <select
-                className="w-full text-sm border border-zinc-200 rounded-lg px-2 py-1.5 text-zinc-700"
                 value={filters.source}
                 onChange={(e) => setFilters((f) => ({ ...f, source: e.target.value }))}
+                style={{ width: "100%", fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 8px", color: "var(--text-secondary)", outline: "none" }}
               >
                 <option value="">All sources</option>
                 {sources.filter((s) => s.status === "processed").map((s) => (
@@ -212,55 +210,54 @@ export function KnowledgeGraph() {
 
             <div className="flex gap-1">
               <button onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
-                className="flex-1 py-1 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-600 font-bold text-sm">+</button>
+                style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-secondary)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>+</button>
               <button onClick={() => setZoom((z) => Math.max(0.2, z - 0.25))}
-                className="flex-1 py-1 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-600 font-bold text-sm">−</button>
+                style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-secondary)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>−</button>
               <button onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}
-                className="flex-1 py-1 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-500 text-xs font-bold">Fit</button>
+                style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-tertiary)", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Fit</button>
             </div>
           </div>
 
           {/* Selected node detail */}
           {selected && (
-            <div className="bg-white rounded-2xl border border-indigo-200 shadow-sm p-4 space-y-3">
+            <div style={{ background: "var(--bg-surface)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 12, padding: 16 }} className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full capitalize"
-                  style={{ background: NODE_COLORS[selected.node_type] + "22", color: NODE_COLORS[selected.node_type] }}>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, textTransform: "capitalize", background: NODE_COLORS[selected.node_type] + "22", color: NODE_COLORS[selected.node_type] }}>
                   {selected.node_type}
                 </span>
-                <button onClick={() => setSelected(null)} className="text-zinc-400 hover:text-zinc-600 text-lg">×</button>
+                <button onClick={() => setSelected(null)} style={{ color: "var(--text-tertiary)", fontSize: 18, background: "none", border: "none", cursor: "pointer", lineHeight: 1 }}>×</button>
               </div>
-              <Typography className="font-semibold text-zinc-900 text-sm">{selected.title}</Typography>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{selected.title}</p>
               {selected.description && (
-                <Typography variant="small" className="text-zinc-400">{selected.description}</Typography>
+                <p style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{selected.description}</p>
               )}
               {selected.importance_score != null && (
                 <div>
                   <div className="flex justify-between mb-1">
-                    <Typography variant="small" className="text-zinc-400">Importance</Typography>
-                    <Typography variant="small" className="font-bold text-indigo-600">
+                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Importance</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#818CF8" }}>
                       {Math.round(selected.importance_score * 100)}%
-                    </Typography>
+                    </span>
                   </div>
-                  <div className="h-1.5 bg-zinc-100 rounded-full">
-                    <div className="h-1.5 bg-indigo-500 rounded-full" style={{ width: `${selected.importance_score * 100}%` }} />
+                  <div style={{ height: 5, background: "var(--bg-elevated)", borderRadius: 20, overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 20, background: "#6366F1", width: `${selected.importance_score * 100}%` }} />
                   </div>
                 </div>
               )}
               {selectedRelations.length > 0 && (
                 <div>
-                  <Typography variant="small" className="font-semibold text-zinc-500 mb-1">
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 5 }}>
                     Connections ({selectedRelations.length})
-                  </Typography>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                  </p>
+                  <div className="space-y-1" style={{ maxHeight: 128, overflowY: "auto" }}>
                     {selectedRelations.slice(0, 8).map((e, i) => {
                       const otherId = (e.source_id || e.source) === selected.id ? (e.target_id || e.target) : (e.source_id || e.source);
                       const other = visibleNodes.find((n) => n.id === otherId);
                       return (
-                        <div key={i} className="flex items-center gap-1.5 text-xs text-zinc-500">
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-tertiary)" }}>
                           <span style={{ color: EDGE_COLORS[e.relationship_type] || "#6366f1" }}>→</span>
-                          <span className="text-zinc-400">{e.relationship_type}</span>
-                          <span className="text-zinc-600 truncate">{other?.title || otherId}</span>
+                          <span>{e.relationship_type}</span>
+                          <span style={{ color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other?.title || otherId}</span>
                         </div>
                       );
                     })}
@@ -272,29 +269,28 @@ export function KnowledgeGraph() {
         </div>
 
         {/* Graph canvas */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative" style={{ minWidth: 0 }}>
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-zinc-50/80 rounded-2xl z-10">
-              <div className="flex items-center gap-3 text-zinc-500">
-                <ArrowPathIcon className="h-6 w-6 animate-spin" />
-                <span>Computing layout...</span>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(2,6,23,0.75)", borderRadius: 12, zIndex: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-secondary)" }}>
+                <ArrowPathIcon className="animate-spin" style={{ width: 20, height: 20 }} />
+                <span style={{ fontSize: 13 }}>Computing layout...</span>
               </div>
             </div>
           )}
 
           {!loading && !visibleNodes.length && (
-            <div className="flex flex-col items-center justify-center h-96 bg-zinc-50 rounded-2xl border border-zinc-200 text-zinc-400 gap-3">
-              <LinkIcon className="h-12 w-12 opacity-30" />
-              <Typography className="font-semibold">No knowledge graph data</Typography>
-              <Typography variant="small">Process documents with AI to build the graph.</Typography>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 384, background: "var(--bg-app)", borderRadius: 12, border: "1px solid var(--border)", color: "var(--text-tertiary)", gap: 10 }}>
+              <LinkIcon style={{ width: 40, height: 40, opacity: 0.3 }} />
+              <p style={{ fontWeight: 600, fontSize: 13 }}>No knowledge graph data</p>
+              <p style={{ fontSize: 12 }}>Process documents with AI to build the graph.</p>
             </div>
           )}
 
           {visibleNodes.length > 0 && (
             <svg
               viewBox={`0 0 ${W} ${H}`}
-              className="w-full bg-zinc-50 rounded-2xl border border-zinc-200 shadow-sm cursor-grab active:cursor-grabbing"
-              style={{ height: 520 }}
+              style={{ width: "100%", height: 520, background: "var(--bg-app)", borderRadius: 12, border: "1px solid var(--border)", cursor: dragging.current ? "grabbing" : "grab" }}
               onWheel={onWheel}
               onMouseDown={onMouseDown}
               onMouseMove={onMouseMove}
@@ -307,7 +303,7 @@ export function KnowledgeGraph() {
                   const s = positions[e.source_id || e.source];
                   const t = positions[e.target_id || e.target];
                   if (!s || !t) return null;
-                  const color = EDGE_COLORS[e.relationship_type] || "#94a3b8";
+                  const color = EDGE_COLORS[e.relationship_type] || "#64748b";
                   const dashed = ["requires", "contradicts"].includes(e.relationship_type);
                   const strength = e.strength ?? 0.5;
                   return (
@@ -315,7 +311,7 @@ export function KnowledgeGraph() {
                       x1={s.x} y1={s.y} x2={t.x} y2={t.y}
                       stroke={color} strokeWidth={Math.max(1, strength * 2.5)}
                       strokeDasharray={dashed ? "6,3" : "none"}
-                      opacity={0.45}
+                      opacity={0.5}
                     />
                   );
                 })}
@@ -333,12 +329,12 @@ export function KnowledgeGraph() {
                       onClick={() => setSelected(isSel ? null : n)}>
                       <circle cx={pos.x} cy={pos.y} r={r + (isSel ? 5 : 0)}
                         fill={color}
-                        opacity={selected && !isSel && !isRelated ? 0.25 : 0.85}
-                        stroke={isSel ? "#312e81" : isRelated ? "#fff" : "white"}
+                        opacity={selected && !isSel && !isRelated ? 0.25 : 0.9}
+                        stroke={isSel ? "#A5B4FC" : "#0F172A"}
                         strokeWidth={isSel ? 3 : 1.5}
                       />
                       <text x={pos.x} y={pos.y + r + 13}
-                        fontSize={10} fill="#374151" textAnchor="middle"
+                        fontSize={10} fill="#94A3B8" textAnchor="middle"
                         style={{ pointerEvents: "none" }}>
                         {n.title?.length > 20 ? n.title.slice(0, 18) + "…" : n.title}
                       </text>
@@ -353,8 +349,8 @@ export function KnowledgeGraph() {
           {visibleNodes.length > 0 && (
             <div className="flex flex-wrap gap-3 mt-3">
               {Object.entries(EDGE_COLORS).map(([type, color]) => (
-                <span key={type} className="flex items-center gap-1.5 text-xs text-zinc-500">
-                  <span className="w-5 h-0.5 inline-block" style={{ background: color }} />
+                <span key={type} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-tertiary)" }}>
+                  <span style={{ width: 18, height: 2, display: "inline-block", background: color }} />
                   {type.replace("_", " ")}
                 </span>
               ))}

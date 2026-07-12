@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardBody, Button } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { AcademicCapIcon } from "@heroicons/react/24/outline";
 import { certApi } from "../../api/enterpriseApi";
 import { StatusBadge } from "../../components/StatusBadge";
 import { EmptyState } from "../../components/EmptyState";
-import { DashboardSkeleton, KPICardSkeleton } from "../../components/LoadingSkeleton";
+import { DashboardSkeleton } from "../../components/LoadingSkeleton";
 
 export function MyCertifications() {
   const [certs, setCerts] = useState([]);
@@ -23,24 +22,22 @@ export function MyCertifications() {
   if (loading) return <DashboardSkeleton />;
 
   return (
-    <div className="space-y-6">
-      <Typography variant="h5" className="font-extrabold text-zinc-900">My Certifications</Typography>
+    <div className="space-y-5">
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>My Certifications</h1>
 
       {/* Stats row */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Active ✅", value: stats.active, color: "text-green-600" },
-            { label: "Expiring 🟡", value: stats.expiring, color: "text-amber-600" },
-            { label: "Expired ⏰", value: stats.expired, color: "text-gray-600" },
-            { label: "Revoked ❌", value: stats.revoked, color: "text-red-600" },
+            { label: "Active", value: stats.active, color: "#4ade80" },
+            { label: "Expiring", value: stats.expiring, color: "#f59e0b" },
+            { label: "Expired", value: stats.expired, color: "#8B8B9C" },
+            { label: "Revoked", value: stats.revoked, color: "#f87171" },
           ].map((s) => (
-            <Card key={s.label} className="border border-zinc-200/60 shadow-sm">
-              <CardBody className="p-4 text-center">
-                <div className={`text-3xl font-extrabold ${s.color}`}>{s.value ?? 0}</div>
-                <div className="text-xs font-semibold text-zinc-400 mt-1">{s.label}</div>
-              </CardBody>
-            </Card>
+            <div key={s.label} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, textAlign: "center" }}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: s.color }}>{s.value ?? 0}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginTop: 4 }}>{s.label}</div>
+            </div>
           ))}
         </div>
       )}
@@ -49,40 +46,43 @@ export function MyCertifications() {
       {certs.length === 0 ? (
         <EmptyState icon={AcademicCapIcon} title="No certifications yet" message="Complete compliance programs or assessments to earn certifications." />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {certs.map((cert) => (
-            <Card
-              key={cert.id}
-              className={`border shadow-sm ${cert.status === "expiring" ? "border-amber-200" : cert.status === "expired" || cert.status === "revoked" ? "border-red-200" : "border-zinc-200/60"}`}
-            >
-              <CardBody className="p-5 space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {certs.map((cert) => {
+            const warn = cert.status === "expiring";
+            const danger = cert.status === "expired" || cert.status === "revoked";
+            return (
+              <div key={cert.id}
+                style={{ background: "var(--bg-surface)", border: `1px solid ${warn ? "rgba(245,158,11,0.3)" : danger ? "rgba(239,68,68,0.3)" : "var(--border)"}`, borderRadius: 12, padding: 18 }}
+                className="space-y-3"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <Typography variant="h6" className="font-bold text-zinc-900 text-sm leading-tight">{cert.template_name}</Typography>
-                    <Typography variant="small" className="text-xs text-indigo-600 font-bold capitalize mt-0.5">{cert.template_type}</Typography>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{cert.template_name}</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#818CF8", textTransform: "capitalize", marginTop: 2 }}>{cert.template_type}</p>
                   </div>
                   <StatusBadge status={cert.status} />
                 </div>
 
-                <Typography variant="small" className="font-mono text-zinc-400 text-xs truncate">#{cert.certificate_number}</Typography>
+                <p style={{ fontFamily: "monospace", fontSize: 11, color: "var(--text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>#{cert.certificate_number}</p>
 
-                <div className="text-xs text-zinc-500 space-y-0.5">
-                  <div>Issued: <span className="font-semibold">{cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}</span></div>
-                  <div>Expires: <span className="font-semibold">{cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : "No expiry"}</span></div>
-                  {cert.score != null && <div>Score: <span className="font-bold text-indigo-600">{cert.score}%</span></div>}
+                <div style={{ fontSize: 11, color: "var(--text-secondary)" }} className="space-y-1">
+                  <div>Issued: <span style={{ fontWeight: 600 }}>{cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}</span></div>
+                  <div>Expires: <span style={{ fontWeight: 600 }}>{cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : "No expiry"}</span></div>
+                  {cert.score != null && <div>Score: <span style={{ fontWeight: 700, color: "#818CF8" }}>{cert.score}%</span></div>}
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" color="indigo" variant="outlined" className="normal-case text-xs flex-1" onClick={() => navigate(`/enterprise/certifications/${cert.id}`)}>
+                  <button onClick={() => navigate(`/enterprise/certifications/${cert.id}`)}
+                    style={{ flex: 1, fontSize: 11, fontWeight: 700, color: "#818CF8", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 6, padding: "7px 0", cursor: "pointer" }}>
                     View
-                  </Button>
-                  <Button size="sm" color="zinc" variant="text" className="normal-case text-xs flex-1">
+                  </button>
+                  <button style={{ flex: 1, fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", background: "none", border: "1px solid var(--border)", borderRadius: 6, padding: "7px 0", cursor: "pointer" }}>
                     Verify
-                  </Button>
+                  </button>
                 </div>
-              </CardBody>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

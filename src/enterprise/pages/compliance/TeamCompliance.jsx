@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardBody } from "@material-tailwind/react";
 import { complianceApi } from "../../api/enterpriseApi";
 import { StatusBadge } from "../../components/StatusBadge";
 import { EmptyState } from "../../components/EmptyState";
@@ -20,70 +19,72 @@ export function TeamCompliance() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const rateColor = (r) => (r >= 80 ? "#4ade80" : r >= 60 ? "#f59e0b" : "#f87171");
+
   return (
-      <div className="space-y-6">
-        <Typography variant="h5" className="font-extrabold text-zinc-900">Team Compliance</Typography>
+    <div className="space-y-5">
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Team Compliance</h1>
 
-        {loading ? (
-          <div className="grid grid-cols-3 gap-4"><KPICardSkeleton /><KPICardSkeleton /><KPICardSkeleton /></div>
-        ) : summary && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Compliant", value: summary.compliant ?? 0, color: "text-green-600" },
-              { label: "Non-Compliant", value: summary.non_compliant ?? 0, color: "text-red-600" },
-              { label: "Pending", value: summary.pending ?? 0, color: "text-amber-600" },
-              { label: "Avg Rate", value: `${summary.avg_compliance_rate ?? 0}%`, color: "text-indigo-600" },
-            ].map((s) => (
-              <Card key={s.label} className="border border-zinc-200/60 shadow-sm">
-                <CardBody className="p-4 text-center">
-                  <div className={`text-3xl font-extrabold ${s.color}`}>{s.value}</div>
-                  <div className="text-xs font-semibold text-zinc-400 mt-1">{s.label}</div>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        )}
+      {loading ? (
+        <div className="grid grid-cols-3 gap-3"><KPICardSkeleton /><KPICardSkeleton /><KPICardSkeleton /></div>
+      ) : summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Compliant", value: summary.compliant ?? 0, color: "#4ade80" },
+            { label: "Non-Compliant", value: summary.non_compliant ?? 0, color: "#f87171" },
+            { label: "Pending", value: summary.pending ?? 0, color: "#f59e0b" },
+            { label: "Avg Rate", value: `${summary.avg_compliance_rate ?? 0}%`, color: "#818CF8" },
+          ].map((s) => (
+            <div key={s.label} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, textAlign: "center" }}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {loading ? <TableSkeleton rows={5} cols={5} /> : members.length === 0 ? (
-          <EmptyState title="No team compliance data" />
-        ) : (
-          <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200">
+      {loading ? <TableSkeleton rows={5} cols={5} /> : members.length === 0 ? (
+        <EmptyState title="No team compliance data" />
+      ) : (
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
+              <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
                   {["Member", "Compliance Rate", "Compliant", "Non-Compliant", "Pending", "Status"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-bold text-zinc-400 uppercase">{h}</th>
+                    <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {members.map((m) => (
-                  <tr key={m.user_id} className={`border-b border-zinc-50 hover:bg-zinc-50 ${m.compliance_rate < 60 ? "bg-red-50/30" : ""}`}>
-                    <td className="px-4 py-3 font-semibold text-zinc-800">{m.user_name}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-zinc-100 rounded-full h-1.5">
-                          <div
-                            className={`h-1.5 rounded-full ${m.compliance_rate >= 80 ? "bg-green-500" : m.compliance_rate >= 60 ? "bg-amber-500" : "bg-red-500"}`}
-                            style={{ width: `${m.compliance_rate}%` }}
-                          />
+                {members.map((m) => {
+                  const tone = rateColor(m.compliance_rate);
+                  return (
+                    <tr key={m.user_id} style={{ borderBottom: "1px solid var(--border)", background: m.compliance_rate < 60 ? "rgba(239,68,68,0.05)" : "transparent" }}>
+                      <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{m.user_name}</td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <div className="flex items-center gap-2">
+                          <div style={{ flex: 1, background: "var(--bg-elevated)", borderRadius: 20, height: 5 }}>
+                            <div style={{ height: 5, borderRadius: 20, background: tone, width: `${m.compliance_rate}%` }} />
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)" }}>{m.compliance_rate}%</span>
                         </div>
-                        <span className="text-xs font-bold text-zinc-700">{m.compliance_rate}%</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-green-600 font-bold">{m.compliant ?? 0}</td>
-                    <td className="px-4 py-3 text-red-600 font-bold">{m.non_compliant ?? 0}</td>
-                    <td className="px-4 py-3 text-amber-600 font-bold">{m.pending ?? 0}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={m.compliance_rate >= 80 ? "compliant" : m.compliance_rate >= 60 ? "pending" : "non_compliant"} />
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#4ade80", fontWeight: 700 }}>{m.compliant ?? 0}</td>
+                      <td style={{ padding: "12px 16px", color: "#f87171", fontWeight: 700 }}>{m.non_compliant ?? 0}</td>
+                      <td style={{ padding: "12px 16px", color: "#f59e0b", fontWeight: 700 }}>{m.pending ?? 0}</td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <StatusBadge status={m.compliance_rate >= 80 ? "compliant" : m.compliance_rate >= 60 ? "pending" : "non_compliant"} />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }
 

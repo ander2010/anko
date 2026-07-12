@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardBody, Select, Option } from "@material-tailwind/react";
 import ReactApexChart from "react-apexcharts";
 import { analyticsApi } from "../../api/enterpriseApi";
 import { EmptyState } from "../../components/EmptyState";
@@ -15,69 +14,70 @@ export function RetentionTrends() {
   }, [days]);
 
   const options = {
-    chart: { type: "line", toolbar: { show: false }, fontFamily: "inherit" },
+    chart: { type: "line", toolbar: { show: false }, fontFamily: "inherit", background: "transparent" },
     stroke: { curve: "smooth", width: [2, 2] },
-    colors: ["#4f46e5", "#dc2626"],
-    xaxis: { categories: data.map((t) => t.date), labels: { style: { fontSize: "10px" }, rotate: -30 } },
-    yaxis: { min: 0, max: 100, labels: { formatter: (v) => `${v}%` } },
-    legend: { position: "top" },
+    colors: ["#818CF8", "#f87171"],
+    xaxis: { categories: data.map((t) => t.date), labels: { style: { fontSize: "10px", colors: "#64748B" }, rotate: -30 } },
+    yaxis: { min: 0, max: 100, labels: { formatter: (v) => `${v}%`, style: { colors: "#64748B" } } },
+    legend: { position: "top", labels: { colors: "#94A3B8" } },
     dataLabels: { enabled: false },
-    grid: { borderColor: "#f3f4f6" },
-    tooltip: { shared: true, y: { formatter: (v) => `${v}%` } },
+    grid: { borderColor: "rgba(255,255,255,0.07)" },
+    tooltip: { theme: "dark", shared: true, y: { formatter: (v) => `${v}%` } },
   };
 
   return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Typography variant="h5" className="font-extrabold text-zinc-900">Retention Trends</Typography>
-          <div className="w-32">
-            <Select label="Period" value={days} onChange={setDays}>
-              {["30", "60", "90", "180"].map((d) => <Option key={d} value={d}>{d} days</Option>)}
-            </Select>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Retention Trends</h1>
+        <select value={days} onChange={(e) => setDays(e.target.value)}
+          style={{ fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 10px", color: "var(--text-secondary)", outline: "none", cursor: "pointer" }}>
+          {["30", "60", "90", "180"].map((d) => <option key={d} value={d}>{d} days</option>)}
+        </select>
+      </div>
+
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 18 }}>
+        {loading ? (
+          <div style={{ height: 256 }} className="flex items-center justify-center">
+            <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="animate-spin h-8 w-8 rounded-full border-2" />
           </div>
-        </div>
+        ) : data.length === 0 ? <EmptyState title="No trend data yet" /> : (
+          <ReactApexChart
+            options={options}
+            series={[
+              { name: "Avg Retention", data: data.map((t) => t.avg_retention ?? 0) },
+              { name: "Avg Risk", data: data.map((t) => t.avg_risk ?? 0) },
+            ]}
+            type="line" height={320}
+          />
+        )}
+      </div>
 
-        <Card className="border border-zinc-200/60 shadow-sm">
-          <CardBody className="p-5">
-            {loading ? (
-              <div className="h-64 flex items-center justify-center"><div className="animate-spin h-8 w-8 rounded-full border-2 border-indigo-600 border-t-transparent" /></div>
-            ) : data.length === 0 ? <EmptyState title="No trend data yet" /> : (
-              <ReactApexChart
-                options={options}
-                series={[
-                  { name: "Avg Retention", data: data.map((t) => t.avg_retention ?? 0) },
-                  { name: "Avg Risk", data: data.map((t) => t.avg_risk ?? 0) },
-                ]}
-                type="line" height={320}
-              />
-            )}
-          </CardBody>
-        </Card>
-
-        {data.length > 0 && (
-          <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200">
+      {data.length > 0 && (
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
+              <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
                   {["Date", "Avg Retention", "Avg Risk", "Snapshots"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-bold text-zinc-400 uppercase">{h}</th>
+                    <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {data.slice(-10).reverse().map((row, i) => (
-                  <tr key={i} className="border-b border-zinc-50 hover:bg-zinc-50">
-                    <td className="px-4 py-2 text-zinc-600 text-xs">{row.date}</td>
-                    <td className="px-4 py-2 font-bold text-indigo-600">{row.avg_retention ?? 0}%</td>
-                    <td className="px-4 py-2 font-bold text-red-500">{row.avg_risk ?? 0}%</td>
-                    <td className="px-4 py-2 text-zinc-500">{row.snapshot_count ?? 0}</td>
+                  <tr key={i} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "10px 16px", color: "var(--text-tertiary)", fontSize: 11 }}>{row.date}</td>
+                    <td style={{ padding: "10px 16px", fontWeight: 700, color: "#818CF8" }}>{row.avg_retention ?? 0}%</td>
+                    <td style={{ padding: "10px 16px", fontWeight: 700, color: "#f87171" }}>{row.avg_risk ?? 0}%</td>
+                    <td style={{ padding: "10px 16px", color: "var(--text-secondary)" }}>{row.snapshot_count ?? 0}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   );
 }
 

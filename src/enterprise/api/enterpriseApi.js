@@ -139,7 +139,7 @@ export const learningApi = {
   // Reviews and Gaps
   getDueReviews: (p) => enterpriseApi.get("/enterprise/review-schedules/my-due-reviews/", { params: cp(p) }).then((r) => r.data),
   getOverdueReviews: (p) => enterpriseApi.get("/enterprise/review-schedules/overdue/", { params: cp(p) }).then((r) => r.data),
-  completeReview: (id) => enterpriseApi.post(`/enterprise/review-schedules/${id}/complete/`, cp()).then((r) => r.data),
+  completeReview: (id, score) => enterpriseApi.post(`/enterprise/review-schedules/${id}/complete/`, cp({ score })).then((r) => r.data),
   getKnowledgeGaps: (p) => enterpriseApi.get("/enterprise/knowledge-gaps/", { params: cp(p) }).then((r) => r.data),
   acknowledgeGap: (id) => enterpriseApi.post(`/enterprise/knowledge-gaps/${id}/acknowledge/`, cp()).then((r) => r.data),
   resolveGap: (id) => enterpriseApi.post(`/enterprise/knowledge-gaps/${id}/resolve/`, cp()).then((r) => r.data),
@@ -211,6 +211,9 @@ export const knowledgeApi = {
 
   getGraph: (p) => enterpriseApi.get("/enterprise/knowledge-graph/graph/", { params: cp(p) }).then((r) => r.data),
   getResults: (id) => enterpriseApi.get(`/enterprise/knowledge-sources/${id}/results/`, { params: cp() }).then((r) => r.data),
+  // KnowledgeSource documents are linked via KnowledgeSourceDocument, not Document.project —
+  // this must NOT be confused with projectService.getDocumentsWithSections (Project-scoped).
+  getDocumentsWithSections: (id) => enterpriseApi.get(`/enterprise/knowledge-sources/${id}/documents-with-sections/`, { params: cp() }).then((r) => r.data),
   getNodes: (p) => enterpriseApi.get("/enterprise/knowledge-graph/nodes/", { params: cp(p) }).then((r) => r.data),
   getRelationships: (p) => enterpriseApi.get("/enterprise/knowledge-graph/relationships/", { params: cp(p) }).then((r) => r.data),
 };
@@ -251,6 +254,9 @@ export const collectionApi = {
     enterpriseApi.post(`/decks/reorder/`, { tag_group_id: tagGroupId, ordered_ids: orderedIds }).then((r) => r.data),
   reorderBatteries: (tagGroupId, orderedIds) =>
     enterpriseApi.post(`/batteries/reorder/`, { tag_group_id: tagGroupId, ordered_ids: orderedIds }).then((r) => r.data),
+  // Deletes the topic AND every deck/battery under it (cascade, backend-side).
+  deleteTagGroup: (tagGroupId) =>
+    enterpriseApi.delete(`/tag-groups/${tagGroupId}/`).then((r) => r.data),
 };
 
 export default enterpriseApi;

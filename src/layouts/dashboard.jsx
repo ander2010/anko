@@ -18,9 +18,17 @@ export function Dashboard() {
   const { sidenavType, openSidenav } = controller;
   const { isAdmin } = useAuth();
 
+  // "admin-area" is platform-wide (Users, Roles, Companies, ...) — gated purely
+  // by isAdmin (is_staff/is_superuser/global "admin" role), same rule as in
+  // layouts/enterprise.jsx.
+  const filteredRoutes = routes.map((section) => ({
+    ...section,
+    pages: (section.pages || []).filter((page) => page.name !== "admin-area" || isAdmin),
+  }));
+
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-app)" }}>
-      <Sidenav routes={routes} />
+      <Sidenav routes={filteredRoutes} />
 
       <div
         className="min-h-screen flex flex-col transition-all duration-200"

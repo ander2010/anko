@@ -5,10 +5,10 @@ import {
   UserGroupIcon, Cog6ToothIcon, PlusIcon, ArrowRightIcon,
   ArrowTrendingUpIcon, ClipboardDocumentListIcon,
   BookOpenIcon, BoltIcon, SparklesIcon,
-  RocketLaunchIcon, CheckBadgeIcon,
+  RocketLaunchIcon, CheckBadgeIcon, ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useEnterprise } from "../../context/enterprise-context";
-import { knowledgeApi, learningApi } from "../../api/enterpriseApi";
+import { knowledgeApi, learningApi, analyticsApi } from "../../api/enterpriseApi";
 
 // ─── Role style map ───────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ function RoleBadge({ role }) {
 
 // ─── Company header banner ────────────────────────────────────────────────────
 
-function CompanyBanner({ company, role }) {
+function CompanyBanner({ company, role, showSettings = true }) {
   const navigate = useNavigate();
   const name = company?.company_name || company?.name || "Your Company";
   const initial = name.charAt(0).toUpperCase();
@@ -53,13 +53,15 @@ function CompanyBanner({ company, role }) {
           </p>
         </div>
       </div>
-      <button onClick={() => navigate("/enterprise/settings")}
-        style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 13px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s", flexShrink: 0 }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
-        <Cog6ToothIcon className="h-3.5 w-3.5" />
-        Configuración
-      </button>
+      {showSettings && (
+        <button onClick={() => navigate("/enterprise/settings")}
+          style={{ fontSize: 12, fontWeight: 600, color: "#94A3B8", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "7px 13px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s", flexShrink: 0 }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
+          <Cog6ToothIcon className="h-3.5 w-3.5" />
+          Configuración
+        </button>
+      )}
     </div>
   );
 }
@@ -189,11 +191,12 @@ function GettingStarted() {
 
 // ─── Metrics hook ─────────────────────────────────────────────────────────────
 
-function useMetrics() {
+function useMetrics(enabled) {
   const [data, setData] = useState({ processes: "—", paths: "—", assignments: "—", sources: "—" });
   const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   useEffect(() => {
+    if (!enabled) { setLoadingMetrics(false); return; }
     let cancelled = false;
     const safe = (fn) => fn().catch(() => null);
     Promise.all([
@@ -214,9 +217,102 @@ function useMetrics() {
       setLoadingMetrics(false);
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [enabled]);
 
   return { data, loadingMetrics };
+}
+
+// ─── Employee metrics hook ─────────────────────────────────────────────────────
+// Employees don't have access to company-wide Procesos/Learning Paths/Fuentes —
+// their dashboard shows only what belongs to them (analytics/employee-dashboard).
+
+function useEmployeeMetrics(enabled) {
+  const [data, setData] = useState(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
+
+  useEffect(() => {
+    if (!enabled) { setLoadingMetrics(false); return; }
+    let cancelled = false;
+    analyticsApi.employeeDashboard()
+      .then((d) => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setData(null); })
+      .finally(() => { if (!cancelled) setLoadingMetrics(false); });
+    return () => { cancelled = true; };
+  }, [enabled]);
+
+  return { data, loadingMetrics };
+}
+
+// ─── Employee dashboard view ──────────────────────────────────────────────────
+
+const EMPLOYEE_NAV_LINKS = [
+  { label: "Mis asignaciones",  href: "/enterprise/learning/assignments", icon: ClipboardDocumentListIcon },
+  { label: "Review Schedules",  href: "/enterprise/learning/reviews",     icon: ClockIcon },
+  { label: "Knowledge Gaps",    href: "/enterprise/learning/gaps",        icon: ArrowTrendingUpIcon },
+  { label: "My Retention",      href: "/enterprise/retention/me",         icon: ArrowTrendingUpIcon },
+  { label: "My Compliance",     href: "/enterprise/compliance/me",        icon: ChartBarIcon },
+  { label: "My Certifications", href: "/enterprise/certifications",       icon: CheckBadgeIcon },
+];
+
+function EmployeeQuickLinks() {
+  const navigate = useNavigate();
+  return (
+    <div>
+      <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Acceso rápido</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {EMPLOYEE_NAV_LINKS.map(({ label, href, icon: Icon }) => (
+          <button key={href} onClick={() => navigate(href)}
+            style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "11px 12px", textAlign: "left", cursor: "pointer", transition: "border-color 0.15s, background 0.15s", display: "flex", alignItems: "center", gap: 9 }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.background = "var(--bg-surface)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-elevated)"; }}>
+            <Icon style={{ width: 13, height: 13, color: "var(--text-secondary)", flexShrink: 0 }} />
+            <span style={{ color: "var(--text-primary)", fontSize: 12, fontWeight: 500 }}>{label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmployeeDashboard({ activeCompany, role }) {
+  const { data: metrics, loadingMetrics } = useEmployeeMetrics(true);
+  const fmt = (v) => (loadingMetrics || !metrics ? "…" : v);
+
+  const learning = metrics?.learning || {};
+  const retention = metrics?.retention || {};
+  const compliance = metrics?.compliance || {};
+  const certifications = metrics?.certifications || {};
+
+  const activeAssignments = (learning.in_progress || 0) + (learning.pending || 0);
+
+  return (
+    <div className="space-y-5 max-w-4xl">
+      {/* Page header */}
+      <div>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Dashboard</h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 2 }}>
+          Tu progreso, retención y cumplimiento en la organización
+        </p>
+      </div>
+
+      {/* Company banner (no Configuración — employees don't have settings access) */}
+      <CompanyBanner company={activeCompany} role={role} showSettings={false} />
+
+      {/* KPI grid */}
+      <div>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Mis métricas</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <KPICard icon={ClipboardDocumentListIcon} label="Mis asignaciones" value={fmt(activeAssignments)} sub={`${fmt(learning.completed ?? "—")} completadas`} color="#F59E0B" href="/enterprise/learning/assignments" />
+          <KPICard icon={ArrowTrendingUpIcon} label="Mi Retention" value={fmt(retention.score != null ? `${retention.score}%` : "—")} sub={`Riesgo ${fmt(retention.risk_score != null ? `${retention.risk_score}%` : "—")}`} color="#22C55E" href="/enterprise/retention/me" />
+          <KPICard icon={ChartBarIcon} label="Mi Compliance" value={fmt(compliance.rate != null ? `${compliance.rate}%` : "—")} sub={`${fmt(compliance.compliant ?? "—")}/${fmt(compliance.total ?? "—")} programas`} color="#818CF8" href="/enterprise/compliance/me" />
+          <KPICard icon={CheckBadgeIcon} label="Certificaciones" value={fmt(certifications.active ?? "—")} sub={`${fmt(certifications.expiring_soon ?? "—")} por vencer`} color="#C084FC" href="/enterprise/certifications" />
+        </div>
+      </div>
+
+      {/* Quick links — only routes an employee actually has */}
+      <EmployeeQuickLinks />
+    </div>
+  );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -224,7 +320,7 @@ function useMetrics() {
 export function EnterpriseDashboard() {
   const navigate = useNavigate();
   const { isEnterpriseMember, initialized, loading, isPlatformAdmin, activeCompany, role } = useEnterprise();
-  const { data: metrics, loadingMetrics } = useMetrics();
+  const { data: metrics, loadingMetrics } = useMetrics(role !== "employee");
 
   if (!initialized || loading) {
     return (
@@ -236,6 +332,10 @@ export function EnterpriseDashboard() {
 
   if (isPlatformAdmin && !isEnterpriseMember) return <Navigate to="/platform-admin/companies" replace />;
   if (!isEnterpriseMember) return <Navigate to="/enterprise/onboarding/company" replace />;
+
+  if (role === "employee") {
+    return <EmployeeDashboard activeCompany={activeCompany} role={role} />;
+  }
 
   const fmt = (v) => (loadingMetrics ? "…" : v);
   const noProcesses = !loadingMetrics && metrics.processes === 0;

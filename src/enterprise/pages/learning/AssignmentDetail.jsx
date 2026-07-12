@@ -2,18 +2,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeftIcon, CheckCircleIcon, LockClosedIcon, PlayIcon,
-  ClockIcon, DocumentTextIcon, RectangleStackIcon, BoltIcon,
-  ChevronRightIcon, ArrowPathIcon, BookOpenIcon, TagIcon,
+  ClockIcon, BoltIcon,
+  ChevronRightIcon, ArrowPathIcon, BookOpenIcon, RectangleStackIcon,
+  ViewColumnsIcon, XMarkIcon, ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
-import { learningApi } from "../../api/enterpriseApi";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STUDY_TABS = [
-  { id: "documents",  label: "Documentos",  Icon: DocumentTextIcon },
-  { id: "flashcards", label: "Flashcards",  Icon: RectangleStackIcon },
-  { id: "battery",    label: "Batería",     Icon: BoltIcon },
-];
+import { learningApi, knowledgeApi } from "../../api/enterpriseApi";
+import { ExamSimulatorDialog } from "@/widgets/dialogs/index";
+import { FlashcardViewDialog } from "@/widgets/dialogs/flashcard-view-dialog";
+import { FlashcardLearnDialog } from "@/widgets/dialogs/flashcard-learn-dialog";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -26,251 +22,246 @@ function ProgressBar({ value, color = "var(--accent)" }) {
   );
 }
 
-// ─── Flashcard flip component ─────────────────────────────────────────────────
+// ─── Documents (read-only: viewable, not uploadable) ──────────────────────────
 
-function FlashCard({ item, index }) {
-  const [flipped, setFlipped] = useState(false);
+function DocumentsMiniPanel({ documents, onView }) {
+  if (!documents || documents.length === 0) return null;
   return (
-    <div onClick={() => setFlipped((v) => !v)}
-      style={{ cursor: "pointer", background: flipped ? "rgba(94,106,210,0.08)" : "var(--bg-elevated)", border: `1px solid ${flipped ? "var(--accent)" : "var(--border)"}`, borderRadius: 8, padding: "16px 18px", minHeight: 90, transition: "all 200ms", userSelect: "none" }}>
-      <div className="flex items-center justify-between mb-2">
-        <span style={{ fontSize: 9, fontWeight: 700, color: flipped ? "var(--accent)" : "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {flipped ? "Respuesta" : `Pregunta ${index + 1}`}
-        </span>
-        <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>clic para voltear</span>
+    <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
+        <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+          Documentos ({documents.length})
+        </p>
       </div>
-      <p style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: flipped ? 400 : 500, lineHeight: 1.6 }}>
-        {flipped
-          ? (item.answer || item.back || item.content_back || "—")
-          : (item.question || item.front || item.content_front || item.title || `Flashcard ${item.id}`)}
-      </p>
-    </div>
-  );
-}
-
-// ─── Section content panel (right side) ──────────────────────────────────────
-
-function SectionContent({ section, sectionItems, isCompleted, assignmentId, onComplete }) {
-  const [activeTab, setActiveTab] = useState("documents");
-  const [completing, setCompleting] = useState(false);
-  const [doneNow, setDoneNow] = useState(false);
-
-  const docs      = sectionItems.filter((i) => ["document", "pdf", "video", "link"].includes(i.item_type));
-  const flashcards = sectionItems.filter((i) => ["deck", "flashcard"].includes(i.item_type));
-  const batteries = sectionItems.filter((i) => i.item_type === "battery");
-
-  const tabData = { documents: docs, flashcards, battery: batteries };
-  const isDone = isCompleted || doneNow;
-
-  const handleComplete = async () => {
-    setCompleting(true);
-    try {
-      if (section.id && assignmentId) {
-        await learningApi.completeModule(assignmentId, { module_id: section.id });
-      }
-      setDoneNow(true);
-      onComplete(section.id);
-    } catch {}
-    setCompleting(false);
-  };
-
-  return (
-    <div className="flex flex-col h-full" style={{ minHeight: 0 }}>
-      {/* Section header */}
-      <div style={{ padding: "18px 22px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 15 }}>
-              {section.title || section.name}
-            </p>
-            {section.description && (
-              <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4, lineHeight: 1.6 }}>{section.description}</p>
-            )}
-            <div className="flex items-center gap-3 mt-2">
-              {docs.length > 0 && <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{docs.length} doc{docs.length !== 1 ? "s" : ""}</span>}
-              {flashcards.length > 0 && <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{flashcards.length} flashcard{flashcards.length !== 1 ? "s" : ""}</span>}
-              {batteries.length > 0 && <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{batteries.length} batería{batteries.length !== 1 ? "s" : ""}</span>}
-            </div>
-          </div>
-          {isDone && (
-            <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#4ade80", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-              <CheckCircleIcon style={{ width: 14, height: 14 }} /> Completada
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Sub-tabs */}
-      <div style={{ background: "var(--bg-app)", borderBottom: "1px solid var(--border)", display: "flex", flexShrink: 0 }}>
-        {STUDY_TABS.map(({ id, label, Icon }) => {
-          const count = tabData[id]?.length ?? 0;
+      <div style={{ padding: 8 }}>
+        {documents.map((doc) => {
+          const ext = doc.type?.toUpperCase() || (doc.filename?.split(".").pop()?.toUpperCase()) || "FILE";
           return (
-            <button key={id} onClick={() => setActiveTab(id)}
-              style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 16px", borderBottom: `2px solid ${activeTab === id ? "var(--accent)" : "transparent"}`, color: activeTab === id ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: activeTab === id ? 600 : 400, fontSize: 12, cursor: "pointer", background: "transparent", transition: "color 150ms" }}>
-              <Icon style={{ width: 12, height: 12 }} /> {label}
-              {count > 0 && (
-                <span style={{ background: activeTab === id ? "var(--accent)" : "var(--bg-elevated)", color: activeTab === id ? "#fff" : "var(--text-tertiary)", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, marginLeft: 2 }}>{count}</span>
-              )}
+            <button key={doc.id} onClick={() => onView(doc)}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", textAlign: "left", transition: "background 150ms" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-elevated)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+              <div style={{ width: 26, height: 30, background: ext === "PDF" ? "#DC2626" : "#3B82F6", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ color: "#fff", fontSize: 6, fontWeight: 800 }}>{ext.slice(0, 4)}</span>
+              </div>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {doc.filename}
+              </span>
+              <span style={{ fontSize: 10, color: "var(--text-tertiary)", flexShrink: 0 }}>Ver →</span>
             </button>
           );
         })}
       </div>
+    </div>
+  );
+}
 
-      {/* Tab content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px 22px" }}>
-        {activeTab === "documents" && (
-          docs.length === 0 ? (
-            <EmptyTab label="documentos" />
-          ) : (
-            <div className="space-y-2">
-              {docs.map((item) => (
-                <div key={item.id} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 7, padding: "12px 14px" }}
-                  className="flex items-start gap-3">
-                  <DocumentTextIcon style={{ width: 16, height: 16, color: "#60a5fa", flexShrink: 0, marginTop: 1 }} />
-                  <div className="min-w-0 flex-1">
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
-                      {item.title || item.name || `Documento ${item.id}`}
-                    </p>
-                    {item.description && (
-                      <p style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3, lineHeight: 1.5 }}>{item.description}</p>
-                    )}
-                    {item.page_count && (
-                      <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 4 }}>{item.page_count} páginas</p>
-                    )}
-                  </div>
-                  {item.url && (
-                    <a href={item.url} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600, flexShrink: 0, textDecoration: "none" }}>
-                      Ver →
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          )
-        )}
-
-        {activeTab === "flashcards" && (
-          flashcards.length === 0 ? (
-            <EmptyTab label="flashcards" />
-          ) : (
-            <div className="space-y-3">
-              <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginBottom: 8 }}>
-                {flashcards.length} tarjeta{flashcards.length !== 1 ? "s" : ""} · haz clic en cada una para ver la respuesta
-              </p>
-              {flashcards.map((item, i) => <FlashCard key={item.id} item={item} index={i} />)}
-            </div>
-          )
-        )}
-
-        {activeTab === "battery" && (
-          batteries.length === 0 ? (
-            <EmptyTab label="baterías" />
-          ) : (
-            <div className="space-y-3">
-              {batteries.map((item) => (
-                <div key={item.id} style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 16px" }}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div style={{ background: "rgba(239,68,68,0.12)", borderRadius: 6, padding: 8, flexShrink: 0 }}>
-                      <BoltIcon style={{ width: 16, height: 16, color: "#f87171" }} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-                        {item.title || item.name || `Batería ${item.id}`}
-                      </p>
-                      <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-                        {item.question_count ?? item.total_questions ?? "?"} preguntas
-                        {item.passing_score ? ` · Mínimo aprobatorio: ${item.passing_score}%` : ""}
-                        {item.time_limit_minutes ? ` · ${item.time_limit_minutes} min` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="ank-btn-accent text-xs w-full" style={{ justifyContent: "center" }}>
-                    <BoltIcon className="h-3.5 w-3.5" /> Iniciar Batería
-                  </button>
-                </div>
-              ))}
-            </div>
-          )
-        )}
-      </div>
-
-      {/* Complete footer */}
-      {!isDone && (
-        <div style={{ borderTop: "1px solid var(--border)", padding: "12px 22px", background: "var(--bg-surface)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <button onClick={handleComplete} disabled={completing} className="ank-btn-accent text-xs" style={{ opacity: completing ? 0.7 : 1 }}>
-            {completing ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> Marcar sección completada</>}
+function DocumentViewDialog({ doc, onClose }) {
+  if (!doc) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)" }} onClick={onClose}>
+      <div style={{ width: "100%", maxWidth: 560, maxHeight: "80vh", display: "flex", flexDirection: "column", background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ height: 2, background: "linear-gradient(90deg, #6366F1, #818CF8, #A78BFA)", flexShrink: 0 }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{doc.filename}</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", flexShrink: 0 }}>
+            <XMarkIcon style={{ width: 16, height: 16 }} />
           </button>
         </div>
-      )}
+        {doc.url && (
+          <div style={{ padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", flexShrink: 0 }}>
+            <a href={doc.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#818CF8", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}>
+              Abrir archivo original <ArrowTopRightOnSquareIcon style={{ width: 12, height: 12 }} />
+            </a>
+          </div>
+        )}
+        <div style={{ padding: "14px 18px", overflowY: "auto" }}>
+          {(!doc.sections || doc.sections.length === 0) ? (
+            <p style={{ fontSize: 12, color: "#475569", textAlign: "center", padding: "20px 0" }}>Sin secciones extraídas para este documento.</p>
+          ) : (
+            <div className="space-y-3">
+              {doc.sections.map((s) => (
+                <div key={s.id}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", marginBottom: 4 }}>{s.title || "Sin título"}</p>
+                  {s.content && <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.6 }}>{s.content}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function EmptyTab({ label }) {
+// ─── Read-only deck / battery rows (Learn/Study/Simular only) ─────────────────
+
+function ReadOnlyDeckRow({ deck, onLearn, onStudy }) {
+  const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
   return (
-    <div style={{ padding: "40px 0", textAlign: "center" }}>
-      <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Sin {label} en esta sección aún.</p>
-      <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 4 }}>Se generan automáticamente al procesar los documentos.</p>
+    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={deck.title}>{deck.title}</span>
+      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{cardCount} cards</span>
+      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+        {deck.description || "Conjunto de tarjetas de estudio para este tópico"}
+      </span>
+      <button onClick={() => onLearn?.(deck)}
+        style={{ padding: "4px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+        Learn
+      </button>
+      <button onClick={() => onStudy?.(deck)}
+        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}>
+        Study
+      </button>
     </div>
   );
 }
 
-// ─── Two-panel section viewer (opens when a process node is clicked) ──────────
+function ReadOnlyBatteryRow({ battery, onSimulate }) {
+  const questionCount = battery.question_count ?? 0;
+  const pct = battery.last_attempt?.percent ?? null;
+  const hasAttempt = pct !== null;
+  const pctRounded = hasAttempt ? Math.round(pct) : 0;
+  const pctColor = pctRounded >= 80 ? "#4ade80" : pctRounded >= 50 ? "#f59e0b" : "#818CF8";
+  return (
+    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(94,106,210,0.12)", border: "1px solid rgba(94,106,210,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={battery.name || battery.title}>{battery.name || battery.title}</span>
+      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{questionCount} preguntas</span>
+      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+        {battery.description || "Evaluación o práctica relacionada con este tópico"}
+      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+        <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${hasAttempt ? pctRounded : 0}%`, background: pctColor, borderRadius: 2 }} />
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 700, color: hasAttempt ? pctColor : "#334155", minWidth: 28, textAlign: "right" }}>
+          {hasAttempt ? `${pctRounded}%` : "—"}
+        </span>
+      </div>
+      <button onClick={() => onSimulate?.(battery)}
+        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}>
+        Simular
+      </button>
+    </div>
+  );
+}
 
-function ProcessSectionViewer({ moduleId, assignmentId, alreadyCompleted }) {
-  const [allItems, setAllItems] = useState([]);
+function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy, onLearn, onSimulate }) {
+  const [expanded, setExpanded] = useState(true);
+  const tagCount = topic.tags?.length || 0;
+  const description = topic.tags?.slice(0, 5).join(", ") || "";
+
+  return (
+    <div style={{ display: "flex", minWidth: 0 }}>
+      <div style={{ width: 22, display: "flex", flexDirection: "column", alignItems: "center", marginRight: 14, flexShrink: 0 }}>
+        <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#4ade80", border: "2px solid #0F172A", flexShrink: 0, marginTop: 7 }} />
+        {!isLast && <div style={{ width: 2, flex: 1, background: "rgba(255,255,255,0.08)", minHeight: 24, marginTop: 4 }} />}
+      </div>
+      <div style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 8 : 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: expanded ? 8 : 0 }}>
+          <button onClick={() => setExpanded((v) => !v)} style={{ color: "#64748B", cursor: "pointer", padding: 0, background: "none", border: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
+            {expanded ? <ChevronRightIcon style={{ width: 13, height: 13, transform: "rotate(90deg)" }} /> : <ChevronRightIcon style={{ width: 13, height: 13 }} />}
+          </button>
+          <span style={{ fontWeight: 700, color: "#F1F5F9", fontSize: 13, flexShrink: 0 }}>Tópico {index + 1}</span>
+          <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>{tagCount} temas</span>
+          <span style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{description}</span>
+        </div>
+        {expanded && (
+          <div style={{ marginLeft: 6 }}>
+            {decks.map((d) => <ReadOnlyDeckRow key={d.id} deck={d} onLearn={onLearn} onStudy={onStudy} />)}
+            {batteries.map((b) => <ReadOnlyBatteryRow key={b.id} battery={b} onSimulate={onSimulate} />)}
+            {decks.length === 0 && batteries.length === 0 && (
+              <p style={{ fontSize: 11, color: "#475569", padding: "4px 0" }}>Sin contenido generado para este tópico aún.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Process knowledge view (replaces the old empty legacy tabs) ──────────────
+// Reads the module's real Knowledge Source structure (topics/decks/batteries),
+// same data ProcessDetail.jsx uses, but strictly read-only: no upload, no
+// auto-generate, no add/delete — just Learn/Study/Simular + document viewing.
+
+function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, onComplete }) {
   const [loading, setLoading] = useState(true);
-  const [selectedSection, setSelectedSection] = useState(null);
-  const [completedSectionIds, setCompletedSectionIds] = useState(new Set());
+  const [documents, setDocuments] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [contentByTopic, setContentByTopic] = useState({});
+  const [viewingDoc, setViewingDoc] = useState(null);
+  const [studyDeck, setStudyDeck] = useState(null);
+  const [learnDeck, setLearnDeck] = useState(null);
+  const [simulationBattery, setSimulationBattery] = useState(null);
+  const [completing, setCompleting] = useState(false);
+  const [doneNow, setDoneNow] = useState(false);
 
   useEffect(() => {
+    if (!ksId) { setLoading(false); return; }
+    let cancelled = false;
     setLoading(true);
-    learningApi.getModuleItems({ module: moduleId })
-      .then((d) => {
-        const items = d.results || d || [];
-        setAllItems(items);
-        // Auto-select first section
-        const topics = items.filter((i) => i.item_type === "topic");
-        if (topics.length > 0) setSelectedSection(topics[0]);
-        else if (items.length > 0) {
-          // No topics — treat the module itself as one section
-          setSelectedSection({ id: moduleId, title: "Contenido", _synthetic: true });
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [moduleId]);
 
-  const handleSectionComplete = useCallback((sectionId) => {
-    setCompletedSectionIds((prev) => new Set([...prev, sectionId]));
-    // Auto-advance to next section
-    const sections = getSections();
-    const idx = sections.findIndex((s) => s.id === sectionId);
-    const next = sections[idx + 1];
-    if (next) setSelectedSection(next);
-  }, [allItems]);
+    Promise.all([
+      knowledgeApi.getDocumentsWithSections(ksId).catch(() => ({ documents: [] })),
+      // NOTE: topics/decks/batteries for a KS process come from /results/, not
+      // from collectionApi.getTagGroups — TagGroup.collection_id is always
+      // null for KS-generated tag groups, so the tag-groups-by-collection
+      // endpoint is always empty here (see project-ks-project-collection-model
+      // memory). /results/ returns the real flat topics/decks/batteries,
+      // matched via each deck/battery's own tag_group_id.
+      knowledgeApi.getResults(ksId).catch(() => ({ topics: [], decks: [], batteries: [] })),
+    ]).then(([docsRes, results]) => {
+      if (cancelled) return;
+      setDocuments(docsRes.documents || []);
+      const topicList = results.topics || [];
+      setTopics(topicList);
 
-  const getSections = () => {
-    const topics = allItems.filter((i) => i.item_type === "topic");
-    if (topics.length > 0) return topics;
-    return [{ id: moduleId, title: "Contenido", _synthetic: true }];
+      const contentMap = {};
+      topicList.forEach((topic) => {
+        contentMap[topic.id] = {
+          decks: (results.decks || []).filter((d) => String(d.tag_group_id) === String(topic.id)),
+          batteries: (results.batteries || []).filter((b) => String(b.tag_group_id) === String(topic.id)),
+        };
+      });
+      setContentByTopic(contentMap);
+    }).finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [ksId]);
+
+  const isDone = alreadyCompleted || doneNow;
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    try {
+      await learningApi.completeModule(assignmentId, { module_id: moduleId });
+      setDoneNow(true);
+      onComplete?.(moduleId);
+    } catch {}
+    setCompleting(false);
   };
 
-  const getItemsForSection = (section) => {
-    if (section._synthetic) {
-      return allItems.filter((i) => i.item_type !== "topic");
-    }
-    return allItems.filter((i) =>
-      i.topic === section.id || i.topic_id === section.id ||
-      (i.item_type !== "topic" && !allItems.some((t) => t.item_type === "topic"))
+  if (!ksId) {
+    return (
+      <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, padding: "28px 20px", textAlign: "center" }}>
+        <BookOpenIcon style={{ width: 18, height: 18, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
+        <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Este proceso aún no está vinculado a una fuente de conocimiento.</p>
+      </div>
     );
-  };
-
-  const sections = getSections();
-  const totalSections = sections.length;
-  const completedCount = alreadyCompleted ? totalSections : completedSectionIds.size;
-  const pct = totalSections > 0 ? (completedCount / totalSections) * 100 : 0;
+  }
 
   if (loading) {
     return (
@@ -282,91 +273,49 @@ function ProcessSectionViewer({ moduleId, assignmentId, alreadyCompleted }) {
 
   return (
     <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
-      {/* Module progress bar */}
-      {totalSections > 1 && (
-        <div style={{ padding: "10px 16px", background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between mb-1.5">
-            <span style={{ fontSize: 10, color: "var(--text-tertiary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Progreso del proceso
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: pct === 100 ? "#4ade80" : "var(--accent)" }}>
-              {completedCount}/{totalSections} secciones
-            </span>
-          </div>
-          <ProgressBar value={pct} color={pct === 100 ? "#4ade80" : "var(--accent)"} />
+      <div style={{ padding: "16px 18px" }}>
+        <DocumentsMiniPanel documents={documents} onView={setViewingDoc} />
+
+        <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
+          Estructura de conocimiento
+        </p>
+
+        {topics.length === 0 ? (
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "12px 0" }}>Sin tópicos generados para este proceso aún.</p>
+        ) : (
+          topics.map((topic, i) => (
+            <ReadOnlyTopicSection
+              key={topic.id}
+              topic={topic}
+              index={i}
+              isLast={i === topics.length - 1}
+              decks={contentByTopic[topic.id]?.decks || []}
+              batteries={contentByTopic[topic.id]?.batteries || []}
+              onLearn={setLearnDeck}
+              onStudy={setStudyDeck}
+              onSimulate={setSimulationBattery}
+            />
+          ))
+        )}
+      </div>
+
+      {!isDone && (
+        <div style={{ borderTop: "1px solid var(--border)", padding: "12px 18px", background: "var(--bg-surface)", display: "flex", justifyContent: "flex-end" }}>
+          <button onClick={handleComplete} disabled={completing} className="ank-btn-accent text-xs" style={{ opacity: completing ? 0.7 : 1 }}>
+            {completing ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> Marcar proceso completado</>}
+          </button>
+        </div>
+      )}
+      {isDone && (
+        <div style={{ borderTop: "1px solid var(--border)", padding: "10px 18px", background: "var(--bg-surface)", display: "flex", alignItems: "center", gap: 6, color: "#4ade80", fontSize: 11, fontWeight: 700 }}>
+          <CheckCircleIcon style={{ width: 13, height: 13 }} /> Completado
         </div>
       )}
 
-      {/* Two-panel layout */}
-      <div style={{ display: "flex", minHeight: 460 }}>
-        {/* Left: Section list */}
-        <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid var(--border)", overflowY: "auto", background: "var(--bg-surface)" }}>
-          <div style={{ padding: "10px 12px 6px", borderBottom: "1px solid var(--border)" }}>
-            <p style={{ fontSize: 9, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-              Secciones ({sections.length})
-            </p>
-          </div>
-          {sections.map((section, idx) => {
-            const isSelected = selectedSection?.id === section.id;
-            const isDone = alreadyCompleted || completedSectionIds.has(section.id);
-            const isLocked = !isDone && idx > 0 && !completedSectionIds.has(sections[idx - 1]?.id) && !alreadyCompleted;
-            return (
-              <button key={section.id} onClick={() => !isLocked && setSelectedSection(section)}
-                style={{
-                  width: "100%", textAlign: "left", padding: "11px 14px",
-                  background: isSelected ? "var(--bg-elevated)" : "transparent",
-                  borderLeft: `3px solid ${isSelected ? "var(--accent)" : "transparent"}`,
-                  borderBottom: "1px solid var(--border)",
-                  cursor: isLocked ? "not-allowed" : "pointer", opacity: isLocked ? 0.45 : 1,
-                  transition: "all 150ms",
-                }}
-                onMouseEnter={(e) => { if (!isLocked && !isSelected) e.currentTarget.style.background = "var(--bg-elevated)"; }}
-                onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
-                <div className="flex items-start gap-2">
-                  {/* Status dot */}
-                  <div style={{ marginTop: 2, flexShrink: 0 }}>
-                    {isDone ? (
-                      <CheckCircleIcon style={{ width: 13, height: 13, color: "#4ade80" }} />
-                    ) : isLocked ? (
-                      <LockClosedIcon style={{ width: 13, height: 13, color: "var(--text-tertiary)" }} />
-                    ) : isSelected ? (
-                      <PlayIcon style={{ width: 13, height: 13, color: "var(--accent)" }} />
-                    ) : (
-                      <div style={{ width: 13, height: 13, borderRadius: "50%", border: "1.5px solid var(--border)" }} />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p style={{ fontSize: 12, fontWeight: isSelected ? 600 : 400, color: isSelected ? "var(--text-primary)" : "var(--text-secondary)", lineHeight: 1.4 }}>
-                      {section.title || section.name || `Sección ${idx + 1}`}
-                    </p>
-                    <p style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 2 }}>
-                      {isDone ? "Completada" : isLocked ? "Bloqueada" : isSelected ? "En progreso" : "Pendiente"}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right: Content */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          {selectedSection ? (
-            <SectionContent
-              key={selectedSection.id}
-              section={selectedSection}
-              sectionItems={getItemsForSection(selectedSection)}
-              isCompleted={alreadyCompleted || completedSectionIds.has(selectedSection.id)}
-              assignmentId={assignmentId}
-              onComplete={handleSectionComplete}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Selecciona una sección</p>
-            </div>
-          )}
-        </div>
-      </div>
+      <DocumentViewDialog doc={viewingDoc} onClose={() => setViewingDoc(null)} />
+      <FlashcardViewDialog open={!!studyDeck} onClose={() => setStudyDeck(null)} deckId={studyDeck?.id} deckTitle={studyDeck?.title} />
+      <FlashcardLearnDialog open={!!learnDeck} onClose={() => setLearnDeck(null)} deckId={learnDeck?.id} deckTitle={learnDeck?.title} jobId={learnDeck?.external_job_id} />
+      <ExamSimulatorDialog open={!!simulationBattery} handler={() => setSimulationBattery(null)} battery={simulationBattery} />
     </div>
   );
 }
@@ -391,7 +340,7 @@ function NodeIcon({ status }) {
   );
 }
 
-function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId }) {
+function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId, onModuleComplete }) {
   const typeColor = { document: "#60a5fa", topic: "#a855f7", deck: "#f59e0b", battery: "#f87171", course: "#4ade80" }[mod.process_type] || "var(--text-tertiary)";
   const locked = status === "locked";
   const borderColor = status === "completed" ? "#4ade80" : status === "in_progress" ? "var(--accent)" : "var(--border)";
@@ -399,7 +348,6 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
   return (
     <div>
       <div className="flex gap-3">
-        {/* Connector */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 30, flexShrink: 0 }}>
           <NodeIcon status={status} />
           {!isLast && (
@@ -407,7 +355,6 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
           )}
         </div>
 
-        {/* Card */}
         <div style={{ flex: 1, marginBottom: isLast ? 0 : 12 }}>
           <div onClick={() => !locked && onClick()}
             style={{ background: isOpen ? "var(--bg-elevated)" : "var(--bg-surface)", border: `1px solid ${isOpen ? borderColor : "var(--border)"}`, borderRadius: 7, padding: "11px 14px", cursor: locked ? "not-allowed" : "pointer", opacity: locked ? 0.45 : 1, transition: "all 150ms" }}
@@ -432,13 +379,14 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
             </div>
           </div>
 
-          {/* Section viewer — expands inline below the node */}
           {isOpen && !locked && (
             <div style={{ marginTop: 10 }}>
-              <ProcessSectionViewer
+              <ProcessKnowledgeView
+                ksId={mod.knowledge_source}
                 moduleId={mod.id}
                 assignmentId={assignmentId}
                 alreadyCompleted={status === "completed"}
+                onComplete={onModuleComplete}
               />
             </div>
           )}
@@ -455,6 +403,7 @@ export function AssignmentDetail() {
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState(null);
   const [pathData, setPathData] = useState(null);
+  const [singleModule, setSingleModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openNodeId, setOpenNodeId] = useState(null);
   const [completedModIds, setCompletedModIds] = useState(new Set());
@@ -475,7 +424,7 @@ export function AssignmentDetail() {
       );
       setCompletedModIds(doneIds);
 
-      const pathId = a.learning_path || a.learning_path_id;
+      const pathId = a.learning_path;
       if (pathId) {
         const pd = await learningApi.getLearningPath(pathId);
         setPathData(pd);
@@ -483,6 +432,9 @@ export function AssignmentDetail() {
         const firstOpen = mods.find((m) => !doneIds.has(m.id));
         if (firstOpen) setOpenNodeId(firstOpen.id);
         else if (mods.length > 0) setOpenNodeId(mods[0].id);
+      } else if (a.learning_module) {
+        const mod = await learningApi.getModule(a.learning_module).catch(() => null);
+        setSingleModule(mod);
       }
     } catch {}
     setLoading(false);
@@ -495,6 +447,14 @@ export function AssignmentDetail() {
     const prevOk = idx === 0 || completedModIds.has(mods[idx - 1]?.id);
     return prevOk ? "in_progress" : "locked";
   };
+
+  const handleModuleComplete = useCallback((moduleId) => {
+    setCompletedModIds((prev) => new Set([...prev, moduleId]));
+    const mods = pathData?.modules || [];
+    const idx = mods.findIndex((m) => m.id === moduleId);
+    const next = mods[idx + 1];
+    if (next) setOpenNodeId(next.id);
+  }, [pathData]);
 
   const mods = pathData?.modules || [];
   const totalMods = mods.length || 1;
@@ -579,6 +539,7 @@ export function AssignmentDetail() {
               isOpen={openNodeId === mod.id}
               onClick={() => setOpenNodeId(openNodeId === mod.id ? null : mod.id)}
               assignmentId={id}
+              onModuleComplete={handleModuleComplete}
             />
           ))}
         </div>
@@ -588,9 +549,10 @@ export function AssignmentDetail() {
           <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
             Contenido del Proceso
           </p>
-          {(assignment.learning_module || assignment.module) ? (
-            <ProcessSectionViewer
-              moduleId={assignment.learning_module || assignment.module}
+          {assignment.learning_module ? (
+            <ProcessKnowledgeView
+              ksId={singleModule?.knowledge_source}
+              moduleId={assignment.learning_module}
               assignmentId={id}
               alreadyCompleted={isDone}
             />

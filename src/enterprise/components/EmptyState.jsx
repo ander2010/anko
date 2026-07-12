@@ -1,21 +1,20 @@
 import React from "react";
-import { Typography, Button } from "@material-tailwind/react";
 import { InboxIcon } from "@heroicons/react/24/outline";
 
 export function EmptyState({ icon: Icon = InboxIcon, title = "No data", message, action, onAction }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-        <Icon className="h-8 w-8 text-zinc-400" />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "56px 20px", textAlign: "center" }}>
+      <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+        <Icon style={{ width: 24, height: 24, color: "#818CF8" }} />
       </div>
-      <Typography variant="h6" className="text-zinc-700 font-bold mb-1">{title}</Typography>
+      <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{title}</p>
       {message && (
-        <Typography variant="small" className="text-zinc-400 font-medium max-w-sm">{message}</Typography>
+        <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4, maxWidth: 360 }}>{message}</p>
       )}
       {action && onAction && (
-        <Button size="sm" className="mt-4 normal-case" color="indigo" onClick={onAction}>
+        <button onClick={onAction} className="ank-btn-accent text-xs" style={{ marginTop: 16 }}>
           {action}
-        </Button>
+        </button>
       )}
     </div>
   );
