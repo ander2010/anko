@@ -1431,7 +1431,7 @@ function KnowledgeStructurePanel({
   // Proceso de completitud: promedio del last_attempt.percent de todas las baterías
   const battWithAttempts = batteries.filter((b) => b.last_attempt?.percent != null);
   const processCompletion = batteries.length > 0
-    ? Math.round(battWithAttempts.reduce((s, b) => s + b.last_attempt.percent, 0) / batteries.length)
+    ? Math.round(battWithAttempts.reduce((s, b) => s + Number(b.last_attempt.percent), 0) / batteries.length)
     : 0;
   const completedBatteries = batteries.filter((b) => (b.last_attempt?.percent ?? 0) >= 80).length;
   const completionColor = processCompletion >= 80 ? "#4ade80" : processCompletion >= 50 ? "#f59e0b" : "#818CF8";
@@ -2894,6 +2894,7 @@ export function ProcessDetail() {
         open={!!simulationBattery}
         handler={() => setSimulationBattery(null)}
         battery={simulationBattery}
+        onFinish={loadResults}
       />
 
       <FlashcardViewDialog

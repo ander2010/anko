@@ -64,7 +64,7 @@ function DarkBadge({ children, color = T.accent, bg = T.accentBg }) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) {
+export function ExamSimulatorDialog({ open, handler, battery: initialBattery, onFinish }) {
   const { language } = useLanguage();
   if (!initialBattery) return null;
 
@@ -240,7 +240,10 @@ export function ExamSimulatorDialog({ open, handler, battery: initialBattery }) 
       if (didFinishRef.current) return;
       didFinishRef.current = true;
       setSavingAttempt(true);
-      try { await finishAttempt(); }
+      try {
+        await finishAttempt();
+        onFinish?.();
+      }
       catch (e) { console.error("finish_attempt failed", e); }
       finally { setSavingAttempt(false); }
     };

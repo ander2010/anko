@@ -209,12 +209,11 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
   const [completing, setCompleting] = useState(false);
   const [doneNow, setDoneNow] = useState(false);
 
-  useEffect(() => {
+  const loadContent = useCallback(({ silent } = {}) => {
     if (!ksId) { setLoading(false); return; }
-    let cancelled = false;
-    setLoading(true);
+    if (!silent) setLoading(true);
 
-    Promise.all([
+    return Promise.all([
       knowledgeApi.getDocumentsWithSections(ksId).catch(() => ({ documents: [] })),
       // NOTE: topics/decks/batteries for a KS process come from /results/, not
       // from collectionApi.getTagGroups — TagGroup.collection_id is always
@@ -224,7 +223,6 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
       // matched via each deck/battery's own tag_group_id.
       knowledgeApi.getResults(ksId).catch(() => ({ topics: [], decks: [], batteries: [] })),
     ]).then(([docsRes, results]) => {
-      if (cancelled) return;
       setDocuments(docsRes.documents || []);
       const topicList = results.topics || [];
       setTopics(topicList);
@@ -237,10 +235,10 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
         };
       });
       setContentByTopic(contentMap);
-    }).finally(() => { if (!cancelled) setLoading(false); });
-
-    return () => { cancelled = true; };
+    }).finally(() => setLoading(false));
   }, [ksId]);
+
+  useEffect(() => { loadContent(); }, [loadContent]);
 
   const isDone = alreadyCompleted || doneNow;
 
@@ -315,7 +313,7 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
       <DocumentViewDialog doc={viewingDoc} onClose={() => setViewingDoc(null)} />
       <FlashcardViewDialog open={!!studyDeck} onClose={() => setStudyDeck(null)} deckId={studyDeck?.id} deckTitle={studyDeck?.title} />
       <FlashcardLearnDialog open={!!learnDeck} onClose={() => setLearnDeck(null)} deckId={learnDeck?.id} deckTitle={learnDeck?.title} jobId={learnDeck?.external_job_id} />
-      <ExamSimulatorDialog open={!!simulationBattery} handler={() => setSimulationBattery(null)} battery={simulationBattery} />
+      <ExamSimulatorDialog open={!!simulationBattery} handler={() => setSimulationBattery(null)} battery={simulationBattery} onFinish={() => loadContent({ silent: true })} />
     </div>
   );
 }
