@@ -47,7 +47,7 @@ const adminCards = (lang) => [
 export function Home() {
   const { language, changeLanguage } = useLanguage();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { projects, batteries } = useProjects();
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
   const [showEditProfile, setShowEditProfile] = React.useState(false);
@@ -93,9 +93,11 @@ export function Home() {
                 {language === "es" ? "Bienvenido de vuelta" : "Welcome back"}
               </p>
               <p style={{ fontSize: 28, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.03em", lineHeight: 1 }}>{displayName}</p>
-              <span style={{ display: "inline-flex", alignItems: "center", marginTop: 6, padding: "3px 9px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 6, fontSize: 10, fontWeight: 800, color: "#F87171", letterSpacing: "0.07em", textTransform: "uppercase" }}>
-                Platform Admin
-              </span>
+              {isAdmin && (
+                <span style={{ display: "inline-flex", alignItems: "center", marginTop: 6, padding: "3px 9px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 6, fontSize: 10, fontWeight: 800, color: "#F87171", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                  Platform Admin
+                </span>
+              )}
             </div>
             {/* Avatar menu */}
             <div className="relative">
@@ -149,26 +151,28 @@ export function Home() {
         </div>
 
         {/* Admin actions mobile grid */}
-        <div style={{ padding: "20px 16px 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
-            {language === "es" ? "Acciones de Admin" : "Admin Actions"}
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-            {cards.map((card, i) => {
-              const Icon = card.icon;
-              const handleClick = () => card.href ? navigate(card.href) : navigate(card.path);
-              return (
-                <button key={i} onClick={handleClick}
-                  style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 14, padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon style={{ width: 18, height: 18, color: card.accent }} />
-                  </div>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: "#CBD5E1", textAlign: "center", lineHeight: 1.3 }}>{card.name}</p>
-                </button>
-              );
-            })}
+        {isAdmin && (
+          <div style={{ padding: "20px 16px 32px" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
+              {language === "es" ? "Acciones de Admin" : "Admin Actions"}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              {cards.map((card, i) => {
+                const Icon = card.icon;
+                const handleClick = () => card.href ? navigate(card.href) : navigate(card.path);
+                return (
+                  <button key={i} onClick={handleClick}
+                    style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 14, padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Icon style={{ width: 18, height: 18, color: card.accent }} />
+                    </div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#CBD5E1", textAlign: "center", lineHeight: 1.3 }}>{card.name}</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Dialogs (shared mobile+desktop) */}
@@ -192,15 +196,17 @@ export function Home() {
               <h1 style={{ fontSize: 32, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 10 }}>
                 {displayName}
               </h1>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ padding: "4px 10px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#F87171", fontSize: 11, fontWeight: 800, borderRadius: 7, letterSpacing: "0.07em", textTransform: "uppercase" }}>
-                  Platform Admin
-                </span>
-                <span style={{ fontSize: 12, color: "#334155" }}>·</span>
-                <p style={{ fontSize: 13, color: "#64748B" }}>
-                  {language === "es" ? "Control total de la plataforma Ankard" : "Full control of the Ankard platform"}
-                </p>
-              </div>
+              {isAdmin && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <span style={{ padding: "4px 10px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#F87171", fontSize: 11, fontWeight: 800, borderRadius: 7, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                    Platform Admin
+                  </span>
+                  <span style={{ fontSize: 12, color: "#334155" }}>·</span>
+                  <p style={{ fontSize: 13, color: "#64748B" }}>
+                    {language === "es" ? "Control total de la plataforma Ankard" : "Full control of the Ankard platform"}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Quick stats */}
@@ -220,33 +226,35 @@ export function Home() {
         </div>
 
         {/* ── Admin Actions Grid ── */}
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 16 }}>
-            {language === "es" ? "Módulos de Administración" : "Administration Modules"}
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 10 }}>
-            {cards.map((card, i) => {
-              const Icon = card.icon;
-              const handleClick = () => card.href ? navigate(card.href) : navigate(card.path);
-              return (
-                <button key={i} onClick={handleClick}
-                  style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 16, padding: "20px 12px 18px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer", transition: "all 0.18s", textAlign: "center" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px ${card.border}`; e.currentTarget.style.borderColor = card.accent + "55"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = card.border; }}
-                  onMouseDown={(e) => e.currentTarget.style.transform = "translateY(0) scale(0.97)"}
-                  onMouseUp={(e) => e.currentTarget.style.transform = "translateY(-2px)"}>
-                  <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(255,255,255,0.06)", border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon style={{ width: 20, height: 20, color: card.accent }} />
-                  </div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#CBD5E1", lineHeight: 1.3 }}>{card.name}</p>
-                </button>
-              );
-            })}
+        {isAdmin && (
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 16 }}>
+              {language === "es" ? "Módulos de Administración" : "Administration Modules"}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 10 }}>
+              {cards.map((card, i) => {
+                const Icon = card.icon;
+                const handleClick = () => card.href ? navigate(card.href) : navigate(card.path);
+                return (
+                  <button key={i} onClick={handleClick}
+                    style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 16, padding: "20px 12px 18px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, cursor: "pointer", transition: "all 0.18s", textAlign: "center" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 28px ${card.border}`; e.currentTarget.style.borderColor = card.accent + "55"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = card.border; }}
+                    onMouseDown={(e) => e.currentTarget.style.transform = "translateY(0) scale(0.97)"}
+                    onMouseUp={(e) => e.currentTarget.style.transform = "translateY(-2px)"}>
+                    <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(255,255,255,0.06)", border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Icon style={{ width: 20, height: 20, color: card.accent }} />
+                    </div>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#CBD5E1", lineHeight: 1.3 }}>{card.name}</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── Platform Overview ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isAdmin ? "1fr 1fr" : "1fr", gap: 16 }}>
 
           {/* Left: Content metrics */}
           <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "28px 28px" }}>
@@ -293,45 +301,47 @@ export function Home() {
           </div>
 
           {/* Right: Admin quick links */}
-          <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "28px 28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <ShieldCheckIcon style={{ width: 16, height: 16, color: "#F87171" }} />
+          {isAdmin && (
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "28px 28px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ShieldCheckIcon style={{ width: 16, height: 16, color: "#F87171" }} />
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>
+                  {language === "es" ? "Acciones Críticas de Admin" : "Critical Admin Actions"}
+                </p>
               </div>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>
-                {language === "es" ? "Acciones Críticas de Admin" : "Critical Admin Actions"}
-              </p>
-            </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {[
-                { label: language === "es" ? "Gestionar usuarios globales"      : "Manage global users",      sub: language === "es" ? "Altas, bajas, roles"                 : "Create, disable, assign roles",  path: "/dashboard/users",              icon: UsersIcon,          accent: "#818CF8" },
-                { label: language === "es" ? "Revisar mensajes de soporte"     : "Review support messages",  sub: language === "es" ? "Tickets pendientes de respuesta"     : "Tickets awaiting response",        path: "/dashboard/support-requests",   icon: EnvelopeIcon,       accent: "#F87171" },
-                { label: language === "es" ? "Administrar empresas Enterprise" : "Manage Enterprise companies", sub: language === "es" ? "Altas, configuración, usuarios"   : "Onboard, configure, manage users", href: "/platform-admin/companies",     icon: BuildingOffice2Icon, accent: "#FBBF24" },
-                { label: language === "es" ? "Configurar planes y límites"    : "Configure plans & limits",  sub: language === "es" ? "Precios, cuotas, restricciones"     : "Pricing, quotas, restrictions",    path: "/dashboard/plans",              icon: CreditCardIcon,     accent: "#4ADE80" },
-                { label: language === "es" ? "Control de permisos y roles"    : "Permissions & roles",       sub: language === "es" ? "Accesos y privilegios del sistema"  : "System access and privileges",     path: "/dashboard/permissions",        icon: ShieldCheckIcon,    accent: "#A78BFA" },
-                { label: language === "es" ? "Suscripciones activas"          : "Active subscriptions",      sub: language === "es" ? "Estado y gestión de suscripciones" : "Subscription status and management", path: "/dashboard/subscriptions",     icon: TagIcon,            accent: "#FCD34D" },
-              ].map((item, i) => {
-                const Icon = item.icon;
-                const handleNav = () => item.href ? navigate(item.href) : navigate(item.path);
-                return (
-                  <button key={i} onClick={handleNav}
-                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, cursor: "pointer", transition: "all 0.15s", textAlign: "left" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = item.accent + "30"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: `${item.accent}14`, border: `1px solid ${item.accent}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Icon style={{ width: 14, height: 14, color: item.accent }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: "#CBD5E1", marginBottom: 1 }}>{item.label}</p>
-                      <p style={{ fontSize: 11, color: "#475569" }}>{item.sub}</p>
-                    </div>
-                    <ArrowRightIcon style={{ width: 13, height: 13, color: "#334155", flexShrink: 0 }} />
-                  </button>
-                );
-              })}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { label: language === "es" ? "Gestionar usuarios globales"      : "Manage global users",      sub: language === "es" ? "Altas, bajas, roles"                 : "Create, disable, assign roles",  path: "/dashboard/users",              icon: UsersIcon,          accent: "#818CF8" },
+                  { label: language === "es" ? "Revisar mensajes de soporte"     : "Review support messages",  sub: language === "es" ? "Tickets pendientes de respuesta"     : "Tickets awaiting response",        path: "/dashboard/support-requests",   icon: EnvelopeIcon,       accent: "#F87171" },
+                  { label: language === "es" ? "Administrar empresas Enterprise" : "Manage Enterprise companies", sub: language === "es" ? "Altas, configuración, usuarios"   : "Onboard, configure, manage users", href: "/platform-admin/companies",     icon: BuildingOffice2Icon, accent: "#FBBF24" },
+                  { label: language === "es" ? "Configurar planes y límites"    : "Configure plans & limits",  sub: language === "es" ? "Precios, cuotas, restricciones"     : "Pricing, quotas, restrictions",    path: "/dashboard/plans",              icon: CreditCardIcon,     accent: "#4ADE80" },
+                  { label: language === "es" ? "Control de permisos y roles"    : "Permissions & roles",       sub: language === "es" ? "Accesos y privilegios del sistema"  : "System access and privileges",     path: "/dashboard/permissions",        icon: ShieldCheckIcon,    accent: "#A78BFA" },
+                  { label: language === "es" ? "Suscripciones activas"          : "Active subscriptions",      sub: language === "es" ? "Estado y gestión de suscripciones" : "Subscription status and management", path: "/dashboard/subscriptions",     icon: TagIcon,            accent: "#FCD34D" },
+                ].map((item, i) => {
+                  const Icon = item.icon;
+                  const handleNav = () => item.href ? navigate(item.href) : navigate(item.path);
+                  return (
+                    <button key={i} onClick={handleNav}
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, cursor: "pointer", transition: "all 0.15s", textAlign: "left" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = item.accent + "30"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 9, background: `${item.accent}14`, border: `1px solid ${item.accent}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon style={{ width: 14, height: 14, color: item.accent }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "#CBD5E1", marginBottom: 1 }}>{item.label}</p>
+                        <p style={{ fontSize: 11, color: "#475569" }}>{item.sub}</p>
+                      </div>
+                      <ArrowRightIcon style={{ width: 13, height: 13, color: "#334155", flexShrink: 0 }} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
       </div>

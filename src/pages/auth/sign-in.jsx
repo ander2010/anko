@@ -101,8 +101,8 @@ export function SignIn() {
     onSuccess: async (tokenResponse) => {
       setLoading(true); setError(null);
       try {
-        await socialLogin("google", tokenResponse.access_token);
-        const from = location.state?.from?.pathname || "/dashboard/home";
+        const { hasCompany } = await socialLogin("google", tokenResponse.access_token);
+        const from = location.state?.from?.pathname || (hasCompany ? "/enterprise/dashboard" : "/dashboard/home");
         navigate(from, { replace: true });
       } catch (err) {
         console.error("Social login catch block error:", err);
@@ -126,8 +126,8 @@ export function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(null); setLoading(true);
     try {
-      await login({ username, password });
-      const from = location.state?.from?.pathname || "/dashboard/home";
+      const { hasCompany } = await login({ username, password });
+      const from = location.state?.from?.pathname || (hasCompany ? "/enterprise/dashboard" : "/dashboard/home");
       navigate(from, { replace: true });
     } catch (err) {
       console.error(err); setError(err?.error || "Login failed");

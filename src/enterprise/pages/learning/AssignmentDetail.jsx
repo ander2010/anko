@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeftIcon, CheckCircleIcon, LockClosedIcon, PlayIcon,
@@ -197,7 +197,7 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
 // same data ProcessDetail.jsx uses, but strictly read-only: no upload, no
 // auto-generate, no add/delete — just Learn/Study/Simular + document viewing.
 
-function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, onComplete }) {
+function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, onComplete, onProgress }) {
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -239,6 +239,21 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
   }, [ksId]);
 
   useEffect(() => { loadContent(); }, [loadContent]);
+
+  // Average battery completion for this process — same calculation (and same
+  // Number() fix to avoid NaN from the string "percent" the API returns) as
+  // "Completitud del proceso" on the admin Knowledge Source page.
+  const avgBatteryPercent = useMemo(() => {
+    const allBatteries = Object.values(contentByTopic).flatMap((c) => c.batteries || []);
+    if (allBatteries.length === 0) return null;
+    const withAttempts = allBatteries.filter((b) => b.last_attempt?.percent != null);
+    const sum = withAttempts.reduce((s, b) => s + Number(b.last_attempt.percent), 0);
+    return Math.round(sum / allBatteries.length);
+  }, [contentByTopic]);
+
+  useEffect(() => {
+    onProgress?.(moduleId, avgBatteryPercent);
+  }, [avgBatteryPercent, moduleId, onProgress]);
 
   const isDone = alreadyCompleted || doneNow;
 
@@ -338,7 +353,7 @@ function NodeIcon({ status }) {
   );
 }
 
-function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId, onModuleComplete }) {
+function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId, onModuleComplete, onModuleProgress }) {
   const typeColor = { document: "#60a5fa", topic: "#a855f7", deck: "#f59e0b", battery: "#f87171", course: "#4ade80" }[mod.process_type] || "var(--text-tertiary)";
   const locked = status === "locked";
   const borderColor = status === "completed" ? "#4ade80" : status === "in_progress" ? "var(--accent)" : "var(--border)";
@@ -385,6 +400,7 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
                 assignmentId={assignmentId}
                 alreadyCompleted={status === "completed"}
                 onComplete={onModuleComplete}
+                onProgress={onModuleProgress}
               />
             </div>
           )}
@@ -454,9 +470,23 @@ export function AssignmentDetail() {
     if (next) setOpenNodeId(next.id);
   }, [pathData]);
 
+  // Battery-average progress per module, reported up by each ProcessNode's
+  // ProcessKnowledgeView as its own topics/batteries load (see avgBatteryPercent
+  // there — same Number()-safe average as "Completitud del proceso" on the
+  // admin Knowledge Source page). A module only contributes once its node has
+  // been opened at least once (its content is fetched lazily on expand).
+  const [moduleBatteryProgress, setModuleBatteryProgress] = useState({});
+  const handleModuleProgress = useCallback((moduleId, percent) => {
+    setModuleBatteryProgress((prev) => (prev[moduleId] === percent ? prev : { ...prev, [moduleId]: percent }));
+  }, []);
+
   const mods = pathData?.modules || [];
   const totalMods = mods.length || 1;
   const completedCount = mods.filter((m) => completedModIds.has(m.id)).length;
+  const moduleProgressValues = mods.map((m) => moduleBatteryProgress[m.id]).filter((v) => v != null);
+  const overallBatteryPercent = moduleProgressValues.length > 0
+    ? Math.round(moduleProgressValues.reduce((s, v) => s + v, 0) / moduleProgressValues.length)
+    : 0;
   const isDone = assignment?.status === "completed";
   const dueStr = assignment?.due_date
     ? new Date(assignment.due_date).toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" })
@@ -511,10 +541,10 @@ export function AssignmentDetail() {
                 <div className="flex justify-between">
                   <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{completedCount} de {totalMods} procesos completados</span>
                   <span style={{ color: isDone ? "#4ade80" : "var(--accent)", fontSize: 11, fontWeight: 700 }}>
-                    {Math.round((completedCount / totalMods) * 100)}%
+                    {overallBatteryPercent}%
                   </span>
                 </div>
-                <ProgressBar value={(completedCount / totalMods) * 100} color={isDone ? "#4ade80" : "var(--accent)"} />
+                <ProgressBar value={overallBatteryPercent} color={isDone ? "#4ade80" : "var(--accent)"} />
               </div>
             )}
           </div>
@@ -538,6 +568,7 @@ export function AssignmentDetail() {
               onClick={() => setOpenNodeId(openNodeId === mod.id ? null : mod.id)}
               assignmentId={id}
               onModuleComplete={handleModuleComplete}
+              onModuleProgress={handleModuleProgress}
             />
           ))}
         </div>

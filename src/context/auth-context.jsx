@@ -49,10 +49,12 @@ export function AuthProvider({ children }) {
   // (CompanyMembership.role) keys together.
   const refreshRbacAndContext = async () => {
     let companyId = null;
+    let hasCompanyResult = false;
     try {
       const ctx = await withRetry(() => authService.meContext());
       const list = applyContext(ctx);
       companyId = list?.[0]?.company_id;
+      hasCompanyResult = ctx?.has_company ?? list.length > 0;
     } catch (err) {
       console.error("meContext fetch failed", err);
     }
@@ -65,6 +67,8 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("RBAC fetch failed", err);
     }
+
+    return hasCompanyResult;
   };
 
   useEffect(() => {
@@ -101,9 +105,9 @@ export function AuthProvider({ children }) {
     const { token, user: u } = await authService.login(credentials);
     window.localStorage.setItem("token", token);
     setAuthToken(token);
-    await refreshRbacAndContext();
+    const hasCompany = await refreshRbacAndContext();
     setUser(u);
-    return u;
+    return { user: u, hasCompany };
   };
 
   const register = async (payload) => {
@@ -146,9 +150,9 @@ export function AuthProvider({ children }) {
     const { token: jwtToken, user: u } = await authService.socialLogin(provider, token);
     window.localStorage.setItem("token", jwtToken);
     setAuthToken(jwtToken);
-    await refreshRbacAndContext();
+    const hasCompany = await refreshRbacAndContext();
     setUser(u);
-    return u;
+    return { user: u, hasCompany };
   };
 
   const value = {
