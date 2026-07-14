@@ -57,6 +57,7 @@ export const companyApi = {
   addUser: (id, data) => enterpriseApi.post(`/enterprise/companies/${id}/add-user/`, data).then((r) => r.data),
   changeMemberRole: (id, data) => enterpriseApi.post(`/enterprise/companies/${id}/change-member-role/`, data).then((r) => r.data),
   removeMember: (id, data) => enterpriseApi.post(`/enterprise/companies/${id}/remove-member/`, data).then((r) => r.data),
+  resendWelcome: (id, data) => enterpriseApi.post(`/enterprise/companies/${id}/resend-welcome/`, data).then((r) => r.data),
 };
 
 // ─── Business Units ───────────────────────────────────────────────────────────

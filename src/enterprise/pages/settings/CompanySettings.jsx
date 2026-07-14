@@ -101,7 +101,7 @@ function DotMenu({ items }) {
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button onClick={() => setOpen((v) => !v)}
-        style={{ padding: "4px 6px", borderRadius: 5, color: "var(--text-tertiary)", cursor: "pointer", transition: "background 150ms" }}
+        style={{ padding: "4px 6px", borderRadius: 5, color: "var(--text-secondary)", cursor: "pointer", transition: "background 150ms" }}
         onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-elevated)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
         <EllipsisHorizontalIcon style={{ width: 16, height: 16 }} />
@@ -290,6 +290,7 @@ function MembersTab({ companyId }) {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("active");
   const [modal, setModal] = useState(null); // "add" | {type:"role",member}
+  const [resendMsg, setResendMsg] = useState(null); // {type:"ok"|"error", text}
 
   const canManage = ["owner", "admin"].includes(myRole) || isPlatformAdmin;
   const availableRoles = isPlatformAdmin ? PLATFORM_ROLES.filter((r) => r !== "owner") : ALL_ROLES;
@@ -310,6 +311,17 @@ function MembersTab({ companyId }) {
     try { await companyApi.removeMember(companyId, { membership_id: member.id }); load(); } catch {}
   };
 
+  const handleResendWelcome = async (member) => {
+    try {
+      await companyApi.resendWelcome(companyId, { membership_id: member.id });
+      setResendMsg({ type: "ok", text: `Correo de bienvenida reenviado a ${member.full_name || member.email}.` });
+    } catch (err) {
+      setResendMsg({ type: "error", text: err?.response?.data?.membership_id || "No se pudo reenviar el correo." });
+    } finally {
+      setTimeout(() => setResendMsg(null), 4000);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {modal === "add" && (
@@ -317,6 +329,17 @@ function MembersTab({ companyId }) {
       )}
       {modal?.type === "role" && (
         <ChangeRoleModal member={modal.member} companyId={companyId} availableRoles={availableRoles} onChanged={load} onClose={() => setModal(null)} />
+      )}
+
+      {resendMsg && (
+        <div style={{
+          background: resendMsg.type === "ok" ? "rgba(74,222,128,0.1)" : "rgba(248,113,113,0.1)",
+          border: `1px solid ${resendMsg.type === "ok" ? "rgba(74,222,128,0.3)" : "rgba(248,113,113,0.3)"}`,
+          color: resendMsg.type === "ok" ? "#4ade80" : "#f87171",
+          borderRadius: 7, padding: "8px 12px", fontSize: 12.5,
+        }}>
+          {resendMsg.text}
+        </div>
       )}
 
       {/* Controls */}
@@ -370,6 +393,7 @@ function MembersTab({ companyId }) {
                     {canManage && m.role !== "owner" && (
                       <DotMenu items={[
                         { label: "Cambiar rol", action: () => setModal({ type: "role", member: m }) },
+                        ...(m.status === "active" ? [{ label: "Reenviar bienvenida", action: () => handleResendWelcome(m) }] : []),
                         ...(m.status !== "removed" ? [{ label: "Dar de baja", danger: true, action: () => handleRemove(m) }] : []),
                       ]} />
                     )}
