@@ -134,7 +134,7 @@ export const learningApi = {
   getAssignment: (id) => enterpriseApi.get(`/enterprise/learning-assignments/${id}/`, { params: cp() }).then((r) => r.data),
   startAssignment: (id) => enterpriseApi.post(`/enterprise/learning-assignments/${id}/start/`, {}, { params: cp() }).then((r) => r.data),
   completeModule: (id, data) => enterpriseApi.post(`/enterprise/learning-assignments/${id}/complete-module/`, data, { params: cp() }).then((r) => r.data),
-  getMyProgress: (id) => enterpriseApi.get(`/enterprise/learning-assignments/${id}/my-progress/`, { params: cp() }).then((r) => r.data),
+  getMyProgress: (id) => enterpriseApi.get(`/enterprise/learning-assignments/${id}/progress/`, { params: cp() }).then((r) => r.data),
   getLearningPathProgress: (id) => enterpriseApi.get(`/enterprise/learning-paths/${id}/my-progress/`, { params: cp() }).then((r) => r.data),
 
   // Reviews and Gaps

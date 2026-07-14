@@ -596,12 +596,20 @@ export function AssignmentDetail() {
 
       {/* Completed banner */}
       {isDone && (
-        <div style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 8, padding: "16px 20px", display: "flex", alignItems: "center", gap: 10 }}>
-          <CheckCircleIcon style={{ width: 18, height: 18, color: "#4ade80", flexShrink: 0 }} />
-          <div>
-            <p style={{ color: "#4ade80", fontWeight: 700, fontSize: 13 }}>¡Learning Path completado!</p>
-            <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 2 }}>Has terminado todos los procesos de esta asignación.</p>
+        <div style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 8, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+          <div className="flex items-center gap-2.5">
+            <CheckCircleIcon style={{ width: 18, height: 18, color: "#4ade80", flexShrink: 0 }} />
+            <div>
+              <p style={{ color: "#4ade80", fontWeight: 700, fontSize: 13 }}>¡Learning Path completado!</p>
+              <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 2 }}>Has terminado todos los procesos de esta asignación.</p>
+            </div>
           </div>
+          {assignment.issued_certification_id && (
+            <button onClick={() => navigate(`/enterprise/certifications/${assignment.issued_certification_id}`)}
+              className="ank-btn-accent text-xs" style={{ flexShrink: 0 }}>
+              Ver mi certificado
+            </button>
+          )}
         </div>
       )}
     </div>

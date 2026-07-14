@@ -1,13 +1,106 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Typography, Button } from "@material-tailwind/react";
-import { PrinterIcon } from "@heroicons/react/24/outline";
+import {
+  PrinterIcon, AcademicCapIcon, CalendarIcon,
+  ShieldCheckIcon, TicketIcon,
+} from "@heroicons/react/24/outline";
 import { certApi } from "../../api/enterpriseApi";
 import { StatusBadge } from "../../components/StatusBadge";
 import { EmptyState } from "../../components/EmptyState";
 
+const NAVY = "#12213F";
+const GOLD = "#C9A227";
+const GOLD_LIGHT = "#E4C766";
+const CREAM = "#FBF7EC";
+
 function QRCode({ url }) {
-  return <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`} alt="QR" className="h-32 w-32 rounded-xl border border-zinc-200 mx-auto" />;
+  return (
+    <div style={{ display: "inline-block", background: "#fff", padding: 8, borderRadius: 10, border: `1px solid ${GOLD}55` }}>
+      <img
+        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`}
+        alt="Código QR de verificación"
+        style={{ width: 96, height: 96, display: "block" }}
+      />
+    </div>
+  );
+}
+
+function RibbonTop() {
+  return (
+    <svg viewBox="0 0 600 120" preserveAspectRatio="none" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 108, display: "block" }}>
+      <path
+        d="M0,0 H600 V46 C 555,46 545,92 495,92 H385 C 350,92 350,58 300,58 C 250,58 250,92 215,92 H105 C 55,92 45,46 0,46 Z"
+        fill={NAVY}
+      />
+      <path
+        d="M0,46 C 45,46 55,92 105,92 H215 C 250,92 250,58 300,58 C 350,58 350,92 385,92 H495 C 545,92 555,46 600,46"
+        fill="none" stroke={GOLD} strokeWidth="1.5" opacity="0.6"
+      />
+    </svg>
+  );
+}
+
+function RibbonBottom() {
+  return (
+    <svg viewBox="0 0 600 60" preserveAspectRatio="none" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: 44, display: "block" }}>
+      <path d="M0,60 H600 V26 C 480,26 460,6 300,6 C 140,6 120,26 0,26 Z" fill={NAVY} />
+    </svg>
+  );
+}
+
+function MedalSeal() {
+  const leaf = (angle, side) => (
+    <ellipse
+      key={`${side}-${angle}`}
+      cx={0} cy={-38} rx={5} ry={12}
+      fill={GOLD}
+      opacity={0.9}
+      transform={`rotate(${side === "l" ? -angle : angle})`}
+    />
+  );
+  const angles = [10, 24, 38, 52, 66];
+  return (
+    <svg viewBox="-60 -60 120 150" style={{ width: 84, height: 105 }}>
+      <g>
+        {angles.map((a) => leaf(a, "l"))}
+        {angles.map((a) => leaf(a, "r"))}
+      </g>
+      <polygon points="-22,20 -22,64 0,50 22,64 22,20" fill={NAVY} />
+      <circle cx="0" cy="0" r="34" fill={GOLD_LIGHT} stroke={GOLD} strokeWidth="3" />
+      <circle cx="0" cy="0" r="26" fill="none" stroke={NAVY} strokeWidth="1" opacity="0.35" />
+      <path
+        d="M0,-14 L4,-4 L15,-4 L6,3 L9,14 L0,7 L-9,14 L-6,3 L-15,-4 L-4,-4 Z"
+        fill={NAVY}
+      />
+    </svg>
+  );
+}
+
+function Signature() {
+  return (
+    <svg viewBox="0 0 140 46" style={{ width: 110, height: 36 }}>
+      <path
+        d="M4,34 C14,10 20,10 24,26 C27,36 30,22 34,14 C38,6 42,20 46,22 C50,24 54,10 60,12 C68,14 62,32 70,30 C80,27 82,10 92,14 C100,17 96,30 104,28 C114,25 116,12 126,16"
+        fill="none" stroke={NAVY} strokeWidth="2" strokeLinecap="round" opacity="0.75"
+      />
+    </svg>
+  );
+}
+
+function StatPill({ icon, label, value, valueNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 9, background: NAVY, borderRadius: 999, padding: "7px 16px 7px 7px", minWidth: 0 }}>
+      <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(201,162,39,0.18)", border: `1px solid ${GOLD}66`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {icon}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 8.5, fontWeight: 700, color: GOLD_LIGHT, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {valueNode || value}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function CertificateDetail() {
@@ -19,76 +112,132 @@ export function CertificateDetail() {
     certApi.getCertData(id).then(setCert).catch(() => {}).finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 rounded-full border-2 border-indigo-600 border-t-transparent" /></div>;
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-8 h-8 border-2 rounded-full animate-spin" />
+    </div>
+  );
   if (!cert) return <EmptyState title="Certificate not found" />;
 
   const verifyUrl = `${window.location.origin}/verify/${cert.verification_code}`;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex justify-end mb-4">
-        <Button variant="outlined" color="zinc" className="normal-case flex items-center gap-2" onClick={() => window.print()}>
-          <PrinterIcon className="h-4 w-4" /> Print
-        </Button>
+    <div className="w-full" style={{ maxWidth: 720, margin: "0 auto" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap');
+        @media print {
+          .ank-cert-noprint { display: none !important; }
+          .ank-cert-card { box-shadow: none !important; }
+        }
+      `}</style>
+
+      <div className="ank-cert-noprint flex justify-end mb-4">
+        <button onClick={() => window.print()} className="ank-btn-ghost text-xs">
+          <PrinterIcon className="h-3.5 w-3.5" /> Imprimir
+        </button>
       </div>
 
       {/* Certificate card */}
-      <div className="bg-white rounded-2xl border-2 border-indigo-200 shadow-xl overflow-hidden print:shadow-none print:border-zinc-300">
-        {/* Header */}
-        <div className="bg-indigo-600 px-8 py-8 text-center">
-          <Typography variant="small" className="text-indigo-200 uppercase tracking-widest text-xs font-bold mb-2">{cert.company_name}</Typography>
-          <Typography variant="h4" className="text-white font-extrabold">{cert.header_text || "Certificate of Achievement"}</Typography>
+      <div className="ank-cert-card" style={{ position: "relative", background: CREAM, borderRadius: 22, boxShadow: "0 24px 70px rgba(0,0,0,0.45)", padding: 12 }}>
+        {/* outer gold frame */}
+        <div style={{ position: "absolute", inset: 12, border: `2px solid ${GOLD}`, borderRadius: 14, pointerEvents: "none" }} />
+
+        {/* Medallion — sibling of the clipped inner wrapper so it isn't cut off */}
+        <div style={{ position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", width: 66, height: 66, borderRadius: "50%", background: NAVY, border: `2px solid ${GOLD}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px rgba(0,0,0,0.35)", zIndex: 2 }}>
+          <AcademicCapIcon style={{ width: 28, height: 28, color: GOLD_LIGHT }} />
         </div>
 
-        {/* Body */}
-        <div className="px-8 py-10 text-center space-y-6">
-          <div>
-            <Typography variant="small" className="text-zinc-400 uppercase tracking-wide text-xs">This certifies that</Typography>
-            <Typography variant="h3" className="font-extrabold text-zinc-900 mt-2">{cert.holder_name}</Typography>
+        <div style={{ position: "relative", border: `1px solid ${GOLD}99`, borderRadius: 16, margin: 6, overflow: "hidden" }}>
+
+          {/* Top ribbon */}
+          <div style={{ position: "relative", height: 108 }}>
+            <RibbonTop />
+            <p style={{ position: "absolute", top: 34, left: 0, right: 0, textAlign: "center", color: GOLD_LIGHT, fontSize: 13, fontWeight: 800, letterSpacing: "0.22em" }}>
+              {(cert.company_name || "").toUpperCase()}
+            </p>
           </div>
 
-          {cert.body_text && (
-            <Typography className="text-zinc-600 font-medium leading-relaxed">{cert.body_text}</Typography>
-          )}
-
-          <div>
-            <Typography variant="h6" className="font-bold text-indigo-700">{cert.template_name}</Typography>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 text-left bg-zinc-50 rounded-xl p-4">
-            <div>
-              <div className="text-xs text-zinc-400 font-semibold">Issued</div>
-              <div className="text-sm font-bold text-zinc-800">{cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}</div>
+          {/* Body */}
+          <div style={{ padding: "18px 40px 32px", textAlign: "center" }}>
+            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 800, color: NAVY, letterSpacing: "0.03em", lineHeight: 1.1 }}>
+              {(cert.header_text || "Certificate of Achievement").split(" ")[0]}
+            </h1>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 6 }}>
+              <span style={{ width: 46, height: 1, background: GOLD }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: GOLD, letterSpacing: "0.2em", textTransform: "uppercase" }}>
+                {(cert.header_text || "Certificate of Achievement").split(" ").slice(1).join(" ") || "Of Achievement"}
+              </span>
+              <span style={{ width: 46, height: 1, background: GOLD }} />
             </div>
-            <div>
-              <div className="text-xs text-zinc-400 font-semibold">Expires</div>
-              <div className="text-sm font-bold text-zinc-800">{cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : "No expiry"}</div>
-            </div>
-            {cert.score != null && (
-              <div>
-                <div className="text-xs text-zinc-400 font-semibold">Score</div>
-                <div className="text-sm font-bold text-indigo-600">{cert.score}%</div>
-              </div>
+
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.14em", marginTop: 28 }}>This certifies that</p>
+            <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 30, fontWeight: 800, color: NAVY, marginTop: 8 }}>{cert.holder_name}</h2>
+            <div style={{ width: 130, height: 2, background: GOLD, margin: "10px auto 0" }} />
+
+            {cert.body_text && (
+              <p style={{ fontSize: 13, color: "#5C5847", lineHeight: 1.7, marginTop: 16, maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>{cert.body_text}</p>
             )}
-            <div>
-              <div className="text-xs text-zinc-400 font-semibold">Status</div>
-              <StatusBadge status={cert.status} />
+
+            <p style={{ fontSize: 17, fontWeight: 700, color: "#3949AB", marginTop: 10 }}>{cert.template_name}</p>
+
+            {/* Stat pills */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 26 }}>
+              <StatPill
+                icon={<CalendarIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
+                label="Issued"
+                value={cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}
+              />
+              <StatPill
+                icon={<CalendarIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
+                label="Expires"
+                value={cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : "No expiry"}
+              />
+              {cert.score != null && (
+                <StatPill
+                  icon={<ShieldCheckIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
+                  label="Score"
+                  value={`${cert.score}%`}
+                />
+              )}
+              <StatPill
+                icon={<ShieldCheckIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
+                label="Status"
+                valueNode={<StatusBadge status={cert.status} />}
+              />
+              <StatPill
+                icon={<TicketIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
+                label="Verification Code"
+                value={cert.verification_code}
+              />
             </div>
+
+            {/* Signature / seal / QR row */}
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: 44, gap: 12 }}>
+              <div style={{ textAlign: "left" }}>
+                <Signature />
+                <div style={{ width: 110, borderTop: `1px solid ${NAVY}66`, marginTop: 2, paddingTop: 6 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: NAVY }}>{cert.company_name}</p>
+                  <p style={{ fontSize: 10, color: "#8A8365" }}>Authorized Signature</p>
+                </div>
+              </div>
+
+              <MedalSeal />
+
+              <div style={{ textAlign: "center" }}>
+                <QRCode url={verifyUrl} />
+                <p style={{ fontSize: 9.5, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 6 }}>Scan to verify</p>
+              </div>
+            </div>
+
+            {cert.footer_text && (
+              <p style={{ fontSize: 11, color: "#8A8365", fontStyle: "italic", marginTop: 26 }}>{cert.footer_text}</p>
+            )}
           </div>
 
-          {/* Verification code */}
-          <div className="space-y-3">
-            <div className="p-3 bg-zinc-100 rounded-xl">
-              <div className="text-xs text-zinc-400 font-semibold mb-1">Verification Code</div>
-              <div className="font-mono font-bold text-zinc-800 text-sm tracking-wider">{cert.verification_code}</div>
-            </div>
-            <QRCode url={verifyUrl} />
-            <Typography variant="small" className="text-zinc-400 text-xs">{verifyUrl}</Typography>
+          {/* Bottom ribbon */}
+          <div style={{ position: "relative", height: 44 }}>
+            <RibbonBottom />
           </div>
-
-          {cert.footer_text && (
-            <Typography variant="small" className="text-zinc-400 italic">{cert.footer_text}</Typography>
-          )}
         </div>
       </div>
     </div>
