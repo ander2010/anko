@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { toPng } from "html-to-image";
 import {
-  PrinterIcon, AcademicCapIcon, CalendarIcon,
+  ArrowDownTrayIcon, AcademicCapIcon, CalendarIcon,
   ShieldCheckIcon, TicketIcon,
 } from "@heroicons/react/24/outline";
 import { certApi } from "../../api/enterpriseApi";
@@ -19,6 +20,7 @@ function QRCode({ url }) {
       <img
         src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`}
         alt="Código QR de verificación"
+        crossOrigin="anonymous"
         style={{ width: 96, height: 96, display: "block" }}
       />
     </div>
@@ -107,10 +109,25 @@ export function CertificateDetail() {
   const { id } = useParams();
   const [cert, setCert] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const cardRef = useRef(null);
 
   useEffect(() => {
     certApi.getCertData(id).then(setCert).catch(() => {}).finally(() => setLoading(false));
   }, [id]);
+
+  const handleDownloadImage = async () => {
+    if (!cardRef.current || downloading) return;
+    setDownloading(true);
+    try {
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 2, backgroundColor: CREAM });
+      const link = document.createElement("a");
+      link.download = `certificado-${cert?.verification_code || id}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch {}
+    setDownloading(false);
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
@@ -125,20 +142,16 @@ export function CertificateDetail() {
     <div className="w-full" style={{ maxWidth: 720, margin: "0 auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap');
-        @media print {
-          .ank-cert-noprint { display: none !important; }
-          .ank-cert-card { box-shadow: none !important; }
-        }
       `}</style>
 
-      <div className="ank-cert-noprint flex justify-end mb-4">
-        <button onClick={() => window.print()} className="ank-btn-ghost text-xs">
-          <PrinterIcon className="h-3.5 w-3.5" /> Imprimir
+      <div className="flex justify-end mb-4">
+        <button onClick={handleDownloadImage} disabled={downloading} className="ank-btn-ghost text-xs" style={{ opacity: downloading ? 0.7 : 1 }}>
+          <ArrowDownTrayIcon className="h-3.5 w-3.5" /> {downloading ? "Generando..." : "Descargar certificado"}
         </button>
       </div>
 
       {/* Certificate card */}
-      <div className="ank-cert-card" style={{ position: "relative", background: CREAM, borderRadius: 22, boxShadow: "0 24px 70px rgba(0,0,0,0.45)", padding: 12 }}>
+      <div ref={cardRef} className="ank-cert-card" style={{ position: "relative", background: CREAM, borderRadius: 22, boxShadow: "0 24px 70px rgba(0,0,0,0.45)", padding: 12 }}>
         {/* outer gold frame */}
         <div style={{ position: "absolute", inset: 12, border: `2px solid ${GOLD}`, borderRadius: 14, pointerEvents: "none" }} />
 
