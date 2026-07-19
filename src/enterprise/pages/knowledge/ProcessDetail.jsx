@@ -16,6 +16,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { API_BASE } from "@/services/api";
 import { ExamSimulatorDialog } from "@/widgets/dialogs/index";
 import { FlashcardViewDialog } from "@/widgets/dialogs/flashcard-view-dialog";
@@ -24,18 +25,11 @@ import projectService from "@/services/projectService";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const SOURCE_LABELS = {
-  policy: "Política", procedure: "Procedimiento", regulation: "Regulación",
-  manual: "Manual", training_material: "Material de formación", other: "Otro",
-};
-
 const TYPE_COLORS = {
   course:         { bg: "rgba(94,106,210,0.15)", text: "#8B9CF4" },
   tutorial:       { bg: "rgba(34,197,94,0.12)",  text: "#4ade80" },
   study_material: { bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
 };
-
-const TYPE_LABELS = { course: "Curso", tutorial: "Tutorial", study_material: "Material de estudio" };
 
 const DIFF_COLORS = {
   easy:   { bg: "rgba(74,222,128,0.12)", text: "#4ade80" },
@@ -43,29 +37,62 @@ const DIFF_COLORS = {
   hard:   { bg: "rgba(239,68,68,0.12)",  text: "#f87171" },
 };
 
-const STATUS_CFG = {
-  pending:    { bg: "rgba(255,255,255,0.07)", text: "#8B8B9C", label: "Pendiente" },
-  processing: { bg: "rgba(94,106,210,0.15)", text: "#8B9CF4", label: "Procesando" },
-  processed:  { bg: "rgba(74,222,128,0.12)", text: "#4ade80", label: "Procesado"  },
-  failed:     { bg: "rgba(239,68,68,0.12)",  text: "#f87171", label: "Error"      },
+const STATUS_BG = {
+  pending:    { bg: "rgba(255,255,255,0.07)", text: "#8B8B9C" },
+  processing: { bg: "rgba(94,106,210,0.15)", text: "#8B9CF4" },
+  processed:  { bg: "rgba(74,222,128,0.12)", text: "#4ade80" },
+  failed:     { bg: "rgba(239,68,68,0.12)",  text: "#f87171" },
 };
 
-const STAGE_LABELS = {
-  prepare:               "Preparando el proceso…",
-  preflight:             "Verificando documentos…",
-  process_document:      "Procesando documentos…",
-  aggregate_unique_tags: "Identificando temas únicos…",
-  partition_tags:        "Organizando grupos temáticos…",
-  generate_flashcards:   "Generando flashcards…",
-  generate_battery:      "Generando preguntas…",
-  finalize:              "Finalizando…",
-  finalize_outputs:      "Finalizando…",
-  // Single-item deck/battery generation (start-generate) step keys
-  prepare_sources:       "Preparando fuentes…",
-  generate_questions:    "Generando preguntas…",
-  finalize_deck:         "Finalizando mazo…",
-  finalize_battery:      "Finalizando batería…",
-};
+function useSourceLabels() {
+  const { t } = useLanguage();
+  return {
+    policy: t("enterprise.knowledge.sourceNew.sourceTypes.policy"),
+    procedure: t("enterprise.knowledge.sourceNew.sourceTypes.procedure"),
+    regulation: t("enterprise.knowledge.sourceNew.sourceTypes.regulation"),
+    manual: t("enterprise.knowledge.sourceNew.sourceTypes.manual"),
+    training_material: t("enterprise.knowledge.sourceNew.sourceTypes.trainingMaterial"),
+    other: t("enterprise.knowledge.sourceNew.sourceTypes.other"),
+  };
+}
+
+function useTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    course: t("enterprise.knowledge.sources.types.course"),
+    tutorial: t("enterprise.knowledge.sources.types.tutorial"),
+    study_material: t("enterprise.knowledge.sources.types.studyMaterial"),
+  };
+}
+
+function useStatusLabels() {
+  const { t } = useLanguage();
+  return {
+    pending: t("enterprise.knowledge.sourceDetail.status.pending"),
+    processing: t("enterprise.knowledge.sourceDetail.status.processing"),
+    processed: t("enterprise.knowledge.sourceDetail.status.processed"),
+    failed: t("enterprise.knowledge.processDetail.status.error"),
+  };
+}
+
+function useStageLabels() {
+  const { t } = useLanguage();
+  return {
+    prepare: t("enterprise.knowledge.processDetail.stages.prepare"),
+    preflight: t("enterprise.knowledge.processDetail.stages.preflight"),
+    process_document: t("enterprise.knowledge.processDetail.stages.processDocument"),
+    aggregate_unique_tags: t("enterprise.knowledge.processDetail.stages.aggregateTags"),
+    partition_tags: t("enterprise.knowledge.processDetail.stages.partitionTags"),
+    generate_flashcards: t("enterprise.knowledge.processDetail.stages.generateFlashcards"),
+    generate_battery: t("enterprise.knowledge.processDetail.stages.generateBattery"),
+    finalize: t("enterprise.knowledge.processDetail.stages.finalize"),
+    finalize_outputs: t("enterprise.knowledge.processDetail.stages.finalize"),
+    prepare_sources: t("enterprise.knowledge.processDetail.stages.prepareSources"),
+    generate_questions: t("enterprise.knowledge.processDetail.stages.generateBattery"),
+    finalize_deck: t("enterprise.knowledge.processDetail.stages.finalizeDeck"),
+    finalize_battery: t("enterprise.knowledge.processDetail.stages.finalizeBattery"),
+  };
+}
 
 const TERMINAL_STATUSES = new Set([
   "success", "completed", "completed_with_errors", "complete with errors", "complete",
@@ -137,6 +164,8 @@ const STEP_STATUS_DOT = {
 function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
   const { status, progress, message, stage, artifacts, steps, error } = runState;
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const STAGE_LABELS = useStageLabels();
 
   const isTerminal = TERMINAL_STATUSES.has(status);
   const isSuccess  = SUCCESS_STATUSES.has(status);
@@ -150,10 +179,12 @@ function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
   const borderColor = isFailed ? "rgba(239,68,68,0.3)" : isCanceled ? "rgba(245,158,11,0.3)" : isSuccess ? "rgba(74,222,128,0.25)" : "rgba(94,106,210,0.35)";
   const bgColor     = isFailed ? "rgba(239,68,68,0.07)" : isCanceled ? "rgba(245,158,11,0.05)" : isSuccess ? "rgba(74,222,128,0.06)" : "rgba(94,106,210,0.08)";
 
-  const topLabel = isFailed   ? "Generación fallida" :
-                   isCanceled ? "Generación detenida" :
-                   isSuccess  ? `Listo — ${decks.length} deck${decks.length !== 1 ? "s" : ""}, ${batteries.length} bater${batteries.length !== 1 ? "ías" : "ía"}` :
-                   (STAGE_LABELS[stage] || message || "Generando contenido…");
+  const deckWord = decks.length !== 1 ? t("enterprise.knowledge.processDetail.banner.decksWord") : t("enterprise.knowledge.processDetail.banner.deckWord");
+  const batteryWord = batteries.length !== 1 ? t("enterprise.knowledge.processDetail.banner.batteriesWord") : t("enterprise.knowledge.processDetail.banner.batteryWord");
+  const topLabel = isFailed   ? t("enterprise.knowledge.processDetail.banner.failed") :
+                   isCanceled ? t("enterprise.knowledge.processDetail.banner.canceled") :
+                   isSuccess  ? t("enterprise.knowledge.processDetail.banner.ready", { decks: decks.length, deckWord, batteries: batteries.length, batteryWord }) :
+                   (STAGE_LABELS[stage] || message || t("enterprise.knowledge.processDetail.banner.generating"));
 
   return (
     <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 8, overflow: "hidden", transition: "all 200ms" }}>
@@ -184,8 +215,8 @@ function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
             style={{ color: "#f87171", cursor: "pointer", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", flexShrink: 0 }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.2)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")}
-            title="Detener la generación">
-            Detener
+            title={t("enterprise.knowledge.processDetail.banner.stopTitle")}>
+            {t("enterprise.knowledge.processDetail.banner.stop")}
           </button>
         )}
 
@@ -194,7 +225,7 @@ function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
           style={{ color: "var(--text-tertiary)", cursor: "pointer", padding: "2px 6px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0 }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}>
-          {collapsed ? "▾ Ver" : "▴ Ocultar"}
+          {collapsed ? t("enterprise.knowledge.processDetail.banner.view") : t("enterprise.knowledge.processDetail.banner.hide")}
         </button>
 
         {/* Dismiss */}
@@ -233,29 +264,29 @@ function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
           )}
           {!isTerminal && steps.length === 0 && (
             <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 10 }}>
-              {message || "Esto puede tardar varios minutos. Puedes seguir navegando mientras tanto."}
+              {message || t("enterprise.knowledge.processDetail.banner.mayTakeMinutes")}
             </p>
           )}
 
           {/* Failed */}
           {isFailed && (
-            <p style={{ color: "#f87171", fontSize: 12, marginTop: 10, opacity: 0.85 }}>{error || message || "Ocurrió un error inesperado."}</p>
+            <p style={{ color: "#f87171", fontSize: 12, marginTop: 10, opacity: 0.85 }}>{error || message || t("enterprise.knowledge.processDetail.unexpectedError")}</p>
           )}
 
           {/* Canceled */}
           {isCanceled && (
-            <p style={{ color: "#f59e0b", fontSize: 12, marginTop: 10, opacity: 0.85 }}>El proceso fue detenido. Puedes volver a iniciarlo desde el botón Auto-generar.</p>
+            <p style={{ color: "#f59e0b", fontSize: 12, marginTop: 10, opacity: 0.85 }}>{t("enterprise.knowledge.processDetail.banner.canceledMessage")}</p>
           )}
 
           {/* Success results */}
           {isSuccess && (decks.length > 0 || batteries.length > 0) && (
             <div className="space-y-3 mt-3">
               {status === "completed_with_errors" && (
-                <p style={{ color: "#f59e0b", fontSize: 11 }}>Algunos grupos fallaron pero hay resultados disponibles.</p>
+                <p style={{ color: "#f59e0b", fontSize: 11 }}>{t("enterprise.knowledge.processDetail.banner.partialFailure")}</p>
               )}
               <div className="grid grid-cols-1 gap-1.5">
                 {[...decks.map((a) => ({ ...a, _t: "deck" })), ...batteries.map((a) => ({ ...a, _t: "battery" }))].map((a) => {
-                  const title = a.payload?.title || a.payload?.deck_id && `Deck #${a.payload.deck_id}` || a.payload?.battery_id && `Batería #${a.payload.battery_id}` || `${a._t === "deck" ? "Deck" : "Batería"} #${a.resource_id}`;
+                  const title = a.payload?.title || a.payload?.deck_id && `Deck #${a.payload.deck_id}` || a.payload?.battery_id && `${t("enterprise.knowledge.processDetail.battery")} #${a.payload.battery_id}` || `${a._t === "deck" ? "Deck" : t("enterprise.knowledge.processDetail.battery")} #${a.resource_id}`;
                   const href  = a._t === "deck" ? `/decks/${a.resource_id}` : `/batteries/${a.resource_id}`;
                   return (
                     <button key={`${a._t}-${a.resource_id}`}
@@ -283,6 +314,7 @@ function AutoGenBanner({ runState, collapsed, onToggle, onDismiss, onStop }) {
 // ─── Add Document Modal ───────────────────────────────────────────────────────
 
 function AddDocModal({ ksId, companyId, onClose, onAdded }) {
+  const { t } = useLanguage();
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState([]);
@@ -321,7 +353,7 @@ function AddDocModal({ ksId, companyId, onClose, onAdded }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "24px", width: "100%", maxWidth: 420 }}>
         <div className="flex items-center justify-between mb-5">
-          <h2 style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>Agregar documentos</h2>
+          <h2 style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>{t("enterprise.knowledge.processDetail.addDocModal.title")}</h2>
           <button onClick={onClose} style={{ color: "var(--text-tertiary)", cursor: "pointer" }}>
             <XMarkIcon style={{ width: 16, height: 16 }} />
           </button>
@@ -336,9 +368,9 @@ function AddDocModal({ ksId, companyId, onClose, onAdded }) {
               onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}>
               <DocumentArrowUpIcon style={{ width: 28, height: 28, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
               <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>
-                {files.length > 0 ? `${files.length} archivo${files.length !== 1 ? "s" : ""} seleccionado${files.length !== 1 ? "s" : ""}` : "Haz clic o arrastra archivos aquí"}
+                {files.length > 0 ? t("enterprise.knowledge.processDetail.addDocModal.filesSelected", { count: files.length, plural: files.length !== 1 ? "s" : "" }) : t("enterprise.knowledge.processDetail.addDocModal.clickOrDrag")}
               </p>
-              <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 3 }}>PDF, DOCX, PPTX, TXT, MD — máx. 400 MB</p>
+              <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 3 }}>{t("enterprise.knowledge.processDetail.addDocModal.fileTypes")}</p>
             </div>
             <input ref={inputRef} type="file" multiple accept=".pdf,.doc,.docx,.txt,.md,.pptx,.xlsx" style={{ display: "none" }}
               onChange={(e) => setFiles(Array.from(e.target.files || []))} />
@@ -357,10 +389,10 @@ function AddDocModal({ ksId, companyId, onClose, onAdded }) {
             {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
 
             <div className="flex justify-end gap-2 pt-1">
-              <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+              <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
               <button onClick={handleUpload} disabled={!files.length || uploading} className="ank-btn-accent text-xs"
                 style={{ opacity: !files.length || uploading ? 0.6 : 1 }}>
-                {uploading ? <><ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> Subiendo…</> : <><DocumentArrowUpIcon className="h-3.5 w-3.5" /> Subir</>}
+                {uploading ? <><ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> {t("enterprise.knowledge.processDetail.addDocModal.uploading")}</> : <><DocumentArrowUpIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.processDetail.addDocModal.upload")}</>}
               </button>
             </div>
           </div>
@@ -375,7 +407,7 @@ function AddDocModal({ ksId, companyId, onClose, onAdded }) {
               </div>
             ))}
             <div className="flex justify-end pt-3">
-              <button onClick={onClose} className="ank-btn-accent text-xs">Listo</button>
+              <button onClick={onClose} className="ank-btn-accent text-xs">{t("enterprise.knowledge.processDetail.addDocModal.done")}</button>
             </div>
           </div>
         )}
@@ -495,6 +527,7 @@ function TopicsTab({ topics, loading }) {
 // ─── Decks / Batteries Tabs ───────────────────────────────────────────────────
 
 function ConfirmDeleteDialog({ target, onConfirm, onCancel, deleting }) {
+  const { t } = useLanguage();
   if (!target) return null;
   const isDeck = target._kind === "deck";
   const isTopic = target._kind === "topic";
@@ -516,33 +549,33 @@ function ConfirmDeleteDialog({ target, onConfirm, onCancel, deleting }) {
         </div>
         {/* Title */}
         <p style={{ fontSize: 17, fontWeight: 800, color: "#F1F5F9", marginBottom: 8 }}>
-          {isTopic ? "Eliminar tópico completo" : isDeck ? "Eliminar deck" : "Eliminar batería"}
+          {isTopic ? t("enterprise.knowledge.processDetail.deleteDialog.titleTopic") : isDeck ? t("enterprise.knowledge.processDetail.deleteDialog.titleDeck") : t("enterprise.knowledge.processDetail.deleteDialog.titleBattery")}
         </p>
         {/* Body */}
         <p style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.6, marginBottom: 6 }}>
-          Vas a eliminar permanentemente:
+          {t("enterprise.knowledge.processDetail.deleteDialog.willDelete")}
         </p>
         <p style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", marginBottom: 6, padding: "8px 12px", background: "rgba(255,255,255,0.05)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
           {label}
         </p>
         <p style={{ fontSize: 12, color: "#64748B", lineHeight: 1.55, marginBottom: 24 }}>
           {isTopic
-            ? `Esto eliminará ${target.deckCount} deck${target.deckCount === 1 ? "" : "s"} y ${target.batteryCount} batería${target.batteryCount === 1 ? "" : "s"} de este tópico (automáticos y agregados a mano), con todas sus tarjetas, preguntas e historial. Esta acción no se puede deshacer.`
+            ? t("enterprise.knowledge.processDetail.deleteDialog.topicBody", { decks: target.deckCount, batteries: target.batteryCount })
             : isDeck
-            ? "Esto eliminará todas las tarjetas, progreso e historial asociado. Esta acción no se puede deshacer."
-            : "Esto eliminará todas las preguntas, intentos e historial asociado. Esta acción no se puede deshacer."}
+            ? t("enterprise.knowledge.processDetail.deleteDialog.deckBody")
+            : t("enterprise.knowledge.processDetail.deleteDialog.batteryBody")}
         </p>
         {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onCancel} disabled={deleting}
             style={{ flex: 1, padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.5 : 1, transition: "opacity 0.15s" }}>
-            Cancelar
+            {t("enterprise.compliance.programs.cancel")}
           </button>
           <button onClick={onConfirm} disabled={deleting}
             style={{ flex: 1, padding: "11px", borderRadius: 10, background: deleting ? "rgba(239,68,68,0.3)" : "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "opacity 0.15s" }}>
             {deleting
-              ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />Eliminando...</>
-              : <><TrashIcon style={{ width: 14, height: 14 }} />Eliminar</>
+              ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />{t("enterprise.knowledge.sources.deleteDialog.deleting")}</>
+              : <><TrashIcon style={{ width: 14, height: 14 }} />{t("enterprise.knowledge.processDetail.deleteDialog.delete")}</>
             }
           </button>
         </div>
@@ -863,6 +896,7 @@ function SortableBatteryRow({ battery, index, onSimulate, onDelete, canReorder, 
 // ─── TagGroup section (new Collection/TagGroup system) ────────────────────────
 
 function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck, canReorder, onDecksReorder, onBatteriesReorder, onAddDeck, onAddBattery }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(true);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -903,7 +937,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
             {tagGroup.name}
           </span>
           <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>
-            {decks.length} decks · {batteries.length} bat.
+            {t("enterprise.knowledge.processDetail.tagGroup.counts", { decks: decks.length, batteries: batteries.length })}
           </span>
           {tagGroup.status && (
             <span style={{ padding: "1px 7px", borderRadius: 4, background: "rgba(99,102,241,0.1)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0, textTransform: "capitalize" }}>
@@ -913,7 +947,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
           <span style={{ flex: 1 }} />
           {canReorder && (
             <span style={{ fontSize: 10, color: "#475569", flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
-              <Bars3Icon style={{ width: 11, height: 11 }} /> reordena
+              <Bars3Icon style={{ width: 11, height: 11 }} /> {t("enterprise.knowledge.processDetail.reorder")}
             </span>
           )}
         </div>
@@ -923,7 +957,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
             {isLoading ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
                 <div style={{ width: 14, height: 14, border: "2px solid rgba(99,102,241,0.25)", borderTopColor: "#6366F1", borderRadius: "50%" }} className="animate-spin" />
-                <span style={{ fontSize: 12, color: "#475569" }}>Cargando…</span>
+                <span style={{ fontSize: 12, color: "#475569" }}>{t("enterprise.knowledge.processDetail.loading")}</span>
               </div>
             ) : (
               <>
@@ -951,7 +985,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
 
                 {decks.length === 0 && batteries.length === 0 && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px" }}>
-                    <p style={{ color: "#334155", fontSize: 12, fontStyle: "italic", margin: 0 }}>Sin contenido en este tópico.</p>
+                    <p style={{ color: "#334155", fontSize: 12, fontStyle: "italic", margin: 0 }}>{t("enterprise.knowledge.processDetail.noContentTopic")}</p>
                     <button
                       onClick={() => onAddDeck?.(tagGroup.id)}
                       style={{ padding: "3px 8px", borderRadius: 6, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
@@ -959,7 +993,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
                     <button
                       onClick={() => onAddBattery?.(tagGroup.id)}
                       style={{ padding: "3px 8px", borderRadius: 6, background: "rgba(94,106,210,0.08)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
-                    >+ Batería</button>
+                    >+ {t("enterprise.knowledge.processDetail.battery")}</button>
                   </div>
                 )}
               </>
@@ -974,6 +1008,7 @@ function TagGroupSection({ tagGroup, content, isLast, onStudy, onLearn, onSimula
 // ─── Documents Panel ──────────────────────────────────────────────────────────
 
 function DocumentsPanel({ docs, onAdd }) {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const filtered = search
     ? docs.filter((d) => d.filename?.toLowerCase().includes(search.toLowerCase()))
@@ -983,14 +1018,14 @@ function DocumentsPanel({ docs, onAdd }) {
     <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, overflow: "hidden" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        <h3 style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 14, margin: 0 }}>Documentos</h3>
+        <h3 style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 14, margin: 0 }}>{t("enterprise.knowledge.processDetail.documentsPanel.title")}</h3>
         <button
           onClick={onAdd}
           style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 6, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.22)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.12)"; }}
         >
-          <PlusIcon style={{ width: 11, height: 11 }} /> Agregar documento
+          <PlusIcon style={{ width: 11, height: 11 }} /> {t("enterprise.knowledge.processDetail.documentsPanel.addDocument")}
         </button>
       </div>
 
@@ -1001,7 +1036,7 @@ function DocumentsPanel({ docs, onAdd }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar documentos..."
+            placeholder={t("enterprise.knowledge.processDetail.documentsPanel.searchPlaceholder")}
             style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, padding: "7px 10px 7px 30px", color: "#F1F5F9", fontSize: 12, outline: "none", boxSizing: "border-box" }}
           />
         </div>
@@ -1013,7 +1048,7 @@ function DocumentsPanel({ docs, onAdd }) {
       {/* Count */}
       <div style={{ padding: "8px 20px 4px" }}>
         <span style={{ color: "#475569", fontSize: 11 }}>
-          {filtered.length} documento{filtered.length !== 1 ? "s" : ""}
+          {t("enterprise.knowledge.processDetail.documentsPanel.count", { count: filtered.length, plural: filtered.length !== 1 ? "s" : "" })}
         </span>
       </div>
 
@@ -1021,7 +1056,7 @@ function DocumentsPanel({ docs, onAdd }) {
       <div style={{ padding: "0 12px 4px" }}>
         {docs.length === 0 && (
           <div style={{ padding: "16px 8px", textAlign: "center" }}>
-            <p style={{ color: "#475569", fontSize: 12, margin: 0 }}>Sin documentos adjuntos.</p>
+            <p style={{ color: "#475569", fontSize: 12, margin: 0 }}>{t("enterprise.knowledge.processDetail.documentsPanel.empty")}</p>
           </div>
         )}
         {filtered.map((doc) => {
@@ -1037,7 +1072,7 @@ function DocumentsPanel({ docs, onAdd }) {
                 <p style={{ color: "#475569", fontSize: 10, margin: "2px 0 0" }}>
                   {ext}
                   {doc.size ? ` · ${(doc.size / 1024 / 1024).toFixed(1)} MB` : " · 0.0 MB"}
-                  {doc.added_by ? ` · por ${doc.added_by}` : ""}
+                  {doc.added_by ? ` · ${t("enterprise.knowledge.processDetail.by", { name: doc.added_by })}` : ""}
                 </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -1066,8 +1101,8 @@ function DocumentsPanel({ docs, onAdd }) {
         <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
           <ArrowUpTrayIcon style={{ width: 16, height: 16, color: "#64748B" }} />
         </div>
-        <p style={{ color: "#64748B", fontSize: 12, margin: "0 0 3px" }}>Arrastra y suelta documentos aquí</p>
-        <span style={{ color: "#6366F1", fontSize: 12, fontWeight: 600 }}>o selecciona archivos</span>
+        <p style={{ color: "#64748B", fontSize: 12, margin: "0 0 3px" }}>{t("enterprise.knowledge.processDetail.documentsPanel.dragDrop")}</p>
+        <span style={{ color: "#6366F1", fontSize: 12, fontWeight: 600 }}>{t("enterprise.knowledge.processDetail.documentsPanel.orSelectFiles")}</span>
       </div>
     </div>
   );
@@ -1076,15 +1111,17 @@ function DocumentsPanel({ docs, onAdd }) {
 // ─── Knowledge Structure Panel components ──────────────────────────────────────
 
 function ItemJobStrip({ job, accentColor }) {
+  const { t } = useLanguage();
+  const STAGE_LABELS = useStageLabels();
   const isFailed = FAILED_STATUSES.has(job.status);
   const isSuccess = SUCCESS_STATUSES.has(job.status);
   const isRunning = !isFailed && !isSuccess;
   const barColor = isFailed ? "#f87171" : isSuccess ? "#4ade80" : accentColor;
   const label = isFailed
-    ? (job.error || "Ocurrió un error inesperado.")
+    ? (job.error || t("enterprise.knowledge.processDetail.unexpectedError"))
     : isSuccess
-    ? "¡Listo!"
-    : (STAGE_LABELS[job.stage] || job.message || "Generando…");
+    ? t("enterprise.knowledge.processDetail.ready")
+    : (STAGE_LABELS[job.stage] || job.message || t("enterprise.knowledge.processDetail.generating"));
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 8px" }}>
       {isRunning && <ArrowPathIcon className="animate-spin" style={{ width: 11, height: 11, color: barColor, flexShrink: 0 }} />}
@@ -1108,6 +1145,7 @@ function ItemJobStrip({ job, accentColor }) {
 }
 
 function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck, onDelete, job, onDismissJob }) {
+  const { t } = useLanguage();
   const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
   const label = deck.title || `Deck ${index + 1}`;
   const isFailed = job && FAILED_STATUSES.has(job.status);
@@ -1118,7 +1156,7 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
     <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${borderColor}`, borderRadius: 8, marginBottom: 6, minWidth: 0, transition: "border-color 250ms" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", minWidth: 0 }}>
         {dragHandleProps && (
-          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
+          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title={t("enterprise.knowledge.processDetail.dragToReorder")}>
             <Bars3Icon style={{ width: 14, height: 14 }} />
           </div>
         )}
@@ -1127,10 +1165,10 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
         <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : `${cardCount} cards`}
+          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : t("enterprise.knowledge.processDetail.cardsCount", { n: cardCount })}
         </span>
         <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-          {deck.description || "Conjunto de tarjetas de estudio para este tópico"}
+          {deck.description || t("enterprise.knowledge.processDetail.deckDefaultDescription")}
         </span>
         <button
           onClick={() => onLearn?.(deck)}
@@ -1139,7 +1177,7 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
           onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >
-          Learn
+          {t("enterprise.knowledge.processDetail.learn")}
         </button>
         <button
           onClick={() => onStudy?.(deck)}
@@ -1148,7 +1186,7 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
           onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
         >
-          Study
+          {t("enterprise.knowledge.processDetail.study")}
         </button>
         <button
           onClick={() => onAddDeck?.()}
@@ -1156,12 +1194,12 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
         >
-          + Agregar deck
+          + {t("enterprise.knowledge.processDetail.addDeck")}
         </button>
-        <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0 }}>Más</button>
+        <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0 }}>{t("enterprise.knowledge.processDetail.more")}</button>
         <button
           onClick={() => onDelete?.(deck)}
-          title="Eliminar deck"
+          title={t("enterprise.knowledge.processDetail.deleteDeckTitle")}
           disabled={isRunning}
           style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: isRunning ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", opacity: isRunning ? 0.4 : 1 }}
           onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
@@ -1180,7 +1218,7 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
             >
-              Descartar
+              {t("enterprise.knowledge.processDetail.dismiss")}
             </button>
           )}
         </div>
@@ -1190,6 +1228,7 @@ function DeckRowItem({ deck, index, onStudy, onLearn, dragHandleProps, onAddDeck
 }
 
 function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps, onAddBattery, job, onDismissJob }) {
+  const { t } = useLanguage();
   const questionCount = battery.question_count ?? 0;
   const label = battery.name || battery.title || `Battery ${index + 1}`;
   const pct = battery.last_attempt?.percent ?? null;
@@ -1205,7 +1244,7 @@ function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps,
     <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${borderColor}`, borderRadius: 8, marginBottom: 6, minWidth: 0, transition: "border-color 250ms" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", minWidth: 0 }}>
         {dragHandleProps && (
-          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title="Arrastrar para reordenar">
+          <div {...dragHandleProps} style={{ cursor: "grab", color: "#334155", display: "flex", alignItems: "center", flexShrink: 0, touchAction: "none" }} title={t("enterprise.knowledge.processDetail.dragToReorder")}>
             <Bars3Icon style={{ width: 14, height: 14 }} />
           </div>
         )}
@@ -1214,10 +1253,10 @@ function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps,
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={label}>{label}</span>
         <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : `${questionCount} preguntas`}
+          {isRunning ? <ArrowPathIcon className="animate-spin" style={{ width: 9, height: 9, display: "inline-block" }} /> : t("enterprise.knowledge.processDetail.questionsCount", { n: questionCount })}
         </span>
         <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-          {battery.description || "Evaluación o práctica relacionada con este tópico"}
+          {battery.description || t("enterprise.knowledge.processDetail.batteryDefaultDescription")}
         </span>
 
         {/* Completion bar */}
@@ -1237,7 +1276,7 @@ function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps,
           onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}
         >
-          Simular
+          {t("enterprise.knowledge.processDetail.simulate")}
         </button>
         <button
           onClick={() => onAddBattery?.()}
@@ -1245,11 +1284,11 @@ function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps,
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.15)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(74,222,128,0.07)"; }}
         >
-          + Agregar batería
+          + {t("enterprise.knowledge.processDetail.addBattery")}
         </button>
         <button
           onClick={() => onDelete?.(battery)}
-          title="Eliminar batería"
+          title={t("enterprise.knowledge.processDetail.deleteBatteryTitle")}
           disabled={isRunning}
           style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: isRunning ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", opacity: isRunning ? 0.4 : 1 }}
           onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
@@ -1268,7 +1307,7 @@ function BatteryRowItem({ battery, index, onSimulate, onDelete, dragHandleProps,
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
             >
-              Descartar
+              {t("enterprise.knowledge.processDetail.dismiss")}
             </button>
           )}
         </div>
@@ -1281,6 +1320,7 @@ function TopicTreeItem({
   topic, index, decks, batteries, isLast, onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck,
   canReorder, onDecksReorder, onBatteriesReorder, onAddDeck, onAddBattery, onDeleteTopic, itemJobs, onDismissItemJob,
 }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(true);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const tagCount = topic.tags?.length || 0;
@@ -1290,7 +1330,7 @@ function TopicTreeItem({
   const deleteTopic = () => onDeleteTopic?.({
     id: topic.id,
     _kind: "topic",
-    label: `Tópico ${index + 1}`,
+    label: t("enterprise.knowledge.processDetail.topicLabel", { n: index + 1 }),
     deckCount: decks.length,
     batteryCount: batteries.length,
   });
@@ -1338,22 +1378,22 @@ function TopicTreeItem({
               ? <ChevronDownIcon style={{ width: 13, height: 13 }} />
               : <ChevronRightIcon style={{ width: 13, height: 13 }} />}
           </button>
-          <span style={{ fontWeight: 700, color: "#F1F5F9", fontSize: 13, flexShrink: 0 }}>Tópico {index + 1}</span>
+          <span style={{ fontWeight: 700, color: "#F1F5F9", fontSize: 13, flexShrink: 0 }}>{t("enterprise.knowledge.processDetail.topicLabel", { n: index + 1 })}</span>
           <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>
-            {tagCount} temas
+            {t("enterprise.knowledge.processDetail.tagsCount", { n: tagCount })}
           </span>
           <span style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
             {description}
           </span>
           {canReorder && (decks.length + batteries.length) > 1 && (
             <span style={{ fontSize: 10, color: "#475569", flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
-              <Bars3Icon style={{ width: 11, height: 11 }} /> arrastra para reordenar
+              <Bars3Icon style={{ width: 11, height: 11 }} /> {t("enterprise.knowledge.processDetail.dragToReorderLong")}
             </span>
           )}
-          <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0, whiteSpace: "nowrap" }}>Más</button>
+          <button style={{ color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", background: "none", border: "none", flexShrink: 0, whiteSpace: "nowrap" }}>{t("enterprise.knowledge.processDetail.more")}</button>
           <button
             onClick={deleteTopic}
-            title="Eliminar tópico completo"
+            title={t("enterprise.knowledge.processDetail.deleteDialog.titleTopic")}
             style={{ padding: "4px 7px", borderRadius: 6, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", color: "#EF4444", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center" }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.14)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; }}
@@ -1394,7 +1434,7 @@ function TopicTreeItem({
                 job={j} onDismissJob={onDismissItemJob} />
             ))}
             {decks.length === 0 && batteries.length === 0 && pendingDeckJobs.length === 0 && pendingBatteryJobs.length === 0 && (
-              <p style={{ color: "#334155", fontSize: 12, fontStyle: "italic", padding: "4px 8px", margin: 0 }}>Sin contenido generado para este tópico.</p>
+              <p style={{ color: "#334155", fontSize: 12, fontStyle: "italic", padding: "4px 8px", margin: 0 }}>{t("enterprise.knowledge.processDetail.noContentGenerated")}</p>
             )}
           </div>
         )}
@@ -1411,6 +1451,7 @@ function KnowledgeStructurePanel({
   onStudy, onLearn, onSimulate, onDeleteBattery, onDeleteDeck, onDeleteTopic, onAutoGen,
   onAddDeck, onAddBattery, itemJobs, onDismissItemJob,
 }) {
+  const { t } = useLanguage();
   const totalQuestions = batteries.reduce((s, b) => s + (b.question_count ?? 0), 0);
   const totalCards = decks.reduce((s, d) => s + (d.flashcards_count ?? d.cardsCount ?? d.card_count ?? 0), 0);
   const hasContent = topics.length > 0 || decks.length > 0 || batteries.length > 0;
@@ -1442,18 +1483,18 @@ function KnowledgeStructurePanel({
       <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div style={{ minWidth: 0 }}>
-            <h3 style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 14, margin: 0 }}>Estructura de conocimiento</h3>
+            <h3 style={{ color: "#F1F5F9", fontWeight: 700, fontSize: 14, margin: 0 }}>{t("enterprise.knowledge.processDetail.structurePanel.title")}</h3>
             <p style={{ color: "#475569", fontSize: 11, margin: "3px 0 0" }}>
-              {topics.length} tópicos · {decks.length} decks · {batteries.length} baterías
+              {t("enterprise.knowledge.processDetail.structurePanel.summary", { topics: topics.length, decks: decks.length, batteries: batteries.length })}
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
             {[
-              { count: topics.length, label: "Tópicos" },
-              { count: decks.length, label: "Decks" },
-              { count: batteries.length, label: "Baterías" },
-              { count: totalQuestions, label: "Preguntas" },
-              { count: totalCards, label: "Tarjetas" },
+              { count: topics.length, label: t("enterprise.knowledge.processDetail.structurePanel.stats.topics") },
+              { count: decks.length, label: t("enterprise.knowledge.processDetail.structurePanel.stats.decks") },
+              { count: batteries.length, label: t("enterprise.knowledge.processDetail.structurePanel.stats.batteries") },
+              { count: totalQuestions, label: t("enterprise.knowledge.processDetail.structurePanel.stats.questions") },
+              { count: totalCards, label: t("enterprise.knowledge.processDetail.structurePanel.stats.cards") },
             ].map(({ count, label }) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8" }}>{count}</span>
@@ -1461,7 +1502,7 @@ function KnowledgeStructurePanel({
               </div>
             ))}
             <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.22)", borderRadius: 6, color: "#4ade80", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-              <PlusIcon style={{ width: 11, height: 11 }} /> Agregar tópico
+              <PlusIcon style={{ width: 11, height: 11 }} /> {t("enterprise.knowledge.processDetail.structurePanel.addTopic")}
             </button>
           </div>
         </div>
@@ -1469,7 +1510,7 @@ function KnowledgeStructurePanel({
         {/* Proceso completion bar */}
         {batteries.length > 0 && (
           <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", flexShrink: 0 }}>Completitud del proceso</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", flexShrink: 0 }}>{t("enterprise.knowledge.processDetail.structurePanel.completion")}</span>
             <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.07)", borderRadius: 3, overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${processCompletion}%`, background: processCompletion > 0 ? `linear-gradient(90deg, ${completionColor}99, ${completionColor})` : "transparent", borderRadius: 3, transition: "width 600ms ease" }} />
             </div>
@@ -1477,7 +1518,7 @@ function KnowledgeStructurePanel({
               {processCompletion}%
             </span>
             <span style={{ fontSize: 10, color: "#475569", flexShrink: 0, whiteSpace: "nowrap" }}>
-              {completedBatteries}/{batteries.length} baterías ≥ 80%
+              {t("enterprise.knowledge.processDetail.structurePanel.completedBatteries", { completed: completedBatteries, total: batteries.length })}
             </span>
           </div>
         )}
@@ -1493,15 +1534,15 @@ function KnowledgeStructurePanel({
           <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
             <SparklesIcon style={{ width: 22, height: 22, color: "#334155" }} />
           </div>
-          <p style={{ color: "#F1F5F9", fontWeight: 600, fontSize: 13, margin: "0 0 6px" }}>Sin estructura generada</p>
+          <p style={{ color: "#F1F5F9", fontWeight: 600, fontSize: 13, margin: "0 0 6px" }}>{t("enterprise.knowledge.processDetail.structurePanel.noStructure")}</p>
           <p style={{ color: "#475569", fontSize: 12, margin: "0 auto 16px", lineHeight: 1.7, maxWidth: 360 }}>
-            Los tópicos, decks y baterías se generan automáticamente al procesar los documentos con IA.
+            {t("enterprise.knowledge.processDetail.structurePanel.noStructureHint")}
           </p>
           <button
             onClick={onAutoGen}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, background: "linear-gradient(135deg, #3949AB 0%, #5C6BC0 100%)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
           >
-            <SparklesIcon style={{ width: 12, height: 12 }} /> Auto-generar
+            <SparklesIcon style={{ width: 12, height: 12 }} /> {t("enterprise.knowledge.processDetail.autoGenerate")}
           </button>
         </div>
       ) : (
@@ -1535,7 +1576,7 @@ function KnowledgeStructurePanel({
               {(unclassifiedDecks.length > 0 || unclassifiedBatteries.length > 0) && (
                 <div style={{ marginTop: 4 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8, paddingLeft: 36 }}>
-                    Sin clasificar
+                    {t("enterprise.knowledge.processDetail.structurePanel.unclassified")}
                   </p>
                   {unclassifiedDecks.map((d, i) => (
                     <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} onDelete={onDeleteDeck} />
@@ -1586,7 +1627,7 @@ function KnowledgeStructurePanel({
                 <div className="space-y-4">
                   {decks.length > 0 && (
                     <div>
-                      <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Decks</p>
+                      <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("enterprise.knowledge.processDetail.structurePanel.stats.decks")}</p>
                       {decks.map((d, i) => (
                         <DeckRowItem key={d.id} deck={d} index={i} onStudy={onStudy} onLearn={onLearn} onAddDeck={onAddDeck} onDelete={onDeleteDeck}
                           job={itemJobs?.find((j) => j.kind === "deck" && j.resourceId === d.id)} onDismissJob={onDismissItemJob} />
@@ -1595,7 +1636,7 @@ function KnowledgeStructurePanel({
                   )}
                   {batteries.length > 0 && (
                     <div>
-                      <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Baterías</p>
+                      <p style={{ color: "#64748B", fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("enterprise.knowledge.processDetail.structurePanel.stats.batteries")}</p>
                       {batteries.map((b, i) => (
                         <BatteryRowItem key={b.id} battery={b} index={i} onSimulate={onSimulate} onDelete={onDeleteBattery} onAddBattery={onAddBattery}
                           job={itemJobs?.find((j) => j.kind === "battery" && j.resourceId === b.id)} onDismissJob={onDismissItemJob} />
@@ -1681,6 +1722,7 @@ function DLbl({ children }) {
 }
 
 function SectionTree({ scannedDocuments, selectedIds, onToggleDoc, onToggleSection, error }) {
+  const { t } = useLanguage();
   const [open, setOpen] = React.useState({});
   return (
     <div style={{ border: `1px solid ${error ? D.error : D.border}`, borderRadius: 10, overflow: "hidden" }}>
@@ -1708,7 +1750,7 @@ function SectionTree({ scannedDocuments, selectedIds, onToggleDoc, onToggleSecti
                 <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, stroke: "#f87171", strokeWidth: 1.8, fill: "none" }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
               <span style={{ flex: 1, color: D.text, fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{doc.filename || doc.name}</span>
-              <span style={{ fontSize: 10, color: D.dim, flexShrink: 0 }}>{(doc.sections || []).length} secc.</span>
+              <span style={{ fontSize: 10, color: D.dim, flexShrink: 0 }}>{t("enterprise.knowledge.processDetail.sectionsAbbr", { n: (doc.sections || []).length })}</span>
               <svg viewBox="0 0 24 24" style={{ width: 12, height: 12, stroke: D.dim, strokeWidth: 2, fill: "none", flexShrink: 0, transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 200ms" }}><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             {/* Sections */}
@@ -1722,7 +1764,7 @@ function SectionTree({ scannedDocuments, selectedIds, onToggleDoc, onToggleSecti
                         {sel && <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, stroke: "#fff", strokeWidth: 3, fill: "none" }}><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: sel ? D.text : D.muted, fontSize: 11, fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title || "Sin título"}</p>
+                        <p style={{ color: sel ? D.text : D.muted, fontSize: 11, fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title || t("enterprise.knowledge.processDetail.untitled")}</p>
                         {s.content && <p style={{ color: D.dim, fontSize: 10, margin: "2px 0 0", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s.content}</p>}
                       </div>
                     </div>
@@ -1738,6 +1780,7 @@ function SectionTree({ scannedDocuments, selectedIds, onToggleDoc, onToggleSecti
 }
 
 function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = React.useState("ai");
   const [formData, setFormData] = React.useState({ title: "", description: "", visibility: "private", section_ids: [], document_ids: [], cards_count: 5, cards: [] });
   const [errors, setErrors] = React.useState({});
@@ -1796,12 +1839,12 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
 
   const validate = () => {
     const errs = {};
-    if (!formData.title.trim()) errs.title = "El título es obligatorio";
+    if (!formData.title.trim()) errs.title = t("enterprise.knowledge.processDetail.deckDialog.titleRequired");
     if (activeTab === "ai") {
-      if (scannedDocuments.length === 0) errs.general = "No hay secciones disponibles. Sube un documento primero.";
-      else if (formData.section_ids.length === 0) errs.general = "Selecciona al menos una sección.";
+      if (scannedDocuments.length === 0) errs.general = t("enterprise.knowledge.processDetail.noSectionsAvailable");
+      else if (formData.section_ids.length === 0) errs.general = t("enterprise.knowledge.processDetail.selectSection");
     } else {
-      if (formData.cards.length === 0) errs.general = "Agrega al menos una tarjeta.";
+      if (formData.cards.length === 0) errs.general = t("enterprise.knowledge.processDetail.deckDialog.addAtLeastOneCard");
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -1829,8 +1872,8 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
               <ViewColumnsIcon style={{ width: 20, height: 20, color: "#818CF8" }} />
             </div>
             <div style={{ flex: 1 }}>
-              <h2 style={{ color: D.text, fontWeight: 800, fontSize: 17, margin: 0, letterSpacing: "-0.3px" }}>Crear Mazo</h2>
-              <p style={{ color: D.dim, fontSize: 12, margin: "2px 0 0" }}>{activeTab === "ai" ? "Genera flashcards con IA desde documentos" : "Crea tarjetas manualmente"}</p>
+              <h2 style={{ color: D.text, fontWeight: 800, fontSize: 17, margin: 0, letterSpacing: "-0.3px" }}>{t("enterprise.knowledge.processDetail.deckDialog.title")}</h2>
+              <p style={{ color: D.dim, fontSize: 12, margin: "2px 0 0" }}>{activeTab === "ai" ? t("enterprise.knowledge.processDetail.deckDialog.subtitleAi") : t("enterprise.knowledge.processDetail.deckDialog.subtitleManual")}</p>
             </div>
             <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: D.subtle, border: `1px solid ${D.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: D.muted, flexShrink: 0 }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = D.text; }}
@@ -1840,7 +1883,7 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
           </div>
           {/* Tabs */}
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: `1px solid ${D.border}`, borderRadius: "11px 11px 0 0", padding: "5px 5px 0" }}>
-            {[{ key: "ai", label: "Generar con IA", icon: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/> }, { key: "manual", label: "Manual", icon: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></> }].map(({ key, label, icon }) => (
+            {[{ key: "ai", label: t("enterprise.knowledge.processDetail.deckDialog.tabAi"), icon: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/> }, { key: "manual", label: t("enterprise.knowledge.processDetail.deckDialog.tabManual"), icon: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></> }].map(({ key, label, icon }) => (
               <button key={key} onClick={() => setActiveTab(key)} style={{ flex: 1, padding: "9px 0", fontSize: 12, fontWeight: 600, cursor: "pointer", borderRadius: "8px 8px 0 0", background: activeTab === key ? D.bg : "transparent", color: activeTab === key ? D.accent : D.dim, border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 150ms" }}>
                 <svg viewBox="0 0 24 24" style={{ width: 12, height: 12, stroke: "currentColor", strokeWidth: 2, fill: "none" }}>{icon}</svg>
                 {label}
@@ -1854,8 +1897,8 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
 
           {/* Title */}
           <div>
-            <DLbl>Título <span style={{ color: D.error }}>*</span></DLbl>
-            <DarkInput value={formData.title} onChange={e => { set("title", e.target.value); if (errors.title) setErrors(p => ({ ...p, title: "" })); }} name="title" placeholder="Ej. Anatomía del Corazón" error={!!errors.title} />
+            <DLbl>{t("enterprise.knowledge.processDetail.deckDialog.titleField")} <span style={{ color: D.error }}>*</span></DLbl>
+            <DarkInput value={formData.title} onChange={e => { set("title", e.target.value); if (errors.title) setErrors(p => ({ ...p, title: "" })); }} name="title" placeholder={t("enterprise.knowledge.processDetail.deckDialog.titlePlaceholder")} error={!!errors.title} />
             {errors.title && <p style={{ color: D.error, fontSize: 11, marginTop: 4 }}>{errors.title}</p>}
           </div>
 
@@ -1864,7 +1907,7 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
             <>
               {/* Cards count */}
               <div>
-                <DLbl>Cantidad de tarjetas</DLbl>
+                <DLbl>{t("enterprise.knowledge.processDetail.deckDialog.cardsCountLabel")}</DLbl>
                 <div style={{ display: "flex", alignItems: "center", background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, overflow: "hidden", height: 44 }}>
                   <button type="button" onClick={() => set("cards_count", Math.max(1, formData.cards_count - 1))} style={{ width: 48, height: "100%", background: "transparent", border: "none", cursor: "pointer", color: D.muted, display: "flex", alignItems: "center", justifyContent: "center" }}
                     onMouseEnter={e => { e.currentTarget.style.background = D.subtle; e.currentTarget.style.color = D.text; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = D.muted; }}>
@@ -1876,20 +1919,20 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
                     <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, stroke: "currentColor", strokeWidth: 2.5, fill: "none" }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
                 </div>
-                <p style={{ color: D.dim, fontSize: 10, marginTop: 5 }}>Máximo 15 tarjetas por mazo</p>
+                <p style={{ color: D.dim, fontSize: 10, marginTop: 5 }}>{t("enterprise.knowledge.processDetail.deckDialog.maxCards")}</p>
               </div>
 
               {/* Description */}
               <div>
-                <DLbl>Descripción <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>opcional</span></DLbl>
-                <DarkTextarea value={formData.description} onChange={e => set("description", e.target.value)} name="description" placeholder="Describe este mazo..." />
+                <DLbl>{t("enterprise.knowledge.processDetail.descriptionLabel")} <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>{t("enterprise.knowledge.processDetail.optional")}</span></DLbl>
+                <DarkTextarea value={formData.description} onChange={e => set("description", e.target.value)} name="description" placeholder={t("enterprise.knowledge.processDetail.deckDialog.descriptionPlaceholder")} />
               </div>
 
               {/* Visibility */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 16px" }}>
                 <div>
-                  <p style={{ color: D.text, fontSize: 13, fontWeight: 600, margin: 0 }}>Visibilidad pública</p>
-                  <p style={{ color: D.dim, fontSize: 11, margin: "2px 0 0" }}>{formData.visibility === "public" ? "Visible para todos" : "Solo visible para ti"}</p>
+                  <p style={{ color: D.text, fontSize: 13, fontWeight: 600, margin: 0 }}>{t("enterprise.knowledge.processDetail.publicVisibility")}</p>
+                  <p style={{ color: D.dim, fontSize: 11, margin: "2px 0 0" }}>{formData.visibility === "public" ? t("enterprise.knowledge.processDetail.visibleToAll") : t("enterprise.knowledge.processDetail.visibleToYou")}</p>
                 </div>
                 <label style={{ position: "relative", width: 42, height: 24, cursor: "pointer", display: "block", flexShrink: 0 }}>
                   <input type="checkbox" checked={formData.visibility === "public"} onChange={e => set("visibility", e.target.checked ? "public" : "private")} style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
@@ -1901,20 +1944,20 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
               {/* Documents & Sections */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
-                  <DLbl>Documentos & Secciones <span style={{ color: D.error }}>*</span></DLbl>
+                  <DLbl>{t("enterprise.knowledge.processDetail.documentsAndSections")} <span style={{ color: D.error }}>*</span></DLbl>
                   {formData.section_ids.length > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: D.accent, background: D.accentSoft, border: `1px solid ${D.accentBdr}`, borderRadius: 20, padding: "2px 9px" }}>{formData.section_ids.length} sel.</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: D.accent, background: D.accentSoft, border: `1px solid ${D.accentBdr}`, borderRadius: 20, padding: "2px 9px" }}>{t("enterprise.knowledge.processDetail.selectedAbbr", { n: formData.section_ids.length })}</span>
                   )}
                 </div>
                 {loadingSections ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 16, background: D.surface, borderRadius: 10 }}>
                     <div style={{ width: 16, height: 16, border: `2px solid ${D.accentSoft}`, borderTopColor: D.accent, borderRadius: "50%" }} className="animate-spin" />
-                    <span style={{ color: D.dim, fontSize: 12 }}>Cargando documentos…</span>
+                    <span style={{ color: D.dim, fontSize: 12 }}>{t("enterprise.knowledge.processDetail.loadingDocuments")}</span>
                   </div>
                 ) : scannedDocuments.length === 0 ? (
                   <div style={{ padding: 16, background: D.errorSoft, border: `1px dashed ${D.error}`, borderRadius: 10, textAlign: "center" }}>
                     <ExclamationTriangleIcon style={{ width: 24, height: 24, color: D.error, margin: "0 auto 6px" }} />
-                    <p style={{ color: D.error, fontSize: 12, fontWeight: 600, margin: 0 }}>No hay secciones disponibles. Sube un documento primero.</p>
+                    <p style={{ color: D.error, fontSize: 12, fontWeight: 600, margin: 0 }}>{t("enterprise.knowledge.processDetail.noSectionsAvailable")}</p>
                   </div>
                 ) : (
                   <SectionTree
@@ -1935,15 +1978,15 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
             <>
               {/* Description */}
               <div>
-                <DLbl>Descripción <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>opcional</span></DLbl>
-                <DarkTextarea value={formData.description} onChange={e => set("description", e.target.value)} name="description" placeholder="Describe este mazo..." />
+                <DLbl>{t("enterprise.knowledge.processDetail.descriptionLabel")} <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>{t("enterprise.knowledge.processDetail.optional")}</span></DLbl>
+                <DarkTextarea value={formData.description} onChange={e => set("description", e.target.value)} name="description" placeholder={t("enterprise.knowledge.processDetail.deckDialog.descriptionPlaceholder")} />
               </div>
 
               {/* Visibility */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 16px" }}>
                 <div>
-                  <p style={{ color: D.text, fontSize: 13, fontWeight: 600, margin: 0 }}>Visibilidad pública</p>
-                  <p style={{ color: D.dim, fontSize: 11, margin: "2px 0 0" }}>{formData.visibility === "public" ? "Visible para todos" : "Solo visible para ti"}</p>
+                  <p style={{ color: D.text, fontSize: 13, fontWeight: 600, margin: 0 }}>{t("enterprise.knowledge.processDetail.publicVisibility")}</p>
+                  <p style={{ color: D.dim, fontSize: 11, margin: "2px 0 0" }}>{formData.visibility === "public" ? t("enterprise.knowledge.processDetail.visibleToAll") : t("enterprise.knowledge.processDetail.visibleToYou")}</p>
                 </div>
                 <label style={{ position: "relative", width: 42, height: 24, cursor: "pointer", display: "block", flexShrink: 0 }}>
                   <input type="checkbox" checked={formData.visibility === "public"} onChange={e => set("visibility", e.target.checked ? "public" : "private")} style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
@@ -1955,34 +1998,34 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
               {/* Card builder */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <DLbl>Tarjetas</DLbl>
+                  <DLbl>{t("enterprise.knowledge.processDetail.deckDialog.cardsLabel")}</DLbl>
                   <span style={{ fontSize: 10, fontWeight: 700, color: D.accent, background: D.accentSoft, border: `1px solid ${D.accentBdr}`, borderRadius: 20, padding: "2px 9px" }}>{formData.cards.length}</span>
                 </div>
                 {/* Added cards */}
                 {formData.cards.map((card, i) => (
                   <div key={i} style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, position: "relative" }}>
-                    <span style={{ position: "absolute", top: -9, left: 12, background: D.accent, color: "#fff", fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 20, letterSpacing: "0.05em" }}>TARJETA {i + 1}</span>
+                    <span style={{ position: "absolute", top: -9, left: 12, background: D.accent, color: "#fff", fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 20, letterSpacing: "0.05em" }}>{t("enterprise.knowledge.processDetail.deckDialog.cardBadge", { n: i + 1 })}</span>
                     <button type="button" onClick={() => setFormData(p => ({ ...p, cards: p.cards.filter((_, j) => j !== i) }))} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: D.error }}>
                       <XMarkIcon style={{ width: 11, height: 11 }} />
                     </button>
-                    <p style={{ color: D.dim, fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "8px 0 3px" }}>Frente</p>
+                    <p style={{ color: D.dim, fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "8px 0 3px" }}>{t("enterprise.knowledge.processDetail.deckDialog.front")}</p>
                     <p style={{ color: D.text, fontSize: 12, margin: "0 0 8px" }}>{card.front}</p>
-                    <p style={{ color: D.dim, fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 3px" }}>Reverso</p>
+                    <p style={{ color: D.dim, fontSize: 10, fontWeight: 700, textTransform: "uppercase", margin: "0 0 3px" }}>{t("enterprise.knowledge.processDetail.deckDialog.back")}</p>
                     <p style={{ color: D.muted, fontSize: 12, margin: 0 }}>{card.back}</p>
                   </div>
                 ))}
                 {/* New card input */}
                 <div style={{ background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, position: "relative" }}>
-                  <span style={{ position: "absolute", top: -9, left: 12, background: D.accentSoft, color: D.accent, border: `1px solid ${D.accentBdr}`, fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 20, letterSpacing: "0.05em" }}>TARJETA {formData.cards.length + 1}</span>
+                  <span style={{ position: "absolute", top: -9, left: 12, background: D.accentSoft, color: D.accent, border: `1px solid ${D.accentBdr}`, fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 20, letterSpacing: "0.05em" }}>{t("enterprise.knowledge.processDetail.deckDialog.cardBadge", { n: formData.cards.length + 1 })}</span>
                   <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-                    <DarkInput value={currentCard.front} onChange={e => setCurrentCard(p => ({ ...p, front: e.target.value }))} name="front" placeholder="Frente (Pregunta)" />
-                    <DarkInput value={currentCard.back} onChange={e => setCurrentCard(p => ({ ...p, back: e.target.value }))} name="back" placeholder="Reverso (Respuesta)" />
-                    <DarkInput value={currentCard.notes} onChange={e => setCurrentCard(p => ({ ...p, notes: e.target.value }))} name="notes" placeholder="Notas (Opcional)" />
+                    <DarkInput value={currentCard.front} onChange={e => setCurrentCard(p => ({ ...p, front: e.target.value }))} name="front" placeholder={t("enterprise.knowledge.processDetail.deckDialog.frontPlaceholder")} />
+                    <DarkInput value={currentCard.back} onChange={e => setCurrentCard(p => ({ ...p, back: e.target.value }))} name="back" placeholder={t("enterprise.knowledge.processDetail.deckDialog.backPlaceholder")} />
+                    <DarkInput value={currentCard.notes} onChange={e => setCurrentCard(p => ({ ...p, notes: e.target.value }))} name="notes" placeholder={t("enterprise.knowledge.processDetail.deckDialog.notesPlaceholder")} />
                   </div>
                 </div>
                 <button type="button" onClick={addCard} disabled={!currentCard.front.trim() || !currentCard.back.trim()}
                   style={{ width: "100%", padding: "11px", background: "transparent", border: `1.5px dashed ${D.accentBdr}`, borderRadius: 10, color: !currentCard.front.trim() || !currentCard.back.trim() ? D.dim : D.accent, fontSize: 12, fontWeight: 700, cursor: !currentCard.front.trim() || !currentCard.back.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, opacity: !currentCard.front.trim() || !currentCard.back.trim() ? 0.5 : 1 }}>
-                  <PlusIcon style={{ width: 13, height: 13 }} /> Agregar a la lista
+                  <PlusIcon style={{ width: 13, height: 13 }} /> {t("enterprise.knowledge.processDetail.deckDialog.addToList")}
                 </button>
                 {errors.general && <p style={{ color: D.error, fontSize: 11, marginTop: 6 }}>{errors.general}</p>}
               </div>
@@ -1995,16 +2038,16 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
           <button type="button" onClick={onClose} style={{ ...btnBase, background: D.subtle, border: `1px solid ${D.border}`, color: D.muted, flex: 1 }}
             onMouseEnter={e => { e.currentTarget.style.background = D.surface; e.currentTarget.style.color = D.text; }}
             onMouseLeave={e => { e.currentTarget.style.background = D.subtle; e.currentTarget.style.color = D.muted; }}>
-            Cancelar
+            {t("enterprise.compliance.programs.cancel")}
           </button>
           <button type="button" onClick={handleSubmit} disabled={submitting || (loadingSections && activeTab === "ai")}
             style={{ ...btnBase, background: submitting ? "rgba(99,102,241,0.5)" : "linear-gradient(135deg, #6366F1 0%, #818CF8 100%)", color: "#fff", flex: 2, justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", cursor: submitting ? "not-allowed" : "pointer" }}>
             {submitting ? (
-              <><div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%" }} className="animate-spin" /> Generando…</>
+              <><div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%" }} className="animate-spin" /> {t("enterprise.knowledge.processDetail.generating")}</>
             ) : activeTab === "ai" ? (
-              <><SparklesIcon style={{ width: 14, height: 14 }} /> Generar Mazo</>
+              <><SparklesIcon style={{ width: 14, height: 14 }} /> {t("enterprise.knowledge.processDetail.deckDialog.generateDeck")}</>
             ) : (
-              <><ViewColumnsIcon style={{ width: 14, height: 14 }} /> Crear Mazo</>
+              <><ViewColumnsIcon style={{ width: 14, height: 14 }} /> {t("enterprise.knowledge.processDetail.deckDialog.createDeck")}</>
             )}
           </button>
         </div>
@@ -2014,6 +2057,7 @@ function EnterpriseDeckDialog({ open, onClose, onCreate, projectId }) {
 }
 
 function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
+  const { t } = useLanguage();
   const [formData, setFormData] = React.useState({ rule: "", query_text: "", sections: [], quantity: 10, difficulty: "medium", question_format: "true_false" });
   const [errors, setErrors] = React.useState({});
   const [submitting, setSubmitting] = React.useState(false);
@@ -2052,8 +2096,8 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
 
   const validate = () => {
     const errs = {};
-    if (scannedDocuments.length === 0) errs.sections = "No hay secciones disponibles. Sube un documento primero.";
-    else if (formData.sections.length === 0) errs.sections = "Selecciona al menos una sección.";
+    if (scannedDocuments.length === 0) errs.sections = t("enterprise.knowledge.processDetail.noSectionsAvailable");
+    else if (formData.sections.length === 0) errs.sections = t("enterprise.knowledge.processDetail.selectSection");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -2070,14 +2114,14 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
   const btnBase = { padding: "0 16px", height: 40, borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, transition: "all 150ms", border: "none" };
 
   const diffOpts = [
-    { val: "easy",   label: "Fácil",   active: { bg: "rgba(74,222,128,0.12)", bdr: "rgba(74,222,128,0.3)",  text: "#4ade80" } },
-    { val: "medium", label: "Medio",   active: { bg: D.accentSoft,             bdr: D.accentBdr,              text: "#818CF8" } },
-    { val: "hard",   label: "Difícil", active: { bg: "rgba(239,68,68,0.12)",  bdr: "rgba(239,68,68,0.3)",   text: "#f87171" } },
+    { val: "easy",   label: t("enterprise.knowledge.sources.difficulty.easy"),   active: { bg: "rgba(74,222,128,0.12)", bdr: "rgba(74,222,128,0.3)",  text: "#4ade80" } },
+    { val: "medium", label: t("enterprise.knowledge.sources.difficulty.medium"), active: { bg: D.accentSoft,             bdr: D.accentBdr,              text: "#818CF8" } },
+    { val: "hard",   label: t("enterprise.knowledge.sources.difficulty.hard"),   active: { bg: "rgba(239,68,68,0.12)",  bdr: "rgba(239,68,68,0.3)",   text: "#f87171" } },
   ];
   const fmtOpts = [
-    { val: "true_false",      label: "Verdadero/Falso",   ico: <><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></> },
-    { val: "multiple_choice", label: "Selección múltiple",ico: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></> },
-    { val: "variety",         label: "Variado",            ico: <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></> },
+    { val: "true_false",      label: t("enterprise.knowledge.processDetail.batteryDialog.formatTrueFalse"),   ico: <><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></> },
+    { val: "multiple_choice", label: t("enterprise.knowledge.processDetail.batteryDialog.formatMultipleChoice"),ico: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></> },
+    { val: "variety",         label: t("enterprise.knowledge.processDetail.batteryDialog.formatVariety"),            ico: <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></> },
   ];
 
   return (
@@ -2090,8 +2134,8 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
             <BoltIcon style={{ width: 20, height: 20, color: "#818CF8" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ color: D.text, fontWeight: 800, fontSize: 17, margin: 0, letterSpacing: "-0.3px" }}>Nueva Batería</h2>
-            <p style={{ color: D.dim, fontSize: 12, margin: "2px 0 0" }}>Configura tu set de preguntas con IA</p>
+            <h2 style={{ color: D.text, fontWeight: 800, fontSize: 17, margin: 0, letterSpacing: "-0.3px" }}>{t("enterprise.knowledge.processDetail.batteryDialog.title")}</h2>
+            <p style={{ color: D.dim, fontSize: 12, margin: "2px 0 0" }}>{t("enterprise.knowledge.processDetail.batteryDialog.subtitle")}</p>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: D.subtle, border: `1px solid ${D.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: D.muted, flexShrink: 0 }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = D.text; }}
@@ -2105,28 +2149,28 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
 
           {/* Topic */}
           <div>
-            <DLbl>Tema <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>opcional</span></DLbl>
-            <DarkInput value={formData.query_text} onChange={e => set("query_text", e.target.value)} name="query_text" placeholder="Ej: Anatomía del Corazón, Historia..." />
-            <p style={{ color: D.dim, fontSize: 10, marginTop: 4 }}>El nombre de la batería será el tema que escribas aquí</p>
+            <DLbl>{t("enterprise.knowledge.processDetail.batteryDialog.topicLabel")} <span style={{ color: D.dim, fontSize: 9, fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>{t("enterprise.knowledge.processDetail.optional")}</span></DLbl>
+            <DarkInput value={formData.query_text} onChange={e => set("query_text", e.target.value)} name="query_text" placeholder={t("enterprise.knowledge.processDetail.batteryDialog.topicPlaceholder")} />
+            <p style={{ color: D.dim, fontSize: 10, marginTop: 4 }}>{t("enterprise.knowledge.processDetail.batteryDialog.topicHint")}</p>
           </div>
 
           {/* Documents & Sections */}
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
-              <DLbl>Documentos & Secciones <span style={{ color: D.error }}>*</span></DLbl>
+              <DLbl>{t("enterprise.knowledge.processDetail.documentsAndSections")} <span style={{ color: D.error }}>*</span></DLbl>
               {formData.sections.length > 0 && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: D.accent, background: D.accentSoft, border: `1px solid ${D.accentBdr}`, borderRadius: 20, padding: "2px 9px" }}>{formData.sections.length} sel.</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: D.accent, background: D.accentSoft, border: `1px solid ${D.accentBdr}`, borderRadius: 20, padding: "2px 9px" }}>{t("enterprise.knowledge.processDetail.selectedAbbr", { n: formData.sections.length })}</span>
               )}
             </div>
             {loadingSections ? (
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 16, background: D.surface, borderRadius: 10 }}>
                 <div style={{ width: 16, height: 16, border: `2px solid ${D.accentSoft}`, borderTopColor: D.accent, borderRadius: "50%" }} className="animate-spin" />
-                <span style={{ color: D.dim, fontSize: 12 }}>Cargando documentos…</span>
+                <span style={{ color: D.dim, fontSize: 12 }}>{t("enterprise.knowledge.processDetail.loadingDocuments")}</span>
               </div>
             ) : scannedDocuments.length === 0 ? (
               <div style={{ padding: 16, background: D.errorSoft, border: `1px dashed ${D.error}`, borderRadius: 10, textAlign: "center" }}>
                 <ExclamationTriangleIcon style={{ width: 24, height: 24, color: D.error, margin: "0 auto 6px" }} />
-                <p style={{ color: D.error, fontSize: 12, fontWeight: 600, margin: 0 }}>No hay secciones disponibles. Sube un documento primero.</p>
+                <p style={{ color: D.error, fontSize: 12, fontWeight: 600, margin: 0 }}>{t("enterprise.knowledge.processDetail.noSectionsAvailable")}</p>
               </div>
             ) : (
               <SectionTree scannedDocuments={scannedDocuments} selectedIds={formData.sections} onToggleDoc={handleToggleDoc} onToggleSection={handleToggleSection} error={!!errors.sections && scannedDocuments.length > 0} />
@@ -2136,7 +2180,7 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
 
           {/* Quantity */}
           <div>
-            <DLbl>Cantidad de preguntas</DLbl>
+            <DLbl>{t("enterprise.knowledge.processDetail.batteryDialog.quantityLabel")}</DLbl>
             <div style={{ display: "flex", alignItems: "center", background: D.surface, border: `1px solid ${D.border}`, borderRadius: 10, overflow: "hidden", height: 44 }}>
               <button type="button" onClick={() => set("quantity", Math.max(1, formData.quantity - 5))} style={{ width: 48, height: "100%", background: "transparent", border: "none", cursor: "pointer", color: D.muted, display: "flex", alignItems: "center", justifyContent: "center" }}
                 onMouseEnter={e => { e.currentTarget.style.background = D.subtle; e.currentTarget.style.color = D.text; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = D.muted; }}>
@@ -2152,7 +2196,7 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
 
           {/* Difficulty */}
           <div>
-            <DLbl>Dificultad</DLbl>
+            <DLbl>{t("enterprise.knowledge.sourceNew.difficultyLabel")}</DLbl>
             <div style={{ display: "flex", gap: 8 }}>
               {diffOpts.map(({ val, label, active }) => {
                 const on = formData.difficulty === val;
@@ -2167,7 +2211,7 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
 
           {/* Format */}
           <div>
-            <DLbl>Formato de preguntas</DLbl>
+            <DLbl>{t("enterprise.knowledge.processDetail.batteryDialog.formatLabel")}</DLbl>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {fmtOpts.map(({ val, label, ico }) => {
                 const on = formData.question_format === val;
@@ -2187,14 +2231,14 @@ function EnterpriseBatteryDialog({ open, onClose, onGenerate, projectId }) {
           <button type="button" onClick={onClose} style={{ ...btnBase, background: D.subtle, border: `1px solid ${D.border}`, color: D.muted, flex: 1 }}
             onMouseEnter={e => { e.currentTarget.style.background = D.surface; e.currentTarget.style.color = D.text; }}
             onMouseLeave={e => { e.currentTarget.style.background = D.subtle; e.currentTarget.style.color = D.muted; }}>
-            Cancelar
+            {t("enterprise.compliance.programs.cancel")}
           </button>
           <button type="button" onClick={handleSubmit} disabled={submitting || loadingSections || scannedDocuments.length === 0}
             style={{ ...btnBase, background: submitting ? "rgba(99,102,241,0.5)" : "linear-gradient(135deg, #6366F1 0%, #818CF8 100%)", color: "#fff", flex: 2, justifyContent: "center", boxShadow: "0 4px 16px rgba(99,102,241,0.3)", cursor: submitting || loadingSections || scannedDocuments.length === 0 ? "not-allowed" : "pointer", opacity: scannedDocuments.length === 0 && !loadingSections ? 0.5 : 1 }}>
             {submitting ? (
-              <><div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%" }} className="animate-spin" /> Generando…</>
+              <><div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%" }} className="animate-spin" /> {t("enterprise.knowledge.processDetail.generating")}</>
             ) : (
-              <><BoltIcon style={{ width: 14, height: 14 }} /> Generar Batería</>
+              <><BoltIcon style={{ width: 14, height: 14 }} /> {t("enterprise.knowledge.processDetail.batteryDialog.generateBattery")}</>
             )}
           </button>
         </div>
@@ -2218,6 +2262,10 @@ export function ProcessDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
+  const SOURCE_LABELS = useSourceLabels();
+  const TYPE_LABELS = useTypeLabels();
+  const STATUS_LABELS = useStatusLabels();
   const { activeCompanyId, isPlatformAdmin, hasMinRole } = useEnterprise();
   const { user } = useAuth();
 
@@ -2226,7 +2274,7 @@ export function ProcessDetail() {
   // to wherever the user actually came from instead of always the flat list.
   const cameFromLearningPath = location.state?.from?.type === "learning-path" ? location.state.from : null;
   const backHref = cameFromLearningPath ? `/enterprise/learning/paths/${cameFromLearningPath.id}` : "/enterprise/knowledge";
-  const backLabel = cameFromLearningPath ? `Volver a ${cameFromLearningPath.name || "Learning Path"}` : "Volver a Procesos";
+  const backLabel = cameFromLearningPath ? t("enterprise.knowledge.processDetail.backToLearningPath", { name: cameFromLearningPath.name || "Learning Path" }) : t("enterprise.knowledge.processDetail.backToProcesses");
 
   const INIT_RESULTS = { batteries: [], decks: [], topics: [], run: null };
 
@@ -2422,7 +2470,7 @@ export function ProcessDetail() {
         progress: data.progress_percent ?? j.progress,
         stage: data.current_stage || j.stage,
         message: data.status_message || j.message,
-        error: FAILED_STATUSES.has(data.status) ? (data.status_message || data.error_payload?.error || "Ocurrió un error inesperado.") : "",
+        error: FAILED_STATUSES.has(data.status) ? (data.status_message || data.error_payload?.error || t("enterprise.knowledge.processDetail.unexpectedError")) : "",
       })));
       if (terminal) {
         stopItemPoll(jobId);
@@ -2505,7 +2553,7 @@ export function ProcessDetail() {
     try {
       const tagGroupId = activeTagGroupId;
       const payload = {
-        name: batteryData.query_text?.trim() || "Batería",
+        name: batteryData.query_text?.trim() || t("enterprise.knowledge.processDetail.battery"),
         query_text: batteryData.query_text,
         sections: batteryData.sections.map((s) => s.id),
         quantity: Number(batteryData.quantity),
@@ -2670,7 +2718,7 @@ export function ProcessDetail() {
       });
       const json = await res.json();
       if (!res.ok) {
-        setGenState((s) => ({ ...s, status: "failed", error: json.detail || "Error al iniciar la generación." }));
+        setGenState((s) => ({ ...s, status: "failed", error: json.detail || t("enterprise.knowledge.processDetail.errors.startGenFailed") }));
         return;
       }
       const runId = json.process_run?.run_id;
@@ -2678,7 +2726,7 @@ export function ProcessDetail() {
       setGenState((s) => ({ ...s, runId }));
       startPolling(runId);
     } catch (e) {
-      setGenState((s) => ({ ...s, status: "failed", error: "No se pudo conectar con el servidor." }));
+      setGenState((s) => ({ ...s, status: "failed", error: t("enterprise.knowledge.processDetail.errors.connectionFailed") }));
     }
   };
 
@@ -2719,7 +2767,7 @@ export function ProcessDetail() {
     } catch {
       // best-effort
     }
-    setGenState((s) => ({ ...s, status: "canceled", message: "Detenido por el usuario." }));
+    setGenState((s) => ({ ...s, status: "canceled", message: t("enterprise.knowledge.processDetail.errors.stoppedByUser") }));
   };
 
   const handleAutoGen = () => {
@@ -2748,7 +2796,7 @@ export function ProcessDetail() {
 
   if (!ks) return (
     <div className="flex flex-col items-center py-24 text-center">
-      <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>Proceso no encontrado</p>
+      <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>{t("enterprise.knowledge.processDetail.processNotFound")}</p>
       <button onClick={() => navigate(backHref)} className="ank-btn-ghost text-xs mt-4">
         <ArrowLeftIcon className="h-3.5 w-3.5" /> {backLabel}
       </button>
@@ -2759,7 +2807,7 @@ export function ProcessDetail() {
   const canReorder = isPlatformAdmin || hasMinRole("admin") || (ks.created_by_id != null && ks.created_by_id === user?.id);
   const typeColor = TYPE_COLORS[ks.process_type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
   const diffColor = DIFF_COLORS[ks.difficulty] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
-  const statusCfg = STATUS_CFG[ks.status] || STATUS_CFG.pending;
+  const statusBg = STATUS_BG[ks.status] || STATUS_BG.pending;
   const docs = ks.documents || [];
   const isRunning = genState.status === "running";
 
@@ -2790,7 +2838,7 @@ export function ProcessDetail() {
               {ks.difficulty && (
                 <Pill label={ks.difficulty} style={{ background: diffColor.bg, color: diffColor.text, textTransform: "capitalize" }} />
               )}
-              <Pill label={statusCfg.label} style={{ background: statusCfg.bg, color: statusCfg.text }} />
+              <Pill label={STATUS_LABELS[ks.status] || ks.status} style={{ background: statusBg.bg, color: statusBg.text }} />
             </div>
             {ks.description && (
               <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 5, lineHeight: 1.6 }}>{ks.description}</p>
@@ -2798,24 +2846,24 @@ export function ProcessDetail() {
             <div className="flex items-center gap-4 mt-3 flex-wrap">
               <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1.5">
                 <DocumentArrowUpIcon style={{ width: 12, height: 12 }} />
-                {docs.length} documento{docs.length !== 1 ? "s" : ""}
+                {t("enterprise.knowledge.processDetail.documentsCount", { count: docs.length, plural: docs.length !== 1 ? "s" : "" })}
               </span>
               {ks.estimated_duration_minutes && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1.5">
                   <ClockIcon style={{ width: 12, height: 12 }} />
-                  {ks.estimated_duration_minutes} min
+                  {ks.estimated_duration_minutes} {t("enterprise.knowledge.sourceNew.minutesAbbr")}
                 </span>
               )}
               {ks.minimum_passing_score != null && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1.5">
                   <CheckCircleIcon style={{ width: 12, height: 12 }} />
-                  Aprobación: {ks.minimum_passing_score}%
+                  {t("enterprise.knowledge.processDetail.passingScore", { n: ks.minimum_passing_score })}
                 </span>
               )}
               {isRunning && (
                 <span style={{ color: "var(--accent)", fontSize: 11, fontWeight: 600 }} className="flex items-center gap-1.5">
                   <ArrowPathIcon style={{ width: 12, height: 12 }} className="animate-spin" />
-                  Generando contenido…
+                  {t("enterprise.knowledge.processDetail.generatingContent")}
                 </span>
               )}
             </div>
@@ -2827,13 +2875,13 @@ export function ProcessDetail() {
               disabled={isRunning}
               className="ank-btn-accent text-xs"
               style={{ opacity: isRunning ? 0.7 : 1 }}
-              title={docs.length === 0 ? "Primero adjunta al menos un documento" : "Generar flashcards y baterías desde los documentos"}>
+              title={docs.length === 0 ? t("enterprise.knowledge.processDetail.attachDocumentFirst") : t("enterprise.knowledge.processDetail.generateFromDocumentsTitle")}>
               {isRunning
-                ? <><ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> Generando…</>
-                : <><SparklesIcon className="h-3.5 w-3.5" /> Auto-generar</>}
+                ? <><ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> {t("enterprise.knowledge.processDetail.generating")}</>
+                : <><SparklesIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.processDetail.autoGenerate")}</>}
             </button>
             <button onClick={() => setShowAddDoc(true)} className="ank-btn-ghost text-xs">
-              <PlusIcon className="h-3.5 w-3.5" /> Agregar doc
+              <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.processDetail.addDoc")}
             </button>
           </div>
         </div>

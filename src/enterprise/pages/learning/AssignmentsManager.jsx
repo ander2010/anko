@@ -7,17 +7,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { learningApi, companyApi, teamsApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const STATUS = {
-  pending:     { bg: "rgba(255,255,255,0.08)", text: "#8B8B9C",  label: "Pendiente",     Icon: ClockIcon },
-  in_progress: { bg: "rgba(94,106,210,0.15)",  text: "#8B9CF4",  label: "En progreso",   Icon: PlayIcon },
-  completed:   { bg: "rgba(74,222,128,0.12)",  text: "#4ade80",  label: "Completado",    Icon: CheckCircleIcon },
-  overdue:     { bg: "rgba(239,68,68,0.12)",   text: "#f87171",  label: "Vencido",       Icon: ExclamationCircleIcon },
-};
+function useStatusMap() {
+  const { t } = useLanguage();
+  return {
+    pending:     { bg: "rgba(255,255,255,0.08)", text: "#8B8B9C",  label: t("enterprise.learning.assignmentsManager.status.pending"),    Icon: ClockIcon },
+    in_progress: { bg: "rgba(94,106,210,0.15)",  text: "#8B9CF4",  label: t("enterprise.learning.assignmentsManager.status.inProgress"), Icon: PlayIcon },
+    completed:   { bg: "rgba(74,222,128,0.12)",  text: "#4ade80",  label: t("enterprise.learning.assignmentsManager.status.completed"), Icon: CheckCircleIcon },
+    overdue:     { bg: "rgba(239,68,68,0.12)",   text: "#f87171",  label: t("enterprise.learning.assignmentsManager.status.overdue"),   Icon: ExclamationCircleIcon },
+  };
+}
 
 function StatusPill({ status }) {
+  const STATUS = useStatusMap();
   const s = STATUS[status] || STATUS.pending;
   const { Icon } = s;
   return (
@@ -49,6 +54,7 @@ function FilterChip({ label, active, onClick }) {
 // ─── New Assignment Modal ─────────────────────────────────────────────────────
 
 function NewAssignmentModal({ companyId, onCreated, onClose }) {
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [contentType, setContentType] = useState("path"); // "path" | "module"
   const [paths, setPaths] = useState([]);
@@ -72,7 +78,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
       learningApi.getModules().then((d) => d.results || d || []),
       companyApi.getMembers(companyId, { status: "active" }).then((d) => d.results || d || []),
       teamsApi.list({ company_id: companyId }).then((d) => d.results || d || []),
-    ]).then(([p, mod, m, t]) => { setPaths(p); setModules(mod); setMembers(m); setTeams(t); }).catch(() => {}).finally(() => setLoading(false));
+    ]).then(([p, mod, m, tms]) => { setPaths(p); setModules(mod); setMembers(m); setTeams(tms); }).catch(() => {}).finally(() => setLoading(false));
   }, [companyId]);
 
   const handleAssign = async () => {
@@ -85,23 +91,23 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
           await learningApi.assignPathToUser(selectedItem.id, { user_id: selectedUser.user, ...duePay });
         else if (tab === "team" && selectedTeam)
           await learningApi.assignPathToTeam(selectedItem.id, { team_id: selectedTeam.id, ...duePay });
-        else { setError("Selecciona un usuario o equipo."); setSaving(false); return; }
+        else { setError(t("enterprise.learning.assignmentsManager.modal.selectTarget")); setSaving(false); return; }
       } else {
         if (tab === "user" && selectedUser)
           await learningApi.assignModuleToUser(selectedItem.id, { user_id: selectedUser.user, ...duePay });
         else if (tab === "team" && selectedTeam)
           await learningApi.assignModuleToTeam(selectedItem.id, { team_id: selectedTeam.id, ...duePay });
-        else { setError("Selecciona un usuario o equipo."); setSaving(false); return; }
+        else { setError(t("enterprise.learning.assignmentsManager.modal.selectTarget")); setSaving(false); return; }
       }
       onCreated();
       onClose();
     } catch (err) {
-      setError(err?.detail || err?.non_field_errors?.[0] || "Error al asignar.");
+      setError(err?.detail || err?.non_field_errors?.[0] || t("enterprise.learning.assignmentsManager.modal.assignError"));
     } finally { setSaving(false); }
   };
 
   const filteredMembers = members.filter((m) => !search || (m.full_name || m.username || m.email || "").toLowerCase().includes(search.toLowerCase()));
-  const filteredTeams   = teams.filter((t)   => !search || t.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredTeams   = teams.filter((tm)  => !search || tm.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
@@ -117,7 +123,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
                 style={{ color: "var(--text-tertiary)", cursor: "pointer" }}>←</button>
             )}
             <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>
-              {step === 1 ? "¿Qué quieres asignar?" : `Asignar: ${selectedItem?.name}`}
+              {step === 1 ? t("enterprise.learning.assignmentsManager.modal.whatToAssign") : t("enterprise.learning.assignmentsManager.modal.assignTitle", { name: selectedItem?.name })}
             </p>
           </div>
           <button onClick={onClose} style={{ color: "var(--text-tertiary)", fontSize: 20, cursor: "pointer" }}>×</button>
@@ -134,7 +140,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
             </React.Fragment>
           ))}
           <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginLeft: 4 }}>
-            {step === 1 ? "Elige contenido" : "Elige destinatario"}
+            {step === 1 ? t("enterprise.learning.assignmentsManager.modal.chooseContent") : t("enterprise.learning.assignmentsManager.modal.chooseRecipient")}
           </p>
         </div>
 
@@ -147,7 +153,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
           <div>
             {/* Type tabs */}
             <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 14 }}>
-              {[["path", "Learning Path", RectangleStackIcon], ["module", "Proceso", CheckCircleIcon]].map(([key, label, Icon]) => (
+              {[["path", "Learning Path", RectangleStackIcon], ["module", t("enterprise.learning.assignmentsManager.modal.process"), CheckCircleIcon]].map(([key, label, Icon]) => (
                 <button key={key} onClick={() => { setContentType(key); setSelectedItem(null); }}
                   style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderBottom: `2px solid ${contentType === key ? "var(--accent)" : "transparent"}`, color: contentType === key ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: contentType === key ? 600 : 400, fontSize: 12.5, cursor: "pointer", background: "transparent" }}>
                   <Icon style={{ width: 13, height: 13 }} /> {label}
@@ -158,7 +164,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
             <div style={{ maxHeight: 280, overflowY: "auto" }} className="space-y-1.5">
               {contentType === "path" ? (
                 paths.length === 0 ? (
-                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>Sin Learning Paths creados.</p>
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>{t("enterprise.learning.assignmentsManager.modal.noPaths")}</p>
                 ) : paths.map((p) => {
                   const sel = selectedItem?.id === p.id && contentType === "path";
                   const sc = { draft: "#8B8B9C", published: "#4ade80", archived: "#f59e0b" }[p.status] || "#8B8B9C";
@@ -172,7 +178,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
                         <div className="flex-1 min-w-0">
                           <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)" }}>{p.name}</p>
                           <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>
-                            {p.module_count ?? 0} procesos · <span style={{ color: sc }}>{p.status}</span>
+                            {t("enterprise.learning.assignmentsManager.modal.processCount", { n: p.module_count ?? 0 })} · <span style={{ color: sc }}>{p.status}</span>
                           </p>
                         </div>
                         {sel && <CheckIcon style={{ width: 14, height: 14, color: "var(--accent)", flexShrink: 0 }} />}
@@ -182,7 +188,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
                 })
               ) : (
                 modules.length === 0 ? (
-                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>Sin Procesos creados.</p>
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 13, textAlign: "center", padding: "20px 0" }}>{t("enterprise.learning.assignmentsManager.modal.noProcesses")}</p>
                 ) : modules.map((mod) => {
                   const sel = selectedItem?.id === mod.id && contentType === "module";
                   const typeColors = { document: "#60a5fa", topic: "#a855f7", deck: "#f59e0b", battery: "#f87171" };
@@ -197,7 +203,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
                         <div className="flex-1 min-w-0">
                           <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-primary)" }}>{mod.name}</p>
                           <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>
-                            {mod.process_type || "proceso"}
+                            {mod.process_type || t("enterprise.learning.assignmentsManager.modal.process")}
                             {mod.difficulty ? ` · ${mod.difficulty}` : ""}
                             {mod.estimated_duration_minutes ? ` · ${mod.estimated_duration_minutes} min` : ""}
                           </p>
@@ -210,9 +216,9 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
               )}
             </div>
             <div className="flex justify-end gap-2 mt-4">
-              <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+              <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.learning.assignmentsManager.modal.cancel")}</button>
               <button onClick={() => setStep(2)} disabled={!selectedItem} className="ank-btn-accent text-xs" style={{ opacity: !selectedItem ? 0.5 : 1 }}>
-                Siguiente →
+                {t("enterprise.learning.assignmentsManager.modal.next")}
               </button>
             </div>
           </div>
@@ -221,7 +227,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
           <div>
             {/* Tabs user/team */}
             <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 12 }}>
-              {[["user", "Usuario", UsersIcon], ["team", "Equipo", UserGroupIcon]].map(([key, label, Icon]) => (
+              {[["user", t("enterprise.learning.assignmentsManager.modal.userTab"), UsersIcon], ["team", t("enterprise.learning.assignmentsManager.modal.teamTab"), UserGroupIcon]].map(([key, label, Icon]) => (
                 <button key={key} onClick={() => { setTab(key); setSearch(""); setSelectedUser(null); setSelectedTeam(null); }}
                   style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderBottom: `2px solid ${tab === key ? "var(--accent)" : "transparent"}`, color: tab === key ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: tab === key ? 600 : 400, fontSize: 12.5, cursor: "pointer", background: "transparent" }}>
                   <Icon style={{ width: 13, height: 13 }} /> {label}
@@ -229,7 +235,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
               ))}
             </div>
 
-            <input placeholder={tab === "user" ? "Buscar miembro…" : "Buscar equipo…"} value={search} onChange={(e) => setSearch(e.target.value)}
+            <input placeholder={tab === "user" ? t("enterprise.learning.assignmentsManager.modal.searchMember") : t("enterprise.learning.assignmentsManager.modal.searchTeam")} value={search} onChange={(e) => setSearch(e.target.value)}
               style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 11px", color: "var(--text-primary)", fontSize: 12, outline: "none", marginBottom: 10 }}
               onFocus={(e) => { e.target.style.borderColor = "var(--accent)"; }}
               onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }} />
@@ -237,7 +243,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
             <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 14 }} className="space-y-1.5">
               {tab === "user" ? (
                 filteredMembers.length === 0 ? (
-                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>Sin miembros.</p>
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>{t("enterprise.learning.assignmentsManager.modal.noMembers")}</p>
                 ) : filteredMembers.map((m) => {
                   const sel = selectedUser?.user === m.user;
                   return (
@@ -258,19 +264,19 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
                 })
               ) : (
                 filteredTeams.length === 0 ? (
-                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>Sin equipos.</p>
-                ) : filteredTeams.map((t) => {
-                  const sel = selectedTeam?.id === t.id;
+                  <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>{t("enterprise.learning.assignmentsManager.modal.noTeams")}</p>
+                ) : filteredTeams.map((tm) => {
+                  const sel = selectedTeam?.id === tm.id;
                   return (
-                    <button key={t.id} type="button" onClick={() => setSelectedTeam(sel ? null : t)}
+                    <button key={tm.id} type="button" onClick={() => setSelectedTeam(sel ? null : tm)}
                       style={{ width: "100%", textAlign: "left", background: sel ? "var(--bg-accent)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "9px 11px", cursor: "pointer", transition: "all 150ms" }}>
                       <div className="flex items-center gap-2">
                         <div style={{ background: sel ? "var(--accent)" : "rgba(59,130,246,0.12)", borderRadius: 5, padding: 5, flexShrink: 0 }}>
                           <UserGroupIcon style={{ width: 12, height: 12, color: sel ? "#fff" : "#60a5fa" }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{t.name}</p>
-                          <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t.member_count ?? 0} miembros</p>
+                          <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{tm.name}</p>
+                          <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t("enterprise.learning.assignmentsManager.modal.memberCount", { n: tm.member_count ?? 0 })}</p>
                         </div>
                         {sel && <CheckIcon style={{ width: 13, height: 13, color: "var(--accent)", flexShrink: 0 }} />}
                       </div>
@@ -283,7 +289,7 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
             {/* Due date */}
             <div style={{ marginBottom: 14 }}>
               <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 12, marginBottom: 5 }}>
-                Fecha límite <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(opcional)</span>
+                {t("enterprise.learning.assignmentsManager.modal.dueDate")} <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>({t("enterprise.learning.paths.wizard.optional")})</span>
               </p>
               <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
                 style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "7px 11px", color: "var(--text-primary)", fontSize: 12, outline: "none", colorScheme: "dark" }} />
@@ -292,12 +298,12 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
             {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 10 }}>{error}</p>}
 
             <div className="flex justify-end gap-2">
-              <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+              <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.learning.assignmentsManager.modal.cancel")}</button>
               <button onClick={handleAssign}
                 disabled={saving || (tab === "user" ? !selectedUser : !selectedTeam)}
                 className="ank-btn-accent text-xs"
                 style={{ opacity: saving || (tab === "user" ? !selectedUser : !selectedTeam) ? 0.6 : 1 }}>
-                {saving ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><UserGroupIcon className="h-3.5 w-3.5" /> Asignar</>}
+                {saving ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><UserGroupIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.assignmentsManager.modal.assign")}</>}
               </button>
             </div>
           </div>
@@ -310,10 +316,11 @@ function NewAssignmentModal({ companyId, onCreated, onClose }) {
 // ─── Assignment Row ───────────────────────────────────────────────────────────
 
 function AssignmentRow({ a, onClick }) {
+  const { t, language } = useLanguage();
   const pct = a.progress?.percent_required ?? a.progress?.percent_total ?? 0;
   const completedMods = a.progress?.completed_modules ?? 0;
   const totalMods = a.progress?.total_modules ?? 0;
-  const dueStr = a.due_date ? new Date(a.due_date).toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" }) : null;
+  const dueStr = a.due_date ? new Date(a.due_date).toLocaleDateString(language === "es" ? "es" : "en-US", { day: "2-digit", month: "short", year: "numeric" }) : null;
   const isOverdue = a.is_overdue || a.status === "overdue";
 
   return (
@@ -328,7 +335,7 @@ function AssignmentRow({ a, onClick }) {
             {a.learning_path_name || a.path_name || a.name || "—"}
           </p>
           {a.assigned_by_username && (
-            <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>por {a.assigned_by_username}</p>
+            <p style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 1 }}>{t("enterprise.learning.assignmentsManager.row.by", { name: a.assigned_by_username })}</p>
           )}
         </div>
 
@@ -342,7 +349,7 @@ function AssignmentRow({ a, onClick }) {
           ) : a.team_name || a.team ? (
             <div className="flex items-center gap-1.5">
               <UserGroupIcon style={{ width: 11, height: 11, color: "#60a5fa" }} />
-              <p style={{ fontSize: 12, color: "var(--text-secondary)" }} className="truncate">{a.team_name || `Equipo ${a.team}`}</p>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)" }} className="truncate">{a.team_name || t("enterprise.learning.assignmentsManager.row.team", { id: a.team })}</p>
             </div>
           ) : null}
         </div>
@@ -381,6 +388,7 @@ function AssignmentRow({ a, onClick }) {
 
 export function AssignmentsManager() {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const { activeCompanyId, role: myRole, isPlatformAdmin } = useEnterprise();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -402,6 +410,14 @@ export function AssignmentsManager() {
 
   const canAssign = ["owner", "admin", "manager", "trainer"].includes(myRole) || isPlatformAdmin;
 
+  const columnHeaders = [
+    t("enterprise.learning.assignmentsManager.columns.learningPath"),
+    t("enterprise.learning.assignmentsManager.columns.assignedTo"),
+    t("enterprise.learning.assignmentsManager.columns.status"),
+    t("enterprise.learning.assignmentsManager.columns.progress"),
+    t("enterprise.learning.assignmentsManager.columns.dueDate"),
+  ];
+
   return (
     <div className="w-full space-y-5">
       {showModal && (
@@ -411,32 +427,32 @@ export function AssignmentsManager() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Asignaciones</h1>
+          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.learning.assignmentsManager.title")}</h1>
           <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-            Gestiona qué Learning Paths están asignados a cada persona o equipo
+            {t("enterprise.learning.assignmentsManager.subtitle")}
           </p>
         </div>
         {canAssign && (
           <button onClick={() => setShowModal(true)} className="ank-btn-accent text-xs">
-            <PlusIcon className="h-3.5 w-3.5" /> Nueva Asignación
+            <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.assignmentsManager.newAssignment")}
           </button>
         )}
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <FilterChip label="Todas" active={statusFilter === ""} onClick={() => setStatusFilter("")} />
-        <FilterChip label="Pendiente" active={statusFilter === "pending"} onClick={() => setStatusFilter("pending")} />
-        <FilterChip label="En progreso" active={statusFilter === "in_progress"} onClick={() => setStatusFilter("in_progress")} />
-        <FilterChip label="Completado" active={statusFilter === "completed"} onClick={() => setStatusFilter("completed")} />
-        <FilterChip label="Vencido" active={statusFilter === "overdue"} onClick={() => setStatusFilter("overdue")} />
+        <FilterChip label={t("enterprise.learning.assignmentsManager.filters.all")} active={statusFilter === ""} onClick={() => setStatusFilter("")} />
+        <FilterChip label={t("enterprise.learning.assignmentsManager.status.pending")} active={statusFilter === "pending"} onClick={() => setStatusFilter("pending")} />
+        <FilterChip label={t("enterprise.learning.assignmentsManager.status.inProgress")} active={statusFilter === "in_progress"} onClick={() => setStatusFilter("in_progress")} />
+        <FilterChip label={t("enterprise.learning.assignmentsManager.status.completed")} active={statusFilter === "completed"} onClick={() => setStatusFilter("completed")} />
+        <FilterChip label={t("enterprise.learning.assignmentsManager.status.overdue")} active={statusFilter === "overdue"} onClick={() => setStatusFilter("overdue")} />
       </div>
 
       {/* Column labels */}
       {!loading && filtered.length > 0 && (
         <div style={{ display: "flex", gap: 12, padding: "0 16px" }}>
-          {["Learning Path", "Asignado a", "Estado", "Progreso", "Fecha límite"].map((h) => (
-            <p key={h} style={{ flex: h === "Learning Path" || h === "Asignado a" ? "2 1 130px" : "1 0 90px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          {columnHeaders.map((h, i) => (
+            <p key={h} style={{ flex: i < 2 ? "2 1 130px" : "1 0 90px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {h}
             </p>
           ))}
@@ -455,13 +471,13 @@ export function AssignmentsManager() {
           <div style={{ background: "var(--bg-elevated)", borderRadius: 8, padding: 14, display: "inline-flex", marginBottom: 12 }}>
             <RectangleStackIcon style={{ width: 24, height: 24, color: "var(--text-tertiary)" }} />
           </div>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>Sin asignaciones</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>{t("enterprise.learning.assignmentsManager.empty")}</p>
           <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4 }}>
-            Asigna Learning Paths a miembros o equipos para iniciar su formación.
+            {t("enterprise.learning.assignmentsManager.emptyMessage")}
           </p>
           {canAssign && (
             <button onClick={() => setShowModal(true)} className="ank-btn-accent text-xs mt-4">
-              <PlusIcon className="h-3.5 w-3.5" /> Nueva Asignación
+              <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.assignmentsManager.newAssignment")}
             </button>
           )}
         </div>
@@ -475,7 +491,7 @@ export function AssignmentsManager() {
 
       {!loading && filtered.length > 0 && (
         <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          {filtered.length} asignación{filtered.length !== 1 ? "es" : ""}
+          {t("enterprise.learning.assignmentsManager.count", { count: filtered.length, plural: filtered.length !== 1 ? (language === "es" ? "es" : "s") : "" })}
         </p>
       )}
     </div>

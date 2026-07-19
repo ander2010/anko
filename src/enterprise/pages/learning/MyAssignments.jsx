@@ -6,13 +6,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { learningApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
-const STATUS = {
-  pending:     { bg: "rgba(255,255,255,0.07)", text: "#8B8B9C", label: "Pendiente",   Icon: ClockIcon },
-  in_progress: { bg: "rgba(94,106,210,0.15)",  text: "#8B9CF4", label: "En progreso", Icon: PlayIcon },
-  completed:   { bg: "rgba(74,222,128,0.12)",  text: "#4ade80", label: "Completado",  Icon: CheckCircleIcon },
-  overdue:     { bg: "rgba(239,68,68,0.12)",   text: "#f87171", label: "Vencido",     Icon: ExclamationCircleIcon },
-};
+function useStatusMap() {
+  const { t } = useLanguage();
+  return {
+    pending:     { bg: "rgba(255,255,255,0.07)", text: "#8B8B9C", label: t("enterprise.learning.myAssignments.status.pending"),    Icon: ClockIcon },
+    in_progress: { bg: "rgba(94,106,210,0.15)",  text: "#8B9CF4", label: t("enterprise.learning.myAssignments.status.inProgress"), Icon: PlayIcon },
+    completed:   { bg: "rgba(74,222,128,0.12)",  text: "#4ade80", label: t("enterprise.learning.myAssignments.status.completed"), Icon: CheckCircleIcon },
+    overdue:     { bg: "rgba(239,68,68,0.12)",   text: "#f87171", label: t("enterprise.learning.myAssignments.status.overdue"),   Icon: ExclamationCircleIcon },
+  };
+}
 
 function ProgressBar({ value, overdue, done }) {
   const pct = Math.max(0, Math.min(100, value || 0));
@@ -25,6 +29,8 @@ function ProgressBar({ value, overdue, done }) {
 }
 
 function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) {
+  const { t, language } = useLanguage();
+  const STATUS = useStatusMap();
   const status = (a.is_overdue || a.status === "overdue") ? "overdue" : a.status;
   const s = STATUS[status] || STATUS.pending;
   const { Icon } = s;
@@ -32,7 +38,7 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
   const completedMods = a.progress?.completed_modules ?? 0;
   const totalMods = a.progress?.total_modules ?? 0;
   const dueDate = a.due_date ? new Date(a.due_date) : null;
-  const dueStr = dueDate ? dueDate.toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" }) : null;
+  const dueStr = dueDate ? dueDate.toLocaleDateString(language === "es" ? "es" : "en-US", { day: "2-digit", month: "short", year: "numeric" }) : null;
   const isDone = a.status === "completed";
   const isOverdue = status === "overdue";
 
@@ -55,10 +61,10 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
           </div>
           <div className="min-w-0">
             <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>
-              {a.learning_path_name || a.path_name || a.name || "Learning Path"}
+              {a.learning_path_name || a.path_name || a.name || t("enterprise.learning.myAssignments.learningPath")}
             </p>
             {a.assigned_by_username && (
-              <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 2 }}>asignado por {a.assigned_by_username}</p>
+              <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 2 }}>{t("enterprise.learning.myAssignments.assignedBy", { name: a.assigned_by_username })}</p>
             )}
           </div>
         </div>
@@ -71,7 +77,7 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
       {totalMods > 0 && (
         <div className="space-y-1.5 mb-3">
           <div className="flex justify-between">
-            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{completedMods} de {totalMods} procesos</span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.learning.myAssignments.processesCount", { completed: completedMods, total: totalMods })}</span>
             <span style={{ color: isDone ? "#4ade80" : "var(--accent)", fontSize: 11, fontWeight: 700 }}>{Math.round(pct)}%</span>
           </div>
           <ProgressBar value={pct} overdue={isOverdue} done={isDone} />
@@ -83,7 +89,7 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
         {dueStr ? (
           <p style={{ fontSize: 11, color: isOverdue ? "#f87171" : "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 4 }}>
             <ClockIcon style={{ width: 11, height: 11 }} />
-            {isOverdue ? "Vencido — " : "Límite: "}{dueStr}
+            {isOverdue ? t("enterprise.learning.myAssignments.overdueSince") : t("enterprise.learning.myAssignments.dueLabel")}{dueStr}
           </p>
         ) : <span />}
         <div style={{ display: "flex", alignItems: "center", gap: 5, color: isDone ? "#4ade80" : "var(--accent)", fontSize: 12, fontWeight: 600 }}>
@@ -92,14 +98,14 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
               onClick={(e) => { e.stopPropagation(); onViewCertificate(a.issued_certification_id); }}
               style={{ display: "flex", alignItems: "center", gap: 5, color: "#4ade80", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
-              Ver certificado <ArrowRightIcon style={{ width: 12, height: 12 }} />
+              {t("enterprise.learning.myAssignments.viewCertificate")} <ArrowRightIcon style={{ width: 12, height: 12 }} />
             </button>
           ) : isDone ? (
-            <><CheckCircleIcon style={{ width: 13, height: 13 }} /> Completado</>
+            <><CheckCircleIcon style={{ width: 13, height: 13 }} /> {t("enterprise.learning.myAssignments.status.completed")}</>
           ) : starting ? (
-            <span style={{ color: "var(--text-tertiary)" }}>Cargando…</span>
+            <span style={{ color: "var(--text-tertiary)" }}>{t("enterprise.learning.myAssignments.loading")}</span>
           ) : (
-            <>{a.status === "pending" ? "Comenzar" : "Continuar"} <ArrowRightIcon style={{ width: 12, height: 12 }} /></>
+            <>{a.status === "pending" ? t("enterprise.learning.myAssignments.start") : t("enterprise.learning.myAssignments.continue")} <ArrowRightIcon style={{ width: 12, height: 12 }} /></>
           )}
         </div>
       </div>
@@ -109,6 +115,7 @@ function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) 
 
 export function MyAssignments() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,10 +144,10 @@ export function MyAssignments() {
   const completed  = assignments.filter((a) => a.status === "completed");
 
   const groups = [
-    { label: "Vencidos",     color: "#f87171", items: overdue },
-    { label: "En progreso",  color: "#8B9CF4", items: inProgress },
-    { label: "Pendientes",   color: "#8B8B9C", items: pending },
-    { label: "Completados",  color: "#4ade80", items: completed },
+    { label: t("enterprise.learning.myAssignments.groups.overdue"),    color: "#f87171", items: overdue },
+    { label: t("enterprise.learning.myAssignments.groups.inProgress"), color: "#8B9CF4", items: inProgress },
+    { label: t("enterprise.learning.myAssignments.groups.pending"),    color: "#8B8B9C", items: pending },
+    { label: t("enterprise.learning.myAssignments.groups.completed"), color: "#4ade80", items: completed },
   ].filter((g) => g.items.length > 0);
 
   return (
@@ -148,14 +155,14 @@ export function MyAssignments() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Mis Tareas</h1>
+          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.learning.myAssignments.title")}</h1>
           <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-            {assignments.length} learning path{assignments.length !== 1 ? "s" : ""} asignado{assignments.length !== 1 ? "s" : ""} a ti
+            {t("enterprise.learning.myAssignments.assignedCount", { count: assignments.length, plural: assignments.length !== 1 ? "s" : "" })}
           </p>
         </div>
         {completed.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#4ade80", fontSize: 12, fontWeight: 700 }}>
-            <CheckCircleIcon style={{ width: 14, height: 14 }} /> {completed.length} completado{completed.length !== 1 ? "s" : ""}
+            <CheckCircleIcon style={{ width: 14, height: 14 }} /> {t("enterprise.learning.myAssignments.completedCount", { count: completed.length, plural: completed.length !== 1 ? "s" : "" })}
           </div>
         )}
       </div>
@@ -171,8 +178,8 @@ export function MyAssignments() {
           <div style={{ background: "var(--bg-elevated)", borderRadius: 8, padding: 14, display: "inline-flex", marginBottom: 12 }}>
             <BookOpenIcon style={{ width: 24, height: 24, color: "var(--text-tertiary)" }} />
           </div>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>Sin asignaciones</p>
-          <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 4 }}>Tu manager o trainer asignará Learning Paths aquí.</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>{t("enterprise.learning.myAssignments.empty")}</p>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 4 }}>{t("enterprise.learning.myAssignments.emptyMessage")}</p>
         </div>
       ) : (
         <div className="space-y-7">

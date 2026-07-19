@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { retentionApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { EmptyState } from "../../components/EmptyState";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
 
@@ -10,6 +11,7 @@ function scoreTone(s) {
 }
 
 export function TeamRetention() {
+  const { t } = useLanguage();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,19 +19,27 @@ export function TeamRetention() {
     retentionApi.teamRetention().then((d) => setMembers(d.members || d.results || d || [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const columns = [
+    t("enterprise.retention.teamRetention.columns.name"),
+    t("enterprise.retention.teamRetention.columns.retentionScore"),
+    t("enterprise.retention.teamRetention.columns.riskScore"),
+    t("enterprise.retention.teamRetention.columns.openGaps"),
+    t("enterprise.retention.teamRetention.columns.lastAssessment"),
+  ];
+
   return (
     <div className="space-y-5">
-      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Team Retention</h1>
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.retention.teamRetention.title")}</h1>
 
       {loading ? <TableSkeleton rows={6} cols={5} /> : members.length === 0 ? (
-        <EmptyState title="No team data" />
+        <EmptyState title={t("enterprise.retention.teamRetention.empty")} />
       ) : (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
               <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
-                  {["Name", "Retention Score", "Risk Score", "Open Gaps", "Last Assessment"].map((h) => (
+                  {columns.map((h) => (
                     <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
@@ -42,7 +52,7 @@ export function TeamRetention() {
                       <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>
                         {m.name}
                         {(m.risk_score ?? 0) > 60 && (
-                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>At Risk</span>
+                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>{t("enterprise.retention.teamRetention.atRisk")}</span>
                         )}
                       </td>
                       <td style={{ padding: "12px 16px" }}>

@@ -6,20 +6,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const PROCESS_TYPE_LABELS = {
-  course:         "Course",
-  tutorial:       "Tutorial",
-  study_material: "Study Material",
-};
-
-const PROCESS_TYPE_COLORS = {
-  course:         { bg: "rgba(94,106,210,0.12)", text: "#8B9CF4" },
-  tutorial:       { bg: "rgba(34,197,94,0.1)",   text: "#4ade80" },
-  study_material: { bg: "rgba(245,158,11,0.1)",  text: "#f59e0b" },
-};
 
 const DIFFICULTY_COLORS = {
   easy:   { bg: "rgba(74,222,128,0.1)",  text: "#4ade80" },
@@ -27,13 +16,30 @@ const DIFFICULTY_COLORS = {
   hard:   { bg: "rgba(239,68,68,0.1)",  text: "#f87171" },
 };
 
+function usePillLabels() {
+  const { t } = useLanguage();
+  return {
+    types: {
+      course: t("enterprise.knowledge.sources.types.course"),
+      tutorial: t("enterprise.knowledge.sources.types.tutorial"),
+      study_material: t("enterprise.knowledge.sources.types.studyMaterial"),
+    },
+    typeColors: {
+      course:         { bg: "rgba(94,106,210,0.12)", text: "#8B9CF4" },
+      tutorial:       { bg: "rgba(34,197,94,0.1)",   text: "#4ade80" },
+      study_material: { bg: "rgba(245,158,11,0.1)",  text: "#f59e0b" },
+    },
+  };
+}
+
 // ─── Pill badges ─────────────────────────────────────────────────────────────
 
 function TypePill({ type }) {
-  const c = PROCESS_TYPE_COLORS[type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
+  const { types, typeColors } = usePillLabels();
+  const c = typeColors[type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
   return (
     <span style={{ background: c.bg, color: c.text, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4, letterSpacing: "0.03em" }}>
-      {PROCESS_TYPE_LABELS[type] || type}
+      {types[type] || type}
     </span>
   );
 }
@@ -50,18 +56,19 @@ function DifficultyPill({ difficulty }) {
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 function EmptyProcesos({ onNew }) {
+  const { t } = useLanguage();
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8 }}
       className="flex flex-col items-center py-16 px-8 text-center">
       <div style={{ background: "var(--bg-elevated)", borderRadius: 10, padding: 14, marginBottom: 14 }}>
         <BookOpenIcon style={{ width: 28, height: 28, color: "var(--text-tertiary)" }} />
       </div>
-      <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>Aún no hay procesos</p>
+      <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>{t("enterprise.knowledge.sources.empty.title")}</p>
       <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4, maxWidth: 320, lineHeight: 1.6 }}>
-        Crea tu primer Proceso de aprendizaje. Puedes subir documentos y el sistema los convierte en contenido estructurado.
+        {t("enterprise.knowledge.sources.empty.message")}
       </p>
       <button onClick={onNew} className="ank-btn-accent text-xs mt-5">
-        <PlusIcon className="h-3.5 w-3.5" /> Nuevo Proceso
+        <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.sources.newProcess")}
       </button>
     </div>
   );
@@ -70,6 +77,7 @@ function EmptyProcesos({ onNew }) {
 // ─── Confirm Delete Dialog ────────────────────────────────────────────────────
 
 function ConfirmDeleteDialog({ mod, onConfirm, onCancel, deleting }) {
+  const { t } = useLanguage();
   if (!mod) return null;
   return (
     <div style={{
@@ -89,7 +97,7 @@ function ConfirmDeleteDialog({ mod, onConfirm, onCancel, deleting }) {
         </div>
         {/* Title */}
         <p style={{ fontSize: 17, fontWeight: 800, color: "#F1F5F9", marginBottom: 8 }}>
-          Eliminar proceso
+          {t("enterprise.knowledge.sources.deleteDialog.title")}
         </p>
         {/* Process name */}
         <p style={{ fontSize: 13, fontWeight: 700, color: "#F1F5F9", marginBottom: 10, padding: "9px 13px", background: "rgba(255,255,255,0.05)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -97,28 +105,28 @@ function ConfirmDeleteDialog({ mod, onConfirm, onCancel, deleting }) {
         </p>
         {/* Warning */}
         <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 6 }}>
-          Esta acción eliminará permanentemente:
+          {t("enterprise.knowledge.sources.deleteDialog.willDelete")}
         </p>
         <ul style={{ fontSize: 12, color: "#64748B", lineHeight: 1.8, marginBottom: 22, paddingLeft: 16 }}>
-          <li>Todas las baterías de preguntas generadas</li>
-          <li>Todos los decks de flashcards generados</li>
-          <li>Historial de intentos y resultados</li>
-          <li>Asociaciones con Learning Paths</li>
+          <li>{t("enterprise.knowledge.sources.deleteDialog.item1")}</li>
+          <li>{t("enterprise.knowledge.sources.deleteDialog.item2")}</li>
+          <li>{t("enterprise.knowledge.sources.deleteDialog.item3")}</li>
+          <li>{t("enterprise.knowledge.sources.deleteDialog.item4")}</li>
         </ul>
         <p style={{ fontSize: 11, color: "#EF4444", fontWeight: 600, marginBottom: 20 }}>
-          Esta acción no se puede deshacer.
+          {t("enterprise.knowledge.sources.deleteDialog.irreversible")}
         </p>
         {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onCancel} disabled={deleting}
             style={{ flex: 1, padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#94A3B8", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.5 : 1, transition: "opacity 0.15s" }}>
-            Cancelar
+            {t("enterprise.compliance.programs.cancel")}
           </button>
           <button onClick={onConfirm} disabled={deleting}
             style={{ flex: 1, padding: "11px", borderRadius: 10, background: deleting ? "rgba(239,68,68,0.3)" : "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: deleting ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "opacity 0.15s" }}>
             {deleting
-              ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />Eliminando...</>
-              : <><TrashIcon style={{ width: 14, height: 14 }} />Eliminar todo</>
+              ? <><div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff" }} className="animate-spin" />{t("enterprise.knowledge.sources.deleteDialog.deleting")}</>
+              : <><TrashIcon style={{ width: 14, height: 14 }} />{t("enterprise.knowledge.sources.deleteDialog.deleteAll")}</>
             }
           </button>
         </div>
@@ -131,6 +139,7 @@ function ConfirmDeleteDialog({ mod, onConfirm, onCancel, deleting }) {
 
 function ModuleRow({ mod, onDeleteRequest }) {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   return (
     <div
@@ -155,7 +164,7 @@ function ModuleRow({ mod, onDeleteRequest }) {
               <DifficultyPill difficulty={mod.difficulty} />
               {mod.is_required && (
                 <span style={{ background: "rgba(239,68,68,0.1)", color: "#f87171", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4 }}>
-                  Required
+                  {t("enterprise.compliance.programs.required")}
                 </span>
               )}
             </div>
@@ -167,23 +176,23 @@ function ModuleRow({ mod, onDeleteRequest }) {
               {mod.item_count != null && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1">
                   <AcademicCapIcon style={{ width: 11, height: 11 }} />
-                  {mod.item_count} item{mod.item_count !== 1 ? "s" : ""}
+                  {t("enterprise.knowledge.sources.itemCount", { count: mod.item_count, plural: mod.item_count !== 1 ? "s" : "" })}
                 </span>
               )}
               {mod.estimated_duration_minutes && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1">
                   <ClockIcon style={{ width: 11, height: 11 }} />
-                  {mod.estimated_duration_minutes} min
+                  {t("enterprise.knowledge.sources.minutes", { n: mod.estimated_duration_minutes })}
                 </span>
               )}
               {mod.order != null && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-                  Orden: #{mod.order}
+                  {t("enterprise.knowledge.sources.order", { n: mod.order })}
                 </span>
               )}
               {mod.created_at && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-                  {new Date(mod.created_at).toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" })}
+                  {new Date(mod.created_at).toLocaleDateString(language === "es" ? "es" : "en", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
               )}
             </div>
@@ -226,6 +235,7 @@ function FilterChip({ label, active, onClick }) {
 
 export function KnowledgeSources() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -268,31 +278,31 @@ export function KnowledgeSources() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Procesos</h1>
+          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.knowledge.sources.title")}</h1>
           <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-            Módulos de aprendizaje de tu empresa
+            {t("enterprise.knowledge.sources.subtitle")}
           </p>
         </div>
         <button onClick={() => navigate("/enterprise/knowledge/new")} className="ank-btn-accent text-xs">
-          <PlusIcon className="h-3.5 w-3.5" /> Nuevo Proceso
+          <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.sources.newProcess")}
         </button>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>Tipo:</span>
-        <FilterChip label="Todos" active={typeFilter === ""} onClick={() => setTypeFilter("")} />
-        <FilterChip label="Course" active={typeFilter === "course"} onClick={() => setTypeFilter("course")} />
-        <FilterChip label="Tutorial" active={typeFilter === "tutorial"} onClick={() => setTypeFilter("tutorial")} />
-        <FilterChip label="Study Material" active={typeFilter === "study_material"} onClick={() => setTypeFilter("study_material")} />
+        <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.knowledge.sources.filters.type")}</span>
+        <FilterChip label={t("enterprise.knowledge.sources.filters.all")} active={typeFilter === ""} onClick={() => setTypeFilter("")} />
+        <FilterChip label={t("enterprise.knowledge.sources.types.course")} active={typeFilter === "course"} onClick={() => setTypeFilter("course")} />
+        <FilterChip label={t("enterprise.knowledge.sources.types.tutorial")} active={typeFilter === "tutorial"} onClick={() => setTypeFilter("tutorial")} />
+        <FilterChip label={t("enterprise.knowledge.sources.types.studyMaterial")} active={typeFilter === "study_material"} onClick={() => setTypeFilter("study_material")} />
 
         <span style={{ color: "var(--border)", marginLeft: 4 }}>|</span>
 
-        <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>Dificultad:</span>
-        <FilterChip label="Todos" active={diffFilter === ""} onClick={() => setDiffFilter("")} />
-        <FilterChip label="Easy" active={diffFilter === "easy"} onClick={() => setDiffFilter("easy")} />
-        <FilterChip label="Medium" active={diffFilter === "medium"} onClick={() => setDiffFilter("medium")} />
-        <FilterChip label="Hard" active={diffFilter === "hard"} onClick={() => setDiffFilter("hard")} />
+        <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.knowledge.sources.filters.difficulty")}</span>
+        <FilterChip label={t("enterprise.knowledge.sources.filters.all")} active={diffFilter === ""} onClick={() => setDiffFilter("")} />
+        <FilterChip label={t("enterprise.knowledge.sources.difficulty.easy")} active={diffFilter === "easy"} onClick={() => setDiffFilter("easy")} />
+        <FilterChip label={t("enterprise.knowledge.sources.difficulty.medium")} active={diffFilter === "medium"} onClick={() => setDiffFilter("medium")} />
+        <FilterChip label={t("enterprise.knowledge.sources.difficulty.hard")} active={diffFilter === "hard"} onClick={() => setDiffFilter("hard")} />
       </div>
 
       {/* Content */}
@@ -316,7 +326,7 @@ export function KnowledgeSources() {
       {/* Count */}
       {!loading && filtered.length > 0 && (
         <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          {filtered.length} proceso{filtered.length !== 1 ? "s" : ""}
+          {t("enterprise.knowledge.sources.processCount", { count: filtered.length, plural: filtered.length !== 1 ? "s" : "" })}
         </p>
       )}
 

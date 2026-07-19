@@ -5,6 +5,7 @@ import {
   UserPlusIcon, ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { companyApi, businessUnitApi, teamsApi } from "../../api/enterpriseApi";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -28,6 +29,18 @@ const STATUS_COLORS = {
   removed:   { bg: "rgba(255,255,255,0.07)", text: "#8B8B9C" },
 };
 
+function useStageLabels() {
+  const { t } = useLanguage();
+  return {
+    candidate: t("enterprise.settings.company.stages.candidate"),
+    onboarding: t("enterprise.settings.company.stages.onboarding"),
+    trainee: t("enterprise.settings.company.stages.trainee"),
+    active_employee: t("enterprise.settings.company.stages.activeEmployee"),
+    contractor: t("enterprise.settings.company.stages.contractor"),
+    former_employee: t("enterprise.settings.company.stages.formerEmployee"),
+  };
+}
+
 function RolePill({ role }) {
   const c = ROLE_COLORS[role] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
   return (
@@ -38,10 +51,16 @@ function RolePill({ role }) {
 }
 
 function StatusPill({ status }) {
+  const { t } = useLanguage();
   const c = STATUS_COLORS[status] || STATUS_COLORS.removed;
+  const labels = {
+    active: t("enterprise.settings.company.status.active"),
+    suspended: t("enterprise.settings.company.status.suspended"),
+    removed: t("enterprise.settings.company.status.removed"),
+  };
   return (
-    <span style={{ background: c.bg, color: c.text, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, textTransform: "capitalize" }}>
-      {status}
+    <span style={{ background: c.bg, color: c.text, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4 }}>
+      {labels[status] || status}
     </span>
   );
 }
@@ -155,6 +174,7 @@ function FilterChip({ label, active, onClick }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function InfoTab({ company, companyId }) {
+  const { t } = useLanguage();
   const { refresh } = useEnterprise();
   const [form, setForm] = useState({ name: "", website: "", industry: "", company_size: "", description: "" });
   const [saving, setSaving] = useState(false);
@@ -175,28 +195,28 @@ function InfoTab({ company, companyId }) {
       setSuccess(true); await refresh();
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err?.detail || err?.name?.[0] || "No se pudieron guardar los cambios.");
+      setError(err?.detail || err?.name?.[0] || t("enterprise.settings.company.info.saveError"));
     } finally { setSaving(false); }
   };
 
   return (
     <form onSubmit={handleSave} className="space-y-4" style={{ maxWidth: 520 }}>
-      <FieldInput label="Nombre de la empresa" value={form.name} onChange={set("name")} required />
-      <FieldInput label="Sitio web" value={form.website} onChange={set("website")} placeholder="https://…" />
+      <FieldInput label={t("enterprise.settings.company.info.nameLabel")} value={form.name} onChange={set("name")} required />
+      <FieldInput label={t("enterprise.settings.company.info.websiteLabel")} value={form.website} onChange={set("website")} placeholder="https://…" />
       <div className="grid grid-cols-2 gap-3">
-        <FieldInput label="Industria" value={form.industry} onChange={set("industry")} />
-        <FieldInput label="Tamaño" value={form.company_size} onChange={set("company_size")} placeholder="ej. 51-200" />
+        <FieldInput label={t("enterprise.settings.company.info.industryLabel")} value={form.industry} onChange={set("industry")} />
+        <FieldInput label={t("enterprise.settings.company.info.sizeLabel")} value={form.company_size} onChange={set("company_size")} placeholder={t("enterprise.settings.company.info.sizePlaceholder")} />
       </div>
-      <FieldTextarea label="Descripción" value={form.description} onChange={set("description")} rows={3} />
+      <FieldTextarea label={t("enterprise.settings.company.info.descriptionLabel")} value={form.description} onChange={set("description")} rows={3} />
       {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
       {success && (
         <div className="flex items-center gap-2">
           <CheckCircleIcon style={{ width: 14, height: 14, color: "#4ade80" }} />
-          <p style={{ color: "#4ade80", fontSize: 12, fontWeight: 600 }}>Cambios guardados.</p>
+          <p style={{ color: "#4ade80", fontSize: 12, fontWeight: 600 }}>{t("enterprise.settings.company.info.saved")}</p>
         </div>
       )}
       <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-        {saving ? "Guardando…" : "Guardar cambios"}
+        {saving ? t("enterprise.settings.company.info.saving") : t("enterprise.settings.company.info.save")}
       </button>
     </form>
   );
@@ -207,9 +227,11 @@ function InfoTab({ company, companyId }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function AddMemberModal({ companyId, availableRoles, onAdded, onClose }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ email: "", role: "employee", employee_stage: "onboarding" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const STAGE_LABELS = useStageLabels();
 
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -221,28 +243,28 @@ function AddMemberModal({ companyId, availableRoles, onAdded, onClose }) {
       onAdded();
       onClose();
     } catch (err) {
-      setError(err?.email?.[0] || err?.non_field_errors?.[0] || err?.detail || "Error al agregar usuario.");
+      setError(err?.email?.[0] || err?.non_field_errors?.[0] || err?.detail || t("enterprise.settings.company.members.addError"));
     } finally { setSaving(false); }
   };
 
   return (
-    <Modal title="Agregar usuario" onClose={onClose}>
+    <Modal title={t("enterprise.settings.company.members.addModal.title")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <FieldInput label="Email" type="email" value={form.email} onChange={(e) => set("email")(e.target.value)} placeholder="juan@empresa.com" required />
         <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: -6 }}>
-          Si el usuario no tiene cuenta, se creará automáticamente. Deberá usar "Olvidé mi contraseña" para establecer su clave.
+          {t("enterprise.settings.company.members.addModal.hint")}
         </p>
-        <FieldSelect label="Rol" value={form.role} onChange={set("role")} required>
+        <FieldSelect label={t("enterprise.settings.company.members.addModal.roleLabel")} value={form.role} onChange={set("role")} required>
           {availableRoles.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
         </FieldSelect>
-        <FieldSelect label="Etapa" value={form.employee_stage} onChange={set("employee_stage")} required>
-          {STAGES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+        <FieldSelect label={t("enterprise.settings.company.members.addModal.stageLabel")} value={form.employee_stage} onChange={set("employee_stage")} required>
+          {STAGES.map((s) => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
         </FieldSelect>
         {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
           <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-            {saving ? "Agregando…" : <><UserPlusIcon className="h-3.5 w-3.5" /> Agregar</>}
+            {saving ? t("enterprise.settings.company.members.adding") : <><UserPlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.members.add")}</>}
           </button>
         </div>
       </form>
@@ -251,6 +273,7 @@ function AddMemberModal({ companyId, availableRoles, onAdded, onClose }) {
 }
 
 function ChangeRoleModal({ member, companyId, availableRoles, onChanged, onClose }) {
+  const { t } = useLanguage();
   const [role, setRole] = useState(member.role === "owner" ? availableRoles[0] : member.role);
   const [saving, setSaving] = useState(false);
 
@@ -264,19 +287,19 @@ function ChangeRoleModal({ member, companyId, availableRoles, onChanged, onClose
   };
 
   return (
-    <Modal title="Cambiar rol" onClose={onClose} width={360}>
+    <Modal title={t("enterprise.settings.company.members.changeRoleModal.title")} onClose={onClose} width={360}>
       <div className="space-y-3">
         <p style={{ color: "var(--text-secondary)", fontSize: 12 }}>
-          Miembro: <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{member.full_name || member.username || member.email}</span>
-          <br />Rol actual: <RolePill role={member.role} />
+          {t("enterprise.settings.company.members.changeRoleModal.member")} <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{member.full_name || member.username || member.email}</span>
+          <br />{t("enterprise.settings.company.members.changeRoleModal.currentRole")} <RolePill role={member.role} />
         </p>
-        <FieldSelect label="Nuevo rol" value={role} onChange={setRole}>
+        <FieldSelect label={t("enterprise.settings.company.members.changeRoleModal.newRole")} value={role} onChange={setRole}>
           {availableRoles.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
         </FieldSelect>
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+          <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
           <button onClick={handleSave} disabled={saving} className="ank-btn-accent text-xs">
-            {saving ? "Guardando…" : "Guardar"}
+            {saving ? t("enterprise.settings.company.info.saving") : t("enterprise.settings.company.members.changeRoleModal.save")}
           </button>
         </div>
       </div>
@@ -285,12 +308,14 @@ function ChangeRoleModal({ member, companyId, availableRoles, onChanged, onClose
 }
 
 function MembersTab({ companyId }) {
+  const { t } = useLanguage();
   const { isPlatformAdmin, role: myRole } = useEnterprise();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("active");
   const [modal, setModal] = useState(null); // "add" | {type:"role",member}
   const [resendMsg, setResendMsg] = useState(null); // {type:"ok"|"error", text}
+  const STAGE_LABELS = useStageLabels();
 
   const canManage = ["owner", "admin"].includes(myRole) || isPlatformAdmin;
   const availableRoles = isPlatformAdmin ? PLATFORM_ROLES.filter((r) => r !== "owner") : ALL_ROLES;
@@ -307,20 +332,29 @@ function MembersTab({ companyId }) {
   useEffect(() => { load(); }, [load]);
 
   const handleRemove = async (member) => {
-    if (!confirm(`¿Dar de baja a ${member.full_name || member.email}?`)) return;
+    if (!confirm(t("enterprise.settings.company.members.confirmRemove", { name: member.full_name || member.email }))) return;
     try { await companyApi.removeMember(companyId, { membership_id: member.id }); load(); } catch {}
   };
 
   const handleResendWelcome = async (member) => {
     try {
       await companyApi.resendWelcome(companyId, { membership_id: member.id });
-      setResendMsg({ type: "ok", text: `Correo de bienvenida reenviado a ${member.full_name || member.email}.` });
+      setResendMsg({ type: "ok", text: t("enterprise.settings.company.members.welcomeResent", { name: member.full_name || member.email }) });
     } catch (err) {
-      setResendMsg({ type: "error", text: err?.response?.data?.membership_id || "No se pudo reenviar el correo." });
+      setResendMsg({ type: "error", text: err?.response?.data?.membership_id || t("enterprise.settings.company.members.resendError") });
     } finally {
       setTimeout(() => setResendMsg(null), 4000);
     }
   };
+
+  const columns = [
+    t("enterprise.settings.company.members.columns.name"),
+    t("enterprise.settings.company.members.columns.email"),
+    t("enterprise.settings.company.members.columns.role"),
+    t("enterprise.settings.company.members.columns.stage"),
+    t("enterprise.settings.company.members.columns.status"),
+    "",
+  ];
 
   return (
     <div className="space-y-4">
@@ -345,13 +379,13 @@ function MembersTab({ companyId }) {
       {/* Controls */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <FilterChip label="Activos" active={statusFilter === "active"} onClick={() => setStatusFilter("active")} />
-          <FilterChip label="Dados de baja" active={statusFilter === "removed"} onClick={() => setStatusFilter("removed")} />
-          <FilterChip label="Todos" active={statusFilter === "all"} onClick={() => setStatusFilter("all")} />
+          <FilterChip label={t("enterprise.settings.company.members.filters.active")} active={statusFilter === "active"} onClick={() => setStatusFilter("active")} />
+          <FilterChip label={t("enterprise.settings.company.members.filters.removed")} active={statusFilter === "removed"} onClick={() => setStatusFilter("removed")} />
+          <FilterChip label={t("enterprise.settings.company.members.filters.all")} active={statusFilter === "all"} onClick={() => setStatusFilter("all")} />
         </div>
         {canManage && (
           <button onClick={() => setModal("add")} className="ank-btn-accent text-xs">
-            <UserPlusIcon className="h-3.5 w-3.5" /> Agregar miembro
+            <UserPlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.members.addMember")}
           </button>
         )}
       </div>
@@ -363,15 +397,15 @@ function MembersTab({ companyId }) {
         </div>
       ) : members.length === 0 ? (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "40px 24px", textAlign: "center" }}>
-          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>No hay miembros con este filtro.</p>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>{t("enterprise.settings.company.members.empty")}</p>
         </div>
       ) : (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Nombre", "Email", "Rol", "Etapa", "Estado", ""].map((h) => (
-                  <th key={h} style={{ textAlign: "left", padding: "10px 14px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", letterSpacing: "0.06em", textTransform: "uppercase", background: "var(--bg-elevated)" }}>{h}</th>
+                {columns.map((h, i) => (
+                  <th key={i} style={{ textAlign: "left", padding: "10px 14px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", letterSpacing: "0.06em", textTransform: "uppercase", background: "var(--bg-elevated)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -385,16 +419,16 @@ function MembersTab({ companyId }) {
                   </td>
                   <td style={{ padding: "10px 14px", fontSize: 12, color: "var(--text-secondary)" }}>{m.email || "—"}</td>
                   <td style={{ padding: "10px 14px" }}><RolePill role={m.role} /></td>
-                  <td style={{ padding: "10px 14px", fontSize: 11, color: "var(--text-tertiary)", textTransform: "capitalize" }}>
-                    {m.employee_stage?.replace(/_/g, " ") || "—"}
+                  <td style={{ padding: "10px 14px", fontSize: 11, color: "var(--text-tertiary)" }}>
+                    {STAGE_LABELS[m.employee_stage] || "—"}
                   </td>
                   <td style={{ padding: "10px 14px" }}><StatusPill status={m.status} /></td>
                   <td style={{ padding: "10px 14px" }}>
                     {canManage && m.role !== "owner" && (
                       <DotMenu items={[
-                        { label: "Cambiar rol", action: () => setModal({ type: "role", member: m }) },
-                        ...(m.status === "active" ? [{ label: "Reenviar bienvenida", action: () => handleResendWelcome(m) }] : []),
-                        ...(m.status !== "removed" ? [{ label: "Dar de baja", danger: true, action: () => handleRemove(m) }] : []),
+                        { label: t("enterprise.settings.company.members.menu.changeRole"), action: () => setModal({ type: "role", member: m }) },
+                        ...(m.status === "active" ? [{ label: t("enterprise.settings.company.members.menu.resendWelcome"), action: () => handleResendWelcome(m) }] : []),
+                        ...(m.status !== "removed" ? [{ label: t("enterprise.settings.company.members.menu.remove"), danger: true, action: () => handleRemove(m) }] : []),
                       ]} />
                     )}
                   </td>
@@ -404,7 +438,7 @@ function MembersTab({ companyId }) {
           </table>
         </div>
       )}
-      {!loading && <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{members.length} miembro{members.length !== 1 ? "s" : ""}</p>}
+      {!loading && <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.settings.company.members.count", { count: members.length, plural: members.length !== 1 ? "s" : "" })}</p>}
     </div>
   );
 }
@@ -414,6 +448,7 @@ function MembersTab({ companyId }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function BUModal({ companyId, bu, members, onSaved, onClose }) {
+  const { t } = useLanguage();
   const editing = !!bu;
   const [form, setForm] = useState({ name: bu?.name || "", code: bu?.code || "", description: bu?.description || "", manager: bu?.manager || "" });
   const [saving, setSaving] = useState(false);
@@ -431,29 +466,29 @@ function BUModal({ companyId, bu, members, onSaved, onClose }) {
       onSaved();
       onClose();
     } catch (err) {
-      setError(err?.code?.[0] || err?.name?.[0] || err?.detail || "Error al guardar.");
+      setError(err?.code?.[0] || err?.name?.[0] || err?.detail || t("enterprise.settings.company.units.saveError"));
     } finally { setSaving(false); }
   };
 
   return (
-    <Modal title={editing ? "Editar Unidad de Negocio" : "Nueva Unidad de Negocio"} onClose={onClose}>
+    <Modal title={editing ? t("enterprise.settings.company.units.editModal.title") : t("enterprise.settings.company.units.editModal.newTitle")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <FieldInput label="Nombre" value={form.name} onChange={(e) => set("name")(e.target.value)} required />
-          <FieldInput label="Código" value={form.code} onChange={(e) => set("code")(e.target.value.toUpperCase())} placeholder="COM" required />
+          <FieldInput label={t("enterprise.settings.company.units.editModal.nameLabel")} value={form.name} onChange={(e) => set("name")(e.target.value)} required />
+          <FieldInput label={t("enterprise.settings.company.units.editModal.codeLabel")} value={form.code} onChange={(e) => set("code")(e.target.value.toUpperCase())} placeholder="COM" required />
         </div>
-        <FieldTextarea label="Descripción" value={form.description} onChange={(e) => set("description")(e.target.value)} />
-        <FieldSelect label="Manager (opcional)" value={form.manager} onChange={set("manager")}>
-          <option value="">Sin manager</option>
+        <FieldTextarea label={t("enterprise.settings.company.info.descriptionLabel")} value={form.description} onChange={(e) => set("description")(e.target.value)} />
+        <FieldSelect label={t("enterprise.settings.company.units.editModal.managerLabel")} value={form.manager} onChange={set("manager")}>
+          <option value="">{t("enterprise.settings.company.units.editModal.noManager")}</option>
           {members.filter((m) => m.status === "active").map((m) => (
             <option key={m.user} value={m.user}>{m.full_name || m.username} ({m.role})</option>
           ))}
         </FieldSelect>
         {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
           <button type="submit" disabled={saving} className="ank-btn-accent text-xs">
-            {saving ? "Guardando…" : editing ? "Guardar cambios" : "Crear"}
+            {saving ? t("enterprise.settings.company.info.saving") : editing ? t("enterprise.settings.company.info.save") : t("enterprise.settings.company.units.create")}
           </button>
         </div>
       </form>
@@ -462,6 +497,7 @@ function BUModal({ companyId, bu, members, onSaved, onClose }) {
 }
 
 function BusinessUnitsTab({ companyId }) {
+  const { t, language } = useLanguage();
   const { role: myRole, isPlatformAdmin } = useEnterprise();
   const [units, setUnits] = useState([]);
   const [members, setMembers] = useState([]);
@@ -481,7 +517,7 @@ function BusinessUnitsTab({ companyId }) {
   useEffect(() => { load(); }, [load]);
 
   const handleDelete = async (bu) => {
-    if (!confirm(`¿Eliminar la unidad "${bu.name}"?`)) return;
+    if (!confirm(t("enterprise.settings.company.units.confirmDelete", { name: bu.name }))) return;
     try { await businessUnitApi.remove(bu.id); load(); } catch {}
   };
 
@@ -491,10 +527,10 @@ function BusinessUnitsTab({ companyId }) {
         <BUModal companyId={companyId} bu={modal === "create" ? null : modal} members={members} onSaved={load} onClose={() => setModal(null)} />
       )}
       <div className="flex justify-between items-center">
-        <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{units.length} unidad{units.length !== 1 ? "es" : ""}</p>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.settings.company.units.count", { count: units.length, plural: units.length !== 1 ? (language === "es" ? "es" : "s") : "" })}</p>
         {canManage && (
           <button onClick={() => setModal("create")} className="ank-btn-accent text-xs">
-            <PlusIcon className="h-3.5 w-3.5" /> Nueva BU
+            <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.units.newUnit")}
           </button>
         )}
       </div>
@@ -506,10 +542,10 @@ function BusinessUnitsTab({ companyId }) {
       ) : units.length === 0 ? (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "36px 24px", textAlign: "center" }}>
           <BuildingOfficeIcon style={{ width: 24, height: 24, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
-          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Sin unidades de negocio aún.</p>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>{t("enterprise.settings.company.units.empty")}</p>
           {canManage && (
             <button onClick={() => setModal("create")} className="ank-btn-accent text-xs mt-3">
-              <PlusIcon className="h-3.5 w-3.5" /> Nueva BU
+              <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.units.newUnit")}
             </button>
           )}
         </div>
@@ -526,15 +562,15 @@ function BusinessUnitsTab({ companyId }) {
                 <div className="min-w-0">
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{bu.name}</p>
                   <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 1 }}>
-                    {bu.team_count ?? 0} equipo{bu.team_count !== 1 ? "s" : ""}
-                    {bu.manager_username ? ` · Manager: ${bu.manager_username}` : ""}
+                    {t("enterprise.settings.company.units.teamCount", { count: bu.team_count ?? 0, plural: bu.team_count !== 1 ? "s" : "" })}
+                    {bu.manager_username ? ` · ${t("enterprise.settings.company.units.managerSuffix", { name: bu.manager_username })}` : ""}
                   </p>
                 </div>
               </div>
               {canManage && (
                 <DotMenu items={[
-                  { label: "Editar", action: () => setModal(bu) },
-                  { label: "Eliminar", danger: true, action: () => handleDelete(bu) },
+                  { label: t("enterprise.settings.company.units.menu.edit"), action: () => setModal(bu) },
+                  { label: t("enterprise.settings.company.units.menu.delete"), danger: true, action: () => handleDelete(bu) },
                 ]} />
               )}
             </div>
@@ -550,6 +586,7 @@ function BusinessUnitsTab({ companyId }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function TeamModal({ companyId, team, members, units, onSaved, onClose }) {
+  const { t } = useLanguage();
   const editing = !!team;
   const [form, setForm] = useState({ name: team?.name || "", description: team?.description || "", business_unit: team?.business_unit || "", manager: team?.manager || "" });
   const [saving, setSaving] = useState(false);
@@ -567,30 +604,30 @@ function TeamModal({ companyId, team, members, units, onSaved, onClose }) {
       onSaved();
       onClose();
     } catch (err) {
-      setError(err?.name?.[0] || err?.detail || "Error al guardar.");
+      setError(err?.name?.[0] || err?.detail || t("enterprise.settings.company.units.saveError"));
     } finally { setSaving(false); }
   };
 
   return (
-    <Modal title={editing ? "Editar Equipo" : "Nuevo Equipo"} onClose={onClose}>
+    <Modal title={editing ? t("enterprise.settings.company.teams.editModal.title") : t("enterprise.settings.company.teams.editModal.newTitle")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <FieldInput label="Nombre" value={form.name} onChange={(e) => set("name")(e.target.value)} required />
-        <FieldSelect label="Unidad de negocio (opcional)" value={form.business_unit} onChange={set("business_unit")}>
-          <option value="">Sin unidad</option>
+        <FieldInput label={t("enterprise.settings.company.units.editModal.nameLabel")} value={form.name} onChange={(e) => set("name")(e.target.value)} required />
+        <FieldSelect label={t("enterprise.settings.company.teams.editModal.buLabel")} value={form.business_unit} onChange={set("business_unit")}>
+          <option value="">{t("enterprise.settings.company.teams.editModal.noUnit")}</option>
           {units.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.code})</option>)}
         </FieldSelect>
-        <FieldSelect label="Manager (opcional)" value={form.manager} onChange={set("manager")}>
-          <option value="">Sin manager</option>
+        <FieldSelect label={t("enterprise.settings.company.units.editModal.managerLabel")} value={form.manager} onChange={set("manager")}>
+          <option value="">{t("enterprise.settings.company.units.editModal.noManager")}</option>
           {members.filter((m) => m.status === "active").map((m) => (
             <option key={m.user} value={m.user}>{m.full_name || m.username} ({m.role})</option>
           ))}
         </FieldSelect>
-        <FieldTextarea label="Descripción" value={form.description} onChange={(e) => set("description")(e.target.value)} />
+        <FieldTextarea label={t("enterprise.settings.company.info.descriptionLabel")} value={form.description} onChange={(e) => set("description")(e.target.value)} />
         {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+          <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
           <button type="submit" disabled={saving} className="ank-btn-accent text-xs">
-            {saving ? "Guardando…" : editing ? "Guardar" : "Crear equipo"}
+            {saving ? t("enterprise.settings.company.info.saving") : editing ? t("enterprise.settings.company.members.changeRoleModal.save") : t("enterprise.settings.company.teams.createTeam")}
           </button>
         </div>
       </form>
@@ -599,6 +636,7 @@ function TeamModal({ companyId, team, members, units, onSaved, onClose }) {
 }
 
 function AddTeamMemberModal({ team, companyMembers, currentMemberIds, onAdded, onClose }) {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [role, setRole] = useState("member");
@@ -618,21 +656,21 @@ function AddTeamMemberModal({ team, companyMembers, currentMemberIds, onAdded, o
       onAdded();
       onClose();
     } catch (err) {
-      setError(err?.detail || err?.non_field_errors?.[0] || "Error al agregar miembro.");
+      setError(err?.detail || err?.non_field_errors?.[0] || t("enterprise.settings.company.teams.addMemberError"));
     } finally { setSaving(false); }
   };
 
   return (
-    <Modal title={`Agregar a ${team.name}`} onClose={onClose}>
+    <Modal title={t("enterprise.settings.company.teams.addMemberModal.title", { name: team.name })} onClose={onClose}>
       <div className="space-y-3">
-        <input placeholder="Buscar miembro de la empresa…" value={search} onChange={(e) => setSearch(e.target.value)}
+        <input placeholder={t("enterprise.settings.company.teams.addMemberModal.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 11px", color: "var(--text-primary)", fontSize: 12, outline: "none" }}
           onFocus={(e) => { e.target.style.borderColor = "var(--accent)"; }}
           onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }} />
         <div style={{ maxHeight: 200, overflowY: "auto" }} className="space-y-1">
           {available.length === 0 ? (
             <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>
-              Sin miembros disponibles.
+              {t("enterprise.settings.company.teams.addMemberModal.noneAvailable")}
             </p>
           ) : available.map((m) => (
             <button key={m.user} type="button" onClick={() => setSelectedUser(selectedUser?.user === m.user ? null : m)}
@@ -651,16 +689,16 @@ function AddTeamMemberModal({ team, companyMembers, currentMemberIds, onAdded, o
           ))}
         </div>
         {selectedUser && (
-          <FieldSelect label="Rol en el equipo" value={role} onChange={setRole}>
+          <FieldSelect label={t("enterprise.settings.company.teams.addMemberModal.teamRole")} value={role} onChange={setRole}>
             <option value="member">Member</option>
             <option value="manager">Manager</option>
           </FieldSelect>
         )}
         {error && <p style={{ color: "#f87171", fontSize: 12 }}>{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+          <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
           <button onClick={handleAdd} disabled={!selectedUser || saving} className="ank-btn-accent text-xs" style={{ opacity: !selectedUser || saving ? 0.6 : 1 }}>
-            {saving ? "Agregando…" : "Agregar"}
+            {saving ? t("enterprise.settings.company.members.adding") : t("enterprise.settings.company.members.add")}
           </button>
         </div>
       </div>
@@ -669,6 +707,7 @@ function AddTeamMemberModal({ team, companyMembers, currentMemberIds, onAdded, o
 }
 
 function TeamMembersPanel({ team, companyMembers, onClose }) {
+  const { t } = useLanguage();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -699,10 +738,10 @@ function TeamMembersPanel({ team, companyMembers, onClose }) {
       )}
       <div className="flex items-center justify-between mb-3">
         <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Miembros ({members.length})
+          {t("enterprise.settings.company.teams.membersHeading", { count: members.length })}
         </p>
         <button onClick={() => setShowAdd(true)} className="ank-btn-ghost text-xs">
-          <PlusIcon className="h-3 w-3" /> Agregar
+          <PlusIcon className="h-3 w-3" /> {t("enterprise.settings.company.members.add")}
         </button>
       </div>
       {loading ? (
@@ -710,7 +749,7 @@ function TeamMembersPanel({ team, companyMembers, onClose }) {
           {[1, 2].map((i) => <div key={i} style={{ height: 34, background: "var(--bg-surface)", borderRadius: 5 }} className="animate-pulse" />)}
         </div>
       ) : members.length === 0 ? (
-        <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "10px 0" }}>Sin miembros aún.</p>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "10px 0" }}>{t("enterprise.settings.company.teams.noMembersYet")}</p>
       ) : (
         <div className="space-y-1.5">
           {members.map((m) => (
@@ -740,6 +779,7 @@ function TeamMembersPanel({ team, companyMembers, onClose }) {
 }
 
 function TeamsTab({ companyId }) {
+  const { t } = useLanguage();
   const { role: myRole, isPlatformAdmin } = useEnterprise();
   const [teams, setTeams] = useState([]);
   const [companyMembers, setCompanyMembers] = useState([]);
@@ -757,17 +797,17 @@ function TeamsTab({ companyId }) {
       teamsApi.list({ company_id: companyId }).then((d) => d.results || d || []),
       companyApi.getMembers(companyId, { status: "active" }).then((d) => d.results || d || []),
       businessUnitApi.list({ company_id: companyId }).then((d) => d.results || d || []),
-    ]).then(([t, m, u]) => { setTeams(t); setCompanyMembers(m); setUnits(u); }).catch(() => {}).finally(() => setLoading(false));
+    ]).then(([tms, m, u]) => { setTeams(tms); setCompanyMembers(m); setUnits(u); }).catch(() => {}).finally(() => setLoading(false));
   }, [companyId]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleDelete = async (team) => {
-    if (!confirm(`¿Eliminar el equipo "${team.name}"?`)) return;
+    if (!confirm(t("enterprise.settings.company.teams.confirmDelete", { name: team.name }))) return;
     try { await teamsApi.remove(team.id); load(); } catch {}
   };
 
-  const filtered = buFilter ? teams.filter((t) => String(t.business_unit) === buFilter) : teams;
+  const filtered = buFilter ? teams.filter((tm) => String(tm.business_unit) === buFilter) : teams;
 
   return (
     <div className="space-y-4">
@@ -779,14 +819,14 @@ function TeamsTab({ companyId }) {
       {/* Controls */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <FilterChip label="Todos" active={buFilter === ""} onClick={() => setBuFilter("")} />
+          <FilterChip label={t("enterprise.settings.company.members.filters.all")} active={buFilter === ""} onClick={() => setBuFilter("")} />
           {units.map((u) => (
             <FilterChip key={u.id} label={u.name} active={buFilter === String(u.id)} onClick={() => setBuFilter(String(u.id))} />
           ))}
         </div>
         {canManage && (
           <button onClick={() => setModal("create")} className="ank-btn-accent text-xs">
-            <PlusIcon className="h-3.5 w-3.5" /> Nuevo Equipo
+            <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.teams.newTeam")}
           </button>
         )}
       </div>
@@ -798,10 +838,10 @@ function TeamsTab({ companyId }) {
       ) : filtered.length === 0 ? (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "36px 24px", textAlign: "center" }}>
           <UsersIcon style={{ width: 24, height: 24, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
-          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>Sin equipos aún.</p>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>{t("enterprise.settings.company.teams.empty")}</p>
           {canManage && (
             <button onClick={() => setModal("create")} className="ank-btn-accent text-xs mt-3">
-              <PlusIcon className="h-3.5 w-3.5" /> Nuevo Equipo
+              <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.settings.company.teams.newTeam")}
             </button>
           )}
         </div>
@@ -817,9 +857,9 @@ function TeamsTab({ companyId }) {
                   <div className="min-w-0">
                     <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{team.name}</p>
                     <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 1 }}>
-                      {team.member_count ?? 0} miembro{team.member_count !== 1 ? "s" : ""}
-                      {team.business_unit_name ? ` · BU: ${team.business_unit_name}` : ""}
-                      {team.manager_username ? ` · Manager: ${team.manager_username}` : ""}
+                      {t("enterprise.settings.company.teams.memberCount", { count: team.member_count ?? 0, plural: team.member_count !== 1 ? "s" : "" })}
+                      {team.business_unit_name ? ` · ${t("enterprise.settings.company.teams.buSuffix", { name: team.business_unit_name })}` : ""}
+                      {team.manager_username ? ` · ${t("enterprise.settings.company.units.managerSuffix", { name: team.manager_username })}` : ""}
                     </p>
                   </div>
                 </div>
@@ -827,12 +867,12 @@ function TeamsTab({ companyId }) {
                   <button
                     onClick={() => setExpanded(expanded === team.id ? null : team.id)}
                     style={{ fontSize: 11, color: expanded === team.id ? "var(--accent)" : "var(--text-secondary)", padding: "4px 8px", borderRadius: 5, border: `1px solid ${expanded === team.id ? "var(--accent)" : "var(--border)"}`, cursor: "pointer", transition: "all 150ms" }}>
-                    {expanded === team.id ? "Ocultar" : "Miembros"}
+                    {expanded === team.id ? t("enterprise.settings.company.teams.hide") : t("enterprise.settings.company.teams.members")}
                   </button>
                   {canManage && (
                     <DotMenu items={[
-                      { label: "Editar", action: () => setModal(team) },
-                      { label: "Eliminar", danger: true, action: () => handleDelete(team) },
+                      { label: t("enterprise.settings.company.units.menu.edit"), action: () => setModal(team) },
+                      { label: t("enterprise.settings.company.units.menu.delete"), danger: true, action: () => handleDelete(team) },
                     ]} />
                   )}
                 </div>
@@ -844,7 +884,7 @@ function TeamsTab({ companyId }) {
           ))}
         </div>
       )}
-      {!loading && <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{filtered.length} equipo{filtered.length !== 1 ? "s" : ""}</p>}
+      {!loading && <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.settings.company.teams.count", { count: filtered.length, plural: filtered.length !== 1 ? "s" : "" })}</p>}
     </div>
   );
 }
@@ -854,6 +894,7 @@ function TeamsTab({ companyId }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function CompanySettings() {
+  const { t } = useLanguage();
   const { activeCompanyId, activeCompany, role: myRole, isPlatformAdmin } = useEnterprise();
   const [activeTab, setActiveTab] = useState("info");
   const [company, setCompany] = useState(null);
@@ -866,7 +907,7 @@ export function CompanySettings() {
   if (!activeCompanyId) {
     return (
       <div style={{ textAlign: "center", padding: "60px 24px" }}>
-        <p style={{ color: "var(--text-secondary)", fontWeight: 600 }}>Sin empresa seleccionada.</p>
+        <p style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{t("enterprise.settings.company.noCompanySelected")}</p>
       </div>
     );
   }
@@ -876,19 +917,19 @@ export function CompanySettings() {
   const canViewBU      = ["owner", "admin", "manager"].includes(myRole) || isPlatformAdmin;
 
   const tabs = [
-    { id: "info",    label: "Información" },
-    ...(canViewBU      ? [{ id: "units",   label: "Unidades de Negocio" }] : []),
-    ...(canViewTeams   ? [{ id: "teams",   label: "Equipos" }] : []),
-    ...(canViewMembers ? [{ id: "members", label: "Miembros" }] : []),
+    { id: "info",    label: t("enterprise.settings.company.tabs.info") },
+    ...(canViewBU      ? [{ id: "units",   label: t("enterprise.settings.company.tabs.units") }] : []),
+    ...(canViewTeams   ? [{ id: "teams",   label: t("enterprise.settings.company.tabs.teams") }] : []),
+    ...(canViewMembers ? [{ id: "members", label: t("enterprise.settings.company.tabs.members") }] : []),
   ];
 
   return (
     <div className="w-full space-y-5">
       {/* Header */}
       <div>
-        <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Configuración de Empresa</h1>
+        <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.settings.company.title")}</h1>
         <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-          {company?.name || activeCompany?.company_name || "Tu Empresa"} · ID: {activeCompanyId}
+          {company?.name || activeCompany?.company_name || t("enterprise.settings.company.yourCompany")} · ID: {activeCompanyId}
         </p>
       </div>
 

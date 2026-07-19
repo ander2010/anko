@@ -6,16 +6,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { learningApi, knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
 // ─── Status pills ─────────────────────────────────────────────────────────────
 
-const STATUS = {
-  draft:     { bg: "rgba(255,255,255,0.08)", text: "#8B8B9C",  label: "Draft" },
-  published: { bg: "rgba(74,222,128,0.12)",  text: "#4ade80",  label: "Published" },
-  archived:  { bg: "rgba(245,158,11,0.12)",  text: "#f59e0b",  label: "Archived" },
-};
+function useStatusMap() {
+  const { t } = useLanguage();
+  return {
+    draft:     { bg: "rgba(255,255,255,0.08)", text: "#8B8B9C",  label: t("enterprise.learning.paths.status.draft") },
+    published: { bg: "rgba(74,222,128,0.12)",  text: "#4ade80",  label: t("enterprise.learning.paths.status.published") },
+    archived:  { bg: "rgba(245,158,11,0.12)",  text: "#f59e0b",  label: t("enterprise.learning.paths.status.archived") },
+  };
+}
 
 function StatusPill({ status }) {
+  const STATUS = useStatusMap();
   const s = STATUS[status] || STATUS.draft;
   return (
     <span style={{ background: s.bg, color: s.text, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4 }}>
@@ -27,18 +32,19 @@ function StatusPill({ status }) {
 // ─── Wizard Step 1 ─────────────────────────────────────────────────────────────
 
 function WizardStep1({ form, onChange, onNext, onCancel }) {
+  const { t } = useLanguage();
   const [error, setError] = useState("");
   const handleNext = () => {
-    if (!form.name.trim()) { setError("El nombre es obligatorio."); return; }
+    if (!form.name.trim()) { setError(t("enterprise.learning.paths.wizard.nameRequired")); return; }
     setError(""); onNext();
   };
   return (
     <div className="space-y-4">
       <div>
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Nombre *</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{t("enterprise.learning.paths.wizard.name")} *</p>
         <input
           autoFocus
-          placeholder="ej. Onboarding Completo, Seguridad Industrial…"
+          placeholder={t("enterprise.learning.paths.wizard.namePlaceholder")}
           value={form.name}
           onChange={(e) => { onChange("name", e.target.value); setError(""); }}
           style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "9px 12px", color: "var(--text-primary)", fontSize: 13, outline: "none" }}
@@ -50,11 +56,11 @@ function WizardStep1({ form, onChange, onNext, onCancel }) {
       </div>
       <div>
         <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-          Descripción <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(opcional)</span>
+          {t("enterprise.learning.paths.wizard.description")} <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>({t("enterprise.learning.paths.wizard.optional")})</span>
         </p>
         <textarea
           rows={3}
-          placeholder="¿Qué incluye este Learning Path?"
+          placeholder={t("enterprise.learning.paths.wizard.descriptionPlaceholder")}
           value={form.description}
           onChange={(e) => onChange("description", e.target.value)}
           style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "9px 12px", color: "var(--text-primary)", fontSize: 13, outline: "none", resize: "vertical", lineHeight: 1.6 }}
@@ -63,9 +69,9 @@ function WizardStep1({ form, onChange, onNext, onCancel }) {
         />
       </div>
       <div className="flex justify-between gap-3 pt-1">
-        <button onClick={onCancel} className="ank-btn-ghost text-xs">Cancelar</button>
+        <button onClick={onCancel} className="ank-btn-ghost text-xs">{t("enterprise.learning.paths.wizard.cancel")}</button>
         <button onClick={handleNext} className="ank-btn-accent text-xs">
-          Siguiente <ArrowRightIcon className="h-3.5 w-3.5" />
+          {t("enterprise.learning.paths.wizard.next")} <ArrowRightIcon className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
@@ -79,9 +85,19 @@ const TYPE_COLORS = {
   tutorial:       { bg: "rgba(34,197,94,0.12)",  text: "#4ade80" },
   study_material: { bg: "rgba(245,158,11,0.12)", text: "#f59e0b" },
 };
-const TYPE_LABELS = { course: "Course", tutorial: "Tutorial", study_material: "Study Material" };
+
+function useTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    course: t("enterprise.learning.paths.types.course"),
+    tutorial: t("enterprise.learning.paths.types.tutorial"),
+    study_material: t("enterprise.learning.paths.types.studyMaterial"),
+  };
+}
 
 function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, onSubmit, saving, error }) {
+  const { t } = useLanguage();
+  const TYPE_LABELS = useTypeLabels();
   const [search, setSearch] = useState("");
 
   const filtered = sources.filter((s) =>
@@ -92,14 +108,14 @@ function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, o
     <div className="space-y-4">
       <div>
         <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 2 }}>
-          Selecciona Procesos a incluir
+          {t("enterprise.learning.paths.wizard.selectProcesses")}
         </p>
-        <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>Opcional — puedes agregarlos después también</p>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.learning.paths.wizard.selectProcessesHint")}</p>
       </div>
 
       {/* Search */}
       <input
-        placeholder="Buscar procesos…"
+        placeholder={t("enterprise.learning.paths.wizard.searchProcesses")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={{ width: "100%", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 6, padding: "8px 12px", color: "var(--text-primary)", fontSize: 12, outline: "none" }}
@@ -115,7 +131,7 @@ function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, o
           </div>
         ) : filtered.length === 0 ? (
           <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "20px 0" }}>
-            {sources.length === 0 ? "No hay procesos creados aún." : "Sin resultados."}
+            {sources.length === 0 ? t("enterprise.learning.paths.wizard.noProcessesYet") : t("enterprise.learning.paths.wizard.noResults")}
           </p>
         ) : (
           filtered.map((src) => {
@@ -155,7 +171,7 @@ function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, o
 
       {selectedIds.length > 0 && (
         <p style={{ color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>
-          {selectedIds.length} proceso{selectedIds.length !== 1 ? "s" : ""} seleccionado{selectedIds.length !== 1 ? "s" : ""}
+          {t("enterprise.learning.paths.wizard.selectedCount", { count: selectedIds.length, plural: selectedIds.length !== 1 ? "s" : "" })}
         </p>
       )}
 
@@ -167,10 +183,10 @@ function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, o
 
       <div className="flex justify-between gap-3 pt-1">
         <button onClick={onBack} className="ank-btn-ghost text-xs">
-          <ArrowLeftIcon className="h-3.5 w-3.5" /> Atrás
+          <ArrowLeftIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.paths.wizard.back")}
         </button>
         <button onClick={onSubmit} disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-          {saving ? "Creando…" : "Crear Learning Path"}
+          {saving ? t("enterprise.learning.paths.wizard.creating") : t("enterprise.learning.paths.wizard.createPath")}
           {!saving && <CheckIcon className="h-3.5 w-3.5" />}
         </button>
       </div>
@@ -181,6 +197,7 @@ function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, o
 // ─── Create Wizard Modal ───────────────────────────────────────────────────────
 
 function CreateWizard({ onCreated, onCancel }) {
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", description: "" });
@@ -210,13 +227,13 @@ function CreateWizard({ onCreated, onCancel }) {
       if (form.description.trim()) payload.description = form.description.trim();
       created = await learningApi.createPath(payload);
     } catch (err) {
-      setError(err?.detail || err?.name?.[0] || "No se pudo crear el Learning Path.");
+      setError(err?.detail || err?.name?.[0] || t("enterprise.learning.paths.wizard.createError"));
       setSaving(false);
       return;
     }
 
-    // Mismo mecanismo que "Agregar Proceso" en el detalle: cada Knowledge Source
-    // seleccionado se envuelve en su propio learning module y se agrega al path.
+    // Same mechanism as "Add Process" in the detail page: each selected
+    // Knowledge Source gets wrapped in its own learning module and linked in.
     if (selectedIds.length > 0) {
       const companyId = parseInt(localStorage.getItem("enterprise_company_id")) || null;
       let order = 1;
@@ -236,7 +253,7 @@ function CreateWizard({ onCreated, onCancel }) {
           await learningApi.addModule(created.id, { module_id: newModule.id, order });
           order += 1;
         } catch {
-          // Si uno falla, el path ya quedó creado — se puede agregar después con "Agregar Proceso".
+          // If one fails, the path already exists — it can be added later via "Add Process".
         }
       }
     }
@@ -263,7 +280,7 @@ function CreateWizard({ onCreated, onCancel }) {
             </React.Fragment>
           ))}
           <span style={{ color: "var(--text-tertiary)", fontSize: 11, marginLeft: 6 }}>
-            {step === 1 ? "Información básica" : "Seleccionar procesos"}
+            {step === 1 ? t("enterprise.learning.paths.wizard.basicInfo") : t("enterprise.learning.paths.wizard.selectProcessesStep")}
           </span>
         </div>
         <button onClick={onCancel} style={{ color: "var(--text-tertiary)", fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>
@@ -284,13 +301,15 @@ function CreateWizard({ onCreated, onCancel }) {
 // ─── Path Card ────────────────────────────────────────────────────────────────
 
 function PathCard({ path, onClick, onDelete }) {
+  const { t } = useLanguage();
+  const STATUS = useStatusMap();
   const [deleting, setDeleting] = useState(false);
   const count = path.module_count ?? path.modules?.length ?? 0;
   const s = STATUS[path.status] || STATUS.draft;
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (!confirm(`¿Eliminar "${path.name}"? Los procesos no se borrarán.`)) return;
+    if (!confirm(t("enterprise.learning.paths.card.confirmDelete", { name: path.name }))) return;
     setDeleting(true);
     try { await learningApi.deletePath(path.id); onDelete(path.id); }
     catch { setDeleting(false); }
@@ -323,7 +342,7 @@ function PathCard({ path, onClick, onDelete }) {
             )}
             <div className="flex items-center gap-3 mt-2 flex-wrap">
               <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-                {count} proceso{count !== 1 ? "s" : ""}
+                {t("enterprise.learning.paths.card.processCount", { count, plural: count !== 1 ? "s" : "" })}
               </span>
               {path.estimated_duration_minutes && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11 }} className="flex items-center gap-1">
@@ -366,6 +385,7 @@ function FilterChip({ label, active, onClick }) {
 
 export function LearningPaths() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [paths, setPaths] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -395,13 +415,13 @@ export function LearningPaths() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Learning Paths</h1>
+          <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.learning.paths.title")}</h1>
           <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-            Secuencias ordenadas de Procesos para formación
+            {t("enterprise.learning.paths.subtitle")}
           </p>
         </div>
         <button onClick={() => setShowWizard(true)} className="ank-btn-accent text-xs">
-          <PlusIcon className="h-3.5 w-3.5" /> Nuevo Learning Path
+          <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.paths.newPath")}
         </button>
       </div>
 
@@ -413,10 +433,10 @@ export function LearningPaths() {
       {/* Filters */}
       {!showWizard && (
         <div className="flex items-center gap-2 flex-wrap">
-          <FilterChip label="Todos" active={statusFilter === ""} onClick={() => setStatusFilter("")} />
-          <FilterChip label="Draft" active={statusFilter === "draft"} onClick={() => setStatusFilter("draft")} />
-          <FilterChip label="Published" active={statusFilter === "published"} onClick={() => setStatusFilter("published")} />
-          <FilterChip label="Archived" active={statusFilter === "archived"} onClick={() => setStatusFilter("archived")} />
+          <FilterChip label={t("enterprise.learning.paths.filters.all")} active={statusFilter === ""} onClick={() => setStatusFilter("")} />
+          <FilterChip label={t("enterprise.learning.paths.status.draft")} active={statusFilter === "draft"} onClick={() => setStatusFilter("draft")} />
+          <FilterChip label={t("enterprise.learning.paths.status.published")} active={statusFilter === "published"} onClick={() => setStatusFilter("published")} />
+          <FilterChip label={t("enterprise.learning.paths.status.archived")} active={statusFilter === "archived"} onClick={() => setStatusFilter("archived")} />
         </div>
       )}
 
@@ -433,12 +453,12 @@ export function LearningPaths() {
           <div style={{ background: "var(--bg-elevated)", borderRadius: 10, padding: 14, marginBottom: 12 }}>
             <RectangleStackIcon style={{ width: 26, height: 26, color: "var(--text-tertiary)" }} />
           </div>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>Sin Learning Paths</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13 }}>{t("enterprise.learning.paths.empty")}</p>
           <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 4, maxWidth: 300, lineHeight: 1.6 }}>
-            Crea tu primer Learning Path para organizar tus Procesos en una secuencia de formación.
+            {t("enterprise.learning.paths.emptyMessage")}
           </p>
           <button onClick={() => setShowWizard(true)} className="ank-btn-accent text-xs mt-4">
-            <PlusIcon className="h-3.5 w-3.5" /> Nuevo Learning Path
+            <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.paths.newPath")}
           </button>
         </div>
       ) : (
@@ -453,7 +473,7 @@ export function LearningPaths() {
 
       {!loading && paths.length > 0 && (
         <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          {paths.length} learning path{paths.length !== 1 ? "s" : ""}
+          {t("enterprise.learning.paths.count", { count: paths.length, plural: paths.length !== 1 ? "s" : "" })}
         </p>
       )}
     </div>

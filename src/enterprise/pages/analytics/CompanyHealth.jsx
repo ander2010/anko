@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { analyticsApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { CompanyHealthScore } from "../../components/CompanyHealthScore";
 import { EmptyState } from "../../components/EmptyState";
 
@@ -11,6 +12,7 @@ const TIER_TONE = {
 };
 
 export function CompanyHealth() {
+  const { t } = useLanguage();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,15 +20,22 @@ export function CompanyHealth() {
     analyticsApi.companyHealth().then(setData).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const tiers = [
+    { label: t("enterprise.analytics.companyHealth.tiers.excellent"), tone: "green", current: data?.health_score >= 90 },
+    { label: t("enterprise.analytics.companyHealth.tiers.good"), tone: "blue", current: data?.health_score >= 70 && data?.health_score < 90 },
+    { label: t("enterprise.analytics.companyHealth.tiers.needsAttention"), tone: "amber", current: data?.health_score >= 50 && data?.health_score < 70 },
+    { label: t("enterprise.analytics.companyHealth.tiers.atRisk"), tone: "red", current: data?.health_score < 50 },
+  ];
+
   return (
     <div className="space-y-5">
-      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Company Health Score</h1>
+      <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.analytics.companyHealth.title")}</h1>
       {loading ? (
         <div style={{ padding: "80px 0" }} className="flex items-center justify-center">
           <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="animate-spin h-8 w-8 rounded-full border-2" />
         </div>
       ) : !data ? (
-        <EmptyState title="No health data available" />
+        <EmptyState title={t("enterprise.analytics.companyHealth.empty")} />
       ) : (
         <>
           <CompanyHealthScore
@@ -39,12 +48,7 @@ export function CompanyHealth() {
             }}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-            {[
-              { label: "90–100: Excellent", tone: "green", current: data.health_score >= 90 },
-              { label: "70–89: Good", tone: "blue", current: data.health_score >= 70 && data.health_score < 90 },
-              { label: "50–69: Needs Attention", tone: "amber", current: data.health_score >= 50 && data.health_score < 70 },
-              { label: "< 50: At Risk", tone: "red", current: data.health_score < 50 },
-            ].map((tier) => {
+            {tiers.map((tier) => {
               const c = TIER_TONE[tier.tone];
               return (
                 <div key={tier.label} style={{
@@ -54,7 +58,7 @@ export function CompanyHealth() {
                   border: `1px solid ${tier.current ? c.border : "var(--border)"}`,
                   fontWeight: tier.current ? 700 : 400,
                 }}>
-                  {tier.label} {tier.current && "← current"}
+                  {tier.label} {tier.current && t("enterprise.analytics.companyHealth.currentIndicator")}
                 </div>
               );
             })}

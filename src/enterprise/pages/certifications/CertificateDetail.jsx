@@ -6,6 +6,7 @@ import {
   ShieldCheckIcon, TicketIcon,
 } from "@heroicons/react/24/outline";
 import { certApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { StatusBadge } from "../../components/StatusBadge";
 import { EmptyState } from "../../components/EmptyState";
 
@@ -14,12 +15,12 @@ const GOLD = "#C9A227";
 const GOLD_LIGHT = "#E4C766";
 const CREAM = "#FBF7EC";
 
-function QRCode({ url }) {
+function QRCode({ url, alt }) {
   return (
     <div style={{ display: "inline-block", background: "#fff", padding: 8, borderRadius: 10, border: `1px solid ${GOLD}55` }}>
       <img
         src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`}
-        alt="Código QR de verificación"
+        alt={alt}
         crossOrigin="anonymous"
         style={{ width: 96, height: 96, display: "block" }}
       />
@@ -107,6 +108,7 @@ function StatPill({ icon, label, value, valueNode }) {
 
 export function CertificateDetail() {
   const { id } = useParams();
+  const { t } = useLanguage();
   const [cert, setCert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -134,9 +136,10 @@ export function CertificateDetail() {
       <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-8 h-8 border-2 rounded-full animate-spin" />
     </div>
   );
-  if (!cert) return <EmptyState title="Certificate not found" />;
+  if (!cert) return <EmptyState title={t("enterprise.certifications.detail.notFound")} />;
 
   const verifyUrl = `${window.location.origin}/verify/${cert.verification_code}`;
+  const defaultHeader = t("enterprise.certifications.detail.defaultHeader");
 
   return (
     <div className="w-full" style={{ maxWidth: 720, margin: "0 auto" }}>
@@ -146,7 +149,7 @@ export function CertificateDetail() {
 
       <div className="flex justify-end mb-4">
         <button onClick={handleDownloadImage} disabled={downloading} className="ank-btn-ghost text-xs" style={{ opacity: downloading ? 0.7 : 1 }}>
-          <ArrowDownTrayIcon className="h-3.5 w-3.5" /> {downloading ? "Generando..." : "Descargar certificado"}
+          <ArrowDownTrayIcon className="h-3.5 w-3.5" /> {downloading ? t("enterprise.certifications.detail.generating") : t("enterprise.certifications.detail.download")}
         </button>
       </div>
 
@@ -173,17 +176,17 @@ export function CertificateDetail() {
           {/* Body */}
           <div style={{ padding: "18px 40px 32px", textAlign: "center" }}>
             <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 42, fontWeight: 800, color: NAVY, letterSpacing: "0.03em", lineHeight: 1.1 }}>
-              {(cert.header_text || "Certificate of Achievement").split(" ")[0]}
+              {(cert.header_text || defaultHeader).split(" ")[0]}
             </h1>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 6 }}>
               <span style={{ width: 46, height: 1, background: GOLD }} />
               <span style={{ fontSize: 14, fontWeight: 700, color: GOLD, letterSpacing: "0.2em", textTransform: "uppercase" }}>
-                {(cert.header_text || "Certificate of Achievement").split(" ").slice(1).join(" ") || "Of Achievement"}
+                {(cert.header_text || defaultHeader).split(" ").slice(1).join(" ") || t("enterprise.certifications.detail.ofAchievement")}
               </span>
               <span style={{ width: 46, height: 1, background: GOLD }} />
             </div>
 
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.14em", marginTop: 28 }}>This certifies that</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.14em", marginTop: 28 }}>{t("enterprise.certifications.detail.thisCertifies")}</p>
             <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 30, fontWeight: 800, color: NAVY, marginTop: 8 }}>{cert.holder_name}</h2>
             <div style={{ width: 130, height: 2, background: GOLD, margin: "10px auto 0" }} />
 
@@ -197,29 +200,29 @@ export function CertificateDetail() {
             <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 26 }}>
               <StatPill
                 icon={<CalendarIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
-                label="Issued"
+                label={t("enterprise.certifications.detail.stats.issued")}
                 value={cert.issued_at ? new Date(cert.issued_at).toLocaleDateString() : "—"}
               />
               <StatPill
                 icon={<CalendarIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
-                label="Expires"
-                value={cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : "No expiry"}
+                label={t("enterprise.certifications.detail.stats.expires")}
+                value={cert.expires_at ? new Date(cert.expires_at).toLocaleDateString() : t("enterprise.certifications.myCertifications.noExpiry")}
               />
               {cert.score != null && (
                 <StatPill
                   icon={<ShieldCheckIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
-                  label="Score"
+                  label={t("enterprise.certifications.detail.stats.score")}
                   value={`${cert.score}%`}
                 />
               )}
               <StatPill
                 icon={<ShieldCheckIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
-                label="Status"
+                label={t("enterprise.certifications.detail.stats.status")}
                 valueNode={<StatusBadge status={cert.status} />}
               />
               <StatPill
                 icon={<TicketIcon style={{ width: 13, height: 13, color: GOLD_LIGHT }} />}
-                label="Verification Code"
+                label={t("enterprise.certifications.detail.stats.verificationCode")}
                 value={cert.verification_code}
               />
             </div>
@@ -230,15 +233,15 @@ export function CertificateDetail() {
                 <Signature />
                 <div style={{ width: 110, borderTop: `1px solid ${NAVY}66`, marginTop: 2, paddingTop: 6 }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: NAVY }}>{cert.company_name}</p>
-                  <p style={{ fontSize: 10, color: "#8A8365" }}>Authorized Signature</p>
+                  <p style={{ fontSize: 10, color: "#8A8365" }}>{t("enterprise.certifications.detail.authorizedSignature")}</p>
                 </div>
               </div>
 
               <MedalSeal />
 
               <div style={{ textAlign: "center" }}>
-                <QRCode url={verifyUrl} />
-                <p style={{ fontSize: 9.5, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 6 }}>Scan to verify</p>
+                <QRCode url={verifyUrl} alt={t("enterprise.certifications.detail.qrAlt")} />
+                <p style={{ fontSize: 9.5, fontWeight: 700, color: "#8A8365", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 6 }}>{t("enterprise.certifications.detail.scanToVerify")}</p>
               </div>
             </div>
 

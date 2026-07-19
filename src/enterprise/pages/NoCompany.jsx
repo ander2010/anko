@@ -2,9 +2,11 @@ import React from "react";
 import { Typography, Button } from "@material-tailwind/react";
 import { BuildingOffice2Icon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "../../context/language-context";
 
 export function NoCompany() {
   const { logout } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
@@ -15,21 +17,19 @@ export function NoCompany() {
 
         <div className="space-y-2">
           <Typography variant="h4" className="font-extrabold text-zinc-900">
-            Bienvenido a Ankard Enterprise
+            {t("enterprise.noCompany.welcome")}
           </Typography>
           <Typography className="text-zinc-500 leading-relaxed">
-            Tu cuenta está lista, pero aún no perteneces a ninguna empresa.
+            {t("enterprise.noCompany.notYetInCompany")}
           </Typography>
           <Typography variant="small" className="text-zinc-400 leading-relaxed">
-            Contacta al administrador de tu empresa para que te agregue a la plataforma.
-            Una vez que lo hagan, podrás entrar inmediatamente con tu cuenta actual.
+            {t("enterprise.noCompany.contactAdmin")}
           </Typography>
         </div>
 
         <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
           <Typography variant="small" className="text-indigo-700">
-            <strong>¿Eres administrador?</strong> Inicia sesión con tu cuenta de staff para
-            gestionar empresas y usuarios.
+            <strong>{t("enterprise.noCompany.areYouAdmin")}</strong> {t("enterprise.noCompany.staffLoginHint")}
           </Typography>
         </div>
 
@@ -40,7 +40,7 @@ export function NoCompany() {
           className="normal-case"
           onClick={logout}
         >
-          Cerrar sesión
+          {t("enterprise.noCompany.logout")}
         </Button>
       </div>
     </div>

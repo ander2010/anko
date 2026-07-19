@@ -4,16 +4,31 @@ import {
   ArrowLeftIcon, UserPlusIcon, EllipsisHorizontalIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { companyApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 
 const ROLES = ["owner", "admin", "manager", "trainer", "employee", "auditor"];
-const STAGES = [
-  { value: "candidate",       label: "Candidato" },
-  { value: "onboarding",      label: "Onboarding" },
-  { value: "trainee",         label: "Aprendiz" },
-  { value: "active_employee", label: "Empleado activo" },
-  { value: "contractor",      label: "Contratista" },
-  { value: "former_employee", label: "Ex-empleado" },
-];
+
+function useStages() {
+  const { t } = useLanguage();
+  return [
+    { value: "candidate",       label: t("enterprise.settings.company.stages.candidate") },
+    { value: "onboarding",      label: t("enterprise.settings.company.stages.onboarding") },
+    { value: "trainee",         label: t("enterprise.settings.company.stages.trainee") },
+    { value: "active_employee", label: t("enterprise.settings.company.stages.activeEmployee") },
+    { value: "contractor",      label: t("enterprise.settings.company.stages.contractor") },
+    { value: "former_employee", label: t("enterprise.settings.company.stages.formerEmployee") },
+  ];
+}
+
+function useStatusLabels() {
+  const { t } = useLanguage();
+  return {
+    active: t("enterprise.settings.company.status.active"),
+    invited: t("enterprise.platformAdmin.users.status.invited"),
+    suspended: t("enterprise.settings.company.status.suspended"),
+    removed: t("enterprise.settings.company.status.removed"),
+  };
+}
 
 /* ── Design tokens ── */
 const INPUT_S = {
@@ -89,13 +104,15 @@ function DarkSelect({ value, onChange, children }) {
 
 /* ── Add User Modal ── */
 function AddUserModal({ companyId, onClose, onAdded }) {
+  const { t } = useLanguage();
+  const STAGES = useStages();
   const [form, setForm] = useState({ email: "", role: "employee", employee_stage: "onboarding" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email.trim()) { setError("El email es obligatorio."); return; }
+    if (!form.email.trim()) { setError(t("enterprise.platformAdmin.users.addModal.emailRequired")); return; }
     setSaving(true); setError("");
     try {
       const result = await companyApi.addUser(companyId, {
@@ -104,7 +121,7 @@ function AddUserModal({ companyId, onClose, onAdded }) {
       onAdded(result);
     } catch (err) {
       const d = err?.response?.data || err;
-      setError(d?.email?.[0] || d?.detail || d?.non_field_errors?.[0] || "No se pudo agregar el usuario.");
+      setError(d?.email?.[0] || d?.detail || d?.non_field_errors?.[0] || t("enterprise.platformAdmin.users.addModal.addError"));
     } finally { setSaving(false); }
   };
 
@@ -112,7 +129,7 @@ function AddUserModal({ companyId, onClose, onAdded }) {
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Agregar usuario</p>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>{t("enterprise.settings.company.members.addModal.title")}</p>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
@@ -126,19 +143,19 @@ function AddUserModal({ companyId, onClose, onAdded }) {
             <input type="email" style={INPUT_S} placeholder="usuario@empresa.com" value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })} required onFocus={focusIn} onBlur={focusOut} />
             <p style={{ fontSize: 11, color: "#64748B", marginTop: 6, lineHeight: 1.55 }}>
-              Si el usuario no tiene cuenta, se creará automáticamente. Recomiéndale usar "Olvidé mi contraseña" para activar su acceso.
+              {t("enterprise.platformAdmin.users.addModal.hint")}
             </p>
           </div>
 
           <div>
-            <label style={LABEL_S}>Rol *</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.users.addModal.roleLabel")}</label>
             <DarkSelect value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
               {ROLES.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
             </DarkSelect>
           </div>
 
           <div>
-            <label style={LABEL_S}>Etapa del empleado *</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.users.addModal.stageLabel")}</label>
             <DarkSelect value={form.employee_stage} onChange={(e) => setForm({ ...form, employee_stage: e.target.value })}>
               {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </DarkSelect>
@@ -155,10 +172,10 @@ function AddUserModal({ companyId, onClose, onAdded }) {
               style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
-              Cancelar
+              {t("enterprise.compliance.programs.cancel")}
             </button>
             <PrimaryBtn type="submit" loading={saving}>
-              {saving ? <><Spin /> Agregando...</> : <><UserPlusIcon style={{ width: 15, height: 15 }} /> Agregar →</>}
+              {saving ? <><Spin /> {t("enterprise.settings.company.members.adding")}</> : <><UserPlusIcon style={{ width: 15, height: 15 }} /> {t("enterprise.platformAdmin.users.addModal.addArrow")}</>}
             </PrimaryBtn>
           </div>
         </form>
@@ -169,6 +186,7 @@ function AddUserModal({ companyId, onClose, onAdded }) {
 
 /* ── Change Role Modal ── */
 function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
+  const { t } = useLanguage();
   const [role, setRole] = useState(member.role);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -179,7 +197,7 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
       await companyApi.changeMemberRole(companyId, { membership_id: member.id, role });
       onSaved(member.id, role);
     } catch (err) {
-      setError(err?.detail || "No se pudo cambiar el rol.");
+      setError(err?.detail || t("enterprise.platformAdmin.users.changeRoleModal.error"));
     } finally { setSaving(false); }
   };
 
@@ -187,7 +205,7 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={{ ...MODAL_CARD, maxWidth: 360 }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Cambiar rol</p>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>{t("enterprise.settings.company.members.changeRoleModal.title")}</p>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
@@ -196,10 +214,10 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
         </div>
         <form onSubmit={handleSave} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <p style={{ fontSize: 13, color: "#94A3B8" }}>
-            Usuario: <strong style={{ color: "#F1F5F9" }}>{member.full_name || member.email}</strong>
+            {t("enterprise.platformAdmin.users.changeRoleModal.user")} <strong style={{ color: "#F1F5F9" }}>{member.full_name || member.email}</strong>
           </p>
           <div>
-            <label style={LABEL_S}>Nuevo rol</label>
+            <label style={LABEL_S}>{t("enterprise.settings.company.members.changeRoleModal.newRole")}</label>
             <DarkSelect value={role} onChange={(e) => setRole(e.target.value)}>
               {ROLES.map((r) => <option key={r} value={r} style={{ textTransform: "capitalize" }}>{r}</option>)}
             </DarkSelect>
@@ -212,10 +230,10 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
               style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
-              Cancelar
+              {t("enterprise.compliance.programs.cancel")}
             </button>
             <PrimaryBtn type="submit" loading={saving}>
-              {saving ? <><Spin /> Guardando...</> : "Guardar"}
+              {saving ? <><Spin /> {t("enterprise.settings.company.info.saving")}</> : t("enterprise.settings.company.members.changeRoleModal.save")}
             </PrimaryBtn>
           </div>
         </form>
@@ -226,6 +244,7 @@ function ChangeRoleModal({ member, onClose, onSaved, companyId }) {
 
 /* ── Main Component ── */
 export function PlatformAdminUsers() {
+  const { t } = useLanguage();
   const { id: companyId } = useParams();
   const navigate = useNavigate();
   const [company, setCompany] = useState(null);
@@ -237,6 +256,8 @@ export function PlatformAdminUsers() {
   const [menuOpen, setMenuOpen] = useState(null);
   const [acting, setActing] = useState(false);
   const [toast, setToast] = useState("");
+  const STAGES = useStages();
+  const STATUS_LABELS = useStatusLabels();
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
 
@@ -253,28 +274,37 @@ export function PlatformAdminUsers() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleAdded = () => { setShowAdd(false); showToast("✓ Usuario agregado. Ya tiene acceso a la empresa."); load(); };
+  const handleAdded = () => { setShowAdd(false); showToast(t("enterprise.platformAdmin.users.toast.added")); load(); };
 
   const handleRoleSaved = (memberId, newRole) => {
     setMembers((prev) => prev.map((m) => m.id === memberId ? { ...m, role: newRole } : m));
     setChangeRole(null);
-    showToast("Rol actualizado.");
+    showToast(t("enterprise.platformAdmin.users.toast.roleUpdated"));
   };
 
   const handleRemove = async (member) => {
-    if (!window.confirm(`¿Dar de baja a ${member.full_name || member.email}?`)) return;
+    if (!window.confirm(t("enterprise.settings.company.members.confirmRemove", { name: member.full_name || member.email }))) return;
     setActing(true);
     try {
       await companyApi.removeMember(companyId, { membership_id: member.id });
       setMembers((prev) => prev.filter((m) => m.id !== member.id));
-      showToast("Miembro dado de baja.");
+      showToast(t("enterprise.platformAdmin.users.toast.removed"));
     } catch (err) {
-      showToast(err?.detail || "No se pudo dar de baja.");
+      showToast(err?.detail || t("enterprise.platformAdmin.users.toast.removeError"));
     } finally { setActing(false); setMenuOpen(null); }
   };
 
   const roleStyle = (r) => ROLE_STYLES[r] || ROLE_STYLES.employee;
   const statusStyle = (s) => STATUS_STYLES[s] || STATUS_STYLES.removed;
+
+  const columns = [
+    t("enterprise.settings.company.members.columns.name"),
+    t("enterprise.settings.company.members.columns.email"),
+    t("enterprise.settings.company.members.columns.role"),
+    t("enterprise.settings.company.members.columns.stage"),
+    t("enterprise.settings.company.members.columns.status"),
+    "",
+  ];
 
   return (
     <div style={{ maxWidth: 900 }}>
@@ -294,7 +324,7 @@ export function PlatformAdminUsers() {
           style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#475569", background: "none", border: "none", cursor: "pointer", marginBottom: 16, padding: 0, transition: "color 0.15s" }}
           onMouseEnter={(e) => e.currentTarget.style.color = "#818CF8"}
           onMouseLeave={(e) => e.currentTarget.style.color = "#475569"}>
-          <ArrowLeftIcon style={{ width: 14, height: 14 }} /> Volver a empresas
+          <ArrowLeftIcon style={{ width: 14, height: 14 }} /> {t("enterprise.platformAdmin.users.backToCompanies")}
         </button>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
@@ -304,21 +334,21 @@ export function PlatformAdminUsers() {
               </span>
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.02em", marginBottom: 4 }}>
-              {company?.name || `Empresa #${companyId}`} — Usuarios
+              {t("enterprise.platformAdmin.users.title", { name: company?.name || t("enterprise.platformAdmin.users.companyFallback", { id: companyId }) })}
             </h1>
             <p style={{ fontSize: 13, color: "#64748B" }}>
-              {members.length} miembro{members.length !== 1 ? "s" : ""} {statusFilter !== "all" ? `(${statusFilter})` : ""}
+              {t("enterprise.settings.company.members.count", { count: members.length, plural: members.length !== 1 ? "s" : "" })} {statusFilter !== "all" ? `(${STATUS_LABELS[statusFilter] || statusFilter})` : ""}
             </p>
           </div>
           <PrimaryBtn onClick={() => setShowAdd(true)}>
-            <UserPlusIcon style={{ width: 15, height: 15 }} /> Agregar usuario
+            <UserPlusIcon style={{ width: 15, height: 15 }} /> {t("enterprise.settings.company.members.addMember")}
           </PrimaryBtn>
         </div>
       </div>
 
       {/* Filter tabs */}
       <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: 4, width: "fit-content", marginBottom: 20 }}>
-        {[{ key: "active", label: "Activos" }, { key: "all", label: "Todos" }].map(({ key, label }) => (
+        {[{ key: "active", label: t("enterprise.settings.company.members.filters.active") }, { key: "all", label: t("enterprise.settings.company.members.filters.all") }].map(({ key, label }) => (
           <button key={key} onClick={() => setStatusFilter(key)}
             style={{
               padding: "7px 18px", borderRadius: 9, fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", transition: "all 0.15s",
@@ -344,16 +374,16 @@ export function PlatformAdminUsers() {
       ) : members.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 0" }}>
           <UserPlusIcon style={{ width: 48, height: 48, margin: "0 auto 12px", opacity: 0.3, color: "#64748B" }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: "#475569", marginBottom: 4 }}>No hay usuarios</p>
-          <p style={{ fontSize: 13, color: "#334155" }}>Agrega el primer usuario a esta empresa.</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: "#475569", marginBottom: 4 }}>{t("enterprise.platformAdmin.users.empty")}</p>
+          <p style={{ fontSize: 13, color: "#334155" }}>{t("enterprise.platformAdmin.users.emptyHint")}</p>
         </div>
       ) : (
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, overflow: "hidden" }}>
           <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}>
-                {["Nombre", "Email", "Rol", "Etapa", "Estado", ""].map((h) => (
-                  <th key={h} style={{ textAlign: "left", padding: "12px 16px", fontSize: 10, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</th>
+                {columns.map((h, i) => (
+                  <th key={i} style={{ textAlign: "left", padding: "12px 16px", fontSize: 10, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -372,12 +402,12 @@ export function PlatformAdminUsers() {
                       {m.role}
                     </span>
                   </td>
-                  <td style={{ padding: "13px 16px", color: "#64748B", fontSize: 12, textTransform: "capitalize" }}>
+                  <td style={{ padding: "13px 16px", color: "#64748B", fontSize: 12 }}>
                     {STAGES.find((s) => s.value === m.employee_stage)?.label || m.employee_stage || "—"}
                   </td>
                   <td style={{ padding: "13px 16px" }}>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 6, ...statusStyle(m.status) }}>
-                      {m.status}
+                      {STATUS_LABELS[m.status] || m.status}
                     </span>
                   </td>
                   <td style={{ padding: "13px 16px" }}>
@@ -396,7 +426,7 @@ export function PlatformAdminUsers() {
                             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#F1F5F9"; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94A3B8"; }}
                             onClick={() => { setChangeRole(m); setMenuOpen(null); }}>
-                            Cambiar rol
+                            {t("enterprise.settings.company.members.menu.changeRole")}
                           </button>
                           {m.role !== "owner" && (
                             <button
@@ -404,7 +434,7 @@ export function PlatformAdminUsers() {
                               onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.07)"}
                               onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                               onClick={() => handleRemove(m)}>
-                              Dar de baja
+                              {t("enterprise.settings.company.members.menu.remove")}
                             </button>
                           )}
                           <button
@@ -412,7 +442,7 @@ export function PlatformAdminUsers() {
                             onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
                             onMouseLeave={(e) => e.currentTarget.style.background = "none"}
                             onClick={() => setMenuOpen(null)}>
-                            Cerrar
+                            {t("enterprise.platformAdmin.users.close")}
                           </button>
                         </div>
                       )}

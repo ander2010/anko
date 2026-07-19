@@ -6,29 +6,33 @@ import {
 } from "@heroicons/react/24/outline";
 import { companyApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
-const INDUSTRIES = [
-  { value: "aviation",      label: "Aviation" },
-  { value: "healthcare",    label: "Healthcare" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "logistics",     label: "Logistics" },
-  { value: "technology",    label: "Technology" },
-  { value: "finance",       label: "Finance" },
-  { value: "education",     label: "Education" },
-  { value: "other",         label: "Other" },
-];
+function useIndustries() {
+  const { t } = useLanguage();
+  return [
+    { value: "aviation",      label: t("enterprise.platformAdmin.companies.industries.aviation") },
+    { value: "healthcare",    label: t("enterprise.platformAdmin.companies.industries.healthcare") },
+    { value: "manufacturing", label: t("enterprise.platformAdmin.companies.industries.manufacturing") },
+    { value: "logistics",     label: t("enterprise.platformAdmin.companies.industries.logistics") },
+    { value: "technology",    label: t("enterprise.platformAdmin.companies.industries.technology") },
+    { value: "finance",       label: t("enterprise.platformAdmin.companies.industries.finance") },
+    { value: "education",     label: t("enterprise.platformAdmin.companies.industries.education") },
+    { value: "other",         label: t("enterprise.platformAdmin.companies.industries.other") },
+  ];
+}
 
-const COMPANY_SIZES = [
-  { value: "1_10",      label: "1–10 empleados" },
-  { value: "11_50",     label: "11–50 empleados" },
-  { value: "51_200",    label: "51–200 empleados" },
-  { value: "201_500",   label: "201–500 empleados" },
-  { value: "501_1000",  label: "501–1,000 empleados" },
-  { value: "1000_plus", label: "1,000+ empleados" },
-];
-
-const SIZE_LABELS = Object.fromEntries(COMPANY_SIZES.map((s) => [s.value, s.label]));
-const INDUSTRY_LABELS = Object.fromEntries(INDUSTRIES.map((i) => [i.value, i.label]));
+function useCompanySizes() {
+  const { t } = useLanguage();
+  return [
+    { value: "1_10",      label: t("enterprise.platformAdmin.companies.sizes.s1_10") },
+    { value: "11_50",     label: t("enterprise.platformAdmin.companies.sizes.s11_50") },
+    { value: "51_200",    label: t("enterprise.platformAdmin.companies.sizes.s51_200") },
+    { value: "201_500",   label: t("enterprise.platformAdmin.companies.sizes.s201_500") },
+    { value: "501_1000",  label: t("enterprise.platformAdmin.companies.sizes.s501_1000") },
+    { value: "1000_plus", label: t("enterprise.platformAdmin.companies.sizes.s1000Plus") },
+  ];
+}
 
 function slugify(text) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -84,11 +88,12 @@ function Spin() {
 
 /* ── Active-company selector ── */
 function ActiveCompanyToggle({ active, onClick }) {
+  const { t } = useLanguage();
   return (
     <button
       type="button"
       onClick={onClick}
-      title={active ? "Empresa activa en el Dashboard de Enterprise" : "Operar como esta empresa"}
+      title={active ? t("enterprise.platformAdmin.companies.activeInDashboard") : t("enterprise.platformAdmin.companies.operateAsCompany")}
       style={{
         width: 20, height: 20, borderRadius: "50%", flexShrink: 0, padding: 0,
         border: `2px solid ${active ? "#818CF8" : "rgba(255,255,255,0.22)"}`,
@@ -116,6 +121,9 @@ function DarkSelect({ value, onChange, children }) {
 
 /* ── Create Company Modal ── */
 function CreateCompanyModal({ onClose, onCreate }) {
+  const { t } = useLanguage();
+  const INDUSTRIES = useIndustries();
+  const COMPANY_SIZES = useCompanySizes();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
@@ -130,7 +138,7 @@ function CreateCompanyModal({ onClose, onCreate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !slug.trim()) { setError("Nombre y slug son obligatorios."); return; }
+    if (!name.trim() || !slug.trim()) { setError(t("enterprise.platformAdmin.companies.createModal.nameSlugRequired")); return; }
     setSaving(true); setError("");
     try {
       const payload = {
@@ -142,7 +150,7 @@ function CreateCompanyModal({ onClose, onCreate }) {
       const created = await companyApi.createCompany(payload);
       onCreate(created);
     } catch (err) {
-      setError(err?.name?.[0] || err?.slug?.[0] || err?.detail || err?.non_field_errors?.[0] || "No se pudo crear la empresa.");
+      setError(err?.name?.[0] || err?.slug?.[0] || err?.detail || err?.non_field_errors?.[0] || t("enterprise.platformAdmin.companies.createModal.createError"));
     } finally { setSaving(false); }
   };
 
@@ -150,7 +158,7 @@ function CreateCompanyModal({ onClose, onCreate }) {
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Nueva Empresa</p>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>{t("enterprise.platformAdmin.companies.createModal.title")}</p>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
@@ -160,12 +168,12 @@ function CreateCompanyModal({ onClose, onCreate }) {
 
         <form onSubmit={handleSubmit} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={LABEL_S}>Nombre *</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.nameLabel")}</label>
             <input style={INPUT_S} placeholder="Acme Corp" value={name} onChange={(e) => handleNameChange(e.target.value)} required autoFocus onFocus={focusIn} onBlur={focusOut} />
           </div>
 
           <div>
-            <label style={LABEL_S}>Identificador único (slug) *</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.slugLabel")}</label>
             <div style={{ display: "flex", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, overflow: "hidden", background: "rgba(255,255,255,0.05)", transition: "border-color 0.2s, box-shadow 0.2s" }}
               onFocusCapture={(e) => { e.currentTarget.style.borderColor = "rgba(99,102,241,0.7)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.12)"; }}
               onBlurCapture={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.boxShadow = "none"; }}>
@@ -179,23 +187,23 @@ function CreateCompanyModal({ onClose, onCreate }) {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label style={LABEL_S}>Industria</label>
+              <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.industryLabel")}</label>
               <DarkSelect value={industry} onChange={(e) => setIndustry(e.target.value)}>
-                <option value="">Seleccionar...</option>
+                <option value="">{t("enterprise.platformAdmin.companies.createModal.selectPlaceholder")}</option>
                 {INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}
               </DarkSelect>
             </div>
             <div>
-              <label style={LABEL_S}>Tamaño</label>
+              <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.sizeLabel")}</label>
               <DarkSelect value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
-                <option value="">Seleccionar...</option>
+                <option value="">{t("enterprise.platformAdmin.companies.createModal.selectPlaceholder")}</option>
                 {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
               </DarkSelect>
             </div>
           </div>
 
           <div>
-            <label style={LABEL_S}>Sitio web</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.websiteLabel")}</label>
             <input type="url" style={INPUT_S} placeholder="https://acme.com" value={website} onChange={(e) => setWebsite(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
 
@@ -210,10 +218,10 @@ function CreateCompanyModal({ onClose, onCreate }) {
               style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
-              Cancelar
+              {t("enterprise.compliance.programs.cancel")}
             </button>
             <PrimaryBtn type="submit" disabled={saving} loading={saving}>
-              {saving ? <><Spin /> Creando...</> : "Crear empresa →"}
+              {saving ? <><Spin /> {t("enterprise.platformAdmin.companies.createModal.creating")}</> : t("enterprise.platformAdmin.companies.createModal.create")}
             </PrimaryBtn>
           </div>
         </form>
@@ -224,6 +232,9 @@ function CreateCompanyModal({ onClose, onCreate }) {
 
 /* ── Edit Company Modal ── */
 function EditCompanyModal({ company, onClose, onSaved }) {
+  const { t } = useLanguage();
+  const INDUSTRIES = useIndustries();
+  const COMPANY_SIZES = useCompanySizes();
   const [name, setName] = useState(company.name || "");
   const [website, setWebsite] = useState(company.website || "");
   const [industry, setIndustry] = useState(company.industry || "");
@@ -241,7 +252,7 @@ function EditCompanyModal({ company, onClose, onSaved }) {
       });
       onSaved(updated);
     } catch (err) {
-      setError(err?.detail || err?.name?.[0] || "No se pudo actualizar.");
+      setError(err?.detail || err?.name?.[0] || t("enterprise.platformAdmin.companies.editModal.updateError"));
     } finally { setSaving(false); }
   };
 
@@ -249,7 +260,7 @@ function EditCompanyModal({ company, onClose, onSaved }) {
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={MODAL_CARD} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>Editar empresa</p>
+          <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.01em" }}>{t("enterprise.platformAdmin.companies.editModal.title")}</p>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#475569", padding: 6, borderRadius: 8, display: "flex", transition: "color 0.15s, background 0.15s" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "#475569"; e.currentTarget.style.background = "none"; }}>
@@ -258,25 +269,25 @@ function EditCompanyModal({ company, onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit} style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={LABEL_S}>Nombre</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.nameLabelNoAsterisk")}</label>
             <input style={INPUT_S} value={name} onChange={(e) => setName(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
           <div>
-            <label style={LABEL_S}>Sitio web</label>
+            <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.websiteLabel")}</label>
             <input type="url" style={INPUT_S} placeholder="https://" value={website} onChange={(e) => setWebsite(e.target.value)} onFocus={focusIn} onBlur={focusOut} />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label style={LABEL_S}>Industria</label>
+              <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.industryLabel")}</label>
               <DarkSelect value={industry} onChange={(e) => setIndustry(e.target.value)}>
-                <option value="">Seleccionar...</option>
+                <option value="">{t("enterprise.platformAdmin.companies.createModal.selectPlaceholder")}</option>
                 {INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}
               </DarkSelect>
             </div>
             <div>
-              <label style={LABEL_S}>Tamaño</label>
+              <label style={LABEL_S}>{t("enterprise.platformAdmin.companies.createModal.sizeLabel")}</label>
               <DarkSelect value={companySize} onChange={(e) => setCompanySize(e.target.value)}>
-                <option value="">Seleccionar...</option>
+                <option value="">{t("enterprise.platformAdmin.companies.createModal.selectPlaceholder")}</option>
                 {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
               </DarkSelect>
             </div>
@@ -291,10 +302,10 @@ function EditCompanyModal({ company, onClose, onSaved }) {
               style={{ padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
-              Cancelar
+              {t("enterprise.compliance.programs.cancel")}
             </button>
             <PrimaryBtn type="submit" disabled={saving} loading={saving}>
-              {saving ? <><Spin /> Guardando...</> : "Guardar"}
+              {saving ? <><Spin /> {t("enterprise.settings.company.info.saving")}</> : t("enterprise.settings.company.members.changeRoleModal.save")}
             </PrimaryBtn>
           </div>
         </form>
@@ -305,6 +316,7 @@ function EditCompanyModal({ company, onClose, onSaved }) {
 
 /* ── Main Component ── */
 export function PlatformAdminCompanies() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { activeCompanyId, switchCompany } = useEnterprise();
   const [companies, setCompanies] = useState([]);
@@ -315,6 +327,8 @@ export function PlatformAdminCompanies() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState("");
+  const INDUSTRY_LABELS_MAP = Object.fromEntries(useIndustries().map((i) => [i.value, i.label]));
+  const SIZE_LABELS_MAP = Object.fromEntries(useCompanySizes().map((s) => [s.value, s.label]));
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
 
@@ -330,7 +344,7 @@ export function PlatformAdminCompanies() {
 
   const handleCreated = (company) => {
     setShowCreate(false);
-    showToast(`✓ "${company.name}" creada exitosamente.`);
+    showToast(t("enterprise.platformAdmin.companies.toast.created", { name: company.name }));
     load();
     navigate(`/platform-admin/companies/${company.id}/users`);
   };
@@ -338,7 +352,7 @@ export function PlatformAdminCompanies() {
   const handleSaved = (updated) => {
     setCompanies((prev) => prev.map((c) => c.id === updated.id ? updated : c));
     setEditTarget(null);
-    showToast("Empresa actualizada.");
+    showToast(t("enterprise.platformAdmin.companies.toast.updated"));
   };
 
   const handleDelete = async () => {
@@ -348,9 +362,9 @@ export function PlatformAdminCompanies() {
       await companyApi.deleteCompany(deleteTarget.id);
       setCompanies((prev) => prev.filter((c) => c.id !== deleteTarget.id));
       setDeleteTarget(null);
-      showToast("Empresa eliminada.");
+      showToast(t("enterprise.platformAdmin.companies.toast.deleted"));
     } catch (err) {
-      showToast(err?.detail || "No se pudo eliminar.");
+      showToast(err?.detail || t("enterprise.platformAdmin.companies.toast.deleteError"));
     } finally { setDeleting(false); }
   };
 
@@ -375,20 +389,20 @@ export function PlatformAdminCompanies() {
       {deleteTarget && (
         <div style={MODAL_BACKDROP}>
           <div style={{ ...MODAL_CARD, maxWidth: 380, padding: 28 }}>
-            <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", marginBottom: 12 }}>Eliminar empresa</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", marginBottom: 12 }}>{t("enterprise.platformAdmin.companies.deleteModal.title")}</p>
             <p style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.65, marginBottom: 24 }}>
-              ¿Estás seguro de que quieres eliminar <strong style={{ color: "#F1F5F9" }}>{deleteTarget.name}</strong>? Esta acción no se puede deshacer.
+              {t("enterprise.platformAdmin.companies.deleteModal.confirm")} <strong style={{ color: "#F1F5F9" }}>{deleteTarget.name}</strong>? {t("enterprise.platformAdmin.companies.deleteModal.cannotUndo")}
             </p>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button onClick={() => setDeleteTarget(null)}
                 style={{ padding: "10px 18px", fontSize: 13, fontWeight: 600, color: "#64748B", background: "none", border: "none", borderRadius: 9, cursor: "pointer", transition: "color 0.15s, background 0.15s" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "#64748B"; e.currentTarget.style.background = "none"; }}>
-                Cancelar
+                {t("enterprise.compliance.programs.cancel")}
               </button>
               <button onClick={handleDelete} disabled={deleting}
                 style={{ padding: "10px 20px", fontSize: 13, fontWeight: 700, background: deleting ? "rgba(239,68,68,0.3)" : "linear-gradient(135deg, #EF4444, #F87171)", color: "#fff", border: "none", borderRadius: 9, cursor: deleting ? "default" : "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s", boxShadow: deleting ? "none" : "0 4px 16px rgba(239,68,68,0.35)" }}>
-                {deleting ? <><Spin /> Eliminando...</> : "Eliminar"}
+                {deleting ? <><Spin /> {t("enterprise.knowledge.sources.deleteDialog.deleting")}</> : t("enterprise.knowledge.processDetail.deleteDialog.delete")}
               </button>
             </div>
           </div>
@@ -404,14 +418,14 @@ export function PlatformAdminCompanies() {
             </span>
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 900, color: "#F1F5F9", letterSpacing: "-0.02em", marginBottom: 4 }}>
-            Administración de Plataforma
+            {t("enterprise.platformAdmin.companies.title")}
           </h1>
           <p style={{ fontSize: 13, color: "#64748B" }}>
-            {companies.length} empresa{companies.length !== 1 ? "s" : ""} en el sistema
+            {t("enterprise.platformAdmin.companies.subtitle", { count: companies.length, word: companies.length !== 1 ? t("enterprise.platformAdmin.companies.companiesWord") : t("enterprise.platformAdmin.companies.companyWord") })}
           </p>
         </div>
         <PrimaryBtn onClick={() => setShowCreate(true)}>
-          <PlusIcon style={{ width: 16, height: 16 }} /> Nueva Empresa
+          <PlusIcon style={{ width: 16, height: 16 }} /> {t("enterprise.platformAdmin.companies.newCompany")}
         </PrimaryBtn>
       </div>
 
@@ -420,7 +434,7 @@ export function PlatformAdminCompanies() {
         <MagnifyingGlassIcon style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#475569", pointerEvents: "none" }} />
         <input
           style={{ ...INPUT_S, paddingLeft: 40, borderRadius: 12 }}
-          placeholder="Buscar empresa..."
+          placeholder={t("enterprise.platformAdmin.companies.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={focusIn} onBlur={focusOut}
@@ -441,7 +455,7 @@ export function PlatformAdminCompanies() {
         <div style={{ textAlign: "center", padding: "60px 0" }}>
           <BuildingOffice2Icon style={{ width: 48, height: 48, margin: "0 auto 12px", opacity: 0.3, color: "#64748B" }} />
           <p style={{ fontSize: 15, fontWeight: 600, color: "#475569" }}>
-            {search ? "No se encontraron empresas" : "No hay empresas registradas"}
+            {search ? t("enterprise.platformAdmin.companies.noneFound") : t("enterprise.platformAdmin.companies.noneRegistered")}
           </p>
         </div>
       ) : (
@@ -465,26 +479,26 @@ export function PlatformAdminCompanies() {
                   <p style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", marginBottom: 3 }}>{company.name}</p>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     {company.company_size && (
-                      <span style={{ fontSize: 11, color: "#64748B" }}>{SIZE_LABELS[company.company_size] || company.company_size}</span>
+                      <span style={{ fontSize: 11, color: "#64748B" }}>{SIZE_LABELS_MAP[company.company_size] || company.company_size}</span>
                     )}
                     {company.company_size && company.industry && <span style={{ fontSize: 11, color: "#334155" }}>·</span>}
                     {company.industry && (
-                      <span style={{ fontSize: 11, color: "#64748B", textTransform: "capitalize" }}>{INDUSTRY_LABELS[company.industry] || company.industry}</span>
+                      <span style={{ fontSize: 11, color: "#64748B" }}>{INDUSTRY_LABELS_MAP[company.industry] || company.industry}</span>
                     )}
                     {company.member_count != null && (
                       <>
                         <span style={{ fontSize: 11, color: "#334155" }}>·</span>
                         <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#64748B" }}>
                           <UsersIcon style={{ width: 11, height: 11 }} />
-                          {company.member_count} usuario{company.member_count !== 1 ? "s" : ""}
+                          {t("enterprise.platformAdmin.companies.userCount", { count: company.member_count, plural: company.member_count !== 1 ? "s" : "" })}
                         </span>
                       </>
                     )}
                     {String(activeCompanyId) === String(company.id) && (
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", color: "#A5B4FC" }}>Activa</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", color: "#A5B4FC" }}>{t("enterprise.platformAdmin.companies.activeBadge")}</span>
                     )}
                     {!company.is_active && (
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}>Inactiva</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}>{t("enterprise.platformAdmin.companies.inactiveBadge")}</span>
                     )}
                   </div>
                 </div>
@@ -496,13 +510,13 @@ export function PlatformAdminCompanies() {
                   style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#94A3B8", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.background = "rgba(255,255,255,0.09)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}>
-                  Ver
+                  {t("enterprise.platformAdmin.companies.view")}
                 </button>
                 <button onClick={() => navigate(`/platform-admin/companies/${company.id}/users`)}
                   style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#818CF8", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.4)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.25)"; }}>
-                  <UsersIcon style={{ width: 13, height: 13 }} /> Usuarios
+                  <UsersIcon style={{ width: 13, height: 13 }} /> {t("enterprise.platformAdmin.companies.usersBtn")}
                 </button>
                 <button onClick={() => setEditTarget(company)}
                   style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", borderRadius: 8, cursor: "pointer", color: "#475569", transition: "color 0.15s, background 0.15s" }}

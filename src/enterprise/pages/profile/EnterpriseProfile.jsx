@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Input, Button, Card, CardBody } from "@material-tailwind/react";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { withCompany } from "../../api/enterpriseApi";
 
 export function EnterpriseProfile() {
+  const { t } = useLanguage();
   const { membership, role } = useEnterprise();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,20 +35,22 @@ export function EnterpriseProfile() {
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 rounded-full border-2 border-indigo-600 border-t-transparent" /></div>;
 
+  const summaryRows = [
+    { label: t("enterprise.profile.role"), value: <span className="font-bold text-indigo-700 capitalize">{role || "—"}</span> },
+    { label: t("enterprise.profile.company"), value: <span className="font-semibold text-zinc-800">{membership?.company_name || "—"}</span> },
+    { label: t("enterprise.profile.status"), value: <span className={`font-bold capitalize ${membership?.status === "active" ? "text-green-600" : "text-zinc-500"}`}>{membership?.status || "—"}</span> },
+    { label: t("enterprise.profile.joined"), value: <span className="text-zinc-600">{membership?.joined_at ? new Date(membership.joined_at).toLocaleDateString() : "—"}</span> },
+  ];
+
   return (
     <div className="max-w-xl space-y-6">
-      <Typography variant="h5" className="font-extrabold text-zinc-900">Enterprise Profile</Typography>
+      <Typography variant="h5" className="font-extrabold text-zinc-900">{t("enterprise.profile.title")}</Typography>
 
       {/* Role & membership summary */}
       <Card className="border border-indigo-200/60 shadow-sm bg-indigo-50">
         <CardBody className="p-5">
           <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Role", value: <span className="font-bold text-indigo-700 capitalize">{role || "—"}</span> },
-              { label: "Company", value: <span className="font-semibold text-zinc-800">{membership?.company_name || "—"}</span> },
-              { label: "Status", value: <span className={`font-bold capitalize ${membership?.status === "active" ? "text-green-600" : "text-zinc-500"}`}>{membership?.status || "—"}</span> },
-              { label: "Joined", value: <span className="text-zinc-600">{membership?.joined_at ? new Date(membership.joined_at).toLocaleDateString() : "—"}</span> },
-            ].map((row) => (
+            {summaryRows.map((row) => (
               <div key={row.label}>
                 <div className="text-xs font-semibold text-zinc-400">{row.label}</div>
                 <div className="text-sm mt-0.5">{row.value}</div>
@@ -56,22 +60,22 @@ export function EnterpriseProfile() {
         </CardBody>
       </Card>
 
-      {saved && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">Profile updated.</div>}
+      {saved && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">{t("enterprise.profile.updated")}</div>}
 
       <form onSubmit={save} className="space-y-4">
-        <Input label="Position / Job Title" value={form.position} onChange={setInput("position")} />
-        <Input label="Department" value={form.department} onChange={setInput("department")} />
+        <Input label={t("enterprise.profile.positionLabel")} value={form.position} onChange={setInput("position")} />
+        <Input label={t("enterprise.profile.departmentLabel")} value={form.department} onChange={setInput("department")} />
         <div>
-          <label className="block text-xs font-semibold text-zinc-500 mb-1">Bio</label>
+          <label className="block text-xs font-semibold text-zinc-500 mb-1">{t("enterprise.profile.bioLabel")}</label>
           <textarea
             className="w-full border border-zinc-300 rounded-xl p-3 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
             rows={4}
             value={form.bio}
             onChange={setInput("bio")}
-            placeholder="Tell your team a bit about yourself..."
+            placeholder={t("enterprise.profile.bioPlaceholder")}
           />
         </div>
-        <Button type="submit" color="indigo" className="normal-case" loading={saving}>Save Profile</Button>
+        <Button type="submit" color="indigo" className="normal-case" loading={saving}>{t("enterprise.profile.save")}</Button>
       </form>
     </div>
   );

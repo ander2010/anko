@@ -4,6 +4,7 @@ import {
   ClipboardDocumentCheckIcon, ClockIcon, CheckCircleIcon, ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { learningApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 
 const TYPE_ICON = {
   flashcard: RectangleStackIcon,
@@ -12,29 +13,39 @@ const TYPE_ICON = {
   assessment: ClipboardDocumentCheckIcon,
 };
 
-const TYPE_LABEL = {
-  flashcard: "Flashcard Review",
-  battery: "Battery / Quiz",
-  reading: "Reading / Study",
-  assessment: "Assessment",
-};
+function useTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    flashcard: t("enterprise.learning.reviewSchedules.types.flashcard"),
+    battery: t("enterprise.learning.reviewSchedules.types.battery"),
+    reading: t("enterprise.learning.reviewSchedules.types.reading"),
+    assessment: t("enterprise.learning.reviewSchedules.types.assessment"),
+  };
+}
 
-const PRIORITY = {
-  low:      { label: "Low",      bg: "rgba(255,255,255,0.06)",  text: "#8B8B9C", border: "rgba(255,255,255,0.09)" },
-  medium:   { label: "Medium",   bg: "rgba(245,158,11,0.12)",   text: "#f59e0b", border: "rgba(245,158,11,0.22)" },
-  high:     { label: "High",     bg: "rgba(249,115,22,0.12)",   text: "#fb923c", border: "rgba(249,115,22,0.22)" },
-  critical: { label: "Critical", bg: "rgba(239,68,68,0.14)",    text: "#f87171", border: "rgba(239,68,68,0.28)" },
-};
+function usePriorityMap() {
+  const { t } = useLanguage();
+  return {
+    low:      { label: t("enterprise.learning.reviewSchedules.priority.low"),      bg: "rgba(255,255,255,0.06)",  text: "#8B8B9C", border: "rgba(255,255,255,0.09)" },
+    medium:   { label: t("enterprise.learning.reviewSchedules.priority.medium"),   bg: "rgba(245,158,11,0.12)",   text: "#f59e0b", border: "rgba(245,158,11,0.22)" },
+    high:     { label: t("enterprise.learning.reviewSchedules.priority.high"),     bg: "rgba(249,115,22,0.12)",   text: "#fb923c", border: "rgba(249,115,22,0.22)" },
+    critical: { label: t("enterprise.learning.reviewSchedules.priority.critical"), bg: "rgba(239,68,68,0.14)",    text: "#f87171", border: "rgba(239,68,68,0.28)" },
+  };
+}
 
 // Anki-style quick grading — maps to the score the SM-2 backend expects (0-100).
-const GRADES = [
-  { label: "Otra vez", score: 20,  color: "#f87171" },
-  { label: "Difícil",  score: 55,  color: "#f59e0b" },
-  { label: "Bien",     score: 75,  color: "#818CF8" },
-  { label: "Fácil",    score: 95,  color: "#4ade80" },
-];
+function useGrades() {
+  const { t } = useLanguage();
+  return [
+    { label: t("enterprise.learning.reviewSchedules.grades.again"), score: 20,  color: "#f87171" },
+    { label: t("enterprise.learning.reviewSchedules.grades.hard"),  score: 55,  color: "#f59e0b" },
+    { label: t("enterprise.learning.reviewSchedules.grades.good"),  score: 75,  color: "#818CF8" },
+    { label: t("enterprise.learning.reviewSchedules.grades.easy"),  score: 95,  color: "#4ade80" },
+  ];
+}
 
 function PriorityBadge({ priority }) {
+  const PRIORITY = usePriorityMap();
   const p = PRIORITY[priority] || PRIORITY.medium;
   return (
     <span style={{ fontSize: 10, fontWeight: 700, color: p.text, background: p.bg, border: `1px solid ${p.border}`, borderRadius: 20, padding: "2px 9px", flexShrink: 0 }}>
@@ -52,6 +63,9 @@ function daysLate(dueDate) {
 }
 
 function ReviewCard({ review, overdue, onComplete, completing }) {
+  const { t, language } = useLanguage();
+  const TYPE_LABEL = useTypeLabels();
+  const GRADES = useGrades();
   const Icon = TYPE_ICON[review.review_type] || BoltIcon;
   const [grading, setGrading] = useState(false);
   const late = overdue ? daysLate(review.due_date) : 0;
@@ -70,7 +84,7 @@ function ReviewCard({ review, overdue, onComplete, completing }) {
             <Icon style={{ width: 14, height: 14, color: "#818CF8" }} />
           </div>
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {review.topic || review.module_name || review.learning_module_name || "Repaso"}
+            {review.topic || review.module_name || review.learning_module_name || t("enterprise.learning.reviewSchedules.review")}
           </p>
         </div>
         <PriorityBadge priority={review.priority} />
@@ -81,8 +95,8 @@ function ReviewCard({ review, overdue, onComplete, completing }) {
       <div className="flex items-center gap-1.5" style={{ fontSize: 11, color: overdue ? "#f87171" : "var(--text-tertiary)", fontWeight: overdue ? 700 : 400 }}>
         <ClockIcon style={{ width: 11, height: 11 }} />
         {overdue
-          ? `Venció hace ${late} día${late !== 1 ? "s" : ""} (${review.due_date})`
-          : `Vence: ${review.due_date}`}
+          ? t("enterprise.learning.reviewSchedules.overdueSince", { n: late, plural: late !== 1 ? (language === "es" ? "s" : "s") : "", date: review.due_date })
+          : t("enterprise.learning.reviewSchedules.dueOn", { date: review.due_date })}
       </div>
 
       {!grading ? (
@@ -92,7 +106,7 @@ function ReviewCard({ review, overdue, onComplete, completing }) {
           className="ank-btn-accent text-xs"
           style={{ justifyContent: "center", marginTop: 4, opacity: isBusy ? 0.6 : 1 }}
         >
-          {isBusy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> Completar</>}
+          {isBusy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.reviewSchedules.complete")}</>}
         </button>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 5, marginTop: 4 }}>
@@ -120,18 +134,20 @@ function ReviewCard({ review, overdue, onComplete, completing }) {
 }
 
 function EmptyReviews({ label }) {
+  const { t } = useLanguage();
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 20px", textAlign: "center" }}>
       <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
         <CalendarDaysIcon style={{ width: 24, height: 24, color: "#818CF8" }} />
       </div>
-      <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Sin repasos {label}</p>
-      <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>Estás al día. Vuelve más tarde.</p>
+      <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{t("enterprise.learning.reviewSchedules.noReviews", { label })}</p>
+      <p style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{t("enterprise.learning.reviewSchedules.upToDate")}</p>
     </div>
   );
 }
 
 export function ReviewSchedules() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState("due");
   const [due, setDue] = useState([]);
   const [overdue, setOverdue] = useState([]);
@@ -156,20 +172,22 @@ export function ReviewSchedules() {
 
   const items = tab === "due" ? due : overdue;
 
+  const tabs = [
+    { id: "due", label: t("enterprise.learning.reviewSchedules.dueToday"), count: due.length },
+    { id: "overdue", label: t("enterprise.learning.reviewSchedules.overdue"), count: overdue.length, danger: true },
+  ];
+
   return (
     <div className="space-y-5 max-w-5xl">
       <div>
-        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Review Schedules</h1>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.learning.reviewSchedules.title")}</h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 2 }}>
-          Repaso espaciado (SM-2) para reforzar lo que ya aprendiste, justo antes de que se te olvide
+          {t("enterprise.learning.reviewSchedules.subtitle")}
         </p>
       </div>
 
       <div style={{ display: "flex", gap: 8 }}>
-        {[
-          { id: "due", label: "Due Today", count: due.length },
-          { id: "overdue", label: "Overdue", count: overdue.length, danger: true },
-        ].map(({ id, label, count, danger }) => {
+        {tabs.map(({ id, label, count, danger }) => {
           const active = tab === id;
           return (
             <button
@@ -204,7 +222,7 @@ export function ReviewSchedules() {
           <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-6 h-6 border-2 rounded-full animate-spin" />
         </div>
       ) : items.length === 0 ? (
-        <EmptyReviews label={tab === "due" ? "pendientes hoy" : "vencidos"} />
+        <EmptyReviews label={tab === "due" ? t("enterprise.learning.reviewSchedules.dueTodayLabel") : t("enterprise.learning.reviewSchedules.overdueLabel")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {items.map((r) => (

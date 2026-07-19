@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { certApi, learningApi, complianceApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 
 const TYPES = ["learning_completion", "assessment", "compliance", "custom"];
 
@@ -47,6 +48,7 @@ function ToggleSwitch({ checked, onChange }) {
 // so this section only renders in edit mode, after the template has been saved once.
 
 function RequirementsSection({ templateId }) {
+  const { t } = useLanguage();
   const [requirements, setRequirements] = useState([]);
   const [paths, setPaths] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -72,7 +74,7 @@ function RequirementsSection({ templateId }) {
   useEffect(() => { load(); }, [templateId]);
 
   const addRequirement = async () => {
-    if (!refId) { setError("Selecciona un Learning Path o Compliance Program."); return; }
+    if (!refId) { setError(t("enterprise.certifications.templateForm.requirements.selectRef")); return; }
     setSaving(true);
     setError("");
     try {
@@ -87,7 +89,7 @@ function RequirementsSection({ templateId }) {
       setRefId(""); setMinScore(""); setMandatory(true);
       load();
     } catch (err) {
-      setError(err?.detail || "No se pudo agregar el requisito.");
+      setError(err?.detail || t("enterprise.certifications.templateForm.requirements.addError"));
     } finally { setSaving(false); }
   };
 
@@ -101,35 +103,35 @@ function RequirementsSection({ templateId }) {
   return (
     <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 22, marginTop: 20 }} className="space-y-4">
       <div>
-        <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>Requisitos para emisión automática</p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{t("enterprise.certifications.templateForm.requirements.title")}</p>
         <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>
-          Al completar cualquiera de estos, el sistema emite este certificado automáticamente si la persona no lo tiene ya.
+          {t("enterprise.certifications.templateForm.requirements.hint")}
         </p>
       </div>
 
       {loading ? (
-        <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Cargando…</p>
+        <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{t("enterprise.certifications.templateForm.requirements.loading")}</p>
       ) : (
         <>
           {requirements.length === 0 ? (
-            <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Sin requisitos todavía — este certificado solo se puede emitir manualmente.</p>
+            <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{t("enterprise.certifications.templateForm.requirements.empty")}</p>
           ) : (
             <div className="space-y-2">
               {requirements.map((r) => (
                 <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px" }}>
                   <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: r.learning_path ? "rgba(99,102,241,0.12)" : "rgba(192,132,252,0.12)", color: r.learning_path ? "#818CF8" : "#C084FC", flexShrink: 0 }}>
-                    {r.learning_path ? "Learning Path" : "Compliance"}
+                    {r.learning_path ? t("enterprise.certifications.templateForm.requirements.learningPath") : t("enterprise.certifications.templateForm.requirements.compliance")}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", flex: 1 }}>
                     {r.learning_path_name || r.compliance_program_name}
                   </span>
                   {r.minimum_score != null && (
-                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>mín. {r.minimum_score}%</span>
+                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t("enterprise.certifications.templateForm.requirements.minScore", { n: r.minimum_score })}</span>
                   )}
                   {!r.is_mandatory && (
-                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>opcional</span>
+                    <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t("enterprise.certifications.templateForm.requirements.optional")}</span>
                   )}
-                  <button onClick={() => removeRequirement(r.id)} title="Eliminar requisito"
+                  <button onClick={() => removeRequirement(r.id)} title={t("enterprise.certifications.templateForm.requirements.removeTitle")}
                     style={{ background: "none", border: "none", cursor: "pointer", color: "#f87171", padding: 4, display: "flex" }}>
                     <TrashIcon style={{ width: 13, height: 13 }} />
                   </button>
@@ -140,7 +142,7 @@ function RequirementsSection({ templateId }) {
 
           <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14 }} className="space-y-3">
             <div className="flex gap-2">
-              {[["learning_path", "Learning Path"], ["compliance_program", "Compliance Program"]].map(([k, label]) => (
+              {[["learning_path", t("enterprise.certifications.templateForm.requirements.learningPath")], ["compliance_program", t("enterprise.certifications.templateForm.requirements.complianceProgram")]].map(([k, label]) => (
                 <button key={k} type="button" onClick={() => { setKind(k); setRefId(""); }}
                   style={{
                     fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 6, cursor: "pointer",
@@ -155,19 +157,19 @@ function RequirementsSection({ templateId }) {
 
             <div className="grid grid-cols-2 gap-3">
               <select style={INPUT_SM} value={refId} onChange={(e) => setRefId(e.target.value)}>
-                <option value="">Selecciona…</option>
+                <option value="">{t("enterprise.certifications.templateForm.requirements.selectPlaceholder")}</option>
                 {options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
               </select>
-              <input style={INPUT_SM} type="number" min="0" max="100" placeholder="Nota mínima (opcional)" value={minScore} onChange={(e) => setMinScore(e.target.value)} />
+              <input style={INPUT_SM} type="number" min="0" max="100" placeholder={t("enterprise.certifications.templateForm.requirements.minScorePlaceholder")} value={minScore} onChange={(e) => setMinScore(e.target.value)} />
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2" style={{ fontSize: 12, color: "var(--text-secondary)", cursor: "pointer" }}>
                 <input type="checkbox" checked={mandatory} onChange={(e) => setMandatory(e.target.checked)} />
-                Obligatorio
+                {t("enterprise.certifications.templateForm.requirements.mandatory")}
               </label>
               <button type="button" onClick={addRequirement} disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-                {saving ? "Agregando…" : "+ Agregar requisito"}
+                {saving ? t("enterprise.certifications.templateForm.requirements.adding") : t("enterprise.certifications.templateForm.requirements.add")}
               </button>
             </div>
             {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
@@ -187,6 +189,7 @@ export function CertificateTemplateForm() {
   const { id } = useParams();
   const isEdit = !!id && id !== "new";
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -194,7 +197,7 @@ export function CertificateTemplateForm() {
 
   useEffect(() => {
     if (!isEdit) return;
-    certApi.getTemplate(id).then((t) => setForm({ ...EMPTY, ...t })).catch(() => {}).finally(() => setLoading(false));
+    certApi.getTemplate(id).then((tpl) => setForm({ ...EMPTY, ...tpl })).catch(() => {}).finally(() => setLoading(false));
   }, [id]);
 
   const setInput = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -208,7 +211,7 @@ export function CertificateTemplateForm() {
       else await certApi.createTemplate(form);
       navigate("/enterprise/certifications/templates");
     } catch (err) {
-      setError(err?.detail || err?.message || "Save failed.");
+      setError(err?.detail || err?.message || t("enterprise.certifications.templateForm.saveFailed"));
     } finally { setSaving(false); }
   };
 
@@ -221,7 +224,7 @@ export function CertificateTemplateForm() {
   return (
     <div className="max-w-2xl mx-auto">
       <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800, marginBottom: 20 }}>
-        {isEdit ? "Edit Template" : "New Certificate Template"}
+        {isEdit ? t("enterprise.certifications.templateForm.editTitle") : t("enterprise.certifications.templateForm.newTitle")}
       </h1>
 
       {error && (
@@ -233,71 +236,71 @@ export function CertificateTemplateForm() {
       <form onSubmit={submit} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 22 }} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label style={LABEL}>Code *</label>
+            <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.code")}</label>
             <input style={{ ...INPUT, opacity: isEdit ? 0.6 : 1 }} value={form.code} onChange={setInput("code")} required disabled={isEdit} />
           </div>
           <div>
-            <label style={LABEL}>Name *</label>
+            <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.name")}</label>
             <input style={INPUT} value={form.name} onChange={setInput("name")} required />
           </div>
         </div>
 
         <div>
-          <label style={LABEL}>Type</label>
+          <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.type")}</label>
           <select style={{ ...INPUT, cursor: "pointer" }} value={form.certificate_type} onChange={setInput("certificate_type")}>
-            {TYPES.map((t) => <option key={t} value={t}>{t.replace(/_/g, " ")}</option>)}
+            {TYPES.map((ty) => <option key={ty} value={ty}>{ty.replace(/_/g, " ")}</option>)}
           </select>
         </div>
 
         <div>
-          <label style={LABEL}>Validity (days, 0 = no expiry)</label>
+          <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.validity")}</label>
           <input style={INPUT} type="number" min="0" value={form.validity_days} onChange={setInput("validity_days")} />
         </div>
 
         <div className="flex items-center gap-3">
           <ToggleSwitch checked={form.requires_score} onChange={(v) => setForm((f) => ({ ...f, requires_score: v }))} />
-          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>Requires minimum score</span>
+          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t("enterprise.certifications.templateForm.fields.requiresScore")}</span>
         </div>
 
         {form.requires_score && (
           <div>
-            <label style={LABEL}>Minimum Score (%)</label>
+            <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.minimumScore")}</label>
             <input style={INPUT} type="number" min="0" max="100" value={form.minimum_score} onChange={setInput("minimum_score")} />
           </div>
         )}
 
         <div>
-          <label style={LABEL}>Header Text</label>
+          <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.headerText")}</label>
           <input style={INPUT} value={form.header_text} onChange={setInput("header_text")} />
         </div>
 
         <div>
-          <label style={LABEL}>Body Text</label>
+          <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.bodyText")}</label>
           <textarea
             style={{ ...INPUT, resize: "vertical" }}
             rows={3}
             value={form.body_text}
             onChange={setInput("body_text")}
-            placeholder="Successfully completed..."
+            placeholder={t("enterprise.certifications.templateForm.fields.bodyTextPlaceholder")}
           />
         </div>
 
         <div>
-          <label style={LABEL}>Footer Text</label>
+          <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.footerText")}</label>
           <input style={INPUT} value={form.footer_text} onChange={setInput("footer_text")} />
         </div>
 
         <div className="flex items-center gap-3">
           <ToggleSwitch checked={form.is_active} onChange={(v) => setForm((f) => ({ ...f, is_active: v }))} />
-          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>Active</span>
+          <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t("enterprise.certifications.templateForm.fields.active")}</span>
         </div>
 
         <div className="flex gap-2 pt-1">
           <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-            {saving ? "Saving…" : isEdit ? "Save Changes" : "Create Template"}
+            {saving ? t("enterprise.certifications.templateForm.saving") : isEdit ? t("enterprise.certifications.templateForm.saveChanges") : t("enterprise.certifications.templateForm.createTemplate")}
           </button>
           <button type="button" onClick={() => navigate("/enterprise/certifications/templates")} className="ank-btn-ghost text-xs">
-            Cancel
+            {t("enterprise.compliance.programs.cancel")}
           </button>
         </div>
       </form>

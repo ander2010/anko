@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { analyticsApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { EmptyState } from "../../components/EmptyState";
 
 export function RetentionTrends() {
+  const { t } = useLanguage();
   const [data, setData] = useState([]);
   const [days, setDays] = useState("90");
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export function RetentionTrends() {
     chart: { type: "line", toolbar: { show: false }, fontFamily: "inherit", background: "transparent" },
     stroke: { curve: "smooth", width: [2, 2] },
     colors: ["#818CF8", "#f87171"],
-    xaxis: { categories: data.map((t) => t.date), labels: { style: { fontSize: "10px", colors: "#64748B" }, rotate: -30 } },
+    xaxis: { categories: data.map((d) => d.date), labels: { style: { fontSize: "10px", colors: "#64748B" }, rotate: -30 } },
     yaxis: { min: 0, max: 100, labels: { formatter: (v) => `${v}%`, style: { colors: "#64748B" } } },
     legend: { position: "top", labels: { colors: "#94A3B8" } },
     dataLabels: { enabled: false },
@@ -25,13 +27,20 @@ export function RetentionTrends() {
     tooltip: { theme: "dark", shared: true, y: { formatter: (v) => `${v}%` } },
   };
 
+  const columns = [
+    t("enterprise.analytics.retentionTrends.columns.date"),
+    t("enterprise.analytics.retentionTrends.columns.avgRetention"),
+    t("enterprise.analytics.retentionTrends.columns.avgRisk"),
+    t("enterprise.analytics.retentionTrends.columns.snapshots"),
+  ];
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Retention Trends</h1>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.analytics.retentionTrends.title")}</h1>
         <select value={days} onChange={(e) => setDays(e.target.value)}
           style={{ fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 10px", color: "var(--text-secondary)", outline: "none", cursor: "pointer" }}>
-          {["30", "60", "90", "180"].map((d) => <option key={d} value={d}>{d} days</option>)}
+          {["30", "60", "90", "180"].map((d) => <option key={d} value={d}>{t("enterprise.analytics.daysOption", { n: d })}</option>)}
         </select>
       </div>
 
@@ -40,12 +49,12 @@ export function RetentionTrends() {
           <div style={{ height: 256 }} className="flex items-center justify-center">
             <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="animate-spin h-8 w-8 rounded-full border-2" />
           </div>
-        ) : data.length === 0 ? <EmptyState title="No trend data yet" /> : (
+        ) : data.length === 0 ? <EmptyState title={t("enterprise.retention.companyRetention.noTrendData")} /> : (
           <ReactApexChart
             options={options}
             series={[
-              { name: "Avg Retention", data: data.map((t) => t.avg_retention ?? 0) },
-              { name: "Avg Risk", data: data.map((t) => t.avg_risk ?? 0) },
+              { name: t("enterprise.retention.companyRetention.kpi.avgRetention"), data: data.map((d) => d.avg_retention ?? 0) },
+              { name: t("enterprise.retention.companyRetention.series.avgRisk"), data: data.map((d) => d.avg_risk ?? 0) },
             ]}
             type="line" height={320}
           />
@@ -58,7 +67,7 @@ export function RetentionTrends() {
             <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
               <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
-                  {["Date", "Avg Retention", "Avg Risk", "Snapshots"].map((h) => (
+                  {columns.map((h) => (
                     <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>

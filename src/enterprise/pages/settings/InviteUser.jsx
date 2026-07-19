@@ -10,28 +10,35 @@ import {
   PaperAirplaneIcon,
 } from "@heroicons/react/24/solid";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "../../../context/language-context";
 import api from "@/services/api";
 import invitationsService from "@/services/invitationsService";
 
-const ROLES = [
-  { value: "admin",    label: "Admin",    color: "#818CF8", bg: "rgba(129,140,248,0.12)", border: "rgba(129,140,248,0.28)" },
-  { value: "manager",  label: "Manager",  color: "#38BDF8", bg: "rgba(56,189,248,0.12)",  border: "rgba(56,189,248,0.28)"  },
-  { value: "trainer",  label: "Trainer",  color: "#A78BFA", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.28)" },
-  { value: "employee", label: "Employee", color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)"  },
-  { value: "auditor",  label: "Auditor",  color: "#94A3B8", bg: "rgba(148,163,184,0.10)", border: "rgba(148,163,184,0.22)" },
-  { value: "owner",    label: "Owner",    color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
-];
-
-const STAGES = [
-  { value: "candidate",       label: "Candidate" },
-  { value: "onboarding",      label: "Onboarding" },
-  { value: "trainee",         label: "Trainee" },
-  { value: "active_employee", label: "Active Employee" },
-  { value: "contractor",      label: "Contractor" },
-  { value: "former_employee", label: "Former Employee" },
-];
-
 const AVATAR_COLORS = ["#6366F1","#818CF8","#38BDF8","#A78BFA","#34D399","#F59E0B","#F87171","#FB923C"];
+
+function useRoles() {
+  const { t } = useLanguage();
+  return [
+    { value: "admin",    label: t("enterprise.settings.inviteUser.roles.admin"),    color: "#818CF8", bg: "rgba(129,140,248,0.12)", border: "rgba(129,140,248,0.28)" },
+    { value: "manager",  label: t("enterprise.settings.inviteUser.roles.manager"),  color: "#38BDF8", bg: "rgba(56,189,248,0.12)",  border: "rgba(56,189,248,0.28)"  },
+    { value: "trainer",  label: t("enterprise.settings.inviteUser.roles.trainer"),  color: "#A78BFA", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.28)" },
+    { value: "employee", label: t("enterprise.settings.inviteUser.roles.employee"), color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)"  },
+    { value: "auditor",  label: t("enterprise.settings.inviteUser.roles.auditor"),  color: "#94A3B8", bg: "rgba(148,163,184,0.10)", border: "rgba(148,163,184,0.22)" },
+    { value: "owner",    label: t("enterprise.settings.inviteUser.roles.owner"),    color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
+  ];
+}
+
+function useStages() {
+  const { t } = useLanguage();
+  return [
+    { value: "candidate",       label: t("enterprise.settings.company.stages.candidate") },
+    { value: "onboarding",      label: t("enterprise.settings.company.stages.onboarding") },
+    { value: "trainee",         label: t("enterprise.settings.company.stages.trainee") },
+    { value: "active_employee", label: t("enterprise.settings.company.stages.activeEmployee") },
+    { value: "contractor",      label: t("enterprise.settings.company.stages.contractor") },
+    { value: "former_employee", label: t("enterprise.settings.company.stages.formerEmployee") },
+  ];
+}
 
 function UserAvatar({ user, size = 40 }) {
   const initials = [user.first_name?.[0], user.last_name?.[0]].filter(Boolean).join("").toUpperCase()
@@ -57,9 +64,12 @@ function displayName(u) {
 
 export default function InviteUser() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { companies } = useAuth();
   const company = companies?.[0];
   const companyId = company?.company_id;
+  const ROLES = useRoles();
+  const STAGES = useStages();
 
   const [query, setQuery]       = useState("");
   const [results, setResults]   = useState([]);
@@ -122,7 +132,7 @@ export default function InviteUser() {
       setSentEmail(activeEmail);
       setSent(true);
     } catch (err) {
-      const detail = err?.email?.[0] || err?.detail || "Failed to send invitation.";
+      const detail = err?.email?.[0] || err?.detail || t("enterprise.settings.inviteUser.sendFailed");
       setSendError(detail);
     } finally {
       setSending(false);
@@ -157,10 +167,10 @@ export default function InviteUser() {
           </div>
 
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#F1F5F9", margin: "0 0 10px", letterSpacing: "-0.01em" }}>
-            Invitation Sent!
+            {t("enterprise.settings.inviteUser.sentTitle")}
           </h2>
           <p style={{ fontSize: 14, color: "#64748B", margin: "0 0 32px", lineHeight: 1.5 }}>
-            The invitation email was delivered to
+            {t("enterprise.settings.inviteUser.sentSubtitle")}
           </p>
 
           {/* prominent email display */}
@@ -191,7 +201,7 @@ export default function InviteUser() {
               onMouseEnter={e => e.currentTarget.style.background = "rgba(99,102,241,0.18)"}
               onMouseLeave={e => e.currentTarget.style.background = "rgba(99,102,241,0.1)"}
             >
-              Invite Another
+              {t("enterprise.settings.inviteUser.inviteAnother")}
             </button>
             <button
               onClick={() => navigate("/enterprise/invitations")}
@@ -202,7 +212,7 @@ export default function InviteUser() {
                 cursor: "pointer", boxShadow: "0 4px 16px rgba(99,102,241,0.35)",
               }}
             >
-              View Invitations
+              {t("enterprise.settings.inviteUser.viewInvitations")}
             </button>
           </div>
         </div>
@@ -231,11 +241,11 @@ export default function InviteUser() {
         </button>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F1F5F9", margin: 0, letterSpacing: "-0.01em" }}>
-            Invite User
+            {t("enterprise.settings.inviteUser.title")}
           </h1>
           {company?.company_name && (
             <p style={{ fontSize: 13, color: "#64748B", margin: "3px 0 0" }}>
-              Sending to · <span style={{ color: "#94A3B8", fontWeight: 600 }}>{company.company_name}</span>
+              {t("enterprise.settings.inviteUser.sendingTo")} · <span style={{ color: "#94A3B8", fontWeight: 600 }}>{company.company_name}</span>
             </p>
           )}
         </div>
@@ -252,7 +262,7 @@ export default function InviteUser() {
           {/* Search input */}
           <div style={{ padding: "22px 22px 16px" }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
-              Find on platform
+              {t("enterprise.settings.inviteUser.findOnPlatform")}
             </p>
             <div style={{ position: "relative" }}>
               <MagnifyingGlassIcon style={{
@@ -262,7 +272,7 @@ export default function InviteUser() {
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search by name or email…"
+                placeholder={t("enterprise.settings.inviteUser.searchPlaceholder")}
                 style={{
                   width: "100%", boxSizing: "border-box",
                   padding: "10px 12px 10px 36px", borderRadius: 10,
@@ -280,7 +290,7 @@ export default function InviteUser() {
           <div style={{ minHeight: 180, maxHeight: 320, overflowY: "auto" }}>
             {searching ? (
               <div style={{ padding: "28px 0", textAlign: "center", color: "#64748B", fontSize: 13 }}>
-                Searching…
+                {t("enterprise.settings.inviteUser.searching")}
               </div>
             ) : results.length > 0 ? (
               <div>
@@ -312,7 +322,7 @@ export default function InviteUser() {
               </div>
             ) : query.trim() ? (
               <div style={{ padding: "28px 0", textAlign: "center" }}>
-                <p style={{ color: "#64748B", fontSize: 13, margin: 0 }}>No users found for "<em>{query}</em>"</p>
+                <p style={{ color: "#64748B", fontSize: 13, margin: 0 }}>{t("enterprise.settings.inviteUser.noUsersFound", { query })}</p>
               </div>
             ) : (
               <div style={{ padding: "28px 22px", textAlign: "center" }}>
@@ -324,7 +334,7 @@ export default function InviteUser() {
                   <UserIcon style={{ width: 20, height: 20, color: "#334155" }} />
                 </div>
                 <p style={{ color: "#64748B", fontSize: 13, margin: 0 }}>
-                  Type to search platform users
+                  {t("enterprise.settings.inviteUser.typeToSearch")}
                 </p>
               </div>
             )}
@@ -333,7 +343,7 @@ export default function InviteUser() {
           {/* Manual email entry */}
           <div style={{ padding: "16px 22px 22px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>
-              Or type email directly
+              {t("enterprise.settings.inviteUser.orTypeEmail")}
             </p>
             <div style={{ position: "relative" }}>
               <EnvelopeIcon style={{
@@ -383,7 +393,7 @@ export default function InviteUser() {
             boxShadow: activeEmail ? "0 0 30px rgba(99,102,241,0.06)" : "none",
           }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 16px" }}>
-              Invitation will be sent to
+              {t("enterprise.settings.inviteUser.willBeSentTo")}
             </p>
 
             {selectedUser ? (
@@ -411,7 +421,7 @@ export default function InviteUser() {
                   <EnvelopeIcon style={{ width: 22, height: 22, color: "#818CF8" }} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 4px", fontWeight: 600 }}>External user</p>
+                  <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 4px", fontWeight: 600 }}>{t("enterprise.settings.inviteUser.externalUser")}</p>
                   <span style={{ fontSize: 14, fontWeight: 800, color: "#818CF8", wordBreak: "break-all" }}>
                     {activeEmail}
                   </span>
@@ -427,7 +437,7 @@ export default function InviteUser() {
                   <EnvelopeIcon style={{ width: 22, height: 22, color: "#334155" }} />
                 </div>
                 <p style={{ fontSize: 13, color: "#334155", margin: 0 }}>
-                  Select a user or enter an email
+                  {t("enterprise.settings.inviteUser.selectOrEnter")}
                 </p>
               </div>
             )}
@@ -436,7 +446,7 @@ export default function InviteUser() {
           {/* Role selector */}
           <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px" }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
-              Assign Role
+              {t("enterprise.settings.inviteUser.assignRole")}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               {ROLES.map(r => (
@@ -465,7 +475,7 @@ export default function InviteUser() {
           {/* Stage selector */}
           <div style={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px" }}>
             <p style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
-              Employee Stage
+              {t("enterprise.settings.inviteUser.employeeStage")}
             </p>
             <div style={{ position: "relative" }}>
               <select
@@ -529,13 +539,13 @@ export default function InviteUser() {
             onMouseLeave={e => { if (activeEmail) e.currentTarget.style.boxShadow = "0 6px 24px rgba(99,102,241,0.35)"; }}
           >
             <PaperAirplaneIcon style={{ width: 17, height: 17 }} />
-            {sending ? "Sending…" : "Send Invitation"}
+            {sending ? t("enterprise.settings.inviteUser.sending") : t("enterprise.settings.inviteUser.sendInvitation")}
           </button>
 
           {/* Summary footer */}
           {selectedRole && activeEmail && (
             <p style={{ textAlign: "center", fontSize: 12, color: "#64748B", margin: 0, lineHeight: 1.6 }}>
-              Will join as{" "}
+              {t("enterprise.settings.inviteUser.willJoinAs")}{" "}
               <span style={{ color: selectedRole.color, fontWeight: 700 }}>{selectedRole.label}</span>
               {"  ·  "}
               <span style={{ color: "#94A3B8" }}>

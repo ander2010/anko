@@ -9,6 +9,7 @@ import { complianceApi, learningApi, companyApi, teamsApi } from "../../api/ente
 import { useEnterprise } from "../../context/enterprise-context";
 import { useAuth } from "@/context/auth-context";
 import { useCompanyRole } from "../../hooks/useCompanyRole";
+import { useLanguage } from "../../../context/language-context";
 import { StatusBadge } from "../../components/StatusBadge";
 import { LearningPathAssignmentProgress } from "../learning/LearningPathAssignmentProgress";
 import {
@@ -22,26 +23,46 @@ const INPUT = {
 const MODAL_BACKDROP = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 };
 const MODAL_CARD = { background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, width: "100%", maxWidth: 460, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" };
 
-const TYPE_LABELS = { regulatory: "Regulatory", internal: "Internal Policy", certification: "Certification", safety: "Safety", other: "Other" };
-const FREQ_LABELS = { one_time: "One Time", monthly: "Monthly", quarterly: "Quarterly", biannual: "Bi-Annual", annual: "Annual", custom: "Custom" };
+function useTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    regulatory: t("enterprise.compliance.programs.types.regulatory"),
+    internal: t("enterprise.compliance.programs.types.internal"),
+    certification: t("enterprise.compliance.programs.types.certification"),
+    safety: t("enterprise.compliance.programs.types.safety"),
+    other: t("enterprise.compliance.programs.types.other"),
+  };
+}
+function useFreqLabels() {
+  const { t } = useLanguage();
+  return {
+    one_time: t("enterprise.compliance.programs.frequencies.oneTime"),
+    monthly: t("enterprise.compliance.programs.frequencies.monthly"),
+    quarterly: t("enterprise.compliance.programs.frequencies.quarterly"),
+    biannual: t("enterprise.compliance.programs.frequencies.biannual"),
+    annual: t("enterprise.compliance.programs.frequencies.annual"),
+    custom: t("enterprise.compliance.programs.frequencies.custom"),
+  };
+}
 
 // ─── Edit Program Form ───────────────────────────────────────────────────────
 
 function EditProgramForm({ program, onSaved, onCancel }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState(() => programToForm(program));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.code.trim()) { setError("Name and code are required."); return; }
+    if (!form.name.trim() || !form.code.trim()) { setError(t("enterprise.compliance.programs.form.nameCodeRequired")); return; }
     setSaving(true);
     setError("");
     try {
       const updated = await complianceApi.updateProgram(program.id, programFormToPayload(form));
       onSaved(updated);
     } catch (err) {
-      setError(err?.detail || err?.code?.[0] || err?.name?.[0] || err?.non_field_errors?.[0] || "Could not save changes.");
+      setError(err?.detail || err?.code?.[0] || err?.name?.[0] || err?.non_field_errors?.[0] || t("enterprise.compliance.programDetail.editForm.saveError"));
       setSaving(false);
     }
   };
@@ -51,9 +72,9 @@ function EditProgramForm({ program, onSaved, onCancel }) {
       <ProgramFormFields form={form} onChange={setForm} />
       {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
       <div className="flex justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="ank-btn-ghost text-xs">Cancel</button>
+        <button type="button" onClick={onCancel} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
         <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-          {saving ? "Saving…" : <><CheckIcon className="h-3.5 w-3.5" /> Save Changes</>}
+          {saving ? t("enterprise.compliance.programDetail.editForm.saving") : <><CheckIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.editForm.save")}</>}
         </button>
       </div>
     </form>
@@ -63,6 +84,7 @@ function EditProgramForm({ program, onSaved, onCancel }) {
 // ─── Add Requirement Modal ───────────────────────────────────────────────────
 
 function AddRequirementModal({ program, existingPathIds, onClose, onAdded }) {
+  const { t } = useLanguage();
   const [paths, setPaths] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPathId, setSelectedPathId] = useState("");
@@ -88,21 +110,21 @@ function AddRequirementModal({ program, existingPathIds, onClose, onAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedPathId) { setError("Select a learning path."); return; }
+    if (!selectedPathId) { setError(t("enterprise.compliance.programDetail.addRequirement.selectPath")); return; }
     setSaving(true);
     setError("");
     try {
       const created = await complianceApi.createRequirement({
         program: program.id,
         learning_path: parseInt(selectedPathId, 10),
-        name: name.trim() || paths.find((p) => String(p.id) === String(selectedPathId))?.name || "Requirement",
+        name: name.trim() || paths.find((p) => String(p.id) === String(selectedPathId))?.name || t("enterprise.compliance.programDetail.addRequirement.defaultName"),
         order: existingPathIds.length,
         is_mandatory: isMandatory,
       });
       onAdded(created);
       onClose();
     } catch (err) {
-      setError(err?.detail || err?.learning_path?.[0] || err?.non_field_errors?.[0] || "Could not add requirement.");
+      setError(err?.detail || err?.learning_path?.[0] || err?.non_field_errors?.[0] || t("enterprise.compliance.programDetail.addRequirement.error"));
     } finally { setSaving(false); }
   };
 
@@ -110,13 +132,13 @@ function AddRequirementModal({ program, existingPathIds, onClose, onAdded }) {
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={{ ...MODAL_CARD, padding: 24 }} className="space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 15 }}>Add Requirement</p>
+          <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 15 }}>{t("enterprise.compliance.programDetail.addRequirement.title")}</p>
           <button type="button" onClick={onClose} style={{ color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }} aria-label="Close">
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
         <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
-          Pick a published Learning Path that users must complete to satisfy this program.
+          {t("enterprise.compliance.programDetail.addRequirement.hint")}
         </p>
 
         {loading ? (
@@ -125,30 +147,30 @@ function AddRequirementModal({ program, existingPathIds, onClose, onAdded }) {
           </div>
         ) : available.length === 0 ? (
           <p style={{ fontSize: 12, color: "var(--text-tertiary)", textAlign: "center", padding: "16px 0" }}>
-            {paths.length === 0 ? "No published learning paths yet." : "All published learning paths are already requirements here."}
+            {paths.length === 0 ? t("enterprise.compliance.programDetail.addRequirement.noPaths") : t("enterprise.compliance.programDetail.addRequirement.allAdded")}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }} htmlFor="req-path">Learning Path *</label>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }} htmlFor="req-path">{t("enterprise.compliance.programDetail.addRequirement.pathLabel")} *</label>
               <select id="req-path" style={{ ...INPUT, cursor: "pointer" }} value={selectedPathId} onChange={(e) => handleSelectPath(e.target.value)} required>
-                <option value="">Select a learning path...</option>
+                <option value="">{t("enterprise.compliance.programDetail.addRequirement.pathPlaceholder")}</option>
                 {available.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }} htmlFor="req-name">Requirement Name</label>
-              <input id="req-name" style={INPUT} value={name} onChange={(e) => setName(e.target.value)} placeholder="Defaults to the learning path's name" />
+              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 5 }} htmlFor="req-name">{t("enterprise.compliance.programDetail.addRequirement.nameLabel")}</label>
+              <input id="req-name" style={INPUT} value={name} onChange={(e) => setName(e.target.value)} placeholder={t("enterprise.compliance.programDetail.addRequirement.namePlaceholder")} />
             </div>
             <div className="flex items-center gap-2">
               <input id="req-mandatory" type="checkbox" checked={isMandatory} onChange={(e) => setIsMandatory(e.target.checked)} style={{ width: 15, height: 15, cursor: "pointer" }} />
-              <label htmlFor="req-mandatory" style={{ fontSize: 12.5, color: "var(--text-primary)", cursor: "pointer" }}>Mandatory requirement</label>
+              <label htmlFor="req-mandatory" style={{ fontSize: 12.5, color: "var(--text-primary)", cursor: "pointer" }}>{t("enterprise.compliance.programDetail.addRequirement.mandatoryLabel")}</label>
             </div>
             {error && <p style={{ fontSize: 12, color: "#f87171" }}>{error}</p>}
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancel</button>
+              <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
               <button type="submit" disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-                {saving ? "Adding…" : <><PlusIcon className="h-3.5 w-3.5" /> Add Requirement</>}
+                {saving ? t("enterprise.compliance.programDetail.addRequirement.adding") : <><PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.addRequirementBtn")}</>}
               </button>
             </div>
           </form>
@@ -161,10 +183,11 @@ function AddRequirementModal({ program, existingPathIds, onClose, onAdded }) {
 // ─── Requirement row ─────────────────────────────────────────────────────────
 
 function RequirementRow({ req, index, onRemoved, canRemove }) {
+  const { t } = useLanguage();
   const [removing, setRemoving] = useState(false);
 
   const handleRemove = async () => {
-    if (!confirm(`Remove "${req.name}" from this program's requirements?`)) return;
+    if (!confirm(t("enterprise.compliance.programDetail.requirementRow.confirmRemove", { name: req.name }))) return;
     setRemoving(true);
     try { await complianceApi.deleteRequirement(req.id); onRemoved(req.id); }
     catch { setRemoving(false); }
@@ -179,11 +202,11 @@ function RequirementRow({ req, index, onRemoved, canRemove }) {
         <div className="flex items-center gap-2 flex-wrap">
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{req.name}</p>
           {!req.is_mandatory && (
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-tertiary)" }}>Optional</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-tertiary)" }}>{t("enterprise.compliance.programs.optional")}</span>
           )}
         </div>
         <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
-          <BookOpenIcon style={{ width: 11, height: 11 }} /> {req.learning_path_name || "Unlinked learning path"}
+          <BookOpenIcon style={{ width: 11, height: 11 }} /> {req.learning_path_name || t("enterprise.compliance.programDetail.requirementRow.unlinked")}
         </p>
       </div>
       {canRemove && (
@@ -200,6 +223,7 @@ function RequirementRow({ req, index, onRemoved, canRemove }) {
 // ─── Assign Modal (user or team) ─────────────────────────────────────────────
 
 function AssignModal({ program, companyId, onClose, onAssigned }) {
+  const { t } = useLanguage();
   const [tab, setTab] = useState("user");
   const [members, setMembers] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -217,45 +241,45 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
     Promise.all([
       companyApi.getMembers(companyId, { status: "active" }).then((d) => d.results || d || []),
       teamsApi.list({ company_id: companyId }).then((d) => d.results || d || []),
-    ]).then(([m, t]) => { setMembers(m); setTeams(t); }).catch(() => {}).finally(() => setLoading(false));
+    ]).then(([m, tms]) => { setMembers(m); setTeams(tms); }).catch(() => {}).finally(() => setLoading(false));
   }, [companyId]);
 
   const handleAssign = async () => {
     setSaving(true); setError(""); setSuccess("");
     try {
       if (tab === "user") {
-        if (!selectedUser) { setError("Select a user."); setSaving(false); return; }
+        if (!selectedUser) { setError(t("enterprise.compliance.programDetail.assignModal.selectUser")); setSaving(false); return; }
         await complianceApi.assignToUser(program.id, { user_id: selectedUser.user, ...(dueDate && { due_date: dueDate }) });
-        setSuccess(`Assigned to ${selectedUser.full_name || selectedUser.username}.`);
+        setSuccess(t("enterprise.compliance.programDetail.assignModal.assignedToUser", { name: selectedUser.full_name || selectedUser.username }));
       } else {
-        if (!selectedTeam) { setError("Select a team."); setSaving(false); return; }
+        if (!selectedTeam) { setError(t("enterprise.compliance.programDetail.assignModal.selectTeam")); setSaving(false); return; }
         await complianceApi.assignToTeam(program.id, { team_id: selectedTeam.id, ...(dueDate && { due_date: dueDate }) });
-        setSuccess(`Assigned to team "${selectedTeam.name}".`);
+        setSuccess(t("enterprise.compliance.programDetail.assignModal.assignedToTeam", { name: selectedTeam.name }));
       }
       setSelectedUser(null); setSelectedTeam(null); setDueDate(""); setSearch("");
       onAssigned?.();
     } catch (err) {
-      setError(err?.detail || err?.non_field_errors?.[0] || "Could not assign.");
+      setError(err?.detail || err?.non_field_errors?.[0] || t("enterprise.compliance.programDetail.assignModal.error"));
     } finally { setSaving(false); }
   };
 
   const filteredMembers = members.filter((m) =>
     !search || (m.full_name || m.username || m.email || "").toLowerCase().includes(search.toLowerCase())
   );
-  const filteredTeams = teams.filter((t) =>
-    !search || t.name.toLowerCase().includes(search.toLowerCase())
+  const filteredTeams = teams.filter((tm) =>
+    !search || tm.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div style={MODAL_BACKDROP} onClick={onClose}>
       <div style={{ ...MODAL_CARD, padding: 22 }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>Assign Compliance Program</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 14 }}>{t("enterprise.compliance.programDetail.assignModal.title")}</p>
           <button onClick={onClose} style={{ color: "var(--text-tertiary)", fontSize: 20, cursor: "pointer", background: "none", border: "none" }}>×</button>
         </div>
 
         <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", marginBottom: 16 }}>
-          {[["user", "User", UsersIcon], ["team", "Team", UserGroupIcon]].map(([key, label, Icon]) => (
+          {[["user", t("enterprise.compliance.programDetail.assignModal.userTab"), UsersIcon], ["team", t("enterprise.compliance.programDetail.assignModal.teamTab"), UserGroupIcon]].map(([key, label, Icon]) => (
             <button key={key} onClick={() => { setTab(key); setSearch(""); setSelectedUser(null); setSelectedTeam(null); }}
               style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderBottom: `2px solid ${tab === key ? "var(--accent)" : "transparent"}`, color: tab === key ? "var(--text-primary)" : "var(--text-tertiary)", fontWeight: tab === key ? 600 : 400, fontSize: 12.5, cursor: "pointer", background: "transparent", border: "none", borderBottomWidth: 2 }}>
               <Icon style={{ width: 13, height: 13 }} /> {label}
@@ -263,7 +287,7 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
           ))}
         </div>
 
-        <input placeholder={tab === "user" ? "Search member…" : "Search team…"} value={search} onChange={(e) => setSearch(e.target.value)}
+        <input placeholder={tab === "user" ? t("enterprise.compliance.programDetail.assignModal.searchMember") : t("enterprise.compliance.programDetail.assignModal.searchTeam")} value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ ...INPUT, marginBottom: 10 }}
           onFocus={(e) => { e.target.style.borderColor = "var(--accent)"; }}
           onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }} />
@@ -275,7 +299,7 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
             </div>
           ) : tab === "user" ? (
             filteredMembers.length === 0 ? (
-              <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>No members.</p>
+              <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>{t("enterprise.compliance.programDetail.assignModal.noMembers")}</p>
             ) : filteredMembers.map((m) => {
               const sel = selectedUser?.user === m.user;
               return (
@@ -296,19 +320,19 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
             })
           ) : (
             filteredTeams.length === 0 ? (
-              <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>No teams.</p>
-            ) : filteredTeams.map((t) => {
-              const sel = selectedTeam?.id === t.id;
+              <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "12px 0" }}>{t("enterprise.compliance.programDetail.assignModal.noTeams")}</p>
+            ) : filteredTeams.map((tm) => {
+              const sel = selectedTeam?.id === tm.id;
               return (
-                <button key={t.id} type="button" onClick={() => setSelectedTeam(sel ? null : t)}
+                <button key={tm.id} type="button" onClick={() => setSelectedTeam(sel ? null : tm)}
                   style={{ width: "100%", textAlign: "left", background: sel ? "rgba(99,102,241,0.12)" : "var(--bg-elevated)", border: `1px solid ${sel ? "var(--accent)" : "var(--border)"}`, borderRadius: 6, padding: "9px 11px", cursor: "pointer" }}>
                   <div className="flex items-center gap-2">
                     <div style={{ background: sel ? "var(--accent)" : "rgba(59,130,246,0.12)", borderRadius: 5, padding: 5, flexShrink: 0 }}>
                       <UserGroupIcon style={{ width: 13, height: 13, color: sel ? "#fff" : "#60a5fa" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{t.name}</p>
-                      <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t.member_count ?? 0} member{t.member_count !== 1 ? "s" : ""}</p>
+                      <p style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)" }}>{tm.name}</p>
+                      <p style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{t("enterprise.compliance.programDetail.assignModal.memberCount", { n: tm.member_count ?? 0, plural: (tm.member_count ?? 0) !== 1 ? "s" : "" })}</p>
                     </div>
                     {sel && <CheckIcon style={{ width: 14, height: 14, color: "var(--accent)", flexShrink: 0 }} />}
                   </div>
@@ -319,7 +343,7 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
         </div>
 
         <div style={{ marginBottom: 14 }}>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 12, marginBottom: 5 }}>Due Date <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(optional)</span></p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 12, marginBottom: 5 }}>{t("enterprise.compliance.programDetail.assignModal.dueDate")} <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>({t("enterprise.learning.paths.wizard.optional")})</span></p>
           <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
             style={{ ...INPUT, width: "auto", colorScheme: "dark" }} />
         </div>
@@ -328,10 +352,10 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
         {success && <p style={{ color: "#4ade80", fontSize: 12, marginBottom: 10 }}>{success}</p>}
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="ank-btn-ghost text-xs">Close</button>
+          <button onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programDetail.assignModal.close")}</button>
           <button onClick={handleAssign} disabled={saving || (!selectedUser && !selectedTeam)} className="ank-btn-accent text-xs"
             style={{ opacity: saving || (!selectedUser && !selectedTeam) ? 0.6 : 1 }}>
-            {saving ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><UserGroupIcon className="h-3.5 w-3.5" /> Assign</>}
+            {saving ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><UserGroupIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.assignModal.assign")}</>}
           </button>
         </div>
       </div>
@@ -344,10 +368,13 @@ function AssignModal({ program, companyId, onClose, onAssigned }) {
 export function ComplianceProgramDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const { user } = useAuth();
   const { hasMinRole } = useCompanyRole();
   const canManage = hasMinRole("manager");
+  const TYPE_LABELS = useTypeLabels();
+  const FREQ_LABELS = useFreqLabels();
 
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -423,9 +450,9 @@ export function ComplianceProgramDetail() {
   if (!program) {
     return (
       <div className="flex flex-col items-center py-24">
-        <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>Compliance program not found.</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>{t("enterprise.compliance.programDetail.notFound")}</p>
         <button onClick={() => navigate("/enterprise/compliance/programs")} className="ank-btn-ghost text-xs mt-4">
-          <ArrowLeftIcon className="h-3.5 w-3.5" /> Back
+          <ArrowLeftIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.back")}
         </button>
       </div>
     );
@@ -439,7 +466,7 @@ export function ComplianceProgramDetail() {
       <button onClick={() => navigate("/enterprise/compliance/programs")}
         style={{ color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 5, fontSize: 12, cursor: "pointer", background: "none", border: "none" }}
         className="hover:opacity-70 transition-opacity">
-        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> Compliance Programs
+        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> {t("enterprise.compliance.programs.title")}
       </button>
 
       <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "20px 24px" }}>
@@ -466,13 +493,13 @@ export function ComplianceProgramDetail() {
                   <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{FREQ_LABELS[program.frequency] || program.frequency}</span>
                   <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>·</span>
                   <span style={{ color: "var(--text-tertiary)", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
-                    <ClockIcon style={{ width: 11, height: 11 }} /> Valid {program.validity_days} days
+                    <ClockIcon style={{ width: 11, height: 11 }} /> {t("enterprise.compliance.programDetail.validDays", { n: program.validity_days })}
                   </span>
                   {program.is_mandatory && (
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>Required</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#f87171", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", padding: "1px 8px", borderRadius: 20 }}>{t("enterprise.compliance.programs.required")}</span>
                   )}
                   {program.requires_score && program.passing_score != null && (
-                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Passing score: {program.passing_score}%</span>
+                    <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.compliance.programDetail.passingScore", { n: program.passing_score })}</span>
                   )}
                 </div>
               </div>
@@ -480,22 +507,22 @@ export function ComplianceProgramDetail() {
             {canManage && (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button onClick={() => setEditing(true)} className="ank-btn-ghost text-xs">
-                  <PencilIcon className="h-3.5 w-3.5" /> Edit
+                  <PencilIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.edit")}
                 </button>
                 <button onClick={() => setShowAssign(true)} className="ank-btn-ghost text-xs">
-                  <UserGroupIcon className="h-3.5 w-3.5" /> Assign
+                  <UserGroupIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.assign")}
                 </button>
                 <button onClick={() => navigate(`/enterprise/compliance/programs/${id}/audit`)} className="ank-btn-ghost text-xs">
-                  <ChartBarIcon className="h-3.5 w-3.5" /> Audit Report
+                  <ChartBarIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.auditReport")}
                 </button>
                 {program.status === "draft" && (
                   <button onClick={handleActivate} disabled={busy} className="ank-btn-accent text-xs" style={{ opacity: busy ? 0.7 : 1 }}>
-                    {busy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> Activate</>}
+                    {busy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programs.activate")}</>}
                   </button>
                 )}
                 {program.status === "active" && (
                   <button onClick={handleArchive} disabled={busy} className="ank-btn-ghost text-xs" style={{ opacity: busy ? 0.7 : 1 }}>
-                    {busy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : "Archive"}
+                    {busy ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : t("enterprise.compliance.programs.archive")}
                   </button>
                 )}
               </div>
@@ -508,12 +535,12 @@ export function ComplianceProgramDetail() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
-              Complete This Program
+              {t("enterprise.compliance.programDetail.completeThisProgram")}
             </p>
             <StatusBadge status={myComplianceAssignment.status} />
           </div>
           {requirements.filter((r) => r.learning_path).length === 0 ? (
-            <p style={{ color: "var(--text-tertiary)", fontSize: 12, padding: "8px 0" }}>No requirements have been set up for this program yet.</p>
+            <p style={{ color: "var(--text-tertiary)", fontSize: 12, padding: "8px 0" }}>{t("enterprise.compliance.programDetail.noRequirementsYet")}</p>
           ) : (
             <div className="space-y-4">
               {requirements.filter((r) => r.learning_path).map((req) => {
@@ -527,7 +554,7 @@ export function ComplianceProgramDetail() {
                         onCompleted={loadAssignments}
                       />
                     ) : (
-                      <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Preparing your assignment for this requirement…</p>
+                      <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>{t("enterprise.compliance.programDetail.preparingAssignment")}</p>
                     )}
                   </div>
                 );
@@ -540,11 +567,11 @@ export function ComplianceProgramDetail() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" }}>
-            Requirements ({requirements.length})
+            {t("enterprise.compliance.programDetail.requirementsHeading", { count: requirements.length })}
           </p>
           {canManage && (
             <button onClick={() => setShowAddRequirement(true)} className="ank-btn-ghost text-xs">
-              <PlusIcon className="h-3.5 w-3.5" /> Add Requirement
+              <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.addRequirementBtn")}
             </button>
           )}
         </div>
@@ -555,12 +582,12 @@ export function ComplianceProgramDetail() {
             <div style={{ background: "var(--bg-elevated)", borderRadius: 8, padding: 12, marginBottom: 10 }}>
               <BookOpenIcon style={{ width: 22, height: 22, color: "var(--text-tertiary)" }} />
             </div>
-            <p style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 600 }}>No requirements yet</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 600 }}>{t("enterprise.compliance.programDetail.noRequirements")}</p>
             {canManage && (
               <>
-                <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 3 }}>Add the Learning Paths users must complete for this program.</p>
+                <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 3 }}>{t("enterprise.compliance.programDetail.noRequirementsMessage")}</p>
                 <button onClick={() => setShowAddRequirement(true)} className="ank-btn-accent text-xs mt-4">
-                  <PlusIcon className="h-3.5 w-3.5" /> Add Requirement
+                  <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.addRequirementBtn")}
                 </button>
               </>
             )}
@@ -577,7 +604,7 @@ export function ComplianceProgramDetail() {
       {canManage && (
         <div>
           <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 12 }}>
-            Assigned ({assignments.length})
+            {t("enterprise.compliance.programDetail.assignedHeading", { count: assignments.length })}
           </p>
 
           {loadingAssignments ? (
@@ -587,8 +614,8 @@ export function ComplianceProgramDetail() {
           ) : assignments.length === 0 ? (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8 }}
               className="flex flex-col items-center py-10 text-center">
-              <p style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 600 }}>Not assigned to anyone yet</p>
-              <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 3 }}>Use "Assign" above to assign this program to a user or team.</p>
+              <p style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 600 }}>{t("enterprise.compliance.programDetail.notAssigned")}</p>
+              <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 3 }}>{t("enterprise.compliance.programDetail.notAssignedMessage")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -600,10 +627,10 @@ export function ComplianceProgramDetail() {
                       {(a.user_username || a.team_name || "?").charAt(0).toUpperCase()}
                     </div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{a.user_username || a.team_name}</p>
-                    {a.team && !a.user && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-tertiary)" }}>TEAM</span>}
+                    {a.team && !a.user && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--text-tertiary)" }}>{t("enterprise.compliance.programDetail.teamTag")}</span>}
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    {a.due_date && <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Due: {a.due_date}</span>}
+                    {a.due_date && <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t("enterprise.compliance.programDetail.due", { date: a.due_date })}</span>}
                     <StatusBadge status={a.status} />
                   </div>
                 </div>

@@ -8,29 +8,37 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/solid";
 import { useAuth } from "@/context/auth-context";
+import { useLanguage } from "../../../context/language-context";
 
 const ADMIN_ROLES = ["owner", "admin"];
 import invitationsService from "@/services/invitationsService";
 
-const STATUS_META = {
-  pending:   { label: "Pending",   color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
-  accepted:  { label: "Accepted",  color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)" },
-  expired:   { label: "Expired",   color: "#F87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.28)" },
-  cancelled: { label: "Cancelled", color: "#64748B", bg: "rgba(100,116,139,0.10)", border: "rgba(100,116,139,0.22)" },
-};
+function useStatusMeta() {
+  const { t } = useLanguage();
+  return {
+    pending:   { label: t("enterprise.platformAdmin.invitations.status.pending"),   color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
+    accepted:  { label: t("enterprise.platformAdmin.invitations.status.accepted"),  color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)" },
+    expired:   { label: t("enterprise.platformAdmin.invitations.status.expired"),   color: "#F87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.28)" },
+    cancelled: { label: t("enterprise.platformAdmin.invitations.status.cancelled"), color: "#64748B", bg: "rgba(100,116,139,0.10)", border: "rgba(100,116,139,0.22)" },
+  };
+}
 
-const ROLE_META = {
-  owner:    { label: "Owner",    color: "#F59E0B" },
-  admin:    { label: "Admin",    color: "#818CF8" },
-  manager:  { label: "Manager",  color: "#38BDF8" },
-  trainer:  { label: "Trainer",  color: "#A78BFA" },
-  employee: { label: "Employee", color: "#34D399" },
-  auditor:  { label: "Auditor",  color: "#94A3B8" },
-};
+function useRoleMeta() {
+  const { t } = useLanguage();
+  return {
+    owner:    { label: t("enterprise.settings.inviteUser.roles.owner"),    color: "#F59E0B" },
+    admin:    { label: t("enterprise.settings.inviteUser.roles.admin"),    color: "#818CF8" },
+    manager:  { label: t("enterprise.settings.inviteUser.roles.manager"),  color: "#38BDF8" },
+    trainer:  { label: t("enterprise.settings.inviteUser.roles.trainer"), color: "#A78BFA" },
+    employee: { label: t("enterprise.settings.inviteUser.roles.employee"),color: "#34D399" },
+    auditor:  { label: t("enterprise.settings.inviteUser.roles.auditor"), color: "#94A3B8" },
+  };
+}
 
 const TABS = ["all", "pending", "accepted", "expired", "cancelled"];
 
 function StatusBadge({ status }) {
+  const STATUS_META = useStatusMeta();
   const meta = STATUS_META[status] || { label: status, color: "#94A3B8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.22)" };
   return (
     <span style={{
@@ -46,6 +54,7 @@ function StatusBadge({ status }) {
 }
 
 function RoleBadge({ role }) {
+  const ROLE_META = useRoleMeta();
   const meta = ROLE_META[role] || { label: role, color: "#94A3B8" };
   return (
     <span style={{ fontSize: 12, fontWeight: 600, color: meta.color }}>
@@ -61,6 +70,7 @@ function formatDate(iso) {
 
 export default function EnterpriseInvitations() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { companies, companyRole } = useAuth();
   const canInvite = ADMIN_ROLES.includes(companyRole);
   const company = companies?.[0];
@@ -72,6 +82,14 @@ export default function EnterpriseInvitations() {
   const [acting, setActing] = useState({});
   const [error, setError] = useState(null);
 
+  const TAB_LABELS = {
+    all: t("enterprise.platformAdmin.invitations.statusTabs.all"),
+    pending: t("enterprise.platformAdmin.invitations.status.pending"),
+    accepted: t("enterprise.platformAdmin.invitations.status.accepted"),
+    expired: t("enterprise.platformAdmin.invitations.status.expired"),
+    cancelled: t("enterprise.platformAdmin.invitations.status.cancelled"),
+  };
+
   const load = useCallback(async () => {
     if (!companyId) return;
     setLoading(true);
@@ -80,10 +98,11 @@ export default function EnterpriseInvitations() {
       const data = await invitationsService.listByCompany(companyId);
       setInvitations(Array.isArray(data) ? data : (data.results ?? []));
     } catch {
-      setError("Could not load invitations.");
+      setError(t("enterprise.invitations.loadError"));
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
   useEffect(() => { load(); }, [load]);
@@ -113,10 +132,19 @@ export default function EnterpriseInvitations() {
   };
 
   const filtered = tab === "all" ? invitations : invitations.filter(i => i.status === tab);
-  const counts = TABS.reduce((acc, t) => {
-    acc[t] = t === "all" ? invitations.length : invitations.filter(i => i.status === t).length;
+  const counts = TABS.reduce((acc, tb) => {
+    acc[tb] = tb === "all" ? invitations.length : invitations.filter(i => i.status === tb).length;
     return acc;
   }, {});
+
+  const columns = [
+    t("enterprise.platformAdmin.invitations.columns.email"),
+    t("enterprise.platformAdmin.invitations.columns.role"),
+    t("enterprise.platformAdmin.invitations.columns.status"),
+    t("enterprise.platformAdmin.invitations.columns.invitedBy"),
+    t("enterprise.platformAdmin.invitations.columns.expires"),
+    t("enterprise.invitations.columns.actions"),
+  ];
 
   return (
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
@@ -124,7 +152,7 @@ export default function EnterpriseInvitations() {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F1F5F9", margin: 0, letterSpacing: "-0.01em" }}>
-            Invitations
+            {t("enterprise.platformAdmin.invitations.title")}
           </h1>
           {company?.company_name && (
             <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>{company.company_name}</p>
@@ -145,35 +173,34 @@ export default function EnterpriseInvitations() {
             onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.35)"}
           >
             <PlusIcon style={{ width: 15, height: 15 }} />
-            Invite User
+            {t("enterprise.settings.inviteUser.title")}
           </button>
         )}
       </div>
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "#0F172A", borderRadius: 10, padding: 4, border: "1px solid rgba(255,255,255,0.06)", width: "fit-content" }}>
-        {TABS.map(t => (
+        {TABS.map(tb => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tb}
+            onClick={() => setTab(tb)}
             style={{
               padding: "6px 14px", borderRadius: 7, border: "none",
               fontSize: 12, fontWeight: 600, cursor: "pointer",
-              textTransform: "capitalize",
-              background: tab === t ? "rgba(99,102,241,0.2)" : "transparent",
-              color: tab === t ? "#818CF8" : "#64748B",
+              background: tab === tb ? "rgba(99,102,241,0.2)" : "transparent",
+              color: tab === tb ? "#818CF8" : "#64748B",
               transition: "all 150ms",
             }}
           >
-            {t === "all" ? "All" : t.charAt(0).toUpperCase() + t.slice(1)}
-            {counts[t] > 0 && (
+            {TAB_LABELS[tb]}
+            {counts[tb] > 0 && (
               <span style={{
                 marginLeft: 6, fontSize: 10, fontWeight: 700,
-                background: tab === t ? "rgba(99,102,241,0.3)" : "rgba(100,116,139,0.15)",
-                color: tab === t ? "#818CF8" : "#64748B",
+                background: tab === tb ? "rgba(99,102,241,0.3)" : "rgba(100,116,139,0.15)",
+                color: tab === tb ? "#818CF8" : "#64748B",
                 padding: "1px 6px", borderRadius: 10,
               }}>
-                {counts[t]}
+                {counts[tb]}
               </span>
             )}
           </button>
@@ -191,13 +218,13 @@ export default function EnterpriseInvitations() {
         ) : filtered.length === 0 ? (
           <div style={{ padding: 56, textAlign: "center" }}>
             <EnvelopeIcon style={{ width: 36, height: 36, color: "#1E293B", margin: "0 auto 12px" }} />
-            <p style={{ color: "#64748B", fontSize: 14 }}>No invitations found</p>
+            <p style={{ color: "#64748B", fontSize: 14 }}>{t("enterprise.platformAdmin.invitations.empty")}</p>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Email", "Role", "Status", "Invited by", "Expires", "Actions"].map(h => (
+                {columns.map(h => (
                   <th key={h} style={{
                     padding: "11px 16px", textAlign: "left",
                     fontSize: 10, fontWeight: 700, color: "#64748B",
@@ -260,7 +287,7 @@ export default function EnterpriseInvitations() {
                           }}
                         >
                           <ArrowPathIcon style={{ width: 11, height: 11, animation: acting[inv.id] === "resend" ? "spin 1s linear infinite" : "none" }} />
-                          Resend
+                          {t("enterprise.invitations.resend")}
                         </button>
                         <button
                           onClick={() => handleCancel(inv)}
@@ -275,7 +302,7 @@ export default function EnterpriseInvitations() {
                           }}
                         >
                           <XMarkIcon style={{ width: 11, height: 11 }} />
-                          Cancel
+                          {t("enterprise.invitations.cancel")}
                         </button>
                       </div>
                     ) : (

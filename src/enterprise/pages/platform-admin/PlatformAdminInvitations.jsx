@@ -6,45 +6,59 @@ import {
 } from "@heroicons/react/24/solid";
 import api from "@/services/api";
 import invitationsService from "@/services/invitationsService";
+import { useLanguage } from "../../../context/language-context";
 
-const STATUS_META = {
-  pending:   { label: "Pending",   color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
-  accepted:  { label: "Accepted",  color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)" },
-  expired:   { label: "Expired",   color: "#F87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.28)" },
-  cancelled: { label: "Cancelled", color: "#64748B", bg: "rgba(100,116,139,0.10)", border: "rgba(100,116,139,0.22)" },
-};
+function useStatusMeta() {
+  const { t } = useLanguage();
+  return {
+    pending:   { label: t("enterprise.platformAdmin.invitations.status.pending"),   color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)" },
+    accepted:  { label: t("enterprise.platformAdmin.invitations.status.accepted"),  color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)" },
+    expired:   { label: t("enterprise.platformAdmin.invitations.status.expired"),   color: "#F87171", bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.28)" },
+    cancelled: { label: t("enterprise.platformAdmin.invitations.status.cancelled"), color: "#64748B", bg: "rgba(100,116,139,0.10)", border: "rgba(100,116,139,0.22)" },
+  };
+}
 
-const ROLE_META = {
-  owner:    { label: "Owner",    color: "#F59E0B" },
-  admin:    { label: "Admin",    color: "#818CF8" },
-  manager:  { label: "Manager",  color: "#38BDF8" },
-  trainer:  { label: "Trainer",  color: "#A78BFA" },
-  employee: { label: "Employee", color: "#34D399" },
-  auditor:  { label: "Auditor",  color: "#94A3B8" },
-};
+function useRoleMeta() {
+  const { t } = useLanguage();
+  return {
+    owner:    { label: t("enterprise.settings.inviteUser.roles.owner"),    color: "#F59E0B" },
+    admin:    { label: t("enterprise.settings.inviteUser.roles.admin"),    color: "#818CF8" },
+    manager:  { label: t("enterprise.settings.inviteUser.roles.manager"),  color: "#38BDF8" },
+    trainer:  { label: t("enterprise.settings.inviteUser.roles.trainer"), color: "#A78BFA" },
+    employee: { label: t("enterprise.settings.inviteUser.roles.employee"),color: "#34D399" },
+    auditor:  { label: t("enterprise.settings.inviteUser.roles.auditor"), color: "#94A3B8" },
+  };
+}
 
-const ROLES = [
-  { value: "admin",    label: "Admin",    color: "#818CF8", bg: "rgba(129,140,248,0.12)", border: "rgba(129,140,248,0.28)" },
-  { value: "manager",  label: "Manager",  color: "#38BDF8", bg: "rgba(56,189,248,0.12)",  border: "rgba(56,189,248,0.28)"  },
-  { value: "trainer",  label: "Trainer",  color: "#A78BFA", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.28)" },
-  { value: "employee", label: "Employee", color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)"  },
-  { value: "auditor",  label: "Auditor",  color: "#94A3B8", bg: "rgba(148,163,184,0.10)", border: "rgba(148,163,184,0.22)" },
-  { value: "owner",    label: "Owner",    color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
-];
+function useRoles() {
+  const { t } = useLanguage();
+  return [
+    { value: "admin",    label: t("enterprise.settings.inviteUser.roles.admin"),    color: "#818CF8", bg: "rgba(129,140,248,0.12)", border: "rgba(129,140,248,0.28)" },
+    { value: "manager",  label: t("enterprise.settings.inviteUser.roles.manager"),  color: "#38BDF8", bg: "rgba(56,189,248,0.12)",  border: "rgba(56,189,248,0.28)"  },
+    { value: "trainer",  label: t("enterprise.settings.inviteUser.roles.trainer"),  color: "#A78BFA", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.28)" },
+    { value: "employee", label: t("enterprise.settings.inviteUser.roles.employee"), color: "#34D399", bg: "rgba(52,211,153,0.12)",  border: "rgba(52,211,153,0.28)"  },
+    { value: "auditor",  label: t("enterprise.settings.inviteUser.roles.auditor"),  color: "#94A3B8", bg: "rgba(148,163,184,0.10)", border: "rgba(148,163,184,0.22)" },
+    { value: "owner",    label: t("enterprise.settings.inviteUser.roles.owner"),    color: "#F59E0B", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
+  ];
+}
 
-const STAGES = [
-  { value: "candidate",       label: "Candidate" },
-  { value: "onboarding",      label: "Onboarding" },
-  { value: "trainee",         label: "Trainee" },
-  { value: "active_employee", label: "Active Employee" },
-  { value: "contractor",      label: "Contractor" },
-  { value: "former_employee", label: "Former Employee" },
-];
+function useStages() {
+  const { t } = useLanguage();
+  return [
+    { value: "candidate",       label: t("enterprise.settings.company.stages.candidate") },
+    { value: "onboarding",      label: t("enterprise.settings.company.stages.onboarding") },
+    { value: "trainee",         label: t("enterprise.settings.company.stages.trainee") },
+    { value: "active_employee", label: t("enterprise.settings.company.stages.activeEmployee") },
+    { value: "contractor",      label: t("enterprise.settings.company.stages.contractor") },
+    { value: "former_employee", label: t("enterprise.settings.company.stages.formerEmployee") },
+  ];
+}
 
 const TOP_TABS  = ["global", "recent"];
 const STATUS_TABS = ["all", "pending", "accepted", "expired", "cancelled"];
 
 function StatusBadge({ status }) {
+  const STATUS_META = useStatusMeta();
   const meta = STATUS_META[status] || { label: status, color: "#94A3B8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.22)" };
   return (
     <span style={{
@@ -60,6 +74,7 @@ function StatusBadge({ status }) {
 }
 
 function RoleBadge({ role }) {
+  const ROLE_META = useRoleMeta();
   const meta = ROLE_META[role] || { label: role, color: "#94A3B8" };
   return <span style={{ fontSize: 12, fontWeight: 600, color: meta.color }}>{meta.label}</span>;
 }
@@ -71,6 +86,9 @@ function formatDate(iso) {
 
 /* ── Invite Modal ──────────────────────────────────────────────────────── */
 function InviteModal({ companies, onClose, onSent }) {
+  const { t } = useLanguage();
+  const ROLES = useRoles();
+  const STAGES = useStages();
   const [companyId, setCompanyId] = useState("");
   const [email, setEmail]         = useState("");
   const [role, setRole]           = useState("employee");
@@ -91,7 +109,7 @@ function InviteModal({ companies, onClose, onSent }) {
       setSuccess(true);
       onSent?.();
     } catch (err) {
-      setError(err?.email?.[0] || err?.detail || "Failed to send invitation.");
+      setError(err?.email?.[0] || err?.detail || t("enterprise.settings.inviteUser.sendFailed"));
     } finally {
       setSending(false);
     }
@@ -123,9 +141,9 @@ function InviteModal({ companies, onClose, onSent }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px" }}>
             <div>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#F1F5F9", margin: 0, letterSpacing: "-0.01em" }}>
-                New Invitation
+                {t("enterprise.platformAdmin.invitations.inviteModal.title")}
               </h2>
-              <p style={{ fontSize: 12, color: "#64748B", margin: "3px 0 0" }}>Send an invitation to any company</p>
+              <p style={{ fontSize: 12, color: "#64748B", margin: "3px 0 0" }}>{t("enterprise.platformAdmin.invitations.inviteModal.subtitle")}</p>
             </div>
             <button
               onClick={onClose}
@@ -149,7 +167,7 @@ function InviteModal({ companies, onClose, onSent }) {
               }}>
                 <CheckCircleIcon style={{ width: 28, height: 28, color: "#34D399" }} />
               </div>
-              <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", margin: "0 0 8px" }}>Invitation Sent!</p>
+              <p style={{ fontSize: 16, fontWeight: 800, color: "#F1F5F9", margin: "0 0 8px" }}>{t("enterprise.settings.inviteUser.sentTitle")}</p>
               <div style={{
                 background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.22)",
                 borderRadius: 11, padding: "12px 18px", marginBottom: 20,
@@ -163,13 +181,13 @@ function InviteModal({ companies, onClose, onSent }) {
                   onClick={() => { setSuccess(false); setEmail(""); setCompanyId(""); }}
                   style={{ flex: 1, padding: 11, borderRadius: 10, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.22)", color: "#818CF8", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                 >
-                  Send Another
+                  {t("enterprise.platformAdmin.invitations.inviteModal.sendAnother")}
                 </button>
                 <button
                   onClick={onClose}
                   style={{ flex: 1, padding: 11, borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #818CF8)", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                 >
-                  Done
+                  {t("enterprise.platformAdmin.invitations.inviteModal.done")}
                 </button>
               </div>
             </div>
@@ -179,7 +197,7 @@ function InviteModal({ companies, onClose, onSent }) {
               {/* Company selector */}
               <div>
                 <label style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 8 }}>
-                  Company
+                  {t("enterprise.platformAdmin.invitations.inviteModal.companyLabel")}
                 </label>
                 <div style={{ position: "relative" }}>
                   <BuildingOffice2Icon style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "#64748B", pointerEvents: "none" }} />
@@ -190,7 +208,7 @@ function InviteModal({ companies, onClose, onSent }) {
                     onFocus={e => e.target.style.borderColor = "rgba(99,102,241,0.45)"}
                     onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
                   >
-                    <option value="" style={{ background: "#1E293B" }}>Select company…</option>
+                    <option value="" style={{ background: "#1E293B" }}>{t("enterprise.platformAdmin.invitations.inviteModal.selectCompany")}</option>
                     {companies.map(c => (
                       <option key={c.id} value={c.id} style={{ background: "#1E293B" }}>{c.name}</option>
                     ))}
@@ -204,7 +222,7 @@ function InviteModal({ companies, onClose, onSent }) {
               {/* Email */}
               <div>
                 <label style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 8 }}>
-                  Email address
+                  {t("enterprise.platformAdmin.invitations.inviteModal.emailLabel")}
                 </label>
                 <div style={{ position: "relative" }}>
                   <EnvelopeIcon style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "#64748B", pointerEvents: "none" }} />
@@ -223,7 +241,7 @@ function InviteModal({ companies, onClose, onSent }) {
               {/* Role */}
               <div>
                 <label style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 10 }}>
-                  Role
+                  {t("enterprise.settings.company.members.addModal.roleLabel")}
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                   {ROLES.map(r => (
@@ -245,7 +263,7 @@ function InviteModal({ companies, onClose, onSent }) {
               {/* Stage */}
               <div>
                 <label style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 8 }}>
-                  Employee Stage
+                  {t("enterprise.settings.inviteUser.employeeStage")}
                 </label>
                 <div style={{ position: "relative" }}>
                   <select
@@ -275,11 +293,11 @@ function InviteModal({ companies, onClose, onSent }) {
                 <div style={{ background: "rgba(99,102,241,0.07)", border: "1px solid rgba(99,102,241,0.18)", borderRadius: 11, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
                   <EnvelopeIcon style={{ width: 15, height: 15, color: "#818CF8", flexShrink: 0 }} />
                   <div>
-                    <span style={{ fontSize: 11, color: "#64748B", display: "block", marginBottom: 1 }}>Sending to</span>
+                    <span style={{ fontSize: 11, color: "#64748B", display: "block", marginBottom: 1 }}>{t("enterprise.platformAdmin.invitations.inviteModal.sendingTo")}</span>
                     <span style={{ fontSize: 13, fontWeight: 800, color: "#818CF8" }}>{activeEmail}</span>
                     {selectedRole && (
                       <span style={{ fontSize: 11, color: "#64748B", marginLeft: 8 }}>
-                        as <span style={{ color: selectedRole.color, fontWeight: 700 }}>{selectedRole.label}</span>
+                        {t("enterprise.platformAdmin.invitations.inviteModal.as")} <span style={{ color: selectedRole.color, fontWeight: 700 }}>{selectedRole.label}</span>
                       </span>
                     )}
                   </div>
@@ -303,7 +321,7 @@ function InviteModal({ companies, onClose, onSent }) {
                 }}
               >
                 <PaperAirplaneIcon style={{ width: 16, height: 16 }} />
-                {sending ? "Sending…" : "Send Invitation"}
+                {sending ? t("enterprise.settings.inviteUser.sending") : t("enterprise.settings.inviteUser.sendInvitation")}
               </button>
             </div>
           )}
@@ -315,6 +333,7 @@ function InviteModal({ companies, onClose, onSent }) {
 
 /* ── Main Page ─────────────────────────────────────────────────────────── */
 export default function PlatformAdminInvitations() {
+  const { t } = useLanguage();
   const [topTab, setTopTab]       = useState("global");
   const [statusTab, setStatusTab] = useState("all");
   const [invitations, setInvitations] = useState([]);
@@ -322,6 +341,14 @@ export default function PlatformAdminInvitations() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const STATUS_TAB_LABELS = {
+    all: t("enterprise.platformAdmin.invitations.statusTabs.all"),
+    pending: t("enterprise.platformAdmin.invitations.status.pending"),
+    accepted: t("enterprise.platformAdmin.invitations.status.accepted"),
+    expired: t("enterprise.platformAdmin.invitations.status.expired"),
+    cancelled: t("enterprise.platformAdmin.invitations.status.cancelled"),
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -332,10 +359,11 @@ export default function PlatformAdminInvitations() {
       const data = await invitationsService.listGlobal(params);
       setInvitations(Array.isArray(data) ? data : (data.results ?? []));
     } catch {
-      setError("Could not load invitations. Make sure the server is running and you have staff access.");
+      setError(t("enterprise.platformAdmin.invitations.loadError"));
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topTab]);
 
   useEffect(() => { load(); }, [load]);
@@ -347,10 +375,20 @@ export default function PlatformAdminInvitations() {
   }, []);
 
   const filtered = statusTab === "all" ? invitations : invitations.filter(i => i.status === statusTab);
-  const counts = STATUS_TABS.reduce((acc, t) => {
-    acc[t] = t === "all" ? invitations.length : invitations.filter(i => i.status === t).length;
+  const counts = STATUS_TABS.reduce((acc, s) => {
+    acc[s] = s === "all" ? invitations.length : invitations.filter(i => i.status === s).length;
     return acc;
   }, {});
+
+  const columns = [
+    t("enterprise.platformAdmin.invitations.columns.company"),
+    t("enterprise.platformAdmin.invitations.columns.email"),
+    t("enterprise.platformAdmin.invitations.columns.role"),
+    t("enterprise.platformAdmin.invitations.columns.status"),
+    t("enterprise.platformAdmin.invitations.columns.invitedBy"),
+    t("enterprise.platformAdmin.invitations.columns.sent"),
+    t("enterprise.platformAdmin.invitations.columns.expires"),
+  ];
 
   return (
     <div style={{ maxWidth: 1080, margin: "0 auto" }}>
@@ -358,9 +396,9 @@ export default function PlatformAdminInvitations() {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F1F5F9", margin: 0, letterSpacing: "-0.01em" }}>
-            Invitations
+            {t("enterprise.platformAdmin.invitations.title")}
           </h1>
-          <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>All company invitations across the platform</p>
+          <p style={{ fontSize: 13, color: "#64748B", margin: "4px 0 0" }}>{t("enterprise.platformAdmin.invitations.subtitle")}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -376,48 +414,47 @@ export default function PlatformAdminInvitations() {
           onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(99,102,241,0.35)"}
         >
           <PlusIcon style={{ width: 15, height: 15 }} />
-          New Invitation
+          {t("enterprise.platformAdmin.invitations.inviteModal.title")}
         </button>
       </div>
 
       {/* Top tabs */}
       <div style={{ display: "flex", gap: 2, marginBottom: 20, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        {TOP_TABS.map(t => (
+        {TOP_TABS.map(tb => (
           <button
-            key={t}
-            onClick={() => setTopTab(t)}
+            key={tb}
+            onClick={() => setTopTab(tb)}
             style={{
               padding: "8px 18px", border: "none", background: "transparent",
               fontSize: 13, fontWeight: 600, cursor: "pointer",
-              color: topTab === t ? "#818CF8" : "#64748B",
-              borderBottom: topTab === t ? "2px solid #6366F1" : "2px solid transparent",
+              color: topTab === tb ? "#818CF8" : "#64748B",
+              borderBottom: topTab === tb ? "2px solid #6366F1" : "2px solid transparent",
               transition: "all 150ms", marginBottom: -1,
             }}
           >
-            {t === "recent" ? "Recent (7 days)" : "Global"}
+            {tb === "recent" ? t("enterprise.platformAdmin.invitations.recentTab") : t("enterprise.platformAdmin.invitations.globalTab")}
           </button>
         ))}
       </div>
 
       {/* Status filter */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "#0F172A", borderRadius: 10, padding: 4, border: "1px solid rgba(255,255,255,0.06)", width: "fit-content" }}>
-        {STATUS_TABS.map(t => (
+        {STATUS_TABS.map(s => (
           <button
-            key={t}
-            onClick={() => setStatusTab(t)}
+            key={s}
+            onClick={() => setStatusTab(s)}
             style={{
               padding: "6px 14px", borderRadius: 7, border: "none",
               fontSize: 12, fontWeight: 600, cursor: "pointer",
-              textTransform: "capitalize",
-              background: statusTab === t ? "rgba(99,102,241,0.2)" : "transparent",
-              color: statusTab === t ? "#818CF8" : "#64748B",
+              background: statusTab === s ? "rgba(99,102,241,0.2)" : "transparent",
+              color: statusTab === s ? "#818CF8" : "#64748B",
               transition: "all 150ms",
             }}
           >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-            {counts[t] > 0 && (
-              <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, background: statusTab === t ? "rgba(99,102,241,0.3)" : "rgba(100,116,139,0.15)", color: statusTab === t ? "#818CF8" : "#64748B", padding: "1px 6px", borderRadius: 10 }}>
-                {counts[t]}
+            {STATUS_TAB_LABELS[s]}
+            {counts[s] > 0 && (
+              <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, background: statusTab === s ? "rgba(99,102,241,0.3)" : "rgba(100,116,139,0.15)", color: statusTab === s ? "#818CF8" : "#64748B", padding: "1px 6px", borderRadius: 10 }}>
+                {counts[s]}
               </span>
             )}
           </button>
@@ -435,13 +472,13 @@ export default function PlatformAdminInvitations() {
         ) : filtered.length === 0 ? (
           <div style={{ padding: 56, textAlign: "center" }}>
             <EnvelopeIcon style={{ width: 36, height: 36, color: "#1E293B", margin: "0 auto 12px" }} />
-            <p style={{ color: "#64748B", fontSize: 14 }}>No invitations found</p>
+            <p style={{ color: "#64748B", fontSize: 14 }}>{t("enterprise.platformAdmin.invitations.empty")}</p>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Company", "Email", "Role", "Status", "Invited by", "Sent", "Expires"].map(h => (
+                {columns.map(h => (
                   <th key={h} style={{ padding: "11px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.07em" }}>{h}</th>
                 ))}
               </tr>

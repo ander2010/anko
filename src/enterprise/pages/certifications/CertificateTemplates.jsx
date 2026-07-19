@@ -3,6 +3,7 @@ import { PlusIcon, AcademicCapIcon, XMarkIcon, CheckBadgeIcon } from "@heroicons
 import { useNavigate } from "react-router-dom";
 import { certApi, companyApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { EmptyState } from "../../components/EmptyState";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
 
@@ -12,6 +13,7 @@ const INPUT = {
 };
 
 function IssueCertModal({ template, onClose, onIssued }) {
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
@@ -29,18 +31,18 @@ function IssueCertModal({ template, onClose, onIssued }) {
   }, [activeCompanyId]);
 
   const handleIssue = async () => {
-    if (!selectedUserId) { setError("Selecciona un usuario."); return; }
+    if (!selectedUserId) { setError(t("enterprise.certifications.templates.issueModal.selectUser")); return; }
     setSaving(true);
     setError("");
     try {
       const payload = { user_id: selectedUserId };
       if (template.requires_score && score !== "") payload.score = score;
       await certApi.issueCert(template.id, payload);
-      setSuccess("Certificado emitido correctamente.");
+      setSuccess(t("enterprise.certifications.templates.issueModal.success"));
       onIssued?.();
       setTimeout(onClose, 1200);
     } catch (err) {
-      setError(err?.detail || err?.score?.[0] || err?.user_id?.[0] || "No se pudo emitir el certificado.");
+      setError(err?.detail || err?.score?.[0] || err?.user_id?.[0] || t("enterprise.certifications.templates.issueModal.error"));
     } finally {
       setSaving(false);
     }
@@ -53,16 +55,16 @@ function IssueCertModal({ template, onClose, onIssued }) {
         <div style={{ padding: "18px 20px" }} className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>Emitir Certificado</p>
+              <p style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 14 }}>{t("enterprise.certifications.templates.issueModal.title")}</p>
               <p style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>{template.name}</p>
             </div>
             <button onClick={onClose} style={{ color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}><XMarkIcon className="h-5 w-5" /></button>
           </div>
 
           <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 6 }}>Usuario</label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 6 }}>{t("enterprise.certifications.templates.issueModal.userLabel")}</label>
             {loadingMembers ? (
-              <div style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "8px 0" }}>Cargando miembros…</div>
+              <div style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "8px 0" }}>{t("enterprise.certifications.templates.issueModal.loadingMembers")}</div>
             ) : (
               <div style={{ maxHeight: 200, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8 }}>
                 {members.map((m) => {
@@ -77,7 +79,7 @@ function IssueCertModal({ template, onClose, onIssued }) {
                     </button>
                   );
                 })}
-                {members.length === 0 && <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "10px 12px" }}>Sin miembros activos.</p>}
+                {members.length === 0 && <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "10px 12px" }}>{t("enterprise.certifications.templates.issueModal.noMembers")}</p>}
               </div>
             )}
           </div>
@@ -85,7 +87,7 @@ function IssueCertModal({ template, onClose, onIssued }) {
           {template.requires_score && (
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-tertiary)", display: "block", marginBottom: 6 }}>
-                Nota (mínimo requerido: {template.minimum_score}%)
+                {t("enterprise.certifications.templates.issueModal.scoreLabel", { min: template.minimum_score })}
               </label>
               <input style={INPUT} type="number" min="0" max="100" value={score} onChange={(e) => setScore(e.target.value)} />
             </div>
@@ -95,9 +97,9 @@ function IssueCertModal({ template, onClose, onIssued }) {
           {success && <p style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>{success}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">Cancelar</button>
+            <button type="button" onClick={onClose} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
             <button type="button" onClick={handleIssue} disabled={saving || !selectedUserId} className="ank-btn-accent text-xs" style={{ opacity: saving || !selectedUserId ? 0.6 : 1 }}>
-              {saving ? "Emitiendo…" : "Emitir"}
+              {saving ? t("enterprise.certifications.templates.issueModal.issuing") : t("enterprise.certifications.templates.issueModal.issue")}
             </button>
           </div>
         </div>
@@ -107,6 +109,7 @@ function IssueCertModal({ template, onClose, onIssued }) {
 }
 
 export function CertificateTemplates() {
+  const { t } = useLanguage();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [issuingTemplate, setIssuingTemplate] = useState(null);
@@ -118,57 +121,68 @@ export function CertificateTemplates() {
 
   useEffect(() => { load(); }, []);
 
-  const toggle = async (t) => {
-    if (t.is_active) await certApi.deactivateTemplate(t.id);
-    else await certApi.activateTemplate(t.id);
+  const toggle = async (tpl) => {
+    if (tpl.is_active) await certApi.deactivateTemplate(tpl.id);
+    else await certApi.activateTemplate(tpl.id);
     load();
   };
 
   const btn = { fontSize: 11, fontWeight: 700, background: "none", border: "none", cursor: "pointer", padding: "4px 8px" };
 
+  const columns = [
+    t("enterprise.certifications.templates.columns.code"),
+    t("enterprise.certifications.templates.columns.name"),
+    t("enterprise.certifications.templates.columns.type"),
+    t("enterprise.certifications.templates.columns.validity"),
+    t("enterprise.certifications.templates.columns.reqScore"),
+    t("enterprise.certifications.templates.columns.active"),
+    t("enterprise.certifications.templates.columns.issued"),
+    t("enterprise.certifications.templates.columns.actions"),
+  ];
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Certificate Templates</h1>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.certifications.templates.title")}</h1>
         <button onClick={() => navigate("/enterprise/certifications/templates/new")} className="ank-btn-accent text-xs">
-          <PlusIcon className="h-3.5 w-3.5" /> New Template
+          <PlusIcon className="h-3.5 w-3.5" /> {t("enterprise.certifications.templates.newTemplate")}
         </button>
       </div>
 
       {loading ? <TableSkeleton rows={4} cols={6} /> : templates.length === 0 ? (
-        <EmptyState icon={AcademicCapIcon} title="No templates" message="Create your first certificate template." action="New Template" onAction={() => navigate("/enterprise/certifications/templates/new")} />
+        <EmptyState icon={AcademicCapIcon} title={t("enterprise.certifications.templates.empty.title")} message={t("enterprise.certifications.templates.empty.message")} action={t("enterprise.certifications.templates.newTemplate")} onAction={() => navigate("/enterprise/certifications/templates/new")} />
       ) : (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table className="w-full" style={{ fontSize: 13, borderCollapse: "collapse" }}>
               <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
-                  {["Code", "Name", "Type", "Validity", "Req. Score", "Active", "Issued", "Actions"].map((h) => (
+                  {columns.map((h) => (
                     <th key={h} style={{ textAlign: "left", padding: "10px 16px", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {templates.map((t) => (
-                  <tr key={t.id} style={{ borderBottom: "1px solid var(--border)" }}>
-                    <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: "var(--text-tertiary)" }}>{t.code}</td>
-                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{t.name}</td>
-                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)", textTransform: "capitalize" }}>{t.certificate_type}</td>
-                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{t.validity_days === 0 ? "No expiry" : `${t.validity_days}d`}</td>
-                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{t.requires_score ? `${t.minimum_score}%` : "—"}</td>
+                {templates.map((tpl) => (
+                  <tr key={tpl.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: "var(--text-tertiary)" }}>{tpl.code}</td>
+                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text-primary)" }}>{tpl.name}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)", textTransform: "capitalize" }}>{tpl.certificate_type}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{tpl.validity_days === 0 ? t("enterprise.certifications.myCertifications.noExpiry") : `${tpl.validity_days}d`}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{tpl.requires_score ? `${tpl.minimum_score}%` : "—"}</td>
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: t.is_active ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.06)", color: t.is_active ? "#4ade80" : "#8B8B9C" }}>
-                        {t.is_active ? "Active" : "Inactive"}
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: tpl.is_active ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.06)", color: tpl.is_active ? "#4ade80" : "#8B8B9C" }}>
+                        {tpl.is_active ? t("enterprise.certifications.templates.active") : t("enterprise.certifications.templates.inactive")}
                       </span>
                     </td>
-                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{t.issued_count ?? 0}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{tpl.issued_count ?? 0}</td>
                     <td style={{ padding: "12px 16px" }}>
                       <div className="flex gap-1 flex-wrap">
-                        <button style={{ ...btn, color: "#818CF8" }} onClick={() => navigate(`/enterprise/certifications/templates/${t.id}/edit`)}>Edit</button>
-                        <button style={{ ...btn, color: t.is_active ? "var(--text-tertiary)" : "#4ade80" }} onClick={() => toggle(t)}>
-                          {t.is_active ? "Deactivate" : "Activate"}
+                        <button style={{ ...btn, color: "#818CF8" }} onClick={() => navigate(`/enterprise/certifications/templates/${tpl.id}/edit`)}>{t("enterprise.certifications.templates.edit")}</button>
+                        <button style={{ ...btn, color: tpl.is_active ? "var(--text-tertiary)" : "#4ade80" }} onClick={() => toggle(tpl)}>
+                          {tpl.is_active ? t("enterprise.certifications.templates.deactivate") : t("enterprise.certifications.templates.activate")}
                         </button>
-                        <button style={{ ...btn, color: "#818CF8" }} onClick={() => setIssuingTemplate(t)}>Issue</button>
+                        <button style={{ ...btn, color: "#818CF8" }} onClick={() => setIssuingTemplate(tpl)}>{t("enterprise.certifications.templates.issue")}</button>
                       </div>
                     </td>
                   </tr>

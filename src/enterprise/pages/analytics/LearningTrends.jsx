@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { analyticsApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { EmptyState } from "../../components/EmptyState";
 
 export function LearningTrends() {
+  const { t } = useLanguage();
   const [data, setData] = useState([]);
   const [days, setDays] = useState("90");
   const [loading, setLoading] = useState(true);
@@ -21,16 +23,16 @@ export function LearningTrends() {
     yaxis: { labels: { formatter: (v) => Math.round(v), style: { colors: "#64748B" } } },
     dataLabels: { enabled: false },
     grid: { borderColor: "rgba(255,255,255,0.07)" },
-    tooltip: { theme: "dark", y: { formatter: (v) => `${v} completions` } },
+    tooltip: { theme: "dark", y: { formatter: (v) => t("enterprise.analytics.learningTrends.tooltipCompletions", { n: v }) } },
   };
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Learning Trends</h1>
+        <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.analytics.learningTrends.title")}</h1>
         <select value={days} onChange={(e) => setDays(e.target.value)}
           style={{ fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 10px", color: "var(--text-secondary)", outline: "none", cursor: "pointer" }}>
-          {["30", "60", "90", "180"].map((d) => <option key={d} value={d}>{d} days</option>)}
+          {["30", "60", "90", "180"].map((d) => <option key={d} value={d}>{t("enterprise.analytics.daysOption", { n: d })}</option>)}
         </select>
       </div>
 
@@ -39,10 +41,10 @@ export function LearningTrends() {
           <div style={{ height: 256 }} className="flex items-center justify-center">
             <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="animate-spin h-8 w-8 rounded-full border-2" />
           </div>
-        ) : data.length === 0 ? <EmptyState title="No learning trend data" /> : (
+        ) : data.length === 0 ? <EmptyState title={t("enterprise.analytics.learningTrends.empty")} /> : (
           <ReactApexChart
             options={options}
-            series={[{ name: "Completions", data: data.map((d) => d.count ?? d.completions ?? 0) }]}
+            series={[{ name: t("enterprise.analytics.learningTrends.seriesName"), data: data.map((d) => d.count ?? d.completions ?? 0) }]}
             type="bar" height={300}
           />
         )}

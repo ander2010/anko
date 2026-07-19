@@ -10,30 +10,10 @@ import {
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { API_BASE } from "@/services/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const SOURCE_TYPES = [
-  { value: "policy",           label: "Política" },
-  { value: "procedure",        label: "Procedimiento" },
-  { value: "regulation",       label: "Regulación" },
-  { value: "manual",           label: "Manual" },
-  { value: "training_material",label: "Material de formación" },
-  { value: "other",            label: "Otro" },
-];
-
-const PROCESS_TYPES = [
-  { value: "course",         label: "Curso",               desc: "Ruta estructurada con módulos, evaluaciones y seguimiento de progreso." },
-  { value: "tutorial",       label: "Tutorial",             desc: "Guía paso a paso enfocada en una habilidad o tarea específica." },
-  { value: "study_material", label: "Material de estudio",  desc: "Documento de referencia o lectura sin estructura fija." },
-];
-
-const DIFFICULTIES = [
-  { value: "easy",   label: "Fácil",   color: "#4ade80", bg: "rgba(74,222,128,0.1)" },
-  { value: "medium", label: "Medio",   color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
-  { value: "hard",   label: "Difícil", color: "#f87171", bg: "rgba(239,68,68,0.1)"  },
-];
 
 const inputStyle = {
   width: "100%",
@@ -45,6 +25,36 @@ const inputStyle = {
   fontSize: 13,
   outline: "none",
 };
+
+function useSourceTypes() {
+  const { t } = useLanguage();
+  return [
+    { value: "policy", label: t("enterprise.knowledge.sourceNew.sourceTypes.policy") },
+    { value: "procedure", label: t("enterprise.knowledge.sourceNew.sourceTypes.procedure") },
+    { value: "regulation", label: t("enterprise.knowledge.sourceNew.sourceTypes.regulation") },
+    { value: "manual", label: t("enterprise.knowledge.sourceNew.sourceTypes.manual") },
+    { value: "training_material", label: t("enterprise.knowledge.sourceNew.sourceTypes.trainingMaterial") },
+    { value: "other", label: t("enterprise.knowledge.sourceNew.sourceTypes.other") },
+  ];
+}
+
+function useProcessTypes() {
+  const { t } = useLanguage();
+  return [
+    { value: "course", label: t("enterprise.knowledge.sourceNew.processTypes.course.label"), desc: t("enterprise.knowledge.sourceNew.processTypes.course.desc") },
+    { value: "tutorial", label: t("enterprise.knowledge.sourceNew.processTypes.tutorial.label"), desc: t("enterprise.knowledge.sourceNew.processTypes.tutorial.desc") },
+    { value: "study_material", label: t("enterprise.knowledge.sourceNew.processTypes.studyMaterial.label"), desc: t("enterprise.knowledge.sourceNew.processTypes.studyMaterial.desc") },
+  ];
+}
+
+function useDifficulties() {
+  const { t } = useLanguage();
+  return [
+    { value: "easy", label: t("enterprise.knowledge.sources.difficulty.easy"), color: "#4ade80", bg: "rgba(74,222,128,0.1)" },
+    { value: "medium", label: t("enterprise.knowledge.sources.difficulty.medium"), color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
+    { value: "hard", label: t("enterprise.knowledge.sources.difficulty.hard"), color: "#f87171", bg: "rgba(239,68,68,0.1)" },
+  ];
+}
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
@@ -87,10 +97,12 @@ function StepBar({ current, steps }) {
 // ─── Step 1: Información básica ───────────────────────────────────────────────
 
 function Step1({ form, onChange, onNext, onCancel }) {
+  const { t } = useLanguage();
+  const SOURCE_TYPES = useSourceTypes();
   const [error, setError] = useState("");
 
   const handleNext = () => {
-    if (!form.name.trim()) { setError("El nombre es obligatorio."); return; }
+    if (!form.name.trim()) { setError(t("enterprise.knowledge.sourceNew.nameRequired")); return; }
     setError(""); onNext();
   };
 
@@ -98,10 +110,10 @@ function Step1({ form, onChange, onNext, onCancel }) {
     <div className="space-y-5">
       {/* Nombre */}
       <div>
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Nombre del Proceso *</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.nameLabel")}</p>
         <input
           autoFocus
-          placeholder="ej. Inducción general, Manual de seguridad…"
+          placeholder={t("enterprise.knowledge.sourceNew.namePlaceholder")}
           value={form.name}
           onChange={(e) => { onChange("name", e.target.value); setError(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleNext()}
@@ -115,11 +127,11 @@ function Step1({ form, onChange, onNext, onCancel }) {
       {/* Descripción */}
       <div>
         <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-          Descripción <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>(opcional)</span>
+          {t("enterprise.knowledge.sourceNew.descriptionLabel")} <span style={{ color: "var(--text-tertiary)", fontWeight: 400 }}>({t("enterprise.learning.paths.wizard.optional")})</span>
         </p>
         <textarea
           rows={3}
-          placeholder="Describe brevemente de qué trata este proceso…"
+          placeholder={t("enterprise.knowledge.sourceNew.descriptionPlaceholder")}
           value={form.description}
           onChange={(e) => onChange("description", e.target.value)}
           style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }}
@@ -130,22 +142,22 @@ function Step1({ form, onChange, onNext, onCancel }) {
 
       {/* Tipo de fuente */}
       <div>
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Tipo de fuente *</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{t("enterprise.knowledge.sourceNew.sourceTypeLabel")}</p>
         <div className="grid grid-cols-2 gap-2">
-          {SOURCE_TYPES.map((t) => (
+          {SOURCE_TYPES.map((opt) => (
             <button
-              key={t.value}
+              key={opt.value}
               type="button"
-              onClick={() => onChange("source_type", t.value)}
+              onClick={() => onChange("source_type", opt.value)}
               style={{
-                background: form.source_type === t.value ? "var(--bg-accent)" : "var(--bg-elevated)",
-                border: `1px solid ${form.source_type === t.value ? "var(--accent)" : "var(--border)"}`,
+                background: form.source_type === opt.value ? "var(--bg-accent)" : "var(--bg-elevated)",
+                border: `1px solid ${form.source_type === opt.value ? "var(--accent)" : "var(--border)"}`,
                 borderRadius: 6, padding: "8px 12px", textAlign: "left", cursor: "pointer",
                 transition: "all 150ms",
               }}
             >
-              <span style={{ fontSize: 12, fontWeight: 600, color: form.source_type === t.value ? "var(--accent)" : "var(--text-primary)" }}>
-                {t.label}
+              <span style={{ fontSize: 12, fontWeight: 600, color: form.source_type === opt.value ? "var(--accent)" : "var(--text-primary)" }}>
+                {opt.label}
               </span>
             </button>
           ))}
@@ -153,9 +165,9 @@ function Step1({ form, onChange, onNext, onCancel }) {
       </div>
 
       <div className="flex justify-between gap-3 pt-2">
-        <button onClick={onCancel} className="ank-btn-ghost text-xs">Cancelar</button>
+        <button onClick={onCancel} className="ank-btn-ghost text-xs">{t("enterprise.compliance.programs.cancel")}</button>
         <button onClick={handleNext} className="ank-btn-accent text-xs">
-          Siguiente <ArrowRightIcon className="h-3.5 w-3.5" />
+          {t("enterprise.knowledge.sourceNew.next")} <ArrowRightIcon className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
@@ -165,30 +177,33 @@ function Step1({ form, onChange, onNext, onCancel }) {
 // ─── Step 2: Configuración ────────────────────────────────────────────────────
 
 function Step2({ form, onChange, onBack, onNext, saving, error }) {
+  const { t } = useLanguage();
+  const PROCESS_TYPES = useProcessTypes();
+  const DIFFICULTIES = useDifficulties();
   return (
     <div className="space-y-6">
       {/* Tipo de proceso */}
       <div>
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Tipo de Proceso</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{t("enterprise.knowledge.sourceNew.processTypeLabel")}</p>
         <div className="grid grid-cols-1 gap-2">
-          {PROCESS_TYPES.map((t) => (
+          {PROCESS_TYPES.map((opt) => (
             <button
-              key={t.value}
+              key={opt.value}
               type="button"
-              onClick={() => onChange("process_type", t.value)}
+              onClick={() => onChange("process_type", opt.value)}
               style={{
-                background: form.process_type === t.value ? "var(--bg-accent)" : "var(--bg-elevated)",
-                border: `1px solid ${form.process_type === t.value ? "var(--accent)" : "var(--border)"}`,
+                background: form.process_type === opt.value ? "var(--bg-accent)" : "var(--bg-elevated)",
+                border: `1px solid ${form.process_type === opt.value ? "var(--accent)" : "var(--border)"}`,
                 borderRadius: 6, padding: "10px 14px", textAlign: "left", cursor: "pointer", transition: "all 150ms",
               }}
             >
               <div className="flex items-center justify-between">
-                <span style={{ fontSize: 13, fontWeight: 600, color: form.process_type === t.value ? "var(--accent)" : "var(--text-primary)" }}>
-                  {t.label}
+                <span style={{ fontSize: 13, fontWeight: 600, color: form.process_type === opt.value ? "var(--accent)" : "var(--text-primary)" }}>
+                  {opt.label}
                 </span>
-                {form.process_type === t.value && <CheckCircleIcon style={{ width: 16, height: 16, color: "var(--accent)" }} />}
+                {form.process_type === opt.value && <CheckCircleIcon style={{ width: 16, height: 16, color: "var(--accent)" }} />}
               </div>
-              <p style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{t.desc}</p>
+              <p style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>{opt.desc}</p>
             </button>
           ))}
         </div>
@@ -196,7 +211,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
 
       {/* Dificultad */}
       <div>
-        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Dificultad</p>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{t("enterprise.knowledge.sourceNew.difficultyLabel")}</p>
         <div className="flex gap-2">
           {DIFFICULTIES.map((d) => (
             <button
@@ -220,7 +235,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
       {/* Puntaje y duración */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Puntaje mínimo (%)</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.minScoreLabel")}</p>
           <div className="flex items-center gap-2">
             <input
               type="number" min="0" max="100"
@@ -234,17 +249,17 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
           </div>
         </div>
         <div>
-          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>Duración estimada</p>
+          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.durationLabel")}</p>
           <div className="flex items-center gap-2">
             <input
-              type="number" min="1" placeholder="ej. 60"
+              type="number" min="1" placeholder={t("enterprise.knowledge.sourceNew.durationPlaceholder")}
               value={form.estimated_duration_minutes || ""}
               onChange={(e) => onChange("estimated_duration_minutes", e.target.value ? parseInt(e.target.value) : null)}
               style={inputStyle}
               onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
               onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
             />
-            <span style={{ color: "var(--text-tertiary)", fontSize: 13, flexShrink: 0 }}>min</span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 13, flexShrink: 0 }}>{t("enterprise.knowledge.sourceNew.minutesAbbr")}</span>
           </div>
         </div>
       </div>
@@ -257,10 +272,10 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
 
       <div className="flex justify-between gap-3 pt-2">
         <button onClick={onBack} className="ank-btn-ghost text-xs">
-          <ArrowLeftIcon className="h-3.5 w-3.5" /> Atrás
+          <ArrowLeftIcon className="h-3.5 w-3.5" /> {t("enterprise.compliance.programDetail.back")}
         </button>
         <button onClick={onNext} disabled={saving} className="ank-btn-accent text-xs" style={{ opacity: saving ? 0.7 : 1 }}>
-          {saving ? "Creando proceso…" : <><CheckIcon className="h-3.5 w-3.5" /> Crear proceso</>}
+          {saving ? t("enterprise.knowledge.sourceNew.creating") : <><CheckIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.sourceNew.createProcess")}</>}
         </button>
       </div>
     </div>
@@ -270,6 +285,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
 // ─── Step 3: Subir documentos con Uppy ───────────────────────────────────────
 
 function Step3({ ksId, companyId, onFinish }) {
+  const { t } = useLanguage();
   const [uploadedDocs, setUploadedDocs] = useState([]);
   const uppyRef = useRef(null);
 
@@ -319,9 +335,7 @@ function Step3({ ksId, companyId, onFinish }) {
   return (
     <div className="space-y-4">
       <p style={{ color: "var(--text-secondary)", fontSize: 13, lineHeight: 1.6 }}>
-        El proceso fue creado. Sube ahora los documentos que lo componen — PDFs, manuales,
-        presentaciones o cualquier material de referencia. Puedes subir más documentos en
-        cualquier momento desde la página del proceso.
+        {t("enterprise.knowledge.sourceNew.step3.intro")}
       </p>
 
       <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)" }}>
@@ -332,7 +346,7 @@ function Step3({ ksId, companyId, onFinish }) {
           inline
           proudlyDisplayPoweredByUppy={false}
           showProgressDetails
-          note="PDF, DOCX, PPTX, TXT, MD — máx. 400 MB por archivo"
+          note={t("enterprise.knowledge.sourceNew.step3.uploadNote")}
           theme="dark"
         />
       </div>
@@ -351,11 +365,11 @@ function Step3({ ksId, companyId, onFinish }) {
 
       <div className="flex justify-end gap-2 pt-1">
         <button onClick={onFinish} className="ank-btn-ghost text-xs">
-          Omitir — ir al proceso
+          {t("enterprise.knowledge.sourceNew.step3.skip")}
         </button>
         <button onClick={onFinish} className="ank-btn-accent text-xs">
           <DocumentArrowUpIcon className="h-3.5 w-3.5" />
-          {uploadedDocs.length > 0 ? `Finalizar (${uploadedDocs.length} doc${uploadedDocs.length !== 1 ? "s" : ""})` : "Finalizar"}
+          {uploadedDocs.length > 0 ? t("enterprise.knowledge.sourceNew.step3.finishWithCount", { count: uploadedDocs.length, plural: uploadedDocs.length !== 1 ? "s" : "" }) : t("enterprise.knowledge.sourceNew.step3.finish")}
         </button>
       </div>
     </div>
@@ -366,6 +380,7 @@ function Step3({ ksId, companyId, onFinish }) {
 
 export function KnowledgeSourceNew() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId, activeCompany } = useEnterprise();
 
   const [step, setStep] = useState(1);
@@ -386,7 +401,7 @@ export function KnowledgeSourceNew() {
   const onChange = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
   const handleCreateKS = async () => {
-    if (!form.name.trim()) { setError("Nombre es obligatorio."); return; }
+    if (!form.name.trim()) { setError(t("enterprise.knowledge.sourceNew.nameRequiredShort")); return; }
     setSaving(true); setError("");
     try {
       const payload = {
@@ -405,14 +420,18 @@ export function KnowledgeSourceNew() {
       setError(
         err?.response?.data?.title?.[0] ||
         err?.response?.data?.detail ||
-        "No se pudo crear el proceso. Verifica los datos e intenta de nuevo."
+        t("enterprise.knowledge.sourceNew.createError")
       );
     } finally {
       setSaving(false);
     }
   };
 
-  const STEP_LABELS = ["Información", "Configuración", "Documentos"];
+  const STEP_LABELS = [
+    t("enterprise.knowledge.sourceNew.steps.info"),
+    t("enterprise.knowledge.sourceNew.steps.config"),
+    t("enterprise.knowledge.sourceNew.steps.documents"),
+  ];
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -423,11 +442,11 @@ export function KnowledgeSourceNew() {
           className="flex items-center gap-1.5 text-xs mb-4 cursor-pointer transition-opacity hover:opacity-70"
           style={{ color: "var(--text-secondary)" }}
         >
-          <ArrowLeftIcon className="h-3.5 w-3.5" /> Volver a Procesos
+          <ArrowLeftIcon className="h-3.5 w-3.5" /> {t("enterprise.knowledge.sourceNew.backToProcesses")}
         </button>
-        <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">Nuevo Proceso</h1>
+        <h1 style={{ color: "var(--text-primary)" }} className="text-xl font-bold">{t("enterprise.knowledge.sources.newProcess")}</h1>
         <p style={{ color: "var(--text-secondary)" }} className="text-sm mt-0.5">
-          Crea un proceso de conocimiento para tu empresa
+          {t("enterprise.knowledge.sourceNew.subtitle")}
         </p>
       </div>
 
@@ -437,7 +456,7 @@ export function KnowledgeSourceNew() {
       {/* Card */}
       <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "24px" }}>
         <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 16 }}>
-          Paso {step} — {STEP_LABELS[step - 1]}
+          {t("enterprise.knowledge.sourceNew.stepLabel", { n: step, name: STEP_LABELS[step - 1] })}
         </p>
 
         {step === 1 && (
@@ -473,11 +492,11 @@ export function KnowledgeSourceNew() {
         className="flex items-center justify-between"
       >
         <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-          Empresa: <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{activeCompany?.company_name || `ID ${activeCompanyId}`}</span>
+          {t("enterprise.knowledge.sourceNew.company")} <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{activeCompany?.company_name || `ID ${activeCompanyId}`}</span>
         </p>
         {createdKsId && (
           <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>
-            Proceso ID: <span style={{ color: "#4ade80", fontWeight: 600 }}>{createdKsId}</span>
+            {t("enterprise.knowledge.sourceNew.processId")} <span style={{ color: "#4ade80", fontWeight: 600 }}>{createdKsId}</span>
           </p>
         )}
       </div>

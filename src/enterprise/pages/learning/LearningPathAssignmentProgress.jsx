@@ -7,13 +7,14 @@ import {
   ViewColumnsIcon, XMarkIcon, ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import { learningApi, knowledgeApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { ExamSimulatorDialog } from "@/widgets/dialogs/index";
 import { FlashcardViewDialog } from "@/widgets/dialogs/flashcard-view-dialog";
 import { FlashcardLearnDialog } from "@/widgets/dialogs/flashcard-learn-dialog";
 
 // This component is the single place that renders "go complete this Learning
-// Path assignment" — the process node list (Learn/Study/Simular + "Marcar
-// proceso completado") and the completed banner with the certificate link.
+// Path assignment" — the process node list (Learn/Study/Simular + "Mark
+// process complete") and the completed banner with the certificate link.
 // Used by both the Learning Path "My Assignments" detail page and the
 // Compliance Program detail page (a Compliance Requirement points at a real
 // Learning Path, and completing it here is what completes the compliance
@@ -33,12 +34,13 @@ function ProgressBar({ value, color = "var(--accent)" }) {
 // ─── Documents (read-only: viewable, not uploadable) ──────────────────────────
 
 function DocumentsMiniPanel({ documents, onView }) {
+  const { t } = useLanguage();
   if (!documents || documents.length === 0) return null;
   return (
     <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", marginBottom: 16 }}>
       <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
         <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-          Documentos ({documents.length})
+          {t("enterprise.learning.progress.documentsTitle", { count: documents.length })}
         </p>
       </div>
       <div style={{ padding: 8 }}>
@@ -55,7 +57,7 @@ function DocumentsMiniPanel({ documents, onView }) {
               <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {doc.filename}
               </span>
-              <span style={{ fontSize: 10, color: "var(--text-tertiary)", flexShrink: 0 }}>Ver →</span>
+              <span style={{ fontSize: 10, color: "var(--text-tertiary)", flexShrink: 0 }}>{t("enterprise.learning.progress.viewArrow")}</span>
             </button>
           );
         })}
@@ -65,6 +67,7 @@ function DocumentsMiniPanel({ documents, onView }) {
 }
 
 function DocumentViewDialog({ doc, onClose }) {
+  const { t } = useLanguage();
   if (!doc) return null;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)" }} onClick={onClose}>
@@ -79,18 +82,18 @@ function DocumentViewDialog({ doc, onClose }) {
         {doc.url && (
           <div style={{ padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", flexShrink: 0 }}>
             <a href={doc.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#818CF8", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}>
-              Abrir archivo original <ArrowTopRightOnSquareIcon style={{ width: 12, height: 12 }} />
+              {t("enterprise.learning.progress.openOriginal")} <ArrowTopRightOnSquareIcon style={{ width: 12, height: 12 }} />
             </a>
           </div>
         )}
         <div style={{ padding: "14px 18px", overflowY: "auto" }}>
           {(!doc.sections || doc.sections.length === 0) ? (
-            <p style={{ fontSize: 12, color: "#475569", textAlign: "center", padding: "20px 0" }}>Sin secciones extraídas para este documento.</p>
+            <p style={{ fontSize: 12, color: "#475569", textAlign: "center", padding: "20px 0" }}>{t("enterprise.learning.progress.noSections")}</p>
           ) : (
             <div className="space-y-3">
               {doc.sections.map((s) => (
                 <div key={s.id}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", marginBottom: 4 }}>{s.title || "Sin título"}</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#E2E8F0", marginBottom: 4 }}>{s.title || t("enterprise.learning.progress.noTitle")}</p>
                   {s.content && <p style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.6 }}>{s.content}</p>}
                 </div>
               ))}
@@ -105,6 +108,7 @@ function DocumentViewDialog({ doc, onClose }) {
 // ─── Read-only deck / battery rows (Learn/Study/Simular only) ─────────────────
 
 function ReadOnlyDeckRow({ deck, onLearn, onStudy }) {
+  const { t } = useLanguage();
   const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
   return (
     <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
@@ -112,27 +116,28 @@ function ReadOnlyDeckRow({ deck, onLearn, onStudy }) {
         <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={deck.title}>{deck.title}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{cardCount} cards</span>
+      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.cardsCount", { n: cardCount })}</span>
       <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {deck.description || "Conjunto de tarjetas de estudio para este tópico"}
+        {deck.description || t("enterprise.learning.progress.deckDefaultDesc")}
       </span>
       <button onClick={() => onLearn?.(deck)}
         style={{ padding: "4px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
         onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
-        Learn
+        {t("enterprise.learning.progress.learnBtn")}
       </button>
       <button onClick={() => onStudy?.(deck)}
         style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
         onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}>
-        Study
+        {t("enterprise.learning.progress.studyBtn")}
       </button>
     </div>
   );
 }
 
 function ReadOnlyBatteryRow({ battery, onSimulate }) {
+  const { t } = useLanguage();
   const questionCount = battery.question_count ?? 0;
   const pct = battery.last_attempt?.percent ?? null;
   const hasAttempt = pct !== null;
@@ -144,9 +149,9 @@ function ReadOnlyBatteryRow({ battery, onSimulate }) {
         <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
       </div>
       <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={battery.name || battery.title}>{battery.name || battery.title}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{questionCount} preguntas</span>
+      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.questionsCount", { n: questionCount })}</span>
       <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {battery.description || "Evaluación o práctica relacionada con este tópico"}
+        {battery.description || t("enterprise.learning.progress.batteryDefaultDesc")}
       </span>
       <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
         <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
@@ -160,13 +165,14 @@ function ReadOnlyBatteryRow({ battery, onSimulate }) {
         style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
         onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}>
-        Simular
+        {t("enterprise.learning.progress.simulateBtn")}
       </button>
     </div>
   );
 }
 
 function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy, onLearn, onSimulate }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(true);
   const tagCount = topic.tags?.length || 0;
   const description = topic.tags?.slice(0, 5).join(", ") || "";
@@ -182,8 +188,8 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
           <button onClick={() => setExpanded((v) => !v)} style={{ color: "#64748B", cursor: "pointer", padding: 0, background: "none", border: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
             {expanded ? <ChevronRightIcon style={{ width: 13, height: 13, transform: "rotate(90deg)" }} /> : <ChevronRightIcon style={{ width: 13, height: 13 }} />}
           </button>
-          <span style={{ fontWeight: 700, color: "#F1F5F9", fontSize: 13, flexShrink: 0 }}>Tópico {index + 1}</span>
-          <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>{tagCount} temas</span>
+          <span style={{ fontWeight: 700, color: "#F1F5F9", fontSize: 13, flexShrink: 0 }}>{t("enterprise.learning.progress.topicLabel", { n: index + 1 })}</span>
+          <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B", fontSize: 10, fontWeight: 600, flexShrink: 0 }}>{t("enterprise.learning.progress.topicsCount", { n: tagCount })}</span>
           <span style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{description}</span>
         </div>
         {expanded && (
@@ -191,7 +197,7 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
             {decks.map((d) => <ReadOnlyDeckRow key={d.id} deck={d} onLearn={onLearn} onStudy={onStudy} />)}
             {batteries.map((b) => <ReadOnlyBatteryRow key={b.id} battery={b} onSimulate={onSimulate} />)}
             {decks.length === 0 && batteries.length === 0 && (
-              <p style={{ fontSize: 11, color: "#475569", padding: "4px 0" }}>Sin contenido generado para este tópico aún.</p>
+              <p style={{ fontSize: 11, color: "#475569", padding: "4px 0" }}>{t("enterprise.learning.progress.noTopicContent")}</p>
             )}
           </div>
         )}
@@ -206,6 +212,7 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
 // auto-generate, no add/delete — just Learn/Study/Simular + document viewing.
 
 function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, onComplete, onProgress }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -279,7 +286,7 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
     return (
       <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, padding: "28px 20px", textAlign: "center" }}>
         <BookOpenIcon style={{ width: 18, height: 18, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
-        <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>Este proceso aún no está vinculado a una fuente de conocimiento.</p>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 12 }}>{t("enterprise.learning.progress.notLinked")}</p>
       </div>
     );
   }
@@ -298,11 +305,11 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
         <DocumentsMiniPanel documents={documents} onView={setViewingDoc} />
 
         <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
-          Estructura de conocimiento
+          {t("enterprise.learning.progress.knowledgeStructure")}
         </p>
 
         {topics.length === 0 ? (
-          <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "12px 0" }}>Sin tópicos generados para este proceso aún.</p>
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "12px 0" }}>{t("enterprise.learning.progress.noTopicsYet")}</p>
         ) : (
           topics.map((topic, i) => (
             <ReadOnlyTopicSection
@@ -323,13 +330,13 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
       {!isDone && (
         <div style={{ borderTop: "1px solid var(--border)", padding: "12px 18px", background: "var(--bg-surface)", display: "flex", justifyContent: "flex-end" }}>
           <button onClick={handleComplete} disabled={completing} className="ank-btn-accent text-xs" style={{ opacity: completing ? 0.7 : 1 }}>
-            {completing ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> Marcar proceso completado</>}
+            {completing ? <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" /> : <><CheckCircleIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.progress.markComplete")}</>}
           </button>
         </div>
       )}
       {isDone && (
         <div style={{ borderTop: "1px solid var(--border)", padding: "10px 18px", background: "var(--bg-surface)", display: "flex", alignItems: "center", gap: 6, color: "#4ade80", fontSize: 11, fontWeight: 700 }}>
-          <CheckCircleIcon style={{ width: 13, height: 13 }} /> Completado
+          <CheckCircleIcon style={{ width: 13, height: 13 }} /> {t("enterprise.learning.progress.completedLabel")}
         </div>
       )}
 
@@ -422,6 +429,7 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
 
 export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoaded, onCompleted }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [assignment, setAssignment] = useState(null);
   const [pathData, setPathData] = useState(null);
   const [singleModule, setSingleModule] = useState(null);
@@ -517,7 +525,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
 
   if (!assignment) {
     return (
-      <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "20px 0" }}>Asignación no encontrada.</p>
+      <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "20px 0" }}>{t("enterprise.learning.progress.notFound")}</p>
     );
   }
 
@@ -526,7 +534,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
       {mods.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex justify-between">
-            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{completedCount} de {totalMods} procesos completados</span>
+            <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.learning.progress.processesCompleted", { completed: completedCount, total: totalMods })}</span>
             <span style={{ color: isDone ? "#4ade80" : "var(--accent)", fontSize: 11, fontWeight: 700 }}>
               {overallBatteryPercent}%
             </span>
@@ -539,7 +547,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
       {mods.length > 0 ? (
         <div>
           <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
-            Procesos del Learning Path
+            {t("enterprise.learning.progress.pathProcesses")}
           </p>
           {mods.map((mod, idx) => (
             <ProcessNode
@@ -560,7 +568,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
         /* Single module assignment */
         <div>
           <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
-            Contenido del Proceso
+            {t("enterprise.learning.progress.processContent")}
           </p>
           {assignment.learning_module ? (
             <ProcessKnowledgeView
@@ -572,7 +580,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
           ) : (
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "40px 24px", textAlign: "center" }}>
               <BookOpenIcon style={{ width: 20, height: 20, color: "var(--text-tertiary)", margin: "0 auto 8px" }} />
-              <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>No se encontraron módulos para esta asignación.</p>
+              <p style={{ color: "var(--text-tertiary)", fontSize: 13 }}>{t("enterprise.learning.progress.noModulesFound")}</p>
             </div>
           )}
         </div>
@@ -584,14 +592,14 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
           <div className="flex items-center gap-2.5">
             <CheckCircleIcon style={{ width: 18, height: 18, color: "#4ade80", flexShrink: 0 }} />
             <div>
-              <p style={{ color: "#4ade80", fontWeight: 700, fontSize: 13 }}>¡Learning Path completado!</p>
-              <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 2 }}>Has terminado todos los procesos de esta asignación.</p>
+              <p style={{ color: "#4ade80", fontWeight: 700, fontSize: 13 }}>{t("enterprise.learning.progress.completedTitle")}</p>
+              <p style={{ color: "var(--text-secondary)", fontSize: 12, marginTop: 2 }}>{t("enterprise.learning.progress.completedMessage")}</p>
             </div>
           </div>
           {assignment.issued_certification_id && (
             <button onClick={() => navigate(`/enterprise/certifications/${assignment.issued_certification_id}`)}
               className="ank-btn-accent text-xs" style={{ flexShrink: 0 }}>
-              Ver mi certificado
+              {t("enterprise.learning.progress.viewMyCertificate")}
             </button>
           )}
         </div>

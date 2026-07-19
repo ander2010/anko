@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ArrowPathIcon, LinkIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 
 const NODE_COLORS = {
   concept:   "#6366f1",
@@ -22,6 +23,30 @@ const EDGE_COLORS = {
 };
 
 const NODE_TYPES = Object.keys(NODE_COLORS);
+
+function useNodeTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    concept: t("enterprise.knowledge.graph.nodeTypes.concept"),
+    procedure: t("enterprise.knowledge.graph.nodeTypes.procedure"),
+    regulation: t("enterprise.knowledge.graph.nodeTypes.regulation"),
+    skill: t("enterprise.knowledge.graph.nodeTypes.skill"),
+    topic: t("enterprise.knowledge.graph.nodeTypes.topic"),
+    rule: t("enterprise.knowledge.graph.nodeTypes.rule"),
+  };
+}
+
+function useEdgeTypeLabels() {
+  const { t } = useLanguage();
+  return {
+    requires: t("enterprise.knowledge.graph.edgeTypes.requires"),
+    related_to: t("enterprise.knowledge.graph.edgeTypes.relatedTo"),
+    extends: t("enterprise.knowledge.graph.edgeTypes.extends"),
+    depends_on: t("enterprise.knowledge.graph.edgeTypes.dependsOn"),
+    supersedes: t("enterprise.knowledge.graph.edgeTypes.supersedes"),
+    contradicts: t("enterprise.knowledge.graph.edgeTypes.contradicts"),
+  };
+}
 
 /* Simple force-directed layout using Fruchterman-Reingold approximation */
 function computeLayout(nodes, edges, W, H) {
@@ -91,6 +116,9 @@ function computeLayout(nodes, edges, W, H) {
 
 export function KnowledgeGraph() {
   const { activeCompanyId } = useEnterprise();
+  const { t } = useLanguage();
+  const NODE_TYPE_LABELS = useNodeTypeLabels();
+  const EDGE_TYPE_LABELS = useEdgeTypeLabels();
   const [graph, setGraph] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sources, setSources] = useState([]);
@@ -136,8 +164,8 @@ export function KnowledgeGraph() {
   const visibleIds = new Set(visibleNodes.map((n) => n.id));
   const visibleEdges = (graph?.edges || graph?.relationships || []).filter((e) => {
     const s = e.source_id || e.source;
-    const t = e.target_id || e.target;
-    return visibleIds.has(s) && visibleIds.has(t);
+    const t2 = e.target_id || e.target;
+    return visibleIds.has(s) && visibleIds.has(t2);
   });
 
   const onWheel = (e) => { e.preventDefault(); setZoom((z) => Math.max(0.2, Math.min(4, z - e.deltaY * 0.001))); };
@@ -152,8 +180,8 @@ export function KnowledgeGraph() {
   const selectedRelations = selected
     ? visibleEdges.filter((e) => {
         const s = e.source_id || e.source;
-        const t = e.target_id || e.target;
-        return s === selected.id || t === selected.id;
+        const t2 = e.target_id || e.target;
+        return s === selected.id || t2 === selected.id;
       })
     : [];
 
@@ -161,13 +189,13 @@ export function KnowledgeGraph() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>Knowledge Graph</h1>
+          <h1 style={{ color: "var(--text-primary)", fontSize: 20, fontWeight: 800 }}>{t("enterprise.knowledge.graph.title")}</h1>
           <p style={{ color: "var(--text-tertiary)", fontSize: 12, marginTop: 2 }}>
-            {visibleNodes.length} nodes · {visibleEdges.length} relationships
+            {t("enterprise.knowledge.graph.summary", { nodes: visibleNodes.length, edges: visibleEdges.length })}
           </p>
         </div>
         <button onClick={loadGraph} disabled={loading} className="ank-btn-ghost text-xs" style={{ opacity: loading ? 0.6 : 1 }}>
-          <ArrowPathIcon className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <ArrowPathIcon className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {t("enterprise.knowledge.graph.refresh")}
         </button>
       </div>
 
@@ -177,31 +205,31 @@ export function KnowledgeGraph() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16 }} className="space-y-3">
             <div className="flex items-center gap-2">
               <FunnelIcon style={{ width: 14, height: 14, color: "var(--text-tertiary)" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Filters</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("enterprise.knowledge.graph.filters")}</span>
             </div>
 
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>Node Types</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>{t("enterprise.knowledge.graph.nodeTypesLabel")}</p>
               <div className="space-y-1.5">
                 {NODE_TYPES.map((type) => (
                   <label key={type} className="flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" checked={filters.nodeTypes.has(type)}
                       onChange={() => toggleType(type)} style={{ accentColor: NODE_COLORS[type] }} />
                     <span style={{ width: 10, height: 10, borderRadius: "50%", background: NODE_COLORS[type], flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, color: "var(--text-secondary)", textTransform: "capitalize" }}>{type}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{NODE_TYPE_LABELS[type]}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>Knowledge Source</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 8 }}>{t("enterprise.knowledge.graph.knowledgeSourceLabel")}</p>
               <select
                 value={filters.source}
                 onChange={(e) => setFilters((f) => ({ ...f, source: e.target.value }))}
                 style={{ width: "100%", fontSize: 12, background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "7px 8px", color: "var(--text-secondary)", outline: "none" }}
               >
-                <option value="">All sources</option>
+                <option value="">{t("enterprise.knowledge.graph.allSources")}</option>
                 {sources.filter((s) => s.status === "processed").map((s) => (
                   <option key={s.id} value={s.id}>{s.title}</option>
                 ))}
@@ -214,7 +242,7 @@ export function KnowledgeGraph() {
               <button onClick={() => setZoom((z) => Math.max(0.2, z - 0.25))}
                 style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-secondary)", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>−</button>
               <button onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}
-                style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-tertiary)", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Fit</button>
+                style={{ flex: 1, padding: "5px 0", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-tertiary)", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>{t("enterprise.knowledge.graph.fit")}</button>
             </div>
           </div>
 
@@ -222,8 +250,8 @@ export function KnowledgeGraph() {
           {selected && (
             <div style={{ background: "var(--bg-surface)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 12, padding: 16 }} className="space-y-3">
               <div className="flex items-center justify-between">
-                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, textTransform: "capitalize", background: NODE_COLORS[selected.node_type] + "22", color: NODE_COLORS[selected.node_type] }}>
-                  {selected.node_type}
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: NODE_COLORS[selected.node_type] + "22", color: NODE_COLORS[selected.node_type] }}>
+                  {NODE_TYPE_LABELS[selected.node_type] || selected.node_type}
                 </span>
                 <button onClick={() => setSelected(null)} style={{ color: "var(--text-tertiary)", fontSize: 18, background: "none", border: "none", cursor: "pointer", lineHeight: 1 }}>×</button>
               </div>
@@ -234,7 +262,7 @@ export function KnowledgeGraph() {
               {selected.importance_score != null && (
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Importance</span>
+                    <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{t("enterprise.knowledge.graph.importance")}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#818CF8" }}>
                       {Math.round(selected.importance_score * 100)}%
                     </span>
@@ -247,7 +275,7 @@ export function KnowledgeGraph() {
               {selectedRelations.length > 0 && (
                 <div>
                   <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-tertiary)", marginBottom: 5 }}>
-                    Connections ({selectedRelations.length})
+                    {t("enterprise.knowledge.graph.connections", { count: selectedRelations.length })}
                   </p>
                   <div className="space-y-1" style={{ maxHeight: 128, overflowY: "auto" }}>
                     {selectedRelations.slice(0, 8).map((e, i) => {
@@ -256,7 +284,7 @@ export function KnowledgeGraph() {
                       return (
                         <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-tertiary)" }}>
                           <span style={{ color: EDGE_COLORS[e.relationship_type] || "#6366f1" }}>→</span>
-                          <span>{e.relationship_type}</span>
+                          <span>{EDGE_TYPE_LABELS[e.relationship_type] || e.relationship_type}</span>
                           <span style={{ color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other?.title || otherId}</span>
                         </div>
                       );
@@ -274,7 +302,7 @@ export function KnowledgeGraph() {
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(2,6,23,0.75)", borderRadius: 12, zIndex: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-secondary)" }}>
                 <ArrowPathIcon className="animate-spin" style={{ width: 20, height: 20 }} />
-                <span style={{ fontSize: 13 }}>Computing layout...</span>
+                <span style={{ fontSize: 13 }}>{t("enterprise.knowledge.graph.computingLayout")}</span>
               </div>
             </div>
           )}
@@ -282,8 +310,8 @@ export function KnowledgeGraph() {
           {!loading && !visibleNodes.length && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 384, background: "var(--bg-app)", borderRadius: 12, border: "1px solid var(--border)", color: "var(--text-tertiary)", gap: 10 }}>
               <LinkIcon style={{ width: 40, height: 40, opacity: 0.3 }} />
-              <p style={{ fontWeight: 600, fontSize: 13 }}>No knowledge graph data</p>
-              <p style={{ fontSize: 12 }}>Process documents with AI to build the graph.</p>
+              <p style={{ fontWeight: 600, fontSize: 13 }}>{t("enterprise.knowledge.graph.noData")}</p>
+              <p style={{ fontSize: 12 }}>{t("enterprise.knowledge.graph.noDataHint")}</p>
             </div>
           )}
 
@@ -301,14 +329,14 @@ export function KnowledgeGraph() {
                 {/* Edges */}
                 {visibleEdges.map((e, i) => {
                   const s = positions[e.source_id || e.source];
-                  const t = positions[e.target_id || e.target];
-                  if (!s || !t) return null;
+                  const tgt = positions[e.target_id || e.target];
+                  if (!s || !tgt) return null;
                   const color = EDGE_COLORS[e.relationship_type] || "#64748b";
                   const dashed = ["requires", "contradicts"].includes(e.relationship_type);
                   const strength = e.strength ?? 0.5;
                   return (
                     <line key={i}
-                      x1={s.x} y1={s.y} x2={t.x} y2={t.y}
+                      x1={s.x} y1={s.y} x2={tgt.x} y2={tgt.y}
                       stroke={color} strokeWidth={Math.max(1, strength * 2.5)}
                       strokeDasharray={dashed ? "6,3" : "none"}
                       opacity={0.5}
@@ -351,7 +379,7 @@ export function KnowledgeGraph() {
               {Object.entries(EDGE_COLORS).map(([type, color]) => (
                 <span key={type} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-tertiary)" }}>
                   <span style={{ width: 18, height: 2, display: "inline-block", background: color }} />
-                  {type.replace("_", " ")}
+                  {EDGE_TYPE_LABELS[type] || type.replace("_", " ")}
                 </span>
               ))}
             </div>

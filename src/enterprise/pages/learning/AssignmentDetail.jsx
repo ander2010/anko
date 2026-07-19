@@ -2,11 +2,13 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon, ClockIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
 import { learningApi } from "../../api/enterpriseApi";
+import { useLanguage } from "../../../context/language-context";
 import { LearningPathAssignmentProgress } from "./LearningPathAssignmentProgress";
 
 export function AssignmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ export function AssignmentDetail() {
 
   const isDone = assignment?.status === "completed";
   const dueStr = assignment?.due_date
-    ? new Date(assignment.due_date).toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" })
+    ? new Date(assignment.due_date).toLocaleDateString(language === "es" ? "es" : "en-US", { day: "2-digit", month: "short", year: "numeric" })
     : null;
 
   if (loading) return (
@@ -31,9 +33,9 @@ export function AssignmentDetail() {
 
   if (!assignment) return (
     <div className="flex flex-col items-center py-24">
-      <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>Asignación no encontrada.</p>
+      <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>{t("enterprise.learning.assignmentDetail.notFound")}</p>
       <button onClick={() => navigate("/enterprise/learning/assignments")} className="ank-btn-ghost text-xs mt-4">
-        <ArrowLeftIcon className="h-3.5 w-3.5" /> Volver
+        <ArrowLeftIcon className="h-3.5 w-3.5" /> {t("enterprise.learning.assignmentDetail.back")}
       </button>
     </div>
   );
@@ -44,7 +46,7 @@ export function AssignmentDetail() {
       <button onClick={() => navigate("/enterprise/learning/assignments")}
         style={{ color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 5, fontSize: 12, cursor: "pointer" }}
         className="hover:opacity-70 transition-opacity">
-        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> Mis Tareas
+        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> {t("enterprise.learning.assignmentDetail.myAssignments")}
       </button>
 
       {/* Header */}
@@ -55,15 +57,15 @@ export function AssignmentDetail() {
           </div>
           <div className="flex-1 min-w-0">
             <h1 style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 17 }}>
-              {assignment.learning_path_name || assignment.path_name || assignment.name || "Asignación"}
+              {assignment.learning_path_name || assignment.path_name || assignment.name || t("enterprise.learning.assignmentDetail.assignment")}
             </h1>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               {assignment.assigned_by_username && (
-                <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>por {assignment.assigned_by_username}</span>
+                <span style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.learning.assignmentDetail.by", { name: assignment.assigned_by_username })}</span>
               )}
               {dueStr && (
                 <span style={{ color: "var(--text-tertiary)", fontSize: 11, display: "flex", alignItems: "center", gap: 3 }}>
-                  <ClockIcon style={{ width: 10, height: 10 }} /> Límite: {dueStr}
+                  <ClockIcon style={{ width: 10, height: 10 }} /> {t("enterprise.learning.assignmentDetail.due")}{dueStr}
                 </span>
               )}
             </div>

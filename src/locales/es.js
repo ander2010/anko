@@ -117,7 +117,39 @@ export const es = {
         "public-batteries": "Baterías Públicas",
         orders: "Órdenes",
         "global-sections": "Secciones Globales",
-        "support-requests": "Mensajes de Soporte"
+        "support-requests": "Mensajes de Soporte",
+        enterprise: "Enterprise",
+        learning: "Aprendizaje",
+        assignments: "Asignaciones",
+        "manage-assignments": "Gestionar Asignaciones",
+        reviews: "Calendario de Repasos",
+        gaps: "Brechas de Conocimiento",
+        paths: "Rutas de Aprendizaje",
+        programs: "Programas",
+        retention: "Retención",
+        compliance: "Cumplimiento",
+        me: "Yo",
+        team: "Equipo",
+        company: "Empresa",
+        certifications: "Certificaciones",
+        templates: "Plantillas",
+        new: "Nuevo",
+        edit: "Editar",
+        analytics: "Analítica",
+        health: "Salud",
+        invitations: "Invitaciones",
+        settings: "Configuración",
+        units: "Unidades de Negocio",
+        teams: "Equipos",
+        members: "Miembros",
+        invite: "Invitar",
+        onboarding: "Incorporación",
+        knowledge: "Fuentes de Conocimiento",
+        graph: "Grafo de Conocimiento",
+        "change-impact": "Impacto de Cambios",
+        "platform-admin": "Administración de Plataforma",
+        companies: "Empresas",
+        audit: "Reporte de Auditoría"
     },
     home: {
         hero: {
@@ -948,5 +980,1781 @@ export const es = {
         reset_password: "Restablecer contraseña",
         password_weak: "La contraseña es muy débil.",
         password_requirements: "Debe tener al menos 8 caracteres, incluyendo letras y números."
+    },
+    enterprise: {
+        roles: {
+            owner: "Propietario",
+            admin: "Administrador",
+            manager: "Manager",
+            trainer: "Capacitador",
+            employee: "Empleado",
+            auditor: "Auditor"
+        },
+        dashboard: {
+            title: "Dashboard",
+            yourCompany: "Tu Empresa",
+            planActive: "Plan Enterprise · Activo",
+            settingsBtn: "Configuración",
+            quickAccess: "Acceso rápido",
+            employeeSubtitle: "Tu progreso, retención y cumplimiento en la organización",
+            adminSubtitle: "Gestiona conocimiento, formación y cumplimiento de tu organización",
+            newProcess: "Nuevo Proceso",
+            myMetrics: "Mis métricas",
+            metrics: "Métricas",
+            actions: "Acciones",
+            processes: "Procesos",
+            learningModules: "Módulos de aprendizaje",
+            learningRoutes: "Rutas de aprendizaje",
+            assignments: "Asignaciones",
+            activeTrainings: "Entrenamientos activos",
+            sources: "Fuentes",
+            completedCount: "{count} completadas",
+            riskValue: "Riesgo {value}",
+            programsRatio: "{compliant}/{total} programas",
+            expiringSoon: "{count} por vencer",
+            action1Title: "Crear nuevo proceso de aprendizaje",
+            action1Desc: "Sube un documento y genera quizzes y flashcards automáticamente en minutos.",
+            action1Btn: "Crear",
+            action2Title: "Asignar Learning Path al equipo",
+            action2Desc: "Organiza el contenido en rutas y asígnalas a empleados o grupos.",
+            action2Btn: "Ver paths",
+            action3Title: "Revisar compliance del equipo",
+            action3Desc: "Verifica quién completó los entrenamientos requeridos este período.",
+            action3Btn: "Ver compliance",
+            getStarted: {
+                title: "Empieza en 3 pasos",
+                step1Title: "Sube un documento",
+                step1Desc: "PDF, manual o política interna.",
+                step2Title: "La IA genera el contenido",
+                step2Desc: "Flashcards y quizzes automáticos.",
+                step3Title: "Asigna a tu equipo",
+                step3Desc: "Mide progreso y cumplimiento.",
+                cta: "Crear primer proceso"
+            },
+            nav: {
+                learningPaths: "Rutas de Aprendizaje",
+                myAssignments: "Mis asignaciones",
+                teamRetention: "Retención del Equipo",
+                compliance: "Compliance",
+                teamMembers: "Miembros del equipo",
+                knowledgeSources: "Knowledge Sources",
+                reviewSchedules: "Calendario de Repasos",
+                knowledgeGaps: "Brechas de Conocimiento",
+                myRetention: "Mi Retención",
+                myCompliance: "Mi Compliance",
+                myCertifications: "Mis Certificaciones"
+            }
+        },
+        dashboards: {
+            auditor: {
+                title: "Panel del Auditor",
+                subtitle: "Resumen de cumplimiento y registro de auditoría",
+                notLoaded: "No se pudo cargar el panel del auditor",
+                kpi: {
+                    complianceRate: "Tasa de Cumplimiento",
+                    nonCompliant: "No Conforme",
+                    expiring30d: "Vence en ≤30d",
+                    criticalGaps: "Brechas Críticas"
+                },
+                programBreakdown: {
+                    title: "Desglose de Programas",
+                    program: "Programa",
+                    total: "Total",
+                    compliant: "Conforme",
+                    rate: "Tasa",
+                    empty: "Sin programas"
+                },
+                certifications: {
+                    title: "Certificaciones",
+                    active: "Activas",
+                    expiring30d: "Vencen en 30d"
+                },
+                gaps: {
+                    title: "Brechas de Conocimiento",
+                    open: "Abiertas",
+                    critical: "Críticas",
+                    high: "Altas",
+                    suffix: "Brechas"
+                },
+                auditEvents: {
+                    title: "Eventos de Auditoría Recientes",
+                    empty: "Sin eventos de auditoría"
+                },
+                timeAgo: {
+                    minutes: "hace {n}m",
+                    hours: "hace {n}h",
+                    days: "hace {n}d"
+                }
+            },
+            employee: {
+                title: "Mi Dashboard",
+                subtitle: "Resumen personal de tu retención de conocimiento",
+                notLoaded: "No se pudo cargar el dashboard",
+                tryAgain: "Por favor intenta de nuevo más tarde.",
+                kpi: {
+                    retentionScore: "Puntaje de Retención",
+                    knowledgeRetained: "Conocimiento retenido",
+                    complianceRate: "Tasa de Cumplimiento",
+                    programsCompleted: "Programas completados",
+                    activeCerts: "Certificaciones Activas",
+                    validCertifications: "Certificaciones vigentes",
+                    reviewsDue: "Repasos Pendientes",
+                    overdueCount: "{n} vencidos",
+                    stayOnTrack: "Vas al día"
+                },
+                learning: {
+                    title: "Progreso de Aprendizaje",
+                    completed: "Completados",
+                    inProgress: "En Progreso",
+                    pending: "Pendientes",
+                    overdue: "Vencidos",
+                    noDeadline: "Sin fecha límite",
+                    noActivePaths: "Sin rutas activas"
+                },
+                knowledgeHealth: {
+                    title: "Salud del Conocimiento",
+                    retention: "Retención",
+                    lowRisk: "Bajo Riesgo",
+                    openGaps: "Brechas de Conocimiento Abiertas"
+                },
+                compliance: {
+                    title: "Estado de Cumplimiento",
+                    compliant: "Conforme",
+                    nonCompliant: "No Conforme",
+                    pending: "Pendiente"
+                },
+                activity: {
+                    title: "Actividad Reciente",
+                    empty: "Sin actividad reciente"
+                },
+                timeAgo: {
+                    justNow: "justo ahora",
+                    minutes: "hace {n}m",
+                    hours: "hace {n}h",
+                    days: "hace {n}d"
+                }
+            },
+            executive: {
+                title: "Panel Ejecutivo",
+                subtitle: "Salud de retención de conocimiento de toda la empresa",
+                notLoaded: "No se pudo cargar el panel ejecutivo",
+                avgRetention: "Retención Prom.",
+                avgRisk: "Riesgo Prom.",
+                openGaps: "Brechas de Conocimiento Abiertas",
+                criticalCount: "{n} críticas",
+                nonCompliantAssignments: "Asignaciones No Conformes",
+                kpi: {
+                    headcount: "Cantidad de Empleados",
+                    completionRate: "Tasa de Finalización",
+                    avgRetention: "Retención Promedio",
+                    complianceRate: "Tasa de Cumplimiento",
+                    activeCerts: "Certificaciones Activas"
+                },
+                trend: {
+                    title: "Tendencia de Retención (30d)",
+                    subtitle: "Retención promedio vs. riesgo a lo largo del tiempo",
+                    empty: "Aún no hay datos de tendencia"
+                },
+                teamBreakdown: {
+                    title: "Desglose por Equipo",
+                    team: "Equipo",
+                    members: "Miembros",
+                    avgCompliance: "Cumplimiento Prom.",
+                    empty: "Sin datos de equipo"
+                }
+            },
+            manager: {
+                title: "Dashboard del Equipo",
+                subtitle: "Monitorea la retención de conocimiento de tu equipo",
+                notLoaded: "No se pudo cargar el panel del manager",
+                selectTeam: "Seleccionar Equipo",
+                allTeams: "Todos los Equipos",
+                risk: {
+                    high: "Riesgo Alto",
+                    moderate: "Moderado",
+                    good: "Bueno"
+                },
+                kpi: {
+                    teamMembers: "Miembros del Equipo",
+                    avgRetention: "Retención Prom.",
+                    avgCompliance: "Cumplimiento Prom.",
+                    atRisk: "En Riesgo"
+                },
+                learning: {
+                    title: "Progreso de Aprendizaje del Equipo",
+                    completionRate: "Tasa de Finalización",
+                    overdueCount: "{n} asignaciones vencidas"
+                },
+                atRisk: {
+                    title: "Miembros en Riesgo",
+                    empty: "Sin miembros en riesgo",
+                    emptyMessage: "Todos los miembros del equipo están en buen estado.",
+                    retention: "Retención",
+                    scheduleReview: "Programar Repaso"
+                },
+                compliance: {
+                    title: "Resumen de Cumplimiento del Equipo",
+                    avgRate: "Tasa de Cumplimiento Prom.",
+                    criticalGaps: "Brechas Críticas",
+                    highGaps: "Brechas Altas",
+                    mediumGaps: "Brechas Medias",
+                    overdueReviews: "{n} Repasos Vencidos"
+                }
+            },
+            trainer: {
+                title: "Dashboard del Capacitador",
+                subtitle: "Monitorea el rendimiento del contenido y el progreso de los aprendices",
+                notLoaded: "No se pudo cargar el panel del capacitador",
+                kpi: {
+                    learningPaths: "Learning Paths",
+                    totalAssignments: "Asignaciones Totales",
+                    completionRate: "Tasa de Finalización",
+                    overdue: "Vencidas"
+                },
+                topPaths: {
+                    title: "Mejores Rutas por Puntaje Prom.",
+                    empty: "Aún no hay datos de rutas",
+                    avgScore: "Puntaje Prom."
+                },
+                attention: {
+                    title: "Aprendices que Necesitan Atención",
+                    empty: "Todos los aprendices van al día",
+                    emptyMessage: "Ningún aprendiz necesita atención inmediata.",
+                    overdueCount: "{n} vencidas",
+                    viewProfile: "Ver Perfil"
+                },
+                moduleCompletionRate: "Tasa de Finalización de Módulos",
+                activePrograms: "Programas de Formación Activos"
+            }
+        },
+        learning: {
+            myAssignments: {
+                title: "Mis Tareas",
+                assignedCount: "{count} learning path{plural} asignado{plural} a ti",
+                completedCount: "{count} completado{plural}",
+                empty: "Sin asignaciones",
+                emptyMessage: "Tu manager o trainer asignará Learning Paths aquí.",
+                learningPath: "Learning Path",
+                assignedBy: "asignado por {name}",
+                processesCount: "{completed} de {total} procesos",
+                dueLabel: "Límite: ",
+                overdueSince: "Vencido — ",
+                viewCertificate: "Ver certificado",
+                loading: "Cargando…",
+                start: "Comenzar",
+                continue: "Continuar",
+                status: {
+                    pending: "Pendiente",
+                    inProgress: "En progreso",
+                    completed: "Completado",
+                    overdue: "Vencido"
+                },
+                groups: {
+                    overdue: "Vencidos",
+                    inProgress: "En progreso",
+                    pending: "Pendientes",
+                    completed: "Completados"
+                }
+            },
+            assignmentDetail: {
+                notFound: "Asignación no encontrada.",
+                back: "Volver",
+                myAssignments: "Mis Tareas",
+                assignment: "Asignación",
+                by: "por {name}",
+                due: "Límite: "
+            },
+            progress: {
+                documentsTitle: "Documentos ({count})",
+                viewArrow: "Ver →",
+                openOriginal: "Abrir archivo original",
+                noSections: "Sin secciones extraídas para este documento.",
+                noTitle: "Sin título",
+                cardsCount: "{n} tarjetas",
+                deckDefaultDesc: "Conjunto de tarjetas de estudio para este tópico",
+                learnBtn: "Aprender",
+                studyBtn: "Estudiar",
+                questionsCount: "{n} preguntas",
+                batteryDefaultDesc: "Evaluación o práctica relacionada con este tópico",
+                simulateBtn: "Simular",
+                topicLabel: "Tópico {n}",
+                topicsCount: "{n} temas",
+                noTopicContent: "Sin contenido generado para este tópico aún.",
+                notLinked: "Este proceso aún no está vinculado a una fuente de conocimiento.",
+                knowledgeStructure: "Estructura de conocimiento",
+                noTopicsYet: "Sin tópicos generados para este proceso aún.",
+                markComplete: "Marcar proceso completado",
+                completedLabel: "Completado",
+                notFound: "Asignación no encontrada.",
+                processesCompleted: "{completed} de {total} procesos completados",
+                pathProcesses: "Procesos del Learning Path",
+                processContent: "Contenido del Proceso",
+                noModulesFound: "No se encontraron módulos para esta asignación.",
+                completedTitle: "¡Learning Path completado!",
+                completedMessage: "Has terminado todos los procesos de esta asignación.",
+                viewMyCertificate: "Ver mi certificado"
+            },
+            paths: {
+                title: "Learning Paths",
+                subtitle: "Secuencias ordenadas de Procesos para formación",
+                newPath: "Nuevo Learning Path",
+                empty: "Sin Learning Paths",
+                emptyMessage: "Crea tu primer Learning Path para organizar tus Procesos en una secuencia de formación.",
+                count: "{count} learning path{plural}",
+                status: {
+                    draft: "Draft",
+                    published: "Published",
+                    archived: "Archived"
+                },
+                types: {
+                    course: "Course",
+                    tutorial: "Tutorial",
+                    studyMaterial: "Study Material"
+                },
+                filters: {
+                    all: "Todos"
+                },
+                card: {
+                    confirmDelete: "¿Eliminar \"{name}\"? Los procesos no se borrarán.",
+                    processCount: "{count} proceso{plural}"
+                },
+                wizard: {
+                    nameRequired: "El nombre es obligatorio.",
+                    name: "Nombre",
+                    namePlaceholder: "ej. Onboarding Completo, Seguridad Industrial…",
+                    description: "Descripción",
+                    optional: "opcional",
+                    descriptionPlaceholder: "¿Qué incluye este Learning Path?",
+                    cancel: "Cancelar",
+                    next: "Siguiente",
+                    selectProcesses: "Selecciona Procesos a incluir",
+                    selectProcessesHint: "Opcional — puedes agregarlos después también",
+                    searchProcesses: "Buscar procesos…",
+                    noProcessesYet: "No hay procesos creados aún.",
+                    noResults: "Sin resultados.",
+                    selectedCount: "{count} proceso{plural} seleccionado{plural}",
+                    back: "Atrás",
+                    creating: "Creando…",
+                    createPath: "Crear Learning Path",
+                    basicInfo: "Información básica",
+                    selectProcessesStep: "Seleccionar procesos",
+                    createError: "No se pudo crear el Learning Path."
+                }
+            },
+            pathDetail: {
+                status: {
+                    draft: "Draft",
+                    published: "Published",
+                    archived: "Archived"
+                },
+                types: {
+                    course: "Course",
+                    tutorial: "Tutorial",
+                    studyMaterial: "Study Material"
+                },
+                cancel: "Cancelar",
+                notFound: "Learning Path no encontrado",
+                back: "Volver",
+                backToPaths: "Volver a Learning Paths",
+                processCount: "{count} proceso{plural}",
+                finalBattery: "Batería final",
+                edit: "Editar",
+                assign: "Asignar",
+                publish: "Publicar",
+                processesHeading: "Procesos ({count})",
+                addProcess: "Agregar Proceso",
+                noProcesses: "Sin procesos",
+                noProcessesMessage: "Agrega Procesos existentes a este Learning Path",
+                addModal: {
+                    error: "No se pudo agregar el proceso.",
+                    title: "Agregar Proceso",
+                    searchPlaceholder: "Buscar procesos…",
+                    noProcesses: "No hay procesos disponibles.",
+                    allAdded: "Todos los procesos ya están en este path.",
+                    position: "Posición en el path:",
+                    add: "Agregar"
+                },
+                editForm: {
+                    descriptionPlaceholder: "Descripción (opcional)",
+                    saving: "Guardando…",
+                    save: "Guardar"
+                },
+                moduleRow: {
+                    confirmRemove: "¿Quitar \"{name}\" del path? El proceso no se eliminará.",
+                    unlinkedTitle: "Este módulo no está vinculado a un proceso — creado antes de que ese vínculo existiera.",
+                    optional: "Optional",
+                    unlinked: "Sin vincular",
+                    itemsCount: "{n} items",
+                    passingScore: "Aprobación: {n}%"
+                },
+                assignModal: {
+                    title: "Asignar Learning Path",
+                    userTab: "Usuario",
+                    teamTab: "Equipo",
+                    searchMember: "Buscar miembro…",
+                    searchTeam: "Buscar equipo…",
+                    noMembers: "Sin miembros.",
+                    noTeams: "Sin equipos.",
+                    dueDate: "Fecha límite",
+                    close: "Cerrar",
+                    assign: "Asignar",
+                    selectUser: "Selecciona un usuario.",
+                    selectTeam: "Selecciona un equipo.",
+                    assignedToUser: "Asignado a {name} correctamente.",
+                    assignedToTeam: "Asignado al equipo \"{name}\" correctamente.",
+                    error: "Error al asignar.",
+                    memberCount: "{n} miembros"
+                }
+            },
+            trainingPrograms: {
+                title: "Training Programs",
+                subtitle: "Los programas agrupan learning paths en paquetes de formación versionados",
+                newProgram: "Nuevo Programa",
+                name: "Nombre",
+                description: "Descripción (opcional)",
+                cancel: "Cancelar",
+                creating: "Creando…",
+                createProgram: "Crear Programa",
+                nameRequired: "El nombre es obligatorio.",
+                createError: "No se pudo crear el programa.",
+                selectPath: "Selecciona un learning path.",
+                publishError: "No se pudo publicar la versión.",
+                versionCount: "{n} versión(es)",
+                currentVersion: "Vigente: v{n}",
+                newVersion: "Nueva Versión",
+                history: "Historial",
+                versionHistory: "Historial de Versiones",
+                current: "Vigente",
+                empty: "Sin programas de formación",
+                emptyMessage: "Crea un programa de formación para agrupar learning paths en paquetes versionados.",
+                publishModal: {
+                    title: "Publicar Nueva Versión",
+                    hint: "Selecciona el learning path para esta versión del programa. Se creará una nueva versión y se marcará como vigente.",
+                    selectPlaceholder: "Selecciona un learning path publicado...",
+                    releaseNotes: "Notas de la versión (opcional)",
+                    publishing: "Publicando…",
+                    publishVersion: "Publicar Versión"
+                }
+            },
+            assignmentsManager: {
+                title: "Asignaciones",
+                subtitle: "Gestiona qué Learning Paths están asignados a cada persona o equipo",
+                newAssignment: "Nueva Asignación",
+                empty: "Sin asignaciones",
+                emptyMessage: "Asigna Learning Paths a miembros o equipos para iniciar su formación.",
+                count: "{count} asignación{plural}",
+                status: {
+                    pending: "Pendiente",
+                    inProgress: "En progreso",
+                    completed: "Completado",
+                    overdue: "Vencido"
+                },
+                filters: {
+                    all: "Todas"
+                },
+                columns: {
+                    learningPath: "Learning Path",
+                    assignedTo: "Asignado a",
+                    status: "Estado",
+                    progress: "Progreso",
+                    dueDate: "Fecha límite"
+                },
+                row: {
+                    by: "por {name}",
+                    team: "Equipo {id}"
+                },
+                modal: {
+                    selectTarget: "Selecciona un usuario o equipo.",
+                    assignError: "Error al asignar.",
+                    whatToAssign: "¿Qué quieres asignar?",
+                    assignTitle: "Asignar: {name}",
+                    chooseContent: "Elige contenido",
+                    chooseRecipient: "Elige destinatario",
+                    process: "Proceso",
+                    noPaths: "Sin Learning Paths creados.",
+                    noProcesses: "Sin Procesos creados.",
+                    processCount: "{n} procesos",
+                    cancel: "Cancelar",
+                    next: "Siguiente →",
+                    userTab: "Usuario",
+                    teamTab: "Equipo",
+                    searchMember: "Buscar miembro…",
+                    searchTeam: "Buscar equipo…",
+                    noMembers: "Sin miembros.",
+                    noTeams: "Sin equipos.",
+                    memberCount: "{n} miembros",
+                    dueDate: "Fecha límite",
+                    assign: "Asignar"
+                }
+            },
+            knowledgeGaps: {
+                title: "Knowledge Gaps",
+                allSeverities: "Todas las Severidades",
+                allStatuses: "Todos los Estados",
+                empty: "Sin brechas de conocimiento",
+                emptyMessage: "¡Genial! No se detectaron brechas.",
+                acknowledge: "Reconocer",
+                resolve: "Resolver",
+                columns: {
+                    severity: "Severidad",
+                    topic: "Tema",
+                    retentionScore: "Puntaje de Retención",
+                    detected: "Detectado",
+                    status: "Estado",
+                    actions: "Acciones"
+                }
+            },
+            reviewSchedules: {
+                title: "Calendario de Repasos",
+                subtitle: "Repaso espaciado (SM-2) para reforzar lo que ya aprendiste, justo antes de que se te olvide",
+                dueToday: "Pendientes Hoy",
+                overdue: "Vencidos",
+                dueTodayLabel: "pendientes hoy",
+                overdueLabel: "vencidos",
+                review: "Repaso",
+                complete: "Completar",
+                noReviews: "Sin repasos {label}",
+                upToDate: "Estás al día. Vuelve más tarde.",
+                overdueSince: "Venció hace {n} día{plural} ({date})",
+                dueOn: "Vence: {date}",
+                types: {
+                    flashcard: "Repaso de Flashcard",
+                    battery: "Batería / Quiz",
+                    reading: "Lectura / Estudio",
+                    assessment: "Evaluación"
+                },
+                priority: {
+                    low: "Baja",
+                    medium: "Media",
+                    high: "Alta",
+                    critical: "Crítica"
+                },
+                grades: {
+                    again: "Otra vez",
+                    hard: "Difícil",
+                    good: "Bien",
+                    easy: "Fácil"
+                }
+            }
+        },
+        compliance: {
+            programs: {
+                title: "Compliance Programs",
+                newProgram: "Nuevo Programa",
+                cancel: "Cancelar",
+                creating: "Creando…",
+                required: "Requerido",
+                optional: "Opcional",
+                activate: "Activar",
+                archive: "Archivar",
+                empty: "Sin programas de cumplimiento",
+                emptyMessageCanEdit: "Crea tu primer programa de cumplimiento.",
+                emptyMessage: "No hay programas disponibles.",
+                types: {
+                    regulatory: "Regulatorio",
+                    internal: "Política Interna",
+                    certification: "Certificación",
+                    safety: "Seguridad",
+                    other: "Otro"
+                },
+                frequencies: {
+                    oneTime: "Una Vez",
+                    monthly: "Mensual",
+                    quarterly: "Trimestral",
+                    biannual: "Semestral",
+                    annual: "Anual",
+                    custom: "Personalizada"
+                },
+                filters: {
+                    allStatuses: "Todos los Estados",
+                    active: "Activo",
+                    draft: "Borrador",
+                    archived: "Archivado"
+                },
+                columns: {
+                    code: "Código",
+                    name: "Nombre",
+                    type: "Tipo",
+                    frequency: "Frecuencia",
+                    status: "Estado",
+                    mandatory: "Obligatorio",
+                    requirements: "Requisitos",
+                    actions: "Acciones"
+                },
+                form: {
+                    name: "Nombre",
+                    code: "Código",
+                    codePlaceholder: "ej. FAA-SAFETY-01",
+                    description: "Descripción (opcional)",
+                    complianceType: "Tipo de Cumplimiento",
+                    frequency: "Frecuencia",
+                    effectiveDate: "Fecha de Vigencia (opcional)",
+                    expiryDate: "Fecha de Expiración (opcional)",
+                    validity: "Vigencia (días tras completarse)",
+                    validityHint: "Cuántos días permanece vigente una asignación completada antes de tener que renovarse.",
+                    mandatoryLabel: "Obligatorio para los usuarios/equipos asignados",
+                    requiresScoreLabel: "Requiere un puntaje mínimo de aprobación",
+                    passingScore: "Puntaje de Aprobación (0–100)",
+                    nameCodeRequired: "El nombre y el código son obligatorios.",
+                    createError: "No se pudo crear el programa."
+                },
+                createModal: {
+                    title: "Nuevo Compliance Program",
+                    submit: "Crear Programa"
+                }
+            },
+            programDetail: {
+                notFound: "Programa de cumplimiento no encontrado.",
+                back: "Volver",
+                edit: "Editar",
+                assign: "Asignar",
+                auditReport: "Reporte de Auditoría",
+                validDays: "Vigente {n} días",
+                passingScore: "Puntaje de aprobación: {n}%",
+                completeThisProgram: "Completar Este Programa",
+                noRequirementsYet: "Aún no se han configurado requisitos para este programa.",
+                preparingAssignment: "Preparando tu asignación para este requisito…",
+                requirementsHeading: "Requisitos ({count})",
+                addRequirementBtn: "Agregar Requisito",
+                noRequirements: "Aún no hay requisitos",
+                noRequirementsMessage: "Agrega las Rutas de Aprendizaje que los usuarios deben completar para este programa.",
+                assignedHeading: "Asignado ({count})",
+                notAssigned: "Aún no asignado a nadie",
+                notAssignedMessage: "Usa \"Asignar\" arriba para asignar este programa a un usuario o equipo.",
+                due: "Vence: {date}",
+                teamTag: "EQUIPO",
+                editForm: {
+                    saveError: "No se pudieron guardar los cambios.",
+                    saving: "Guardando…",
+                    save: "Guardar Cambios"
+                },
+                addRequirement: {
+                    title: "Agregar Requisito",
+                    hint: "Elige una Ruta de Aprendizaje publicada que los usuarios deban completar para satisfacer este programa.",
+                    noPaths: "Aún no hay rutas de aprendizaje publicadas.",
+                    allAdded: "Todas las rutas de aprendizaje publicadas ya son requisitos aquí.",
+                    pathLabel: "Ruta de Aprendizaje",
+                    pathPlaceholder: "Selecciona una ruta de aprendizaje...",
+                    nameLabel: "Nombre del Requisito",
+                    namePlaceholder: "Por defecto usa el nombre de la ruta de aprendizaje",
+                    defaultName: "Requisito",
+                    mandatoryLabel: "Requisito obligatorio",
+                    selectPath: "Selecciona una ruta de aprendizaje.",
+                    error: "No se pudo agregar el requisito.",
+                    adding: "Agregando…"
+                },
+                requirementRow: {
+                    confirmRemove: "¿Eliminar \"{name}\" de los requisitos de este programa?",
+                    unlinked: "Ruta de aprendizaje sin vincular"
+                },
+                assignModal: {
+                    title: "Asignar Programa de Cumplimiento",
+                    userTab: "Usuario",
+                    teamTab: "Equipo",
+                    searchMember: "Buscar miembro…",
+                    searchTeam: "Buscar equipo…",
+                    noMembers: "No hay miembros.",
+                    noTeams: "No hay equipos.",
+                    memberCount: "{n} miembro{plural}",
+                    dueDate: "Fecha Límite",
+                    close: "Cerrar",
+                    assign: "Asignar",
+                    selectUser: "Selecciona un usuario.",
+                    selectTeam: "Selecciona un equipo.",
+                    assignedToUser: "Asignado a {name}.",
+                    assignedToTeam: "Asignado al equipo \"{name}\".",
+                    error: "No se pudo asignar."
+                }
+            },
+            assignments: {
+                title: "Asignaciones de Cumplimiento",
+                markCompliant: "Marcar Cumplido",
+                renew: "Renovar",
+                statusOptions: {
+                    all: "Todos los Estados",
+                    pending: "Pendiente",
+                    inProgress: "En Progreso",
+                    completed: "Completado",
+                    nonCompliant: "No Cumple",
+                    expired: "Expirado",
+                    waived: "Exento"
+                },
+                columns: {
+                    assignee: "Asignado a",
+                    program: "Programa",
+                    status: "Estado",
+                    dueDate: "Fecha Límite",
+                    completed: "Completado",
+                    actions: "Acciones"
+                },
+                empty: {
+                    title: "No se encontraron asignaciones",
+                    message: "Ninguna asignación de cumplimiento coincide con el filtro actual."
+                },
+                completeModal: {
+                    title: "Marcar Cumplido — {name}",
+                    scoreLabel: "Puntaje (0–100, si aplica)",
+                    notesLabel: "Notas (opcional)",
+                    saving: "Guardando…",
+                    error: "No se pudo marcar como cumplido."
+                }
+            },
+            myCompliance: {
+                title: "Mi Cumplimiento",
+                noData: "No hay datos de cumplimiento",
+                complianceRate: "Tasa de Cumplimiento",
+                myAssignments: "Mis Asignaciones ({count})",
+                viewProgram: "Ver Programa",
+                markComplete: "Marcar Completado",
+                expires: "Expira: {date}",
+                scorePct: "Puntaje: {n}%",
+                empty: "No hay asignaciones de cumplimiento",
+                summary: {
+                    totalPrograms: "Total de Programas",
+                    compliant: "Cumplido",
+                    nonCompliant: "No Cumple",
+                    pending: "Pendiente"
+                },
+                completeModal: {
+                    title: "Marcar \"{name}\" Completado",
+                    error: "No se pudo marcar como completado."
+                }
+            },
+            auditReport: {
+                notFound: "Reporte no encontrado",
+                backToProgram: "Volver al Programa",
+                print: "Imprimir",
+                overallRate: "Tasa General de Cumplimiento",
+                reviewResults: "Resultados de Revisiones",
+                passed: "Aprobadas",
+                failed: "Reprobadas",
+                total: "Total",
+                stats: {
+                    total: "Total",
+                    compliant: "Cumplido",
+                    nonCompliant: "No Cumple",
+                    pending: "Pendiente",
+                    expired: "Expirado",
+                    rate: "Tasa"
+                }
+            },
+            companyCompliance: {
+                title: "Cumplimiento de la Empresa",
+                trendTitle: "Tendencia de Cumplimiento (90d)",
+                noTrendData: "Aún no hay datos de tendencia",
+                expiringTitle: "Asignaciones por Expirar (próximos 30 días)",
+                expiringBadge: "Por Expirar",
+                kpi: {
+                    avgRate: "Tasa Promedio de Cumplimiento",
+                    nonCompliant: "No Cumple",
+                    expiring: "Por Expirar ≤30d"
+                },
+                columns: {
+                    user: "Usuario",
+                    program: "Programa",
+                    expires: "Expira",
+                    status: "Estado"
+                }
+            },
+            teamCompliance: {
+                title: "Cumplimiento del Equipo",
+                empty: "No hay datos de cumplimiento del equipo",
+                summary: {
+                    compliant: "Cumplido",
+                    nonCompliant: "No Cumple",
+                    pending: "Pendiente",
+                    avgRate: "Tasa Promedio"
+                },
+                columns: {
+                    member: "Miembro",
+                    complianceRate: "Tasa de Cumplimiento",
+                    compliant: "Cumplido",
+                    nonCompliant: "No Cumple",
+                    pending: "Pendiente",
+                    status: "Estado"
+                }
+            }
+        },
+        retention: {
+            myRetention: {
+                title: "Mi Retención",
+                trendTitle: "Retención en el Tiempo",
+                openGaps: "Brechas de Conocimiento Abiertas",
+                viewGaps: "Ver Brechas",
+                gauges: {
+                    retentionScore: "Puntaje de Retención",
+                    lowRisk: "Bajo Riesgo",
+                    confidence: "Confianza"
+                },
+                empty: {
+                    title: "Aún no hay datos de retención",
+                    message: "Completa evaluaciones para construir tu perfil de retención."
+                }
+            },
+            teamRetention: {
+                title: "Retención del Equipo",
+                empty: "No hay datos del equipo",
+                atRisk: "En Riesgo",
+                columns: {
+                    name: "Nombre",
+                    retentionScore: "Puntaje de Retención",
+                    riskScore: "Puntaje de Riesgo",
+                    openGaps: "Brechas Abiertas",
+                    lastAssessment: "Última Evaluación"
+                }
+            },
+            companyRetention: {
+                title: "Retención de la Empresa",
+                trendTitle: "Tendencia de Retención (90d)",
+                noTrendData: "Aún no hay datos de tendencia",
+                kpi: {
+                    avgRetention: "Retención Promedio",
+                    avgRisk: "Puntaje de Riesgo Promedio",
+                    totalMembers: "Total de Miembros",
+                    openGaps: "Brechas Abiertas"
+                },
+                series: {
+                    avgRisk: "Riesgo Promedio"
+                }
+            }
+        },
+        certifications: {
+            myCertifications: {
+                title: "Mis Certificaciones",
+                issued: "Emitido:",
+                expires: "Expira:",
+                noExpiry: "Sin expiración",
+                score: "Puntaje:",
+                view: "Ver",
+                verify: "Verificar",
+                stats: {
+                    active: "Activo",
+                    expiring: "Por Expirar",
+                    expired: "Expirado",
+                    revoked: "Revocado"
+                },
+                empty: {
+                    title: "Aún no tienes certificaciones",
+                    message: "Completa programas de cumplimiento o evaluaciones para obtener certificaciones."
+                }
+            },
+            companyCertifications: {
+                title: "Certificaciones de la Empresa",
+                revoke: "Revocar",
+                filters: {
+                    all: "Todos los Estados",
+                    active: "Activo",
+                    expiring: "Por Expirar",
+                    expired: "Expirado",
+                    revoked: "Revocado"
+                },
+                columns: {
+                    holder: "Titular",
+                    template: "Plantilla",
+                    certNumber: "N° Cert.",
+                    status: "Estado",
+                    issued: "Emitido",
+                    expires: "Expira",
+                    score: "Puntaje",
+                    actions: "Acciones"
+                },
+                empty: {
+                    title: "No se encontraron certificaciones",
+                    message: "Ninguna certificación coincide con el filtro actual."
+                }
+            },
+            templates: {
+                title: "Plantillas de Certificado",
+                newTemplate: "Nueva Plantilla",
+                edit: "Editar",
+                activate: "Activar",
+                deactivate: "Desactivar",
+                issue: "Emitir",
+                active: "Activo",
+                inactive: "Inactivo",
+                columns: {
+                    code: "Código",
+                    name: "Nombre",
+                    type: "Tipo",
+                    validity: "Vigencia",
+                    reqScore: "Puntaje Req.",
+                    active: "Activo",
+                    issued: "Emitidos",
+                    actions: "Acciones"
+                },
+                empty: {
+                    title: "Sin plantillas",
+                    message: "Crea tu primera plantilla de certificado."
+                },
+                issueModal: {
+                    title: "Emitir Certificado",
+                    selectUser: "Selecciona un usuario.",
+                    success: "Certificado emitido correctamente.",
+                    error: "No se pudo emitir el certificado.",
+                    userLabel: "Usuario",
+                    loadingMembers: "Cargando miembros…",
+                    noMembers: "Sin miembros activos.",
+                    scoreLabel: "Nota (mínimo requerido: {min}%)",
+                    issuing: "Emitiendo…",
+                    issue: "Emitir"
+                }
+            },
+            templateForm: {
+                editTitle: "Editar Plantilla",
+                newTitle: "Nueva Plantilla de Certificado",
+                saveFailed: "Error al guardar.",
+                saving: "Guardando…",
+                saveChanges: "Guardar Cambios",
+                createTemplate: "Crear Plantilla",
+                fields: {
+                    code: "Código *",
+                    name: "Nombre *",
+                    type: "Tipo",
+                    validity: "Vigencia (días, 0 = sin expiración)",
+                    requiresScore: "Requiere puntaje mínimo",
+                    minimumScore: "Puntaje Mínimo (%)",
+                    headerText: "Texto de Encabezado",
+                    bodyText: "Texto del Cuerpo",
+                    bodyTextPlaceholder: "Completó satisfactoriamente...",
+                    footerText: "Texto de Pie de Página",
+                    active: "Activo"
+                },
+                requirements: {
+                    title: "Requisitos para Emisión Automática",
+                    hint: "Al completar cualquiera de estos, el sistema emite este certificado automáticamente si la persona no lo tiene ya.",
+                    loading: "Cargando…",
+                    empty: "Sin requisitos todavía — este certificado solo se puede emitir manualmente.",
+                    learningPath: "Ruta de Aprendizaje",
+                    complianceProgram: "Programa de Cumplimiento",
+                    compliance: "Cumplimiento",
+                    minScore: "mín. {n}%",
+                    optional: "opcional",
+                    removeTitle: "Eliminar requisito",
+                    selectPlaceholder: "Selecciona…",
+                    minScorePlaceholder: "Nota mínima (opcional)",
+                    mandatory: "Obligatorio",
+                    add: "+ Agregar Requisito",
+                    adding: "Agregando…",
+                    selectRef: "Selecciona una Ruta de Aprendizaje o Programa de Cumplimiento.",
+                    addError: "No se pudo agregar el requisito."
+                }
+            },
+            detail: {
+                notFound: "Certificado no encontrado",
+                generating: "Generando...",
+                download: "Descargar certificado",
+                defaultHeader: "Certificado de Logro",
+                ofAchievement: "De Logro",
+                thisCertifies: "Esto certifica que",
+                authorizedSignature: "Firma Autorizada",
+                scanToVerify: "Escanea para verificar",
+                qrAlt: "Código QR de verificación",
+                stats: {
+                    issued: "Emitido",
+                    expires: "Expira",
+                    score: "Puntaje",
+                    status: "Estado",
+                    verificationCode: "Código de Verificación"
+                }
+            },
+            publicVerification: {
+                subtitle: "Portal de Verificación de Certificados",
+                inputLabel: "Ingresa el código de verificación",
+                inputPlaceholder: "ej. CERT-XXXX-XXXX",
+                verifyBtn: "Verificar",
+                rows: {
+                    holder: "Titular",
+                    template: "Plantilla",
+                    company: "Empresa",
+                    issued: "Emitido",
+                    expires: "Expira",
+                    score: "Puntaje",
+                    certNumber: "N° de Certificado",
+                    verificationCode: "Código de Verificación"
+                },
+                valid: {
+                    title: "Certificado Válido"
+                },
+                invalid: {
+                    title: "Certificado Inválido",
+                    statusLabel: "Estado:",
+                    defaultStatus: "inválido",
+                    message: "Este certificado ya no es válido."
+                },
+                notFound: {
+                    title: "Certificado No Encontrado",
+                    message: "El código ingresado no es válido.",
+                    hint: "Por favor verifica el código de verificación e intenta de nuevo."
+                }
+            }
+        },
+        knowledge: {
+            sources: {
+                title: "Procesos",
+                subtitle: "Módulos de aprendizaje de tu empresa",
+                newProcess: "Nuevo Proceso",
+                itemCount: "{count} elemento{plural}",
+                minutes: "{n} min",
+                order: "Orden: #{n}",
+                processCount: "{count} proceso{plural}",
+                types: {
+                    course: "Curso",
+                    tutorial: "Tutorial",
+                    studyMaterial: "Material de Estudio"
+                },
+                difficulty: {
+                    easy: "Fácil",
+                    medium: "Medio",
+                    hard: "Difícil"
+                },
+                filters: {
+                    type: "Tipo:",
+                    difficulty: "Dificultad:",
+                    all: "Todos"
+                },
+                empty: {
+                    title: "Aún no hay procesos",
+                    message: "Crea tu primer Proceso de aprendizaje. Puedes subir documentos y el sistema los convierte en contenido estructurado."
+                },
+                deleteDialog: {
+                    title: "Eliminar proceso",
+                    willDelete: "Esta acción eliminará permanentemente:",
+                    item1: "Todas las baterías de preguntas generadas",
+                    item2: "Todos los decks de flashcards generados",
+                    item3: "Historial de intentos y resultados",
+                    item4: "Asociaciones con Learning Paths",
+                    irreversible: "Esta acción no se puede deshacer.",
+                    deleting: "Eliminando...",
+                    deleteAll: "Eliminar todo"
+                }
+            },
+            processDetail: {
+                addBattery: "Agregar batería",
+                addDeck: "Agregar deck",
+                addDoc: "Agregar doc",
+                attachDocumentFirst: "Primero adjunta al menos un documento",
+                autoGenerate: "Auto-generar",
+                backToLearningPath: "Volver a {name}",
+                backToProcesses: "Volver a Procesos",
+                battery: "Batería",
+                batteryDefaultDescription: "Evaluación o práctica relacionada con este tópico",
+                by: "por {name}",
+                cardsCount: "{n} tarjetas",
+                deckDefaultDescription: "Conjunto de tarjetas de estudio para este tópico",
+                deleteBatteryTitle: "Eliminar batería",
+                deleteDeckTitle: "Eliminar deck",
+                descriptionLabel: "Descripción",
+                dismiss: "Descartar",
+                documentsAndSections: "Documentos & Secciones",
+                documentsCount: "{count} documento{plural}",
+                dragToReorder: "Arrastrar para reordenar",
+                dragToReorderLong: "arrastra para reordenar",
+                generateFromDocumentsTitle: "Generar flashcards y baterías desde los documentos",
+                generating: "Generando…",
+                generatingContent: "Generando contenido…",
+                learn: "Aprender",
+                loading: "Cargando…",
+                loadingDocuments: "Cargando documentos…",
+                more: "Más",
+                noContentGenerated: "Sin contenido generado para este tópico.",
+                noContentTopic: "Sin contenido en este tópico.",
+                noSectionsAvailable: "No hay secciones disponibles. Sube un documento primero.",
+                optional: "opcional",
+                passingScore: "Aprobación: {n}%",
+                processNotFound: "Proceso no encontrado",
+                publicVisibility: "Visibilidad pública",
+                questionsCount: "{n} preguntas",
+                ready: "¡Listo!",
+                reorder: "reordena",
+                sectionsAbbr: "{n} secc.",
+                selectSection: "Selecciona al menos una sección.",
+                selectedAbbr: "{n} sel.",
+                simulate: "Simular",
+                study: "Estudiar",
+                tagsCount: "{n} temas",
+                topicLabel: "Tópico {n}",
+                unexpectedError: "Ocurrió un error inesperado.",
+                untitled: "Sin título",
+                visibleToAll: "Visible para todos",
+                visibleToYou: "Solo visible para ti",
+                status: {
+                    error: "Error"
+                },
+                stages: {
+                    prepare: "Preparando el proceso…",
+                    preflight: "Verificando documentos…",
+                    processDocument: "Procesando documentos…",
+                    aggregateTags: "Identificando temas únicos…",
+                    partitionTags: "Organizando grupos temáticos…",
+                    generateFlashcards: "Generando flashcards…",
+                    generateBattery: "Generando preguntas…",
+                    finalize: "Finalizando…",
+                    prepareSources: "Preparando fuentes…",
+                    finalizeDeck: "Finalizando mazo…",
+                    finalizeBattery: "Finalizando batería…"
+                },
+                banner: {
+                    failed: "Generación fallida",
+                    canceled: "Generación detenida",
+                    canceledMessage: "El proceso fue detenido. Puedes volver a iniciarlo desde el botón Auto-generar.",
+                    ready: "Listo — {decks} {deckWord}, {batteries} {batteryWord}",
+                    deckWord: "deck",
+                    decksWord: "decks",
+                    batteryWord: "batería",
+                    batteriesWord: "baterías",
+                    generating: "Generando contenido…",
+                    stop: "Detener",
+                    stopTitle: "Detener la generación",
+                    view: "▾ Ver",
+                    hide: "▴ Ocultar",
+                    mayTakeMinutes: "Esto puede tardar varios minutos. Puedes seguir navegando mientras tanto.",
+                    partialFailure: "Algunos grupos fallaron pero hay resultados disponibles."
+                },
+                addDocModal: {
+                    title: "Agregar documentos",
+                    clickOrDrag: "Haz clic o arrastra archivos aquí",
+                    filesSelected: "{count} archivo{plural} seleccionado{plural}",
+                    fileTypes: "PDF, DOCX, PPTX, TXT, MD — máx. 400 MB",
+                    uploading: "Subiendo…",
+                    upload: "Subir",
+                    done: "Listo"
+                },
+                batteryDialog: {
+                    title: "Nueva Batería",
+                    subtitle: "Configura tu set de preguntas con IA",
+                    topicLabel: "Tema",
+                    topicPlaceholder: "Ej: Anatomía del Corazón, Historia...",
+                    topicHint: "El nombre de la batería será el tema que escribas aquí",
+                    quantityLabel: "Cantidad de preguntas",
+                    formatLabel: "Formato de preguntas",
+                    formatTrueFalse: "Verdadero/Falso",
+                    formatMultipleChoice: "Selección múltiple",
+                    formatVariety: "Variado",
+                    generateBattery: "Generar Batería"
+                },
+                deckDialog: {
+                    title: "Crear Mazo",
+                    subtitleAi: "Genera flashcards con IA desde documentos",
+                    subtitleManual: "Crea tarjetas manualmente",
+                    tabAi: "Generar con IA",
+                    tabManual: "Manual",
+                    titleField: "Título",
+                    titlePlaceholder: "Ej. Anatomía del Corazón",
+                    titleRequired: "El título es obligatorio",
+                    cardsCountLabel: "Cantidad de tarjetas",
+                    maxCards: "Máximo 15 tarjetas por mazo",
+                    descriptionPlaceholder: "Describe este mazo...",
+                    addAtLeastOneCard: "Agrega al menos una tarjeta.",
+                    cardsLabel: "Tarjetas",
+                    cardBadge: "TARJETA {n}",
+                    front: "Frente",
+                    back: "Reverso",
+                    frontPlaceholder: "Frente (Pregunta)",
+                    backPlaceholder: "Reverso (Respuesta)",
+                    notesPlaceholder: "Notas (Opcional)",
+                    addToList: "Agregar a la lista",
+                    generateDeck: "Generar Mazo",
+                    createDeck: "Crear Mazo"
+                },
+                deleteDialog: {
+                    titleTopic: "Eliminar tópico completo",
+                    titleDeck: "Eliminar deck",
+                    titleBattery: "Eliminar batería",
+                    willDelete: "Vas a eliminar permanentemente:",
+                    topicBody: "Esto eliminará {decks} deck(s) y {batteries} batería(s) de este tópico (automáticos y agregados a mano), con todas sus tarjetas, preguntas e historial. Esta acción no se puede deshacer.",
+                    deckBody: "Esto eliminará todas las tarjetas, progreso e historial asociado. Esta acción no se puede deshacer.",
+                    batteryBody: "Esto eliminará todas las preguntas, intentos e historial asociado. Esta acción no se puede deshacer.",
+                    delete: "Eliminar"
+                },
+                documentsPanel: {
+                    title: "Documentos",
+                    addDocument: "Agregar documento",
+                    searchPlaceholder: "Buscar documentos...",
+                    count: "{count} documento{plural}",
+                    empty: "Sin documentos adjuntos.",
+                    dragDrop: "Arrastra y suelta documentos aquí",
+                    orSelectFiles: "o selecciona archivos"
+                },
+                structurePanel: {
+                    title: "Estructura de conocimiento",
+                    summary: "{topics} tópicos · {decks} decks · {batteries} baterías",
+                    addTopic: "Agregar tópico",
+                    completion: "Completitud del proceso",
+                    completedBatteries: "{completed}/{total} baterías ≥ 80%",
+                    noStructure: "Sin estructura generada",
+                    noStructureHint: "Los tópicos, decks y baterías se generan automáticamente al procesar los documentos con IA.",
+                    unclassified: "Sin clasificar",
+                    stats: {
+                        topics: "Tópicos",
+                        decks: "Decks",
+                        batteries: "Baterías",
+                        questions: "Preguntas",
+                        cards: "Tarjetas"
+                    }
+                },
+                tagGroup: {
+                    counts: "{decks} decks · {batteries} bat."
+                },
+                errors: {
+                    connectionFailed: "No se pudo conectar con el servidor.",
+                    startGenFailed: "Error al iniciar la generación.",
+                    stoppedByUser: "Detenido por el usuario."
+                }
+            },
+            changeImpact: {
+                title: "Análisis de Impacto",
+                notFound: "Análisis de impacto de cambio no encontrado.",
+                knowledgeSource: "Fuente de Conocimiento:",
+                runAnalysis: "Ejecutar Análisis →",
+                regenerateTraining: "Regenerar Entrenamiento",
+                confirmApply: "Esto archivará el programa de entrenamiento actual y generará uno nuevo. ¿Continuar?",
+                comparingVersions: "Comparando versiones del documento con IA...",
+                mayTakeSeconds: "Esto puede tardar unos segundos.",
+                notYetRun: "Análisis aún no ejecutado",
+                notYetRunHint: "Haz clic en \"Ejecutar Análisis\" para comparar versiones del documento y detectar contenido afectado.",
+                analysisSummary: "Resumen del Análisis",
+                keyChanges: "Cambios Clave",
+                recommendations: "Recomendaciones",
+                regenerated: "Entrenamiento regenerado",
+                viewNewProgram: "Ver Nuevo Programa →",
+                notRegeneratedYet: "El entrenamiento aún no se ha regenerado. Regenera para aplicar estos cambios al contenido de aprendizaje.",
+                levels: {
+                    low: "BAJO",
+                    medium: "MEDIO",
+                    high: "ALTO",
+                    critical: "CRÍTICO"
+                },
+                metrics: {
+                    topics: "Tópicos Afectados",
+                    paths: "Rutas Afectadas",
+                    procedures: "Procedimientos Afectados"
+                },
+                toast: {
+                    analysisStarted: "Análisis iniciado. Consultando resultados...",
+                    analysisFailed: "Error al iniciar el análisis: {error}",
+                    regenerated: "Entrenamiento regenerado exitosamente.",
+                    applyFailed: "Error al aplicar: {error}",
+                    unknownError: "Error desconocido"
+                }
+            },
+            graph: {
+                title: "Grafo de Conocimiento",
+                summary: "{nodes} nodos · {edges} relaciones",
+                refresh: "Actualizar",
+                filters: "Filtros",
+                nodeTypesLabel: "Tipos de Nodo",
+                knowledgeSourceLabel: "Fuente de Conocimiento",
+                allSources: "Todas las fuentes",
+                fit: "Ajustar",
+                importance: "Importancia",
+                connections: "Conexiones ({count})",
+                computingLayout: "Calculando diseño...",
+                noData: "No hay datos del grafo de conocimiento",
+                noDataHint: "Procesa documentos con IA para construir el grafo.",
+                nodeTypes: {
+                    concept: "Concepto",
+                    procedure: "Procedimiento",
+                    regulation: "Regulación",
+                    skill: "Habilidad",
+                    topic: "Tópico",
+                    rule: "Regla"
+                },
+                edgeTypes: {
+                    requires: "requiere",
+                    relatedTo: "relacionado con",
+                    extends: "extiende",
+                    dependsOn: "depende de",
+                    supersedes: "reemplaza",
+                    contradicts: "contradice"
+                }
+            },
+            sourceNew: {
+                backToProcesses: "Volver a Procesos",
+                subtitle: "Crea un proceso de conocimiento para tu empresa",
+                nameRequired: "El nombre es obligatorio.",
+                nameRequiredShort: "Nombre es obligatorio.",
+                nameLabel: "Nombre del Proceso *",
+                namePlaceholder: "ej. Inducción general, Manual de seguridad…",
+                descriptionLabel: "Descripción",
+                descriptionPlaceholder: "Describe brevemente de qué trata este proceso…",
+                sourceTypeLabel: "Tipo de fuente *",
+                next: "Siguiente",
+                processTypeLabel: "Tipo de Proceso",
+                difficultyLabel: "Dificultad",
+                minScoreLabel: "Puntaje mínimo (%)",
+                durationLabel: "Duración estimada",
+                durationPlaceholder: "ej. 60",
+                minutesAbbr: "min",
+                creating: "Creando proceso…",
+                createProcess: "Crear proceso",
+                createError: "No se pudo crear el proceso. Verifica los datos e intenta de nuevo.",
+                stepLabel: "Paso {n} — {name}",
+                company: "Empresa:",
+                processId: "Proceso ID:",
+                steps: {
+                    info: "Información",
+                    config: "Configuración",
+                    documents: "Documentos"
+                },
+                sourceTypes: {
+                    policy: "Política",
+                    procedure: "Procedimiento",
+                    regulation: "Regulación",
+                    manual: "Manual",
+                    trainingMaterial: "Material de formación",
+                    other: "Otro"
+                },
+                processTypes: {
+                    course: {
+                        label: "Curso",
+                        desc: "Ruta estructurada con módulos, evaluaciones y seguimiento de progreso."
+                    },
+                    tutorial: {
+                        label: "Tutorial",
+                        desc: "Guía paso a paso enfocada en una habilidad o tarea específica."
+                    },
+                    studyMaterial: {
+                        label: "Material de estudio",
+                        desc: "Documento de referencia o lectura sin estructura fija."
+                    }
+                },
+                step3: {
+                    intro: "El proceso fue creado. Sube ahora los documentos que lo componen — PDFs, manuales, presentaciones o cualquier material de referencia. Puedes subir más documentos en cualquier momento desde la página del proceso.",
+                    uploadNote: "PDF, DOCX, PPTX, TXT, MD — máx. 400 MB por archivo",
+                    skip: "Omitir — ir al proceso",
+                    finish: "Finalizar",
+                    finishWithCount: "Finalizar ({count} doc{plural})"
+                }
+            },
+            sourceDetail: {
+                backToSources: "Fuentes de Conocimiento",
+                notFound: "Fuente de conocimiento no encontrada.",
+                documentId: "ID de Documento: {id}",
+                processWithAi: "Procesar con IA →",
+                retryProcessing: "Reintentar Procesamiento",
+                generateTraining: "Generar Entrenamiento",
+                detectChanges: "Detectar Cambios",
+                processingFailed: "Error de procesamiento",
+                readyToProcess: "Listo para procesar",
+                readyToProcessHint: "Haz clic en \"Procesar con IA\" para extraer conceptos, procedimientos y construir el grafo de conocimiento.",
+                status: {
+                    pending: "Pendiente",
+                    processing: "Procesando",
+                    processed: "Procesado",
+                    failed: "Fallido"
+                },
+                tabs: {
+                    summary: "Resumen",
+                    procedures: "Procedimientos",
+                    graph: "Grafo de Conocimiento",
+                    changes: "Cambios"
+                },
+                summary: {
+                    title: "Resumen",
+                    topicsExtracted: "Tópicos Extraídos",
+                    procedures: "Procedimientos",
+                    trainingProgram: "Programa de Entrenamiento",
+                    generated: "Generado ✓",
+                    notYet: "Aún no",
+                    topics: "Tópicos"
+                },
+                procedures: {
+                    empty: "Aún no se han extraído procedimientos.",
+                    criticalOnly: "Mostrar solo críticos",
+                    count: "{count} procedimientos",
+                    critical: "CRÍTICO",
+                    steps: "{count} pasos",
+                    warnings: "{count} advertencia(s)"
+                },
+                graph: {
+                    loading: "Cargando grafo...",
+                    noData: "Aún no hay datos del grafo de conocimiento disponibles.",
+                    noDataHint: "Procesa este documento con IA para generar el grafo."
+                },
+                changes: {
+                    empty: "Aún no hay análisis de cambios.",
+                    emptyHint: "Usa \"Detectar Cambios\" cuando el documento se actualice.",
+                    pending: "PENDIENTE",
+                    trainingRegenerated: "Entrenamiento regenerado",
+                    viewAnalysis: "Ver Análisis"
+                },
+                processing: {
+                    title: "Procesando documento con IA...",
+                    mayTake: "El procesamiento puede tardar 30–90 segundos.",
+                    msg1: "Extrayendo conceptos...",
+                    msg2: "Identificando procedimientos...",
+                    msg3: "Construyendo grafo de conocimiento...",
+                    msg4: "Generando relaciones...",
+                    msg5: "Finalizando..."
+                },
+                toast: {
+                    processFailed: "Error al iniciar el procesamiento: {error}",
+                    trainingCreated: "Programa de entrenamiento creado: {name}",
+                    newProgram: "Nuevo Programa",
+                    trainingFailed: "Error al generar el entrenamiento: {error}",
+                    noChanges: "No se detectaron cambios desde la última versión.",
+                    confirmAnalyze: "¡Cambios detectados! ¿Analizar impacto ahora?",
+                    changeCreated: "Análisis de cambios creado. Consúltalo en la pestaña Cambios.",
+                    detectFailed: "Error al detectar cambios: {error}"
+                }
+            }
+        },
+        settings: {
+            company: {
+                title: "Configuración de Empresa",
+                yourCompany: "Tu Empresa",
+                noCompanySelected: "Sin empresa seleccionada.",
+                tabs: {
+                    info: "Información",
+                    units: "Unidades de Negocio",
+                    teams: "Equipos",
+                    members: "Miembros"
+                },
+                stages: {
+                    candidate: "Candidato",
+                    onboarding: "Onboarding",
+                    trainee: "Trainee",
+                    activeEmployee: "Empleado Activo",
+                    contractor: "Contratista",
+                    formerEmployee: "Ex-Empleado"
+                },
+                status: {
+                    active: "Activo",
+                    suspended: "Suspendido",
+                    removed: "Removido"
+                },
+                info: {
+                    nameLabel: "Nombre de la empresa",
+                    websiteLabel: "Sitio web",
+                    industryLabel: "Industria",
+                    sizeLabel: "Tamaño",
+                    sizePlaceholder: "ej. 51-200",
+                    descriptionLabel: "Descripción",
+                    saveError: "No se pudieron guardar los cambios.",
+                    saved: "Cambios guardados.",
+                    saving: "Guardando…",
+                    save: "Guardar cambios"
+                },
+                members: {
+                    addError: "Error al agregar usuario.",
+                    adding: "Agregando…",
+                    add: "Agregar",
+                    addMember: "Agregar miembro",
+                    empty: "No hay miembros con este filtro.",
+                    confirmRemove: "¿Dar de baja a {name}?",
+                    welcomeResent: "Correo de bienvenida reenviado a {name}.",
+                    resendError: "No se pudo reenviar el correo.",
+                    count: "{count} miembro{plural}",
+                    addModal: {
+                        title: "Agregar usuario",
+                        hint: "Si el usuario no tiene cuenta, se creará automáticamente. Deberá usar \"Olvidé mi contraseña\" para establecer su clave.",
+                        roleLabel: "Rol",
+                        stageLabel: "Etapa"
+                    },
+                    changeRoleModal: {
+                        title: "Cambiar rol",
+                        member: "Miembro:",
+                        currentRole: "Rol actual:",
+                        newRole: "Nuevo rol",
+                        save: "Guardar"
+                    },
+                    columns: {
+                        name: "Nombre",
+                        email: "Email",
+                        role: "Rol",
+                        stage: "Etapa",
+                        status: "Estado"
+                    },
+                    filters: {
+                        active: "Activos",
+                        removed: "Dados de baja",
+                        all: "Todos"
+                    },
+                    menu: {
+                        changeRole: "Cambiar rol",
+                        resendWelcome: "Reenviar bienvenida",
+                        remove: "Dar de baja"
+                    }
+                },
+                units: {
+                    saveError: "Error al guardar.",
+                    create: "Crear",
+                    confirmDelete: "¿Eliminar la unidad \"{name}\"?",
+                    count: "{count} unidad{plural}",
+                    newUnit: "Nueva BU",
+                    empty: "Sin unidades de negocio aún.",
+                    teamCount: "{count} equipo{plural}",
+                    managerSuffix: "Manager: {name}",
+                    editModal: {
+                        title: "Editar Unidad de Negocio",
+                        newTitle: "Nueva Unidad de Negocio",
+                        nameLabel: "Nombre",
+                        codeLabel: "Código",
+                        managerLabel: "Manager (opcional)",
+                        noManager: "Sin manager"
+                    },
+                    menu: {
+                        edit: "Editar",
+                        delete: "Eliminar"
+                    }
+                },
+                teams: {
+                    createTeam: "Crear equipo",
+                    addMemberError: "Error al agregar miembro.",
+                    membersHeading: "Miembros ({count})",
+                    noMembersYet: "Sin miembros aún.",
+                    confirmDelete: "¿Eliminar el equipo \"{name}\"?",
+                    newTeam: "Nuevo Equipo",
+                    empty: "Sin equipos aún.",
+                    memberCount: "{count} miembro{plural}",
+                    buSuffix: "BU: {name}",
+                    hide: "Ocultar",
+                    members: "Miembros",
+                    count: "{count} equipo{plural}",
+                    editModal: {
+                        title: "Editar Equipo",
+                        newTitle: "Nuevo Equipo",
+                        buLabel: "Unidad de negocio (opcional)",
+                        noUnit: "Sin unidad"
+                    },
+                    addMemberModal: {
+                        title: "Agregar a {name}",
+                        searchPlaceholder: "Buscar miembro de la empresa…",
+                        noneAvailable: "Sin miembros disponibles.",
+                        teamRole: "Rol en el equipo"
+                    }
+                }
+            },
+            inviteUser: {
+                title: "Invitar Usuario",
+                sendingTo: "Enviando a",
+                sendFailed: "No se pudo enviar la invitación.",
+                sentTitle: "¡Invitación Enviada!",
+                sentSubtitle: "El correo de invitación fue enviado a",
+                inviteAnother: "Invitar a Otro",
+                viewInvitations: "Ver Invitaciones",
+                findOnPlatform: "Buscar en la plataforma",
+                searchPlaceholder: "Buscar por nombre o email…",
+                searching: "Buscando…",
+                noUsersFound: "No se encontraron usuarios para \"{query}\"",
+                typeToSearch: "Escribe para buscar usuarios de la plataforma",
+                orTypeEmail: "O escribe el email directamente",
+                willBeSentTo: "La invitación se enviará a",
+                externalUser: "Usuario externo",
+                selectOrEnter: "Selecciona un usuario o ingresa un email",
+                assignRole: "Asignar Rol",
+                employeeStage: "Etapa del Empleado",
+                sending: "Enviando…",
+                sendInvitation: "Enviar Invitación",
+                willJoinAs: "Se unirá como",
+                roles: {
+                    admin: "Admin",
+                    manager: "Manager",
+                    trainer: "Trainer",
+                    employee: "Employee",
+                    auditor: "Auditor",
+                    owner: "Owner"
+                }
+            }
+        },
+        platformAdmin: {
+            companies: {
+                title: "Administración de Plataforma",
+                subtitle: "{count} {word} en el sistema",
+                companyWord: "empresa",
+                companiesWord: "empresas",
+                newCompany: "Nueva Empresa",
+                searchPlaceholder: "Buscar empresa...",
+                noneFound: "No se encontraron empresas",
+                noneRegistered: "No hay empresas registradas",
+                activeInDashboard: "Empresa activa en el Dashboard de Enterprise",
+                operateAsCompany: "Operar como esta empresa",
+                userCount: "{count} usuario{plural}",
+                activeBadge: "Activa",
+                inactiveBadge: "Inactiva",
+                view: "Ver",
+                usersBtn: "Usuarios",
+                industries: {
+                    aviation: "Aviación",
+                    healthcare: "Salud",
+                    manufacturing: "Manufactura",
+                    logistics: "Logística",
+                    technology: "Tecnología",
+                    finance: "Finanzas",
+                    education: "Educación",
+                    other: "Otro"
+                },
+                sizes: {
+                    s1_10: "1–10 empleados",
+                    s11_50: "11–50 empleados",
+                    s51_200: "51–200 empleados",
+                    s201_500: "201–500 empleados",
+                    s501_1000: "501–1,000 empleados",
+                    s1000Plus: "1,000+ empleados"
+                },
+                createModal: {
+                    title: "Nueva Empresa",
+                    nameSlugRequired: "Nombre y slug son obligatorios.",
+                    createError: "No se pudo crear la empresa.",
+                    nameLabel: "Nombre *",
+                    nameLabelNoAsterisk: "Nombre",
+                    slugLabel: "Identificador único (slug) *",
+                    industryLabel: "Industria",
+                    sizeLabel: "Tamaño",
+                    selectPlaceholder: "Seleccionar...",
+                    websiteLabel: "Sitio web",
+                    creating: "Creando...",
+                    create: "Crear empresa →"
+                },
+                editModal: {
+                    title: "Editar empresa",
+                    updateError: "No se pudo actualizar."
+                },
+                deleteModal: {
+                    title: "Eliminar empresa",
+                    confirm: "¿Estás seguro de que quieres eliminar",
+                    cannotUndo: "Esta acción no se puede deshacer."
+                },
+                toast: {
+                    created: "✓ \"{name}\" creada exitosamente.",
+                    updated: "Empresa actualizada.",
+                    deleted: "Empresa eliminada.",
+                    deleteError: "No se pudo eliminar."
+                }
+            },
+            invitations: {
+                title: "Invitaciones",
+                subtitle: "Todas las invitaciones de empresas en la plataforma",
+                globalTab: "Global",
+                recentTab: "Recientes (7 días)",
+                empty: "No se encontraron invitaciones",
+                loadError: "No se pudieron cargar las invitaciones. Verifica que el servidor esté activo y que tengas acceso de staff.",
+                status: {
+                    pending: "Pendiente",
+                    accepted: "Aceptada",
+                    expired: "Expirada",
+                    cancelled: "Cancelada"
+                },
+                statusTabs: {
+                    all: "Todas"
+                },
+                columns: {
+                    company: "Empresa",
+                    email: "Email",
+                    role: "Rol",
+                    status: "Estado",
+                    invitedBy: "Invitado por",
+                    sent: "Enviada",
+                    expires: "Expira"
+                },
+                inviteModal: {
+                    title: "Nueva Invitación",
+                    subtitle: "Envía una invitación a cualquier empresa",
+                    companyLabel: "Empresa",
+                    emailLabel: "Dirección de email",
+                    selectCompany: "Selecciona empresa…",
+                    sendingTo: "Enviando a",
+                    as: "como",
+                    sendAnother: "Enviar Otra",
+                    done: "Listo"
+                }
+            },
+            users: {
+                title: "{name} — Usuarios",
+                companyFallback: "Empresa #{id}",
+                backToCompanies: "Volver a empresas",
+                empty: "No hay usuarios",
+                emptyHint: "Agrega el primer usuario a esta empresa.",
+                close: "Cerrar",
+                status: {
+                    invited: "Invitado"
+                },
+                addModal: {
+                    emailRequired: "El email es obligatorio.",
+                    addError: "No se pudo agregar el usuario.",
+                    hint: "Si el usuario no tiene cuenta, se creará automáticamente. Recomiéndale usar \"Olvidé mi contraseña\" para activar su acceso.",
+                    roleLabel: "Rol *",
+                    stageLabel: "Etapa del empleado *",
+                    addArrow: "Agregar →"
+                },
+                changeRoleModal: {
+                    error: "No se pudo cambiar el rol.",
+                    user: "Usuario:"
+                },
+                toast: {
+                    added: "✓ Usuario agregado. Ya tiene acceso a la empresa.",
+                    roleUpdated: "Rol actualizado.",
+                    removed: "Miembro dado de baja.",
+                    removeError: "No se pudo dar de baja."
+                }
+            }
+        },
+        analytics: {
+            daysOption: "{n} días",
+            companyHealth: {
+                title: "Puntaje de Salud de la Empresa",
+                empty: "No hay datos de salud disponibles",
+                currentIndicator: "← actual",
+                tiers: {
+                    excellent: "90–100: Excelente",
+                    good: "70–89: Bueno",
+                    needsAttention: "50–69: Requiere Atención",
+                    atRisk: "< 50: En Riesgo"
+                }
+            },
+            complianceTrends: {
+                title: "Tendencias de Cumplimiento",
+                empty: "No hay datos de tendencia de cumplimiento",
+                seriesName: "Tasa de Cumplimiento",
+                tooltipCompliance: "cumplimiento",
+                tooltipTotal: "Total",
+                tooltipCompliant: "Cumple",
+                tooltipRate: "Tasa"
+            },
+            learningTrends: {
+                title: "Tendencias de Aprendizaje",
+                empty: "No hay datos de tendencia de aprendizaje",
+                seriesName: "Completados",
+                tooltipCompletions: "{n} completados"
+            },
+            retentionTrends: {
+                title: "Tendencias de Retención",
+                columns: {
+                    date: "Fecha",
+                    avgRetention: "Retención Promedio",
+                    avgRisk: "Riesgo Promedio",
+                    snapshots: "Instantáneas"
+                }
+            }
+        },
+        profile: {
+            title: "Perfil de Enterprise",
+            role: "Rol",
+            company: "Empresa",
+            status: "Estado",
+            joined: "Se unió",
+            updated: "Perfil actualizado.",
+            positionLabel: "Puesto / Cargo",
+            departmentLabel: "Departamento",
+            bioLabel: "Biografía",
+            bioPlaceholder: "Cuéntale a tu equipo un poco sobre ti...",
+            save: "Guardar Perfil"
+        },
+        noCompany: {
+            welcome: "Bienvenido a Ankard Enterprise",
+            notYetInCompany: "Tu cuenta está lista, pero aún no perteneces a ninguna empresa.",
+            contactAdmin: "Contacta al administrador de tu empresa para que te agregue a la plataforma. Una vez que lo hagan, podrás entrar inmediatamente con tu cuenta actual.",
+            areYouAdmin: "¿Eres administrador?",
+            staffLoginHint: "Inicia sesión con tu cuenta de staff para gestionar empresas y usuarios.",
+            logout: "Cerrar sesión"
+        },
+        invitations: {
+            loadError: "No se pudieron cargar las invitaciones.",
+            columns: {
+                actions: "Acciones"
+            },
+            resend: "Reenviar",
+            cancel: "Cancelar"
+        }
     }
 };

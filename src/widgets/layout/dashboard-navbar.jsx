@@ -135,7 +135,12 @@ export function DashboardNavbar() {
       const project = allProjects.find(p => String(p.id) === part);
       return project ? (project.title || project.name) : part;
     }
-    return t(`breadcrumbs.${part}`) || part;
+    const key = `breadcrumbs.${part}`;
+    const translated = t(key);
+    // t() falls back to returning the key itself when there's no translation —
+    // detect that case here so an untranslated segment (e.g. a numeric id)
+    // shows its raw value instead of the literal "breadcrumbs.<part>" string.
+    return translated !== key ? translated : part;
   };
 
   return (

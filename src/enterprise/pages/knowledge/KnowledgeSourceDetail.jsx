@@ -8,15 +8,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
+import { useLanguage } from "../../../context/language-context";
 import { TableSkeleton } from "../../components/LoadingSkeleton";
 
 /* ── Status badge ── */
 function StatusBadge({ status }) {
+  const { t } = useLanguage();
   const map = {
-    pending:    { label: "Pending",    cls: "bg-zinc-100 text-zinc-500" },
-    processing: { label: "Processing", cls: "bg-blue-100 text-blue-700", spin: true },
-    processed:  { label: "Processed",  cls: "bg-green-100 text-green-700" },
-    failed:     { label: "Failed",     cls: "bg-red-100 text-red-700" },
+    pending:    { label: t("enterprise.knowledge.sourceDetail.status.pending"),    cls: "bg-zinc-100 text-zinc-500" },
+    processing: { label: t("enterprise.knowledge.sourceDetail.status.processing"), cls: "bg-blue-100 text-blue-700", spin: true },
+    processed:  { label: t("enterprise.knowledge.sourceDetail.status.processed"),  cls: "bg-green-100 text-green-700" },
+    failed:     { label: t("enterprise.knowledge.sourceDetail.status.failed"),     cls: "bg-red-100 text-red-700" },
   };
   const s = map[status] || map.pending;
   return (
@@ -32,6 +34,7 @@ function StatusBadge({ status }) {
 
 /* ── Procedures Tab ── */
 function ProceduresTab({ ksId }) {
+  const { t } = useLanguage();
   const [procs, setProcs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [criticalOnly, setCriticalOnly] = useState(false);
@@ -53,7 +56,7 @@ function ProceduresTab({ ksId }) {
   if (!procs.length) return (
     <div className="text-center py-12 text-zinc-400">
       <DocumentTextIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-      <p>No procedures extracted yet.</p>
+      <p>{t("enterprise.knowledge.sourceDetail.procedures.empty")}</p>
     </div>
   );
 
@@ -63,10 +66,10 @@ function ProceduresTab({ ksId }) {
         <label className="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer select-none">
           <input type="checkbox" checked={criticalOnly} onChange={(e) => setCriticalOnly(e.target.checked)}
             className="rounded border-zinc-300" />
-          Show critical only
+          {t("enterprise.knowledge.sourceDetail.procedures.criticalOnly")}
         </label>
         <span className="text-zinc-300">|</span>
-        <Typography variant="small" className="text-zinc-400">{procs.length} procedures</Typography>
+        <Typography variant="small" className="text-zinc-400">{t("enterprise.knowledge.sourceDetail.procedures.count", { count: procs.length })}</Typography>
       </div>
       {procs.map((proc) => (
         <div key={proc.id} className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm overflow-hidden">
@@ -76,12 +79,12 @@ function ProceduresTab({ ksId }) {
           >
             <div className="flex items-center gap-3">
               {proc.is_critical && (
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">CRITICAL</span>
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">{t("enterprise.knowledge.sourceDetail.procedures.critical")}</span>
               )}
               <Typography className="font-semibold text-zinc-800">{proc.title}</Typography>
               <Typography variant="small" className="text-zinc-400">
-                {proc.steps?.length ?? 0} steps
-                {proc.warnings?.length ? ` · ${proc.warnings.length} warning(s)` : ""}
+                {t("enterprise.knowledge.sourceDetail.procedures.steps", { count: proc.steps?.length ?? 0 })}
+                {proc.warnings?.length ? ` · ${t("enterprise.knowledge.sourceDetail.procedures.warnings", { count: proc.warnings.length })}` : ""}
               </Typography>
             </div>
             {expanded[proc.id]
@@ -155,6 +158,7 @@ function placeNodes(nodes) {
 }
 
 function GraphCanvas({ ksId }) {
+  const { t } = useLanguage();
   const [graph, setGraph] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -186,12 +190,12 @@ function GraphCanvas({ ksId }) {
   };
   const onMouseUp = () => { dragging.current = false; };
 
-  if (loading) return <div className="flex items-center justify-center h-64 text-zinc-400"><ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> Loading graph...</div>;
+  if (loading) return <div className="flex items-center justify-center h-64 text-zinc-400"><ArrowPathIcon className="h-6 w-6 animate-spin mr-2" /> {t("enterprise.knowledge.sourceDetail.graph.loading")}</div>;
   if (!graph || !graph.nodes?.length) return (
     <div className="text-center py-16 text-zinc-400">
       <LinkIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-      <p>No knowledge graph data available yet.</p>
-      <Typography variant="small" className="mt-1">Process this document with AI to generate the graph.</Typography>
+      <p>{t("enterprise.knowledge.sourceDetail.graph.noData")}</p>
+      <Typography variant="small" className="mt-1">{t("enterprise.knowledge.sourceDetail.graph.noDataHint")}</Typography>
     </div>
   );
 
@@ -295,7 +299,7 @@ function GraphCanvas({ ksId }) {
           )}
           {selected.importance_score != null && (
             <div>
-              <Typography variant="small" className="text-zinc-400 mb-1">Importance</Typography>
+              <Typography variant="small" className="text-zinc-400 mb-1">{t("enterprise.knowledge.graph.importance")}</Typography>
               <div className="h-1.5 bg-zinc-100 rounded-full">
                 <div className="h-1.5 bg-indigo-500 rounded-full"
                   style={{ width: `${selected.importance_score * 100}%` }} />
@@ -311,6 +315,7 @@ function GraphCanvas({ ksId }) {
 /* ── Change History Tab ── */
 function ChangeHistoryTab({ ksId }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -333,8 +338,8 @@ function ChangeHistoryTab({ ksId }) {
   if (!items.length) return (
     <div className="text-center py-12 text-zinc-400">
       <ClockIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-      <p>No change analyses yet.</p>
-      <Typography variant="small">Use "Detect Changes" when the document is updated.</Typography>
+      <p>{t("enterprise.knowledge.sourceDetail.changes.empty")}</p>
+      <Typography variant="small">{t("enterprise.knowledge.sourceDetail.changes.emptyHint")}</Typography>
     </div>
   );
 
@@ -346,14 +351,14 @@ function ChangeHistoryTab({ ksId }) {
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${impactColor(ci.impact_level)}`}>
-                {ci.impact_level?.toUpperCase() || "PENDING"}
+                {ci.impact_level?.toUpperCase() || t("enterprise.knowledge.sourceDetail.changes.pending")}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500`}>
                 {ci.status}
               </span>
               {ci.training_regenerated && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                  Training regenerated
+                  {t("enterprise.knowledge.sourceDetail.changes.trainingRegenerated")}
                 </span>
               )}
             </div>
@@ -364,7 +369,7 @@ function ChangeHistoryTab({ ksId }) {
           </div>
           <Button size="sm" variant="outlined" color="indigo" className="normal-case text-xs"
             onClick={() => navigate(`/enterprise/knowledge/change-impact/${ci.id}`)}>
-            View Analysis
+            {t("enterprise.knowledge.sourceDetail.changes.viewAnalysis")}
           </Button>
         </div>
       ))}
@@ -374,17 +379,18 @@ function ChangeHistoryTab({ ksId }) {
 
 /* ── Processing Panel ── */
 function ProcessingPanel({ ksId, onDone }) {
-  const [msg, setMsg] = useState("Extracting concepts...");
+  const { t } = useLanguage();
+  const messages = [
+    t("enterprise.knowledge.sourceDetail.processing.msg1"),
+    t("enterprise.knowledge.sourceDetail.processing.msg2"),
+    t("enterprise.knowledge.sourceDetail.processing.msg3"),
+    t("enterprise.knowledge.sourceDetail.processing.msg4"),
+    t("enterprise.knowledge.sourceDetail.processing.msg5"),
+  ];
+  const [msg, setMsg] = useState(messages[0]);
   const [progress, setProgress] = useState(20);
 
   useEffect(() => {
-    const messages = [
-      "Extracting concepts...",
-      "Identifying procedures...",
-      "Building knowledge graph...",
-      "Generating relationships...",
-      "Finalizing...",
-    ];
     let i = 0;
     const interval = setInterval(async () => {
       i = (i + 1) % messages.length;
@@ -405,14 +411,14 @@ function ProcessingPanel({ ksId, onDone }) {
     <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 space-y-3">
       <div className="flex items-center gap-3">
         <ArrowPathIcon className="h-5 w-5 text-indigo-600 animate-spin" />
-        <Typography className="font-semibold text-indigo-800">Processing document with AI...</Typography>
+        <Typography className="font-semibold text-indigo-800">{t("enterprise.knowledge.sourceDetail.processing.title")}</Typography>
       </div>
       <div className="h-2 bg-indigo-100 rounded-full overflow-hidden">
         <div className="h-2 bg-indigo-500 rounded-full transition-all duration-1000"
           style={{ width: `${progress}%` }} />
       </div>
       <Typography variant="small" className="text-indigo-500">{msg}</Typography>
-      <Typography variant="small" className="text-indigo-400">Processing may take 30–90 seconds.</Typography>
+      <Typography variant="small" className="text-indigo-400">{t("enterprise.knowledge.sourceDetail.processing.mayTake")}</Typography>
     </div>
   );
 }
@@ -421,6 +427,7 @@ function ProcessingPanel({ ksId, onDone }) {
 export function KnowledgeSourceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { activeCompanyId } = useEnterprise();
   const [ks, setKs] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -451,7 +458,7 @@ export function KnowledgeSourceDetail() {
       setKs((prev) => ({ ...prev, status: "processing" }));
       setProcessing(true);
     } catch (e) {
-      showToast("Failed to start processing: " + (e?.detail || "Unknown error"));
+      showToast(t("enterprise.knowledge.sourceDetail.toast.processFailed", { error: e?.detail || t("enterprise.knowledge.changeImpact.toast.unknownError") }));
     } finally {
       setActionLoading("");
     }
@@ -461,10 +468,10 @@ export function KnowledgeSourceDetail() {
     setActionLoading("training");
     try {
       const result = await knowledgeApi.generateTraining(id);
-      showToast(`Training program created: ${result.program_name || "New Program"}`);
+      showToast(t("enterprise.knowledge.sourceDetail.toast.trainingCreated", { name: result.program_name || t("enterprise.knowledge.sourceDetail.toast.newProgram") }));
       if (result.program_id) navigate(`/enterprise/learning/programs`);
     } catch (e) {
-      showToast("Failed to generate training: " + (e?.detail || "Unknown error"));
+      showToast(t("enterprise.knowledge.sourceDetail.toast.trainingFailed", { error: e?.detail || t("enterprise.knowledge.changeImpact.toast.unknownError") }));
     } finally {
       setActionLoading("");
     }
@@ -475,23 +482,23 @@ export function KnowledgeSourceDetail() {
     try {
       const result = await knowledgeApi.detectChanges(id);
       if (result.changes_detected === false) {
-        showToast("No changes detected since the last version.");
+        showToast(t("enterprise.knowledge.sourceDetail.toast.noChanges"));
       } else {
-        if (result.analysis_id && window.confirm("Changes detected! Analyze impact now?")) {
+        if (result.analysis_id && window.confirm(t("enterprise.knowledge.sourceDetail.toast.confirmAnalyze"))) {
           navigate(`/enterprise/knowledge/change-impact/${result.analysis_id}`);
         } else {
-          showToast("Change analysis created. View it in the Changes tab.");
+          showToast(t("enterprise.knowledge.sourceDetail.toast.changeCreated"));
         }
       }
     } catch (e) {
-      showToast("Failed to detect changes: " + (e?.detail || "Unknown error"));
+      showToast(t("enterprise.knowledge.sourceDetail.toast.detectFailed", { error: e?.detail || t("enterprise.knowledge.changeImpact.toast.unknownError") }));
     } finally {
       setActionLoading("");
     }
   };
 
   if (loading) return <div className="space-y-4"><TableSkeleton rows={2} cols={3} /></div>;
-  if (!ks) return <Typography className="text-red-500">Knowledge source not found.</Typography>;
+  if (!ks) return <Typography className="text-red-500">{t("enterprise.knowledge.sourceDetail.notFound")}</Typography>;
 
   const isProcessed = ks.status === "processed";
   const isProcessing = ks.status === "processing" || processing;
@@ -512,7 +519,7 @@ export function KnowledgeSourceDetail() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <button onClick={() => navigate("/enterprise/knowledge")}
-              className="text-zinc-400 hover:text-indigo-600 text-sm">← Knowledge Sources</button>
+              className="text-zinc-400 hover:text-indigo-600 text-sm">← {t("enterprise.knowledge.sourceDetail.backToSources")}</button>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <Typography variant="h5" className="font-extrabold text-zinc-900">{ks.title}</Typography>
@@ -522,7 +529,7 @@ export function KnowledgeSourceDetail() {
             {ks.source_type?.replace("_", " ")} ·{" "}
             {ks.document_title ? (
               <span className="text-indigo-500">{ks.document_title}</span>
-            ) : `Document ID: ${ks.document}`}
+            ) : t("enterprise.knowledge.sourceDetail.documentId", { id: ks.document })}
           </Typography>
         </div>
 
@@ -531,13 +538,13 @@ export function KnowledgeSourceDetail() {
           {isPending && (
             <Button color="indigo" className="normal-case"
               loading={actionLoading === "process"} onClick={handleProcess}>
-              Process with AI →
+              {t("enterprise.knowledge.sourceDetail.processWithAi")}
             </Button>
           )}
           {isFailed && (
             <Button color="red" className="normal-case"
               loading={actionLoading === "process"} onClick={handleProcess}>
-              Retry Processing
+              {t("enterprise.knowledge.sourceDetail.retryProcessing")}
             </Button>
           )}
           {isProcessed && (
@@ -545,12 +552,12 @@ export function KnowledgeSourceDetail() {
               {!ks.metadata?.has_training && (
                 <Button color="purple" variant="outlined" className="normal-case flex items-center gap-2"
                   loading={actionLoading === "training"} onClick={handleGenerateTraining}>
-                  <SparklesIcon className="h-4 w-4" /> Generate Training
+                  <SparklesIcon className="h-4 w-4" /> {t("enterprise.knowledge.sourceDetail.generateTraining")}
                 </Button>
               )}
               <Button color="amber" variant="outlined" className="normal-case"
                 loading={actionLoading === "changes"} onClick={handleDetectChanges}>
-                Detect Changes
+                {t("enterprise.knowledge.sourceDetail.detectChanges")}
               </Button>
             </>
           )}
@@ -571,7 +578,7 @@ export function KnowledgeSourceDetail() {
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
           <ExclamationCircleIcon className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
           <div>
-            <Typography className="font-semibold text-red-700">Processing failed</Typography>
+            <Typography className="font-semibold text-red-700">{t("enterprise.knowledge.sourceDetail.processingFailed")}</Typography>
             <Typography variant="small" className="text-red-500">{ks.error_message}</Typography>
           </div>
         </div>
@@ -581,25 +588,25 @@ export function KnowledgeSourceDetail() {
       {isProcessed && (
         <Tabs value={activeTab} onChange={setActiveTab}>
           <TabsHeader>
-            <Tab value="summary">Summary</Tab>
-            <Tab value="procedures">Procedures</Tab>
-            <Tab value="graph">Knowledge Graph</Tab>
-            <Tab value="changes">Changes</Tab>
+            <Tab value="summary">{t("enterprise.knowledge.sourceDetail.tabs.summary")}</Tab>
+            <Tab value="procedures">{t("enterprise.knowledge.sourceDetail.tabs.procedures")}</Tab>
+            <Tab value="graph">{t("enterprise.knowledge.sourceDetail.tabs.graph")}</Tab>
+            <Tab value="changes">{t("enterprise.knowledge.sourceDetail.tabs.changes")}</Tab>
           </TabsHeader>
           <TabsBody>
             <TabPanel value="summary">
               <div className="space-y-5 pt-2">
                 {ks.metadata?.summary && (
                   <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-                    <Typography className="font-semibold text-zinc-700 mb-2">Summary</Typography>
+                    <Typography className="font-semibold text-zinc-700 mb-2">{t("enterprise.knowledge.sourceDetail.summary.title")}</Typography>
                     <Typography variant="small" className="text-zinc-500 leading-relaxed">{ks.metadata.summary}</Typography>
                   </div>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { label: "Topics Extracted", value: ks.extracted_topics_count ?? ks.metadata?.topics_count ?? 0 },
-                    { label: "Procedures", value: ks.procedures_count ?? 0 },
-                    { label: "Training Program", value: ks.metadata?.has_training ? "Generated ✓" : "Not yet" },
+                    { label: t("enterprise.knowledge.sourceDetail.summary.topicsExtracted"), value: ks.extracted_topics_count ?? ks.metadata?.topics_count ?? 0 },
+                    { label: t("enterprise.knowledge.sourceDetail.summary.procedures"), value: ks.procedures_count ?? 0 },
+                    { label: t("enterprise.knowledge.sourceDetail.summary.trainingProgram"), value: ks.metadata?.has_training ? t("enterprise.knowledge.sourceDetail.summary.generated") : t("enterprise.knowledge.sourceDetail.summary.notYet") },
                   ].map((m) => (
                     <div key={m.label} className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-4 text-center">
                       <Typography variant="h4" className="font-extrabold text-indigo-600">{m.value}</Typography>
@@ -609,11 +616,11 @@ export function KnowledgeSourceDetail() {
                 </div>
                 {ks.metadata?.topics?.length > 0 && (
                   <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-                    <Typography className="font-semibold text-zinc-700 mb-3">Topics</Typography>
+                    <Typography className="font-semibold text-zinc-700 mb-3">{t("enterprise.knowledge.sourceDetail.summary.topics")}</Typography>
                     <div className="flex flex-wrap gap-2">
-                      {ks.metadata.topics.map((t, i) => (
+                      {ks.metadata.topics.map((topic, i) => (
                         <span key={i} className="text-sm px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full font-medium">
-                          {typeof t === "string" ? t : t.name || t}
+                          {typeof topic === "string" ? topic : topic.name || topic}
                         </span>
                       ))}
                     </div>
@@ -638,9 +645,9 @@ export function KnowledgeSourceDetail() {
       {isPending && !isProcessing && (
         <div className="bg-zinc-50 rounded-2xl border border-dashed border-zinc-300 p-10 text-center">
           <DocumentTextIcon className="h-12 w-12 mx-auto text-zinc-300 mb-3" />
-          <Typography className="font-semibold text-zinc-500">Ready to process</Typography>
+          <Typography className="font-semibold text-zinc-500">{t("enterprise.knowledge.sourceDetail.readyToProcess")}</Typography>
           <Typography variant="small" className="text-zinc-400 mt-1">
-            Click "Process with AI" to extract concepts, procedures and build the knowledge graph.
+            {t("enterprise.knowledge.sourceDetail.readyToProcessHint")}
           </Typography>
         </div>
       )}
