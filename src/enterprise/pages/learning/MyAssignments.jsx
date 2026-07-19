@@ -24,7 +24,7 @@ function ProgressBar({ value, overdue, done }) {
   );
 }
 
-function AssignmentCard({ assignment: a, onOpen, starting }) {
+function AssignmentCard({ assignment: a, onOpen, onViewCertificate, starting }) {
   const status = (a.is_overdue || a.status === "overdue") ? "overdue" : a.status;
   const s = STATUS[status] || STATUS.pending;
   const { Icon } = s;
@@ -87,7 +87,14 @@ function AssignmentCard({ assignment: a, onOpen, starting }) {
           </p>
         ) : <span />}
         <div style={{ display: "flex", alignItems: "center", gap: 5, color: isDone ? "#4ade80" : "var(--accent)", fontSize: 12, fontWeight: 600 }}>
-          {isDone ? (
+          {isDone && a.issued_certification_id ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewCertificate(a.issued_certification_id); }}
+              style={{ display: "flex", alignItems: "center", gap: 5, color: "#4ade80", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
+              Ver certificado <ArrowRightIcon style={{ width: 12, height: 12 }} />
+            </button>
+          ) : isDone ? (
             <><CheckCircleIcon style={{ width: 13, height: 13 }} /> Completado</>
           ) : starting ? (
             <span style={{ color: "var(--text-tertiary)" }}>Cargando…</span>
@@ -176,7 +183,13 @@ export function MyAssignments() {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {items.map((a) => (
-                  <AssignmentCard key={a.id} assignment={a} onOpen={handleOpen} starting={startingId === a.id} />
+                  <AssignmentCard
+                    key={a.id}
+                    assignment={a}
+                    onOpen={handleOpen}
+                    onViewCertificate={(certId) => navigate(`/enterprise/certifications/${certId}`)}
+                    starting={startingId === a.id}
+                  />
                 ))}
               </div>
             </div>

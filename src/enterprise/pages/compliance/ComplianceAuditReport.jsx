@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Typography, Button } from "@material-tailwind/react";
-import { PrinterIcon } from "@heroicons/react/24/outline";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeftIcon, PrinterIcon } from "@heroicons/react/24/outline";
 import { complianceApi } from "../../api/enterpriseApi";
 import { EmptyState } from "../../components/EmptyState";
 
+function rateColor(rate) {
+  if (rate >= 80) return "#4ade80";
+  if (rate >= 60) return "#f59e0b";
+  return "#f87171";
+}
+
+function StatTile({ label, value, color }) {
+  return (
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "14px 10px", textAlign: "center" }}>
+      <div style={{ fontSize: 22, fontWeight: 800, color: color || "var(--text-primary)" }}>{value}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.04em", marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}
+
 export function ComplianceAuditReport() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,67 +29,84 @@ export function ComplianceAuditReport() {
     complianceApi.auditReport(id).then(setReport).catch(() => {}).finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="flex items-center justify-center py-20"><div className="animate-spin h-8 w-8 rounded-full border-2 border-indigo-600 border-t-transparent" /></div>;
-  if (!report) return <EmptyState title="Report not found" />;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-7 h-7 border-2 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!report) {
+    return (
+      <div className="flex flex-col items-center py-24">
+        <EmptyState title="Report not found" />
+        <button onClick={() => navigate(`/enterprise/compliance/programs/${id}`)} className="ank-btn-ghost text-xs mt-2">
+          <ArrowLeftIcon className="h-3.5 w-3.5" /> Back to Program
+        </button>
+      </div>
+    );
+  }
 
   const rate = report.compliance_rate ?? 0;
 
   return (
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <Typography variant="h5" className="font-extrabold text-zinc-900">{report.program_name}</Typography>
-            <Typography variant="small" className="text-zinc-400 font-mono">{report.program_code} · {report.compliance_type}</Typography>
-          </div>
-          <Button variant="outlined" color="zinc" className="normal-case flex items-center gap-2" onClick={() => window.print()}>
-            <PrinterIcon className="h-4 w-4" /> Print
-          </Button>
-        </div>
+    <div className="w-full max-w-4xl space-y-5">
+      <button onClick={() => navigate(`/enterprise/compliance/programs/${id}`)}
+        style={{ color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 5, fontSize: 12, cursor: "pointer", background: "none", border: "none" }}
+        className="hover:opacity-70 transition-opacity">
+        <ArrowLeftIcon style={{ width: 13, height: 13 }} /> Back to Program
+      </button>
 
-        {/* KPI Row */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {[
-            { label: "Total", value: report.total, color: "text-zinc-900" },
-            { label: "Compliant", value: report.compliant, color: "text-green-600" },
-            { label: "Non-Compliant", value: report.non_compliant, color: "text-red-600" },
-            { label: "Pending", value: report.pending, color: "text-amber-600" },
-            { label: "Expired", value: report.expired, color: "text-gray-600" },
-            { label: "Rate", value: `${rate}%`, color: rate >= 80 ? "text-green-600" : rate >= 60 ? "text-amber-600" : "text-red-600" },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-zinc-200 p-4 text-center">
-              <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
-              <div className="text-xs font-semibold text-zinc-400 mt-1">{s.label}</div>
-            </div>
-          ))}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 18 }}>{report.program_name}</h1>
+          <p style={{ color: "var(--text-tertiary)", fontSize: 12, fontFamily: "monospace", marginTop: 2 }}>
+            {report.program_code} · <span style={{ textTransform: "capitalize" }}>{report.compliance_type}</span>
+          </p>
         </div>
-
-        {/* Compliance Rate */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6 text-center">
-          <Typography variant="small" className="text-zinc-400 font-semibold uppercase text-xs tracking-wide mb-2">Overall Compliance Rate</Typography>
-          <div className={`text-6xl font-extrabold ${rate >= 80 ? "text-green-600" : rate >= 60 ? "text-amber-600" : "text-red-600"}`}>{rate}%</div>
-        </div>
-
-        {/* Reviews breakdown */}
-        {report.reviews && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-            <Typography variant="h6" className="font-bold text-zinc-900 mb-4">Review Results</Typography>
-            <div className="flex gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-extrabold text-green-600">{report.reviews.passed ?? 0}</div>
-                <div className="text-xs font-semibold text-zinc-400">Passed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-extrabold text-red-600">{report.reviews.failed ?? 0}</div>
-                <div className="text-xs font-semibold text-zinc-400">Failed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-extrabold text-zinc-700">{report.reviews.total ?? 0}</div>
-                <div className="text-xs font-semibold text-zinc-400">Total</div>
-              </div>
-            </div>
-          </div>
-        )}
+        <button onClick={() => window.print()} className="ank-btn-ghost text-xs">
+          <PrinterIcon className="h-3.5 w-3.5" /> Print
+        </button>
       </div>
+
+      {/* KPI Row */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        <StatTile label="Total" value={report.total_assignments ?? 0} />
+        <StatTile label="Compliant" value={report.compliant ?? 0} color="#4ade80" />
+        <StatTile label="Non-Compliant" value={report.non_compliant ?? 0} color="#f87171" />
+        <StatTile label="Pending" value={report.pending ?? 0} color="#f59e0b" />
+        <StatTile label="Expired" value={report.expired ?? 0} color="var(--text-tertiary)" />
+        <StatTile label="Rate" value={`${rate}%`} color={rateColor(rate)} />
+      </div>
+
+      {/* Compliance Rate */}
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "24px", textAlign: "center" }}>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+          Overall Compliance Rate
+        </p>
+        <div style={{ fontSize: 48, fontWeight: 800, color: rateColor(rate) }}>{rate}%</div>
+      </div>
+
+      {/* Reviews breakdown */}
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, padding: "18px 20px" }}>
+        <p style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: 13, marginBottom: 14 }}>Review Results</p>
+        <div className="flex gap-8">
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#4ade80" }}>{report.passed_reviews ?? 0}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", marginTop: 4 }}>Passed</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#f87171" }}>{report.failed_reviews ?? 0}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", marginTop: 4 }}>Failed</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>{report.total_reviews ?? 0}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", marginTop: 4 }}>Total</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

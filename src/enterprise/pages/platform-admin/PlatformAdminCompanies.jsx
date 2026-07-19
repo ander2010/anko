@@ -5,6 +5,7 @@ import {
   UsersIcon, PencilIcon, TrashIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { companyApi } from "../../api/enterpriseApi";
+import { useEnterprise } from "../../context/enterprise-context";
 
 const INDUSTRIES = [
   { value: "aviation",      label: "Aviation" },
@@ -79,6 +80,28 @@ function PrimaryBtn({ children, disabled, loading, type = "button", onClick, sty
 
 function Spin() {
   return <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.25)", borderTopColor: "#fff", flexShrink: 0 }} className="animate-spin" />;
+}
+
+/* ── Active-company selector ── */
+function ActiveCompanyToggle({ active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={active ? "Empresa activa en el Dashboard de Enterprise" : "Operar como esta empresa"}
+      style={{
+        width: 20, height: 20, borderRadius: "50%", flexShrink: 0, padding: 0,
+        border: `2px solid ${active ? "#818CF8" : "rgba(255,255,255,0.22)"}`,
+        background: active ? "rgba(99,102,241,0.18)" : "transparent",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "pointer", transition: "all 0.15s",
+      }}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = "rgba(129,140,248,0.6)"; }}
+      onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; }}
+    >
+      {active && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#818CF8" }} />}
+    </button>
+  );
 }
 
 function DarkSelect({ value, onChange, children }) {
@@ -283,6 +306,7 @@ function EditCompanyModal({ company, onClose, onSaved }) {
 /* ── Main Component ── */
 export function PlatformAdminCompanies() {
   const navigate = useNavigate();
+  const { activeCompanyId, switchCompany } = useEnterprise();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -430,6 +454,10 @@ export function PlatformAdminCompanies() {
 
               {/* Info */}
               <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                <ActiveCompanyToggle
+                  active={String(activeCompanyId) === String(company.id)}
+                  onClick={() => switchCompany(company.id)}
+                />
                 <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 900, color: "#fff", flexShrink: 0, boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}>
                   {company.name.charAt(0).toUpperCase()}
                 </div>
@@ -452,6 +480,9 @@ export function PlatformAdminCompanies() {
                         </span>
                       </>
                     )}
+                    {String(activeCompanyId) === String(company.id) && (
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", color: "#A5B4FC" }}>Activa</span>
+                    )}
                     {!company.is_active && (
                       <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#F87171" }}>Inactiva</span>
                     )}
@@ -461,7 +492,7 @@ export function PlatformAdminCompanies() {
 
               {/* Actions */}
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                <button onClick={() => navigate(`/enterprise/dashboard`)}
+                <button onClick={() => { switchCompany(company.id); navigate(`/enterprise/dashboard`); }}
                   style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#94A3B8", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "#F1F5F9"; e.currentTarget.style.background = "rgba(255,255,255,0.09)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}>

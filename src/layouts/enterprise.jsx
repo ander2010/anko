@@ -25,6 +25,7 @@ import TeamRetention from "@/enterprise/pages/retention/TeamRetention";
 import CompanyRetention from "@/enterprise/pages/retention/CompanyRetention";
 import MyCompliance from "@/enterprise/pages/compliance/MyCompliance";
 import CompliancePrograms from "@/enterprise/pages/compliance/CompliancePrograms";
+import ComplianceProgramDetail from "@/enterprise/pages/compliance/ComplianceProgramDetail";
 import CompanyCompliance from "@/enterprise/pages/compliance/CompanyCompliance";
 import TeamCompliance from "@/enterprise/pages/compliance/TeamCompliance";
 import ComplianceAssignments from "@/enterprise/pages/compliance/ComplianceAssignments";
@@ -122,6 +123,7 @@ export function Enterprise() {
             <Route path="retention/company" element={<CompanyRetention />} />
             <Route path="compliance/me" element={<MyCompliance />} />
             <Route path="compliance/programs" element={<CompliancePrograms />} />
+            <Route path="compliance/programs/:id" element={<ComplianceProgramDetail />} />
             <Route path="compliance/programs/:id/audit" element={<ComplianceAuditReport />} />
             <Route path="compliance/company" element={<CompanyCompliance />} />
             <Route path="compliance/team" element={<TeamCompliance />} />

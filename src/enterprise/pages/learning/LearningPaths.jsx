@@ -4,7 +4,7 @@ import {
   PlusIcon, RectangleStackIcon, ClockIcon, TrashIcon,
   ArrowRightIcon, ArrowLeftIcon, CheckIcon, CheckCircleIcon,
 } from "@heroicons/react/24/outline";
-import { learningApi } from "../../api/enterpriseApi";
+import { learningApi, knowledgeApi } from "../../api/enterpriseApi";
 import { useEnterprise } from "../../context/enterprise-context";
 
 // ─── Status pills ─────────────────────────────────────────────────────────────
@@ -81,21 +81,11 @@ const TYPE_COLORS = {
 };
 const TYPE_LABELS = { course: "Course", tutorial: "Tutorial", study_material: "Study Material" };
 
-function WizardStep2({ selectedIds, onToggle, onBack, onSubmit, saving, error }) {
-  const { activeCompanyId } = useEnterprise();
-  const [modules, setModules] = useState([]);
-  const [loadingMods, setLoadingMods] = useState(true);
+function WizardStep2({ selectedIds, onToggle, sources, loadingSources, onBack, onSubmit, saving, error }) {
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    learningApi.getModules()
-      .then((d) => setModules(d.results || d || []))
-      .catch(() => {})
-      .finally(() => setLoadingMods(false));
-  }, [activeCompanyId]);
-
-  const filtered = modules.filter((m) =>
-    !search || m.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = sources.filter((s) =>
+    !search || (s.title || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -119,23 +109,23 @@ function WizardStep2({ selectedIds, onToggle, onBack, onSubmit, saving, error })
 
       {/* Module list */}
       <div style={{ maxHeight: 260, overflowY: "auto" }} className="space-y-1.5 pr-1">
-        {loadingMods ? (
+        {loadingSources ? (
           <div className="flex items-center justify-center py-8">
             <div style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} className="w-5 h-5 border-2 rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <p style={{ color: "var(--text-tertiary)", fontSize: 12, textAlign: "center", padding: "20px 0" }}>
-            {modules.length === 0 ? "No hay procesos creados aún." : "Sin resultados."}
+            {sources.length === 0 ? "No hay procesos creados aún." : "Sin resultados."}
           </p>
         ) : (
-          filtered.map((mod) => {
-            const selected = selectedIds.includes(mod.id);
-            const tc = TYPE_COLORS[mod.process_type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
+          filtered.map((src) => {
+            const selected = selectedIds.includes(src.id);
+            const tc = TYPE_COLORS[src.process_type] || { bg: "var(--bg-elevated)", text: "var(--text-secondary)" };
             return (
               <button
-                key={mod.id}
+                key={src.id}
                 type="button"
-                onClick={() => onToggle(mod.id)}
+                onClick={() => onToggle(src.id)}
                 style={{
                   width: "100%", textAlign: "left",
                   background: selected ? "var(--bg-accent)" : "var(--bg-elevated)",
@@ -152,9 +142,9 @@ function WizardStep2({ selectedIds, onToggle, onBack, onSubmit, saving, error })
                   }}>
                     {selected && <CheckIcon style={{ width: 11, height: 11, color: "#fff", strokeWidth: 3 }} />}
                   </div>
-                  <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)", flex: 1 }}>{mod.name}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-primary)", flex: 1 }}>{src.title}</span>
                   <span style={{ background: tc.bg, color: tc.text, fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 3 }}>
-                    {TYPE_LABELS[mod.process_type] || mod.process_type}
+                    {TYPE_LABELS[src.process_type] || src.process_type}
                   </span>
                 </div>
               </button>
@@ -191,11 +181,21 @@ function WizardStep2({ selectedIds, onToggle, onBack, onSubmit, saving, error })
 // ─── Create Wizard Modal ───────────────────────────────────────────────────────
 
 function CreateWizard({ onCreated, onCancel }) {
+  const { activeCompanyId } = useEnterprise();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", description: "" });
   const [selectedIds, setSelectedIds] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [loadingSources, setLoadingSources] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    knowledgeApi.list()
+      .then((d) => setSources(d.results || d || []))
+      .catch(() => {})
+      .finally(() => setLoadingSources(false));
+  }, [activeCompanyId]);
 
   const onChange = (f, v) => setForm((prev) => ({ ...prev, [f]: v }));
   const onToggle = (id) => setSelectedIds((prev) =>
@@ -204,15 +204,45 @@ function CreateWizard({ onCreated, onCancel }) {
 
   const handleSubmit = async () => {
     setSaving(true); setError("");
+    let created;
     try {
       const payload = { name: form.name.trim() };
       if (form.description.trim()) payload.description = form.description.trim();
-      if (selectedIds.length > 0) payload.module_ids = selectedIds;
-      const created = await learningApi.createPath(payload);
-      onCreated(created);
+      created = await learningApi.createPath(payload);
     } catch (err) {
       setError(err?.detail || err?.name?.[0] || "No se pudo crear el Learning Path.");
-    } finally { setSaving(false); }
+      setSaving(false);
+      return;
+    }
+
+    // Mismo mecanismo que "Agregar Proceso" en el detalle: cada Knowledge Source
+    // seleccionado se envuelve en su propio learning module y se agrega al path.
+    if (selectedIds.length > 0) {
+      const companyId = parseInt(localStorage.getItem("enterprise_company_id")) || null;
+      let order = 1;
+      for (const ksId of selectedIds) {
+        const ks = sources.find((s) => s.id === ksId);
+        if (!ks) continue;
+        try {
+          const newModule = await learningApi.createModule({
+            company: companyId,
+            knowledge_source: ks.id,
+            name: ks.title,
+            description: ks.description || "",
+            process_type: ks.process_type || "course",
+            difficulty: ks.difficulty || "medium",
+            order,
+          });
+          await learningApi.addModule(created.id, { module_id: newModule.id, order });
+          order += 1;
+        } catch {
+          // Si uno falla, el path ya quedó creado — se puede agregar después con "Agregar Proceso".
+        }
+      }
+    }
+
+    setSaving(false);
+    onCreated(created);
   };
 
   return (
@@ -244,6 +274,7 @@ function CreateWizard({ onCreated, onCancel }) {
       )}
       {step === 2 && (
         <WizardStep2 selectedIds={selectedIds} onToggle={onToggle}
+          sources={sources} loadingSources={loadingSources}
           onBack={() => setStep(1)} onSubmit={handleSubmit} saving={saving} error={error} />
       )}
     </div>

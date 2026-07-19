@@ -157,6 +157,7 @@ export const retentionApi = {
 // ─── Compliance ───────────────────────────────────────────────────────────────
 export const complianceApi = {
   getPrograms: (p) => enterpriseApi.get("/enterprise/compliance-programs/", { params: cp(p) }).then((r) => r.data),
+  getProgram: (id) => enterpriseApi.get(`/enterprise/compliance-programs/${id}/`, { params: cp() }).then((r) => r.data),
   createProgram: (data) => enterpriseApi.post("/enterprise/compliance-programs/", data, { params: cp() }).then((r) => r.data),
   updateProgram: (id, data) => enterpriseApi.patch(`/enterprise/compliance-programs/${id}/`, data, { params: cp() }).then((r) => r.data),
   activateProgram: (id) => enterpriseApi.post(`/enterprise/compliance-programs/${id}/activate/`, cp()).then((r) => r.data),
@@ -164,6 +165,10 @@ export const complianceApi = {
   assignToUser: (id, data) => enterpriseApi.post(`/enterprise/compliance-programs/${id}/assign-to-user/`, data, { params: cp() }).then((r) => r.data),
   assignToTeam: (id, data) => enterpriseApi.post(`/enterprise/compliance-programs/${id}/assign-to-team/`, data, { params: cp() }).then((r) => r.data),
   auditReport: (id) => enterpriseApi.get(`/enterprise/compliance-programs/${id}/audit-report/`, { params: cp() }).then((r) => r.data),
+
+  createRequirement: (data) => enterpriseApi.post("/enterprise/compliance-requirements/", data, { params: cp() }).then((r) => r.data),
+  updateRequirement: (id, data) => enterpriseApi.patch(`/enterprise/compliance-requirements/${id}/`, data, { params: cp() }).then((r) => r.data),
+  deleteRequirement: (id) => enterpriseApi.delete(`/enterprise/compliance-requirements/${id}/`, { params: cp() }).then((r) => r.data),
 
   getAssignments: (p) => enterpriseApi.get("/enterprise/compliance-assignments/", { params: cp(p) }).then((r) => r.data),
   myCompliance: (p) => enterpriseApi.get("/enterprise/compliance-assignments/my-compliance/", { params: cp(p) }).then((r) => r.data),
