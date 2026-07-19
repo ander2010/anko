@@ -61,10 +61,14 @@ export function EnterpriseProvider({ children }) {
     }
   }, [switchCompany]);
 
-  // Wait for auth to finish before initializing enterprise context
+  // Wait for auth to finish before initializing enterprise context.
+  // Also re-run when the authenticated user's identity changes (e.g. logout
+  // then login as a different account without a full page reload) — without
+  // this, `authLoading` only ever flips false→true once at app boot, so a
+  // later login would keep the previous user's companies/role stale.
   useEffect(() => {
     if (!authLoading) init();
-  }, [authLoading, init]);
+  }, [authLoading, user?.id, init]);
 
   useEffect(() => {
     if (!activeCompanyId || companies.length === 0) return;
