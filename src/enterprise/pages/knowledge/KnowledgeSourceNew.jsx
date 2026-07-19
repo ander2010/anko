@@ -56,6 +56,15 @@ function useDifficulties() {
   ];
 }
 
+function useQuestionFormats() {
+  const { t } = useLanguage();
+  return [
+    { value: "true_false", label: t("enterprise.knowledge.processDetail.batteryDialog.formatTrueFalse") },
+    { value: "multiple_choice", label: t("enterprise.knowledge.processDetail.batteryDialog.formatMultipleChoice") },
+    { value: "variety", label: t("enterprise.knowledge.processDetail.batteryDialog.formatVariety") },
+  ];
+}
+
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
 function StepBar({ current, steps }) {
@@ -180,6 +189,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
   const { t } = useLanguage();
   const PROCESS_TYPES = useProcessTypes();
   const DIFFICULTIES = useDifficulties();
+  const QUESTION_FORMATS = useQuestionFormats();
   return (
     <div className="space-y-6">
       {/* Tipo de proceso */}
@@ -262,6 +272,48 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
             <span style={{ color: "var(--text-tertiary)", fontSize: 13, flexShrink: 0 }}>{t("enterprise.knowledge.sourceNew.minutesAbbr")}</span>
           </div>
         </div>
+      </div>
+
+      {/* Auto-generación: tarjetas/preguntas por grupo y formato de preguntas */}
+      <div>
+        <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{t("enterprise.knowledge.sourceNew.autoGenLabel")}</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <p style={{ color: "var(--text-secondary)", fontSize: 11, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.cardsPerGroupLabel")}</p>
+            <input
+              type="number" min="1"
+              value={form.cards_per_group}
+              onChange={(e) => onChange("cards_per_group", parseInt(e.target.value) || 1)}
+              style={inputStyle}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            />
+          </div>
+          <div>
+            <p style={{ color: "var(--text-secondary)", fontSize: 11, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.questionsPerGroupLabel")}</p>
+            <input
+              type="number" min="1"
+              value={form.questions_per_group}
+              onChange={(e) => onChange("questions_per_group", parseInt(e.target.value) || 1)}
+              style={inputStyle}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            />
+          </div>
+          <div>
+            <p style={{ color: "var(--text-secondary)", fontSize: 11, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.questionFormatLabel")}</p>
+            <select
+              value={form.question_format}
+              onChange={(e) => onChange("question_format", e.target.value)}
+              style={{ ...inputStyle, cursor: "pointer" }}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+            >
+              {QUESTION_FORMATS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <p style={{ color: "var(--text-tertiary)", fontSize: 11, marginTop: 6 }}>{t("enterprise.knowledge.sourceNew.autoGenHint")}</p>
       </div>
 
       {error && (
@@ -396,6 +448,12 @@ export function KnowledgeSourceNew() {
     difficulty: "medium",
     minimum_passing_score: 70,
     estimated_duration_minutes: null,
+    // Auto-generation preferences (flashcards + battery) — sent with the
+    // create payload below and used as the defaults for this proceso's
+    // auto-generate runs.
+    cards_per_group: 20,
+    questions_per_group: 15,
+    question_format: "multiple_choice",
   });
 
   const onChange = (field, value) => setForm((f) => ({ ...f, [field]: value }));
@@ -412,6 +470,9 @@ export function KnowledgeSourceNew() {
         difficulty: form.difficulty,
         minimum_passing_score: form.minimum_passing_score,
         ...(form.estimated_duration_minutes && { estimated_duration_minutes: form.estimated_duration_minutes }),
+        cards_per_group: form.cards_per_group,
+        questions_per_group: form.questions_per_group,
+        question_format: form.question_format,
       };
       const created = await knowledgeApi.create(payload);
       setCreatedKsId(created.id);

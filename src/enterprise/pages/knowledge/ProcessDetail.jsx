@@ -2712,8 +2712,15 @@ export function ProcessDetail() {
         body: JSON.stringify({
           document_ids: docIds,
           tag_group_size: 10,
-          flashcard_options: { cards_per_group: 20, difficulty: "medium" },
-          battery_options: { questions_per_group: 15, difficulty: "medium", question_format: "multiple_choice" },
+          flashcard_options: {
+            cards_per_group: ks?.cards_per_group ?? 20,
+            difficulty: ks?.difficulty ?? "medium",
+          },
+          battery_options: {
+            questions_per_group: ks?.questions_per_group ?? 15,
+            difficulty: ks?.difficulty ?? "medium",
+            question_format: ks?.question_format ?? "multiple_choice",
+          },
         }),
       });
       const json = await res.json();
