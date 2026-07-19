@@ -79,17 +79,6 @@ function MedalSeal() {
   );
 }
 
-function Signature() {
-  return (
-    <svg viewBox="0 0 140 46" style={{ width: 110, height: 36 }}>
-      <path
-        d="M4,34 C14,10 20,10 24,26 C27,36 30,22 34,14 C38,6 42,20 46,22 C50,24 54,10 60,12 C68,14 62,32 70,30 C80,27 82,10 92,14 C100,17 96,30 104,28 C114,25 116,12 126,16"
-        fill="none" stroke={NAVY} strokeWidth="2" strokeLinecap="round" opacity="0.75"
-      />
-    </svg>
-  );
-}
-
 function StatPill({ icon, label, value, valueNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 9, background: NAVY, borderRadius: 999, padding: "7px 16px 7px 7px", minWidth: 0 }}>
@@ -230,7 +219,6 @@ export function CertificateDetail() {
             {/* Signature / seal / QR row */}
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: 44, gap: 12 }}>
               <div style={{ textAlign: "left" }}>
-                <Signature />
                 <div style={{ width: 110, borderTop: `1px solid ${NAVY}66`, marginTop: 2, paddingTop: 6 }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color: NAVY }}>{cert.company_name}</p>
                   <p style={{ fontSize: 10, color: "#8A8365" }}>{t("enterprise.certifications.detail.authorizedSignature")}</p>
