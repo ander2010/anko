@@ -174,14 +174,14 @@ export function DashboardNavbar() {
                     if (part === "project" && index === 1) path = `/${layout}/projects`;
                     return (
                       <Link key={path} to={path}>
-                        <Typography variant="small" className="font-medium text-zinc-400 transition-all hover:text-indigo-600">
+                        <Typography variant="small" className="font-medium text-[var(--text-secondary)] transition-all hover:text-[var(--accent)]">
                           {name}
                         </Typography>
                       </Link>
                     );
                   }
                   return (
-                    <Typography key={index} variant="small" className="font-semibold text-zinc-900">
+                    <Typography key={index} variant="small" className="font-semibold text-[var(--text-primary)]">
                       {name}
                     </Typography>
                   );
