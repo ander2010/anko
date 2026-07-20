@@ -6,6 +6,7 @@ import {
   ArrowTrendingUpIcon, ClipboardDocumentListIcon,
   BookOpenIcon, BoltIcon, SparklesIcon,
   RocketLaunchIcon, CheckBadgeIcon, ClockIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useEnterprise } from "../../context/enterprise-context";
 import { useLanguage } from "../../../context/language-context";
@@ -201,7 +202,7 @@ function GettingStarted() {
 // ─── Metrics hook ─────────────────────────────────────────────────────────────
 
 function useMetrics(enabled) {
-  const [data, setData] = useState({ processes: "—", paths: "—", assignments: "—", sources: "—" });
+  const [data, setData] = useState({ processes: "—", learningModules: "—", paths: "—", assignments: "—", sources: "—", compliance: null });
   const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   useEffect(() => {
@@ -213,7 +214,8 @@ function useMetrics(enabled) {
       safe(() => learningApi.getPaths()),
       safe(() => learningApi.getAssignments()),
       safe(() => knowledgeApi.list()),
-    ]).then(([modules, paths, assignments, sources]) => {
+      safe(() => analyticsApi.executiveDashboard()),
+    ]).then(([modules, paths, assignments, sources, executive]) => {
       if (cancelled) return;
       const count = (d) => {
         if (!d) return "—";
@@ -222,7 +224,17 @@ function useMetrics(enabled) {
         if (Array.isArray(d?.results)) return d.results.length;
         return "—";
       };
-      setData({ processes: count(modules), paths: count(paths), assignments: count(assignments), sources: count(sources) });
+      // "Processes" and "Sources" both count KnowledgeSource records — same
+      // number, shown as two distinct cards (see dashboard discussion).
+      const processCount = count(sources);
+      setData({
+        processes: processCount,
+        learningModules: count(modules),
+        paths: count(paths),
+        assignments: count(assignments),
+        sources: processCount,
+        compliance: executive?.compliance || null,
+      });
       setLoadingMetrics(false);
     });
     return () => { cancelled = true; };
@@ -355,6 +367,7 @@ export function EnterpriseDashboard() {
 
   const fmt = (v) => (loadingMetrics ? "…" : v);
   const noProcesses = !loadingMetrics && metrics.processes === 0;
+  const compliance = metrics.compliance || {};
 
   return (
     <div className="space-y-5 max-w-4xl">
@@ -378,8 +391,10 @@ export function EnterpriseDashboard() {
       {/* KPI grid */}
       <div>
         <p style={{ color: "var(--text-tertiary)", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>{t("enterprise.dashboard.metrics")}</p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KPICard icon={BookOpenIcon} label={t("enterprise.dashboard.processes")} value={fmt(metrics.processes)} sub={t("enterprise.dashboard.learningModules")} color="#6366F1" href="/enterprise/knowledge" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <KPICard icon={BookOpenIcon} label={t("enterprise.dashboard.processes")} value={fmt(metrics.processes)} sub={t("enterprise.dashboard.processesSub")} color="#6366F1" href="/enterprise/knowledge" />
+          <KPICard icon={SparklesIcon} label={t("enterprise.dashboard.learningModules")} value={fmt(metrics.learningModules)} sub={t("enterprise.dashboard.learningModulesSub")} color="#38BDF8" href="/enterprise/knowledge" />
+          <KPICard icon={ShieldCheckIcon} label={t("enterprise.dashboard.nav.compliance")} value={fmt(compliance.rate != null ? `${compliance.rate}%` : "—")} sub={t("enterprise.dashboard.programsRatio", { compliant: fmt(compliance.compliant ?? "—"), total: fmt(compliance.total ?? "—") })} color="#818CF8" href="/enterprise/compliance/company" />
           <KPICard icon={AcademicCapIcon} label={t("enterprise.dashboard.nav.learningPaths")} value={fmt(metrics.paths)} sub={t("enterprise.dashboard.learningRoutes")} color="#22C55E" href="/enterprise/learning/paths" />
           <KPICard icon={ClipboardDocumentListIcon} label={t("enterprise.dashboard.assignments")} value={fmt(metrics.assignments)} sub={t("enterprise.dashboard.activeTrainings")} color="#F59E0B" href="/enterprise/learning/assignments" />
           <KPICard icon={DocumentTextIcon} label={t("enterprise.dashboard.sources")} value={fmt(metrics.sources)} sub={t("enterprise.dashboard.nav.knowledgeSources")} color="#C084FC" href="/enterprise/knowledge" />
