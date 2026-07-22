@@ -4,7 +4,7 @@ import {
   CheckCircleIcon, LockClosedIcon, PlayIcon,
   ClockIcon, BoltIcon,
   ChevronRightIcon, ArrowPathIcon, BookOpenIcon,
-  ViewColumnsIcon, XMarkIcon, ArrowTopRightOnSquareIcon,
+  ViewColumnsIcon, XMarkIcon, ArrowTopRightOnSquareIcon, EyeIcon,
 } from "@heroicons/react/24/outline";
 import { learningApi, knowledgeApi } from "../../api/enterpriseApi";
 import { useLanguage } from "../../../context/language-context";
@@ -37,32 +37,61 @@ function DocumentsMiniPanel({ documents, onView }) {
   const { t } = useLanguage();
   if (!documents || documents.length === 0) return null;
   return (
-    <div style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
-        <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+    <>
+      {/* Tablet/desktop — original compact list, unchanged */}
+      <div className="hidden sm:block" style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
+          <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            {t("enterprise.learning.progress.documentsTitle", { count: documents.length })}
+          </p>
+        </div>
+        <div style={{ padding: 8 }}>
+          {documents.map((doc) => {
+            const ext = doc.type?.toUpperCase() || (doc.filename?.split(".").pop()?.toUpperCase()) || "FILE";
+            return (
+              <button key={doc.id} onClick={() => onView(doc)}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", textAlign: "left", transition: "background 150ms" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-elevated)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                <div style={{ width: 26, height: 30, background: ext === "PDF" ? "#DC2626" : "#3B82F6", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: "#fff", fontSize: 6, fontWeight: 800 }}>{ext.slice(0, 4)}</span>
+                </div>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {doc.filename}
+                </span>
+                <span style={{ fontSize: 10, color: "var(--text-tertiary)", flexShrink: 0 }}>{t("enterprise.learning.progress.viewArrow")}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile — label above, each document as its own roomy card */}
+      <div className="sm:hidden" style={{ marginBottom: 16 }}>
+        <p style={{ fontSize: 10, fontWeight: 800, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
           {t("enterprise.learning.progress.documentsTitle", { count: documents.length })}
         </p>
-      </div>
-      <div style={{ padding: 8 }}>
         {documents.map((doc) => {
           const ext = doc.type?.toUpperCase() || (doc.filename?.split(".").pop()?.toUpperCase()) || "FILE";
           return (
             <button key={doc.id} onClick={() => onView(doc)}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", textAlign: "left", transition: "background 150ms" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-elevated)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-              <div style={{ width: 26, height: 30, background: ext === "PDF" ? "#DC2626" : "#3B82F6", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ color: "#fff", fontSize: 6, fontWeight: 800 }}>{ext.slice(0, 4)}</span>
+              className="w-full flex items-center gap-3"
+              style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 12, padding: 14, marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+              <div style={{ width: 38, height: 44, background: ext === "PDF" ? "#DC2626" : "#3B82F6", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ color: "#fff", fontSize: 9, fontWeight: 800 }}>{ext.slice(0, 4)}</span>
               </div>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {doc.filename}
-              </span>
-              <span style={{ fontSize: 10, color: "var(--text-tertiary)", flexShrink: 0 }}>{t("enterprise.learning.progress.viewArrow")}</span>
+              <div className="flex-1 min-w-0">
+                <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text-primary)" }} className="truncate">{doc.filename}</p>
+                <p style={{ fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 2 }}>{t("enterprise.learning.progress.docSubtitle")}</p>
+              </div>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <EyeIcon style={{ width: 15, height: 15, color: "var(--text-secondary)" }} />
+              </div>
             </button>
           );
         })}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -110,29 +139,69 @@ function DocumentViewDialog({ doc, onClose }) {
 function ReadOnlyDeckRow({ deck, onLearn, onStudy }) {
   const { t } = useLanguage();
   const cardCount = deck.flashcards_count ?? deck.cardsCount ?? deck.card_count ?? 0;
-  return (
-    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={deck.title}>{deck.title}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.cardsCount", { n: cardCount })}</span>
-      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {deck.description || t("enterprise.learning.progress.deckDefaultDesc")}
-      </span>
-      <button onClick={() => onLearn?.(deck)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
-        {t("enterprise.learning.progress.learnBtn")}
-      </button>
-      <button onClick={() => onStudy?.(deck)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}>
-        {t("enterprise.learning.progress.studyBtn")}
-      </button>
+
+  const icon = (
+    <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <ViewColumnsIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
     </div>
+  );
+  const badge = (
+    <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.cardsCount", { n: cardCount })}</span>
+  );
+  const learnBtn = (
+    <button onClick={() => onLearn?.(deck)}
+      style={{ padding: "5px 10px", borderRadius: 6, background: "transparent", border: "1px solid rgba(99,102,241,0.25)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+      {t("enterprise.learning.progress.learnBtn")}
+    </button>
+  );
+  const studyBtn = (
+    <button onClick={() => onStudy?.(deck)}
+      style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; }}>
+      {t("enterprise.learning.progress.studyBtn")}
+    </button>
+  );
+
+  // Mobile-only variants — bigger icon, roomier card, matches the reference mock
+  const mobileIcon = (
+    <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(99,102,241,0.14)", border: "1px solid rgba(99,102,241,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <ViewColumnsIcon style={{ width: 21, height: 21, color: "#818CF8" }} />
+    </div>
+  );
+
+  return (
+    <>
+      {/* Tablet/desktop — original single-row layout, unchanged */}
+      <div className="hidden sm:flex sm:items-center sm:gap-2" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", minWidth: 0 }}>
+        {icon}
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={deck.title}>{deck.title}</span>
+        {badge}
+        <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+          {deck.description || t("enterprise.learning.progress.deckDefaultDesc")}
+        </span>
+        {learnBtn}
+        {studyBtn}
+      </div>
+
+      {/* Mobile — badge above a short generic title/description (the real deck title can be very long
+          and used to blow up the card height); single primary action pinned right */}
+      <div className="flex sm:hidden items-center gap-3" style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 14, marginBottom: 10, padding: "14px" }}>
+        {mobileIcon}
+        <div className="flex-1 min-w-0">
+          {badge}
+          <p style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text-primary)", marginTop: 6 }}>{t("enterprise.learning.progress.deckMobileTitle")}</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 2 }}>{t("enterprise.learning.progress.deckMobileDesc")}</p>
+        </div>
+        <button onClick={() => onLearn?.(deck)}
+          className="flex items-center gap-1 flex-shrink-0"
+          style={{ padding: "9px 12px 9px 14px", borderRadius: 10, background: "rgba(99,102,241,0.16)", border: "1px solid rgba(99,102,241,0.3)", color: "#818CF8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+          {t("enterprise.learning.progress.learnBtn")} <ChevronRightIcon style={{ width: 13, height: 13 }} />
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -143,31 +212,80 @@ function ReadOnlyBatteryRow({ battery, onSimulate }) {
   const hasAttempt = pct !== null;
   const pctRounded = hasAttempt ? Math.round(pct) : 0;
   const pctColor = pctRounded >= 80 ? "#4ade80" : pctRounded >= 50 ? "#f59e0b" : "#818CF8";
-  return (
-    <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-      <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(94,106,210,0.12)", border: "1px solid rgba(94,106,210,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={battery.name || battery.title}>{battery.name || battery.title}</span>
-      <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.questionsCount", { n: questionCount })}</span>
-      <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
-        {battery.description || t("enterprise.learning.progress.batteryDefaultDesc")}
-      </span>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-        <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${hasAttempt ? pctRounded : 0}%`, background: pctColor, borderRadius: 2 }} />
-        </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: hasAttempt ? pctColor : "#334155", minWidth: 28, textAlign: "right" }}>
-          {hasAttempt ? `${pctRounded}%` : "—"}
-        </span>
-      </div>
-      <button onClick={() => onSimulate?.(battery)}
-        style={{ padding: "4px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}>
-        {t("enterprise.learning.progress.simulateBtn")}
-      </button>
+
+  const icon = (
+    <div style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(94,106,210,0.12)", border: "1px solid rgba(94,106,210,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <BoltIcon style={{ width: 13, height: 13, color: "#818CF8" }} />
     </div>
+  );
+  const badge = (
+    <span style={{ padding: "1px 7px", borderRadius: 20, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.15)", color: "#818CF8", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{t("enterprise.learning.progress.questionsCount", { n: questionCount })}</span>
+  );
+  const progressMini = (
+    <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+      <div style={{ width: 52, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${hasAttempt ? pctRounded : 0}%`, background: pctColor, borderRadius: 2 }} />
+      </div>
+      <span style={{ fontSize: 10, fontWeight: 700, color: hasAttempt ? pctColor : "#334155", minWidth: 28, textAlign: "right" }}>
+        {hasAttempt ? `${pctRounded}%` : "—"}
+      </span>
+    </div>
+  );
+  const simulateBtn = (
+    <button onClick={() => onSimulate?.(battery)}
+      style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(94,106,210,0.1)", border: "1px solid rgba(94,106,210,0.2)", color: "#818CF8", fontSize: 11, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.18)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; }}>
+      {t("enterprise.learning.progress.simulateBtn")}
+    </button>
+  );
+
+  // Mobile-only variants — bigger icon, roomier card, matches the reference mock
+  const mobileIcon = (
+    <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(94,106,210,0.16)", border: "1px solid rgba(94,106,210,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <BoltIcon style={{ width: 21, height: 21, color: "#818CF8" }} />
+    </div>
+  );
+  const mobileProgressMini = hasAttempt && (
+    <div className="flex items-center gap-2 mt-1.5">
+      <div style={{ width: 70, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+        <div style={{ height: "100%", width: `${pctRounded}%`, background: pctColor, borderRadius: 2 }} />
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 700, color: pctColor }}>{pctRounded}%</span>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Tablet/desktop — original single-row layout, unchanged */}
+      <div className="hidden sm:flex sm:items-center sm:gap-2" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, marginBottom: 6, padding: "8px 12px", minWidth: 0 }}>
+        {icon}
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#F1F5F9", flexShrink: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={battery.name || battery.title}>{battery.name || battery.title}</span>
+        {badge}
+        <span style={{ flex: 1, fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>
+          {battery.description || t("enterprise.learning.progress.batteryDefaultDesc")}
+        </span>
+        {progressMini}
+        {simulateBtn}
+      </div>
+
+      {/* Mobile — badge above a short generic title/description (the real name can be very long and
+          used to blow up the card height); progress only shows once there's a real attempt */}
+      <div className="flex sm:hidden items-center gap-3" style={{ background: "var(--bg-app)", border: "1px solid var(--border)", borderRadius: 14, marginBottom: 10, padding: "14px" }}>
+        {mobileIcon}
+        <div className="flex-1 min-w-0">
+          {badge}
+          <p style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text-primary)", marginTop: 6 }}>{t("enterprise.learning.progress.batteryMobileTitle")}</p>
+          <p style={{ fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 2 }}>{t("enterprise.learning.progress.batteryMobileDesc")}</p>
+          {mobileProgressMini}
+        </div>
+        <button onClick={() => onSimulate?.(battery)}
+          className="flex items-center gap-1 flex-shrink-0"
+          style={{ padding: "9px 12px 9px 14px", borderRadius: 10, background: "rgba(94,106,210,0.18)", border: "1px solid rgba(94,106,210,0.32)", color: "#818CF8", fontSize: 12.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+          {t("enterprise.learning.progress.simulateBtn")} <ChevronRightIcon style={{ width: 13, height: 13 }} />
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -179,12 +297,21 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
 
   return (
     <div style={{ display: "flex", minWidth: 0 }}>
-      <div style={{ width: 22, display: "flex", flexDirection: "column", alignItems: "center", marginRight: 14, flexShrink: 0 }}>
+      {/* Dot + connecting line gutter — tablet/desktop only. On mobile this was pushing the whole
+          topic card to the right, leaving dead space on the left where the course/documents cards
+          above start flush; the dot moves inline into the header there instead. */}
+      <div className="hidden sm:flex" style={{ width: 22, flexDirection: "column", alignItems: "center", marginRight: 14, flexShrink: 0 }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#4ade80", border: "2px solid #0F172A", flexShrink: 0, marginTop: 7 }} />
         {!isLast && <div style={{ width: 2, flex: 1, background: "rgba(255,255,255,0.08)", minHeight: 24, marginTop: 4 }} />}
       </div>
-      <div style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 8 : 20 }}>
+      {/* On mobile the header + rows sit flush-left inside their own bordered card (matches the
+          reference mock); on tablet/desktop it stays the plain indented list it always was. */}
+      <div
+        className="rounded-2xl border-[var(--border)] bg-[var(--bg-app)] p-3.5 mb-4 sm:mb-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0"
+        style={{ flex: 1, minWidth: 0, paddingBottom: isLast ? 8 : 20, borderWidth: 1 }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: expanded ? 8 : 0 }}>
+          <span className="inline-flex sm:hidden flex-shrink-0" style={{ width: 8, height: 8, borderRadius: "50%", background: "#4ade80" }} />
           <button onClick={() => setExpanded((v) => !v)} style={{ color: "#64748B", cursor: "pointer", padding: 0, background: "none", border: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
             {expanded ? <ChevronRightIcon style={{ width: 13, height: 13, transform: "rotate(90deg)" }} /> : <ChevronRightIcon style={{ width: 13, height: 13 }} />}
           </button>
@@ -193,7 +320,7 @@ function ReadOnlyTopicSection({ topic, index, decks, batteries, isLast, onStudy,
           <span style={{ fontSize: 11, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{description}</span>
         </div>
         {expanded && (
-          <div style={{ marginLeft: 6 }}>
+          <div className="sm:ml-1.5">
             {decks.map((d) => <ReadOnlyDeckRow key={d.id} deck={d} onLearn={onLearn} onStudy={onStudy} />)}
             {batteries.map((b) => <ReadOnlyBatteryRow key={b.id} battery={b} onSimulate={onSimulate} />)}
             {decks.length === 0 && batteries.length === 0 && (
@@ -350,41 +477,56 @@ function ProcessKnowledgeView({ ksId, moduleId, assignmentId, alreadyCompleted, 
 
 // ─── Process node (for the path node chain) ───────────────────────────────────
 
-function NodeIcon({ status }) {
+function NodeIcon({ status, size = 30, iconSize = 14 }) {
   if (status === "completed") return (
-    <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(74,222,128,0.15)", border: "2px solid #4ade80", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <CheckCircleIcon style={{ width: 14, height: 14, color: "#4ade80" }} />
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "rgba(74,222,128,0.15)", border: "2px solid #4ade80", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <CheckCircleIcon style={{ width: iconSize, height: iconSize, color: "#4ade80" }} />
     </div>
   );
   if (status === "in_progress") return (
-    <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(94,106,210,0.2)", border: "2px solid var(--accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <PlayIcon style={{ width: 12, height: 12, color: "var(--accent)" }} />
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "rgba(94,106,210,0.2)", border: "2px solid var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <PlayIcon style={{ width: iconSize - 2, height: iconSize - 2, color: "var(--accent)" }} />
     </div>
   );
   return (
-    <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--bg-elevated)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <LockClosedIcon style={{ width: 12, height: 12, color: "var(--text-tertiary)" }} />
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "var(--bg-elevated)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <LockClosedIcon style={{ width: iconSize - 2, height: iconSize - 2, color: "var(--text-tertiary)" }} />
     </div>
   );
 }
 
-function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId, onModuleComplete, onModuleProgress }) {
+function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId, onModuleComplete, onModuleProgress, percent }) {
+  const { t } = useLanguage();
   const typeColor = { document: "#60a5fa", topic: "#a855f7", deck: "#f59e0b", battery: "#f87171", course: "#4ade80" }[mod.process_type] || "var(--text-tertiary)";
   const locked = status === "locked";
   const borderColor = status === "completed" ? "#4ade80" : status === "in_progress" ? "var(--accent)" : "var(--border)";
+  const pctColor = status === "completed" ? "#4ade80" : "var(--accent)";
+
+  const typeBadge = mod.process_type && (
+    <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(148,163,184,0.1)", border: `1px solid ${typeColor}`, color: typeColor, fontSize: 10, fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>
+      {mod.process_type}
+    </span>
+  );
+  const durationLabel = (mod.estimated_duration_minutes || 0) > 0 && (
+    <span style={{ fontSize: 10, color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+      <ClockIcon style={{ width: 9, height: 9 }} /> {mod.estimated_duration_minutes} min
+    </span>
+  );
 
   return (
     <div>
       <div className="flex gap-3">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 30, flexShrink: 0 }}>
+        <div className="hidden sm:flex" style={{ width: 30, flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
           <NodeIcon status={status} />
           {!isLast && (
             <div style={{ width: 2, flex: 1, minHeight: 16, background: status === "completed" ? "rgba(74,222,128,0.3)" : "var(--border)", margin: "4px 0", borderRadius: 1 }} />
           )}
         </div>
 
-        <div style={{ flex: 1, marginBottom: isLast ? 0 : 12 }}>
+        <div style={{ flex: 1, marginBottom: isLast ? 0 : 12, minWidth: 0 }}>
+          {/* Tablet/desktop — original compact single-line layout, unchanged */}
           <div onClick={() => !locked && onClick()}
+            className="hidden sm:block"
             style={{ background: isOpen ? "var(--bg-elevated)" : "var(--bg-surface)", border: `1px solid ${isOpen ? borderColor : "var(--border)"}`, borderRadius: 7, padding: "11px 14px", cursor: locked ? "not-allowed" : "pointer", opacity: locked ? 0.45 : 1, transition: "all 150ms" }}
             onMouseEnter={(e) => { if (!locked) { e.currentTarget.style.borderColor = borderColor; e.currentTarget.style.background = "var(--bg-elevated)"; } }}
             onMouseLeave={(e) => { if (!locked) { e.currentTarget.style.borderColor = isOpen ? borderColor : "var(--border)"; e.currentTarget.style.background = isOpen ? "var(--bg-elevated)" : "var(--bg-surface)"; } }}>
@@ -395,16 +537,48 @@ function ProcessNode({ mod, index, status, isLast, isOpen, onClick, assignmentId
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }} className="truncate">{mod.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {mod.process_type && <span style={{ fontSize: 9, fontWeight: 700, color: typeColor, textTransform: "uppercase" }}>{mod.process_type}</span>}
-                    {(mod.estimated_duration_minutes || 0) > 0 && (
-                      <span style={{ fontSize: 10, color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 3 }}>
-                        <ClockIcon style={{ width: 9, height: 9 }} /> {mod.estimated_duration_minutes} min
-                      </span>
-                    )}
+                    {durationLabel}
                   </div>
                 </div>
               </div>
               <ChevronRightIcon style={{ width: 14, height: 14, color: "var(--text-tertiary)", flexShrink: 0, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 200ms" }} />
             </div>
+          </div>
+
+          {/* Mobile — self-contained card: big icon top-left, title+badge, round toggle top-right,
+              progress bar below (once loaded). Matches the reference mock. */}
+          <div onClick={() => !locked && onClick()}
+            className="flex sm:hidden flex-col"
+            style={{ background: isOpen ? "var(--bg-elevated)" : "var(--bg-surface)", border: `1.5px solid ${isOpen ? borderColor : "var(--border)"}`, borderRadius: 16, padding: 16, cursor: locked ? "not-allowed" : "pointer", opacity: locked ? 0.45 : 1 }}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <NodeIcon status={status} size={56} iconSize={24} />
+                <div className="min-w-0 pt-0.5">
+                  <p style={{
+                    fontSize: 19, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.25,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  }}>{mod.name}</p>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    {typeBadge}
+                    {durationLabel}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-center flex-shrink-0" style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)" }}>
+                <ChevronRightIcon style={{ width: 13, height: 13, color: "var(--text-tertiary)", transform: isOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform 200ms" }} />
+              </div>
+            </div>
+            {percent != null && (
+              <div style={{ marginTop: 16 }}>
+                <ProgressBar value={percent} color={pctColor} />
+                <div className="flex items-center justify-between" style={{ marginTop: 7 }}>
+                  <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{t("enterprise.learning.progress.yourProgress")}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                    <b style={{ color: pctColor }}>{percent}%</b> {t("enterprise.learning.progress.completeWord")}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {isOpen && !locked && (
@@ -561,6 +735,7 @@ export function LearningPathAssignmentProgress({ assignmentId, onAssignmentLoade
               assignmentId={assignmentId}
               onModuleComplete={handleModuleComplete}
               onModuleProgress={handleModuleProgress}
+              percent={moduleBatteryProgress[mod.id]}
             />
           ))}
         </div>

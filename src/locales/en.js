@@ -1044,6 +1044,13 @@ export const en = {
                 myRetention: "My Retention",
                 myCompliance: "My Compliance",
                 myCertifications: "My Certifications"
+            },
+            mobileNav: {
+                home: "Home",
+                assignments: "Assignments",
+                retention: "Retention",
+                compliance: "Compliance",
+                certificates: "Certificates"
             }
         },
         dashboards: {
@@ -1267,16 +1274,21 @@ export const en = {
             },
             progress: {
                 documentsTitle: "Documents ({count})",
+                docSubtitle: "Course document",
                 viewArrow: "View →",
                 openOriginal: "Open original file",
                 noSections: "No sections extracted for this document.",
                 noTitle: "No title",
                 cardsCount: "{n} cards",
                 deckDefaultDesc: "Flashcard set for this topic",
+                deckMobileTitle: "Flashcards",
+                deckMobileDesc: "Review key concepts",
                 learnBtn: "Learn",
                 studyBtn: "Study",
                 questionsCount: "{n} questions",
                 batteryDefaultDesc: "Assessment or practice related to this topic",
+                batteryMobileTitle: "Assessment",
+                batteryMobileDesc: "Test your understanding",
                 simulateBtn: "Simulate",
                 topicLabel: "Topic {n}",
                 topicsCount: "{n} topics",
@@ -1288,6 +1300,8 @@ export const en = {
                 completedLabel: "Completed",
                 notFound: "Assignment not found.",
                 processesCompleted: "{completed} of {total} processes completed",
+                yourProgress: "Your progress",
+                completeWord: "complete",
                 pathProcesses: "Learning Path Processes",
                 processContent: "Process Content",
                 noModulesFound: "No modules found for this assignment.",

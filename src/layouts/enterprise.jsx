@@ -2,9 +2,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/solid";
 import { Sidenav, DashboardNavbar, ChatPanel } from "@/widgets/layout";
 import { MobileTabBar } from "@/widgets/layout/mobile-tab-bar";
+import { EmployeeMobileTabBar } from "@/enterprise/components/EmployeeMobileTabBar";
 import routes from "@/routes";
 import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
 import { useAuth } from "@/context/auth-context";
+import { useEnterprise } from "@/enterprise/context/enterprise-context";
 
 import KnowledgeSources from "@/enterprise/pages/knowledge/KnowledgeSources";
 import KnowledgeSourceNew from "@/enterprise/pages/knowledge/KnowledgeSourceNew";
@@ -52,6 +54,7 @@ import OnboardingInvite from "@/enterprise/pages/onboarding/OnboardingInvite";
 export function Enterprise() {
   const [, dispatch] = useMaterialTailwindController();
   const { loading, hasCompany, allowedRoutes, isAdmin } = useAuth();
+  const { role } = useEnterprise();
 
   if (loading) return null;
 
@@ -84,8 +87,7 @@ export function Enterprise() {
       <Sidenav routes={filteredRoutes} />
 
       <div
-        className="min-h-screen flex flex-col transition-all duration-200"
-        style={{ marginLeft: "var(--sidebar-w)" }}
+        className="min-h-screen flex flex-col transition-all duration-200 md:ml-[var(--sidebar-w)]"
       >
         <div className="hidden md:block">
           <DashboardNavbar />
@@ -94,14 +96,14 @@ export function Enterprise() {
         <ChatPanel />
 
         <button
-          className="fixed bottom-6 right-6 z-40 rounded-full flex items-center justify-center cursor-pointer"
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 rounded-full flex items-center justify-center cursor-pointer"
           style={{ width: 44, height: 44, background: "var(--accent)", border: "none", boxShadow: "0 4px 16px rgba(94,106,210,0.4)" }}
           onClick={() => setOpenConfigurator(dispatch, true)}
         >
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white" />
         </button>
 
-        <div className="flex-grow flex flex-col p-6">
+        <div className="flex-grow flex flex-col px-4 pt-4 pb-24 md:p-6">
           <Routes>
             {/* Paths are relative to /enterprise/* */}
             <Route path="knowledge" element={<KnowledgeSources />} />
@@ -154,7 +156,7 @@ export function Enterprise() {
 
       </div>
 
-      <MobileTabBar />
+      {role === "employee" ? <EmployeeMobileTabBar /> : <MobileTabBar />}
     </div>
   );
 }

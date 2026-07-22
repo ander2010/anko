@@ -1045,6 +1045,13 @@ export const es = {
                 myRetention: "Mi Retención",
                 myCompliance: "Mi Compliance",
                 myCertifications: "Mis Certificaciones"
+            },
+            mobileNav: {
+                home: "Inicio",
+                assignments: "Tareas",
+                retention: "Retención",
+                compliance: "Compliance",
+                certificates: "Certificados"
             }
         },
         dashboards: {
@@ -1268,16 +1275,21 @@ export const es = {
             },
             progress: {
                 documentsTitle: "Documentos ({count})",
+                docSubtitle: "Documento del curso",
                 viewArrow: "Ver →",
                 openOriginal: "Abrir archivo original",
                 noSections: "Sin secciones extraídas para este documento.",
                 noTitle: "Sin título",
                 cardsCount: "{n} tarjetas",
                 deckDefaultDesc: "Conjunto de tarjetas de estudio para este tópico",
+                deckMobileTitle: "Tarjetas",
+                deckMobileDesc: "Repasa los conceptos clave",
                 learnBtn: "Aprender",
                 studyBtn: "Estudiar",
                 questionsCount: "{n} preguntas",
                 batteryDefaultDesc: "Evaluación o práctica relacionada con este tópico",
+                batteryMobileTitle: "Evaluación",
+                batteryMobileDesc: "Pon a prueba tu comprensión",
                 simulateBtn: "Simular",
                 topicLabel: "Tópico {n}",
                 topicsCount: "{n} temas",
@@ -1289,6 +1301,8 @@ export const es = {
                 completedLabel: "Completado",
                 notFound: "Asignación no encontrada.",
                 processesCompleted: "{completed} de {total} procesos completados",
+                yourProgress: "Tu progreso",
+                completeWord: "completado",
                 pathProcesses: "Procesos del Learning Path",
                 processContent: "Contenido del Proceso",
                 noModulesFound: "No se encontraron módulos para esta asignación.",
