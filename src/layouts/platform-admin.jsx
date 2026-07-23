@@ -43,8 +43,7 @@ export function PlatformAdmin() {
       <Sidenav routes={filteredRoutes} />
 
       <div
-        className="min-h-screen flex flex-col transition-all duration-200"
-        style={{ marginLeft: "var(--sidebar-w)" }}
+        className="min-h-screen flex flex-col transition-all duration-200 md:ml-[var(--sidebar-w)]"
       >
         <div className="hidden md:block">
           <DashboardNavbar />
@@ -60,7 +59,7 @@ export function PlatformAdmin() {
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white" />
         </button>
 
-        <div className="flex-grow flex flex-col p-6">
+        <div className="flex-grow flex flex-col px-4 pt-4 pb-24 md:p-6">
           <Routes>
             <Route path="companies" element={<PlatformAdminCompanies />} />
             <Route path="companies/:id/users" element={<PlatformAdminUsers />} />

@@ -136,15 +136,15 @@ export function Home() {
           </div>
 
           {/* Stats strip */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, position: "relative" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, position: "relative" }}>
             {[
               { num: projects.length, label: language === "es" ? "Proyectos" : "Projects" },
               { num: batteries.length, label: language === "es" ? "Baterías" : "Batteries" },
               { num: deckCount ?? "—", label: language === "es" ? "Decks" : "Decks" },
             ].map((s, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 10px", textAlign: "center", minWidth: 0 }}>
                 <p style={{ fontSize: 22, fontWeight: 900, color: "#F1F5F9", lineHeight: 1, marginBottom: 3 }}>{s.num}</p>
-                <p style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.label}</p>
+                <p style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em", overflowWrap: "break-word" }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -156,17 +156,17 @@ export function Home() {
             <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
               {language === "es" ? "Acciones de Admin" : "Admin Actions"}
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10 }}>
               {cards.map((card, i) => {
                 const Icon = card.icon;
                 const handleClick = () => card.href ? navigate(card.href) : navigate(card.path);
                 return (
                   <button key={i} onClick={handleClick}
-                    style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 14, padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s" }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    style={{ background: card.bg, border: `1px solid ${card.border}`, borderRadius: 14, padding: "14px 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, cursor: "pointer", transition: "all 0.15s", minWidth: 0, width: "100%" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Icon style={{ width: 18, height: 18, color: card.accent }} />
                     </div>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "#CBD5E1", textAlign: "center", lineHeight: 1.3 }}>{card.name}</p>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#CBD5E1", textAlign: "center", lineHeight: 1.3, overflowWrap: "break-word", width: "100%" }}>{card.name}</p>
                   </button>
                 );
               })}

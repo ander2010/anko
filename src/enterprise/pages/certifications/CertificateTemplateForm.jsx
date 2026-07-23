@@ -155,7 +155,7 @@ function RequirementsSection({ templateId }) {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <select style={INPUT_SM} value={refId} onChange={(e) => setRefId(e.target.value)}>
                 <option value="">{t("enterprise.certifications.templateForm.requirements.selectPlaceholder")}</option>
                 {options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -234,7 +234,7 @@ export function CertificateTemplateForm() {
       )}
 
       <form onSubmit={submit} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 22 }} className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label style={LABEL}>{t("enterprise.certifications.templateForm.fields.code")}</label>
             <input style={{ ...INPUT, opacity: isEdit ? 0.6 : 1 }} value={form.code} onChange={setInput("code")} required disabled={isEdit} />

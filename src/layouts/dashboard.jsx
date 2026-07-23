@@ -31,8 +31,8 @@ export function Dashboard() {
       <Sidenav routes={filteredRoutes} />
 
       <div
-        className="min-h-screen flex flex-col transition-all duration-200"
-        style={{ marginLeft: "var(--sidebar-w)", paddingBottom: "env(safe-area-inset-bottom)" }}
+        className="min-h-screen flex flex-col transition-all duration-200 md:ml-[var(--sidebar-w)]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="hidden md:block">
           <DashboardNavbar />
@@ -48,7 +48,7 @@ export function Dashboard() {
           <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-white" />
         </button>
 
-        <div className="flex-grow flex flex-col p-6">
+        <div className="flex-grow flex flex-col px-4 pt-4 pb-24 md:p-6">
           <Routes>
             {routes.map(({ layout, pages }) =>
               layout === "dashboard" &&

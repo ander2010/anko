@@ -243,7 +243,7 @@ function InviteModal({ companies, onClose, onSent }) {
                 <label style={{ fontSize: 10, fontWeight: 800, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 10 }}>
                   {t("enterprise.settings.company.members.addModal.roleLabel")}
                 </label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
                   {ROLES.map(r => (
                     <button
                       key={r.value}
@@ -251,10 +251,10 @@ function InviteModal({ companies, onClose, onSent }) {
                       style={{
                         padding: "10px 6px", borderRadius: 10, border: `1px solid ${role === r.value ? r.border : "rgba(255,255,255,0.06)"}`,
                         background: role === r.value ? r.bg : "rgba(255,255,255,0.02)",
-                        cursor: "pointer", transition: "all 150ms", textAlign: "center",
+                        cursor: "pointer", transition: "all 150ms", textAlign: "center", minWidth: 0,
                       }}
                     >
-                      <span style={{ fontSize: 12, fontWeight: 700, color: role === r.value ? r.color : "#64748B" }}>{r.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: role === r.value ? r.color : "#64748B", overflowWrap: "break-word" }}>{r.label}</span>
                     </button>
                   ))}
                 </div>
@@ -475,6 +475,7 @@ export default function PlatformAdminInvitations() {
             <p style={{ color: "#64748B", fontSize: 14 }}>{t("enterprise.platformAdmin.invitations.empty")}</p>
           </div>
         ) : (
+          <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -519,6 +520,7 @@ export default function PlatformAdminInvitations() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

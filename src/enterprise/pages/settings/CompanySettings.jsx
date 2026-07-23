@@ -203,7 +203,7 @@ function InfoTab({ company, companyId }) {
     <form onSubmit={handleSave} className="space-y-4" style={{ maxWidth: 520 }}>
       <FieldInput label={t("enterprise.settings.company.info.nameLabel")} value={form.name} onChange={set("name")} required />
       <FieldInput label={t("enterprise.settings.company.info.websiteLabel")} value={form.website} onChange={set("website")} placeholder="https://…" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <FieldInput label={t("enterprise.settings.company.info.industryLabel")} value={form.industry} onChange={set("industry")} />
         <FieldInput label={t("enterprise.settings.company.info.sizeLabel")} value={form.company_size} onChange={set("company_size")} placeholder={t("enterprise.settings.company.info.sizePlaceholder")} />
       </div>
@@ -401,6 +401,7 @@ function MembersTab({ companyId }) {
         </div>
       ) : (
         <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
@@ -436,6 +437,7 @@ function MembersTab({ companyId }) {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
       {!loading && <p style={{ color: "var(--text-tertiary)", fontSize: 11 }}>{t("enterprise.settings.company.members.count", { count: members.length, plural: members.length !== 1 ? "s" : "" })}</p>}
@@ -473,7 +475,7 @@ function BUModal({ companyId, bu, members, onSaved, onClose }) {
   return (
     <Modal title={editing ? t("enterprise.settings.company.units.editModal.title") : t("enterprise.settings.company.units.editModal.newTitle")} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <FieldInput label={t("enterprise.settings.company.units.editModal.nameLabel")} value={form.name} onChange={(e) => set("name")(e.target.value)} required />
           <FieldInput label={t("enterprise.settings.company.units.editModal.codeLabel")} value={form.code} onChange={(e) => set("code")(e.target.value.toUpperCase())} placeholder="COM" required />
         </div>

@@ -379,6 +379,7 @@ export function PlatformAdminUsers() {
         </div>
       ) : (
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}>
@@ -452,6 +453,7 @@ export function PlatformAdminUsers() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -243,7 +243,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
       </div>
 
       {/* Puntaje y duración */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.minScoreLabel")}</p>
           <div className="flex items-center gap-2">
@@ -277,7 +277,7 @@ function Step2({ form, onChange, onBack, onNext, saving, error }) {
       {/* Auto-generación: tarjetas/preguntas por grupo y formato de preguntas */}
       <div>
         <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 13, marginBottom: 8 }}>{t("enterprise.knowledge.sourceNew.autoGenLabel")}</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <p style={{ color: "var(--text-secondary)", fontSize: 11, marginBottom: 6 }}>{t("enterprise.knowledge.sourceNew.cardsPerGroupLabel")}</p>
             <input

@@ -265,7 +265,10 @@ export function GlobalBatteries() {
       </div>
 
       {/* ── Pagination ── */}
-      <div style={{ position: "fixed", bottom: 0, right: 0, left: "var(--sidebar-w)", zIndex: 30, background: "rgba(6,13,26,0.92)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.07)", padding: "10px 88px 10px 32px", transition: "left 0.3s" }}>
+      {/* bottom-14 on mobile clears the fixed MobileTabBar (56px, z-[9000]) below
+          md; left-0 there too since the sidebar is off-canvas on mobile. */}
+      <div className="fixed bottom-14 right-0 left-0 md:bottom-0 md:left-[var(--sidebar-w)] px-4 py-2.5 md:pr-[88px] md:pl-8 md:py-2.5"
+        style={{ zIndex: 30, background: "rgba(6,13,26,0.92)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.07)", transition: "left 0.3s" }}>
         <AppPagination
           page={page} pageSize={pageSize} totalCount={totalCount}
           onPageChange={(p) => setPage(p)}
